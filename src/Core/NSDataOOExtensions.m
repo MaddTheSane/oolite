@@ -29,6 +29,7 @@ SOFTWARE.
 
 #import "OOCocoa.h"
 #import "unzip.h"
+#import "ARCBridge.h"
 
 #define ZIP_BUFFER_SIZE 8192
 
@@ -53,7 +54,7 @@ SOFTWARE.
 /* -initWithContentsOfMappedFile fails quietly under OS X if there's no file,
    but GNUstep complains. */
 #if OOLITE_MAC_OS_X
-		return [[[NSData alloc] initWithContentsOfMappedFile:path] autorelease];
+		return AUTORELEASEOBJ([[NSData alloc] initWithContentsOfMappedFile:path]);
 #else
 		NSFileManager	*fmgr = [NSFileManager defaultManager];
 		BOOL			dir;
@@ -159,7 +160,7 @@ SOFTWARE.
 	}
 	
 	unzClose(uf);
-	return [[tmp retain] autorelease];
+	return AUTORELEASEOBJ(RETAINOBJ(tmp));
 
 }
 

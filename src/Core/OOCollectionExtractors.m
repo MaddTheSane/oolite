@@ -32,7 +32,7 @@ SOFTWARE.
 #import "OOCollectionExtractors.h"
 #include <limits.h>
 #import "OOMaths.h"
-
+#import "ARCBridge.h"
 
 static NSSet *SetForObject(id object, NSSet *defaultValue);
 static NSString *StringForObject(id object, NSString *defaultValue);
@@ -1532,7 +1532,7 @@ NSDictionary *OOPropertyListFromQuaternion(Quaternion value)
 static NSSet *SetForObject(id object, NSSet *defaultValue)
 {
 	if ([object isKindOfClass:[NSArray class]])  return [NSSet setWithArray:object];
-	else if ([object isKindOfClass:[NSSet class]])  return [[object copy] autorelease];
+	else if ([object isKindOfClass:[NSSet class]])  return AUTORELEASEOBJ([object copy]);
 	
 	return defaultValue;
 }
