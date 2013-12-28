@@ -7,6 +7,20 @@
       buildImplicitDependencies = "YES">
       <BuildActionEntries>
          <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "0865423506B8447D000CA0AB"
+               BuildableName = "Oolite.app"
+               BlueprintName = "Oolite"
+               ReferencedContainer = "container:Oolite.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
             buildForTesting = "NO"
             buildForRunning = "YES"
             buildForProfiling = "YES"
@@ -23,20 +37,6 @@
          <BuildActionEntry
             buildForTesting = "YES"
             buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0865423506B8447D000CA0AB"
-               BuildableName = "Oolite.app"
-               BlueprintName = "Oolite"
-               ReferencedContainer = "container:Oolite.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
             buildForProfiling = "NO"
             buildForArchiving = "NO"
             buildForAnalyzing = "NO">
@@ -45,7 +45,7 @@
                BlueprintIdentifier = "1A0CD53515AF0BCE00970505"
                BuildableName = "OoliteUnitTests.octest"
                BlueprintName = "OoliteUnitTests"
-               ReferencedContainer = "container:tests/OCUnitTests/OoliteUnitTests.xcodeproj">
+               ReferencedContainer = "container:Mac-specific/OCUnitTests/OoliteUnitTests.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>

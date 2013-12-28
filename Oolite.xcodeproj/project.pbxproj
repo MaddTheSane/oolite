@@ -16,7 +16,6 @@
 			);
 			dependencies = (
 				1AD267560C83052600B4BFD1 /* PBXTargetDependency */,
-				1A7E3A05180AC8BF00576095 /* PBXTargetDependency */,
 				1ABF219A12D691A300075821 /* PBXTargetDependency */,
 			);
 			name = "Build All";
@@ -574,13 +573,6 @@
 			containerPortal = 1A0519340C7CCAC900BA5CCA /* DebugBundle.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 8D5B49B6048680CD000E48DA;
-			remoteInfo = "Debug Bundle";
-		};
-		1A7E3A04180AC8BF00576095 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1A0519340C7CCAC900BA5CCA /* DebugBundle.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 8D5B49AC048680CD000E48DA;
 			remoteInfo = "Debug Bundle";
 		};
 		1A8FA92612F0C694008FF5A2 /* PBXContainerItemProxy */ = {
@@ -3946,11 +3938,6 @@
 			name = libpng;
 			targetProxy = 1A78B5DB12D74D0600D42EE7 /* PBXContainerItemProxy */;
 		};
-		1A7E3A05180AC8BF00576095 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = "Debug Bundle";
-			targetProxy = 1A7E3A04180AC8BF00576095 /* PBXContainerItemProxy */;
-		};
 		1AB7763512CA33FB001478BB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = libjs;
@@ -4009,7 +3996,6 @@
 				);
 				GCC_REUSE_STRINGS = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = "$(SDKROOT)/usr/include/libkern/";
 				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
 				INFOPLIST_FILE = "src/Cocoa/Info-Oolite.plist";
 				LIBRARY_SEARCH_PATHS = (
@@ -4018,7 +4004,7 @@
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = Oolite;
-				SECTORDER_FLAGS = "";
+				SKIP_INSTALL = NO;
 				USER_HEADER_SEARCH_PATHS = "\"$(DEPS_INCLUDE_PATH)/ogg\" \"$(DEPS_INCLUDE_PATH)/js\" \"$(DEPS_INCLUDE_PATH)/vorbis\" \"$(DEPS_INCLUDE_PATH)/png\" \"$(SRCROOT)/src/Core/\" \"$(SRCROOT)/src/Core/Tables/\" \"$(SRCROOT)/src/Core/Entites/\" \"$(SRCROOT)/src/Core/Materials/\" \"$(SRCROOT)/src/BSDCompat/\"";
 				WARNING_CFLAGS = $OO_WARNING_FLAGS;
 				WRAPPER_EXTENSION = app;
@@ -4035,7 +4021,6 @@
 				COPY_PHASE_STRIP = NO;
 				DEPS_INCLUDE_PATH = "$(SYMROOT)/$(CONFIGURATION)/include";
 				EXPORTED_SYMBOLS_FILE = "src/Cocoa/exports-release.exp";
-				"EXPORTED_SYMBOLS_FILE[arch=x86_64]" = "src/Cocoa/exports-release.exp";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/deps/Cocoa-deps/",
 					"$(SRCROOT)/deps/Cocoa-deps/Sparkle",
@@ -4052,7 +4037,6 @@
 				);
 				GCC_REUSE_STRINGS = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				HEADER_SEARCH_PATHS = "$(SDKROOT)/usr/include/libkern/";
 				INFOPLIST_FILE = "src/Cocoa/Info-Oolite.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -4060,7 +4044,7 @@
 				);
 				PLIST_FILE_OUTPUT_FORMAT = XML;
 				PRODUCT_NAME = Oolite;
-				SECTORDER_FLAGS = "";
+				SKIP_INSTALL = NO;
 				USER_HEADER_SEARCH_PATHS = "\"$(DEPS_INCLUDE_PATH)/ogg\" \"$(DEPS_INCLUDE_PATH)/js\" \"$(DEPS_INCLUDE_PATH)/vorbis\" \"$(DEPS_INCLUDE_PATH)/png\" \"$(SRCROOT)/src/Core/\" \"$(SRCROOT)/src/Core/Tables/\" \"$(SRCROOT)/src/Core/Entites/\" \"$(SRCROOT)/src/Core/Materials/\" \"$(SRCROOT)/src/BSDCompat/\"";
 				WARNING_CFLAGS = $OO_WARNING_FLAGS;
 				WRAPPER_EXTENSION = app;
@@ -4109,14 +4093,13 @@
 				);
 				GCC_REUSE_STRINGS = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = "$(SDKROOT)/usr/include/libkern/";
 				INFOPLIST_FILE = "src/Cocoa/Info-Oolite.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/deps/Cocoa-deps/Ogg Vorbis\"",
 				);
 				PRODUCT_NAME = Oolite;
-				SECTORDER_FLAGS = "";
+				SKIP_INSTALL = NO;
 				USER_HEADER_SEARCH_PATHS = "\"$(DEPS_INCLUDE_PATH)/ogg\" \"$(DEPS_INCLUDE_PATH)/js\" \"$(DEPS_INCLUDE_PATH)/vorbis\" \"$(DEPS_INCLUDE_PATH)/png\" \"$(SRCROOT)/src/Core/\" \"$(SRCROOT)/src/Core/Tables/\" \"$(SRCROOT)/src/Core/Entites/\" \"$(SRCROOT)/src/Core/Materials/\" \"$(SRCROOT)/src/BSDCompat/\"";
 				WARNING_CFLAGS = $OO_WARNING_FLAGS;
 				WRAPPER_EXTENSION = app;

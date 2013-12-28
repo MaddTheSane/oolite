@@ -1500,19 +1500,17 @@ Quaternion OOQuaternionFromObject(id object, Quaternion defaultValue)
 
 NSDictionary *OOPropertyListFromVector(Vector value)
 {
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-			[NSNumber numberWithFloat:value.x], @"x",
-			[NSNumber numberWithFloat:value.y], @"y",
-			[NSNumber numberWithFloat:value.z], @"z",
-			nil];
+	return @{@"x": @(value.x),
+			 @"y": @(value.y),
+			 @"z": @(value.z)};
 }
 
 NSDictionary *OOPropertyListFromHPVector(HPVector value)
 {
 	return [NSDictionary dictionaryWithObjectsAndKeys:
-			[NSNumber numberWithDouble:value.x], @"x",
-			[NSNumber numberWithDouble:value.y], @"y",
-			[NSNumber numberWithDouble:value.z], @"z",
+			@(value.x), @"x",
+			@(value.y), @"y",
+			@(value.z), @"z",
 			nil];
 }
 
@@ -1520,10 +1518,10 @@ NSDictionary *OOPropertyListFromHPVector(HPVector value)
 NSDictionary *OOPropertyListFromQuaternion(Quaternion value)
 {
 	return [NSDictionary dictionaryWithObjectsAndKeys:
-			[NSNumber numberWithFloat:value.w], @"w",
-			[NSNumber numberWithFloat:value.x], @"x",
-			[NSNumber numberWithFloat:value.y], @"y",
-			[NSNumber numberWithFloat:value.z], @"z",
+			@(value.w), @"w",
+			@(value.x), @"x",
+			@(value.y), @"y",
+			@(value.z), @"z",
 			nil];
 }
 #endif
