@@ -16,7 +16,6 @@
 			);
 			dependencies = (
 				1AD267560C83052600B4BFD1 /* PBXTargetDependency */,
-				1A7E3A05180AC8BF00576095 /* PBXTargetDependency */,
 				1ABF219A12D691A300075821 /* PBXTargetDependency */,
 			);
 			name = "Build All";
@@ -576,13 +575,6 @@
 			remoteGlobalIDString = 8D5B49B6048680CD000E48DA;
 			remoteInfo = "Debug Bundle";
 		};
-		1A7E3A04180AC8BF00576095 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1A0519340C7CCAC900BA5CCA /* DebugBundle.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 8D5B49AC048680CD000E48DA;
-			remoteInfo = "Debug Bundle";
-		};
 		1A8FA92612F0C694008FF5A2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1AB775FC12CA2E53001478BB /* libjs.xcodeproj */;
@@ -666,13 +658,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 1ADE327609757FBE00961AE2;
 			remoteInfo = LibVorbis;
-		};
-		55E802B6188247B500037AF6 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1A0519340C7CCAC900BA5CCA /* DebugBundle.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 8D5B49AC048680CD000E48DA;
-			remoteInfo = "Debug Bundle";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -3898,11 +3883,6 @@
 			name = libpng;
 			targetProxy = 1A78B5DB12D74D0600D42EE7 /* PBXContainerItemProxy */;
 		};
-		1A7E3A05180AC8BF00576095 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = "Debug Bundle";
-			targetProxy = 1A7E3A04180AC8BF00576095 /* PBXContainerItemProxy */;
-		};
 		1AB7763512CA33FB001478BB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = libjs;
@@ -3984,6 +3964,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "oolite-icon";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEPS_INCLUDE_PATH = "$(SYMROOT)/$(CONFIGURATION)/include";
 				EXPORTED_SYMBOLS_FILE = "src/Cocoa/exports-release.exp";
