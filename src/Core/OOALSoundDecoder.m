@@ -146,7 +146,7 @@ static int OOCloseOXZVorbis (void *datasource);
 		cl = [components count];
 		for (i = 0 ; i < cl ; i++)
 		{
-			NSString *component = [components objectAtIndex:i];
+			NSString *component = components[i];
 			if ([[[component pathExtension] lowercaseString] isEqualToString:@"oxz"])
 			{
 				break;
@@ -304,7 +304,7 @@ static int OOCloseOXZVorbis (void *datasource);
 					key = comment;
 					value = @"";
 				}
-				[result setObject:value forKey:key];
+				result[key] = value;
 				
 				[comment release];
 			}

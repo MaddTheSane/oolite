@@ -163,18 +163,18 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 	if (folder != nil)
 	{
 		lcDirName = [folder lowercaseString];
-		realFileName = [[_directoryListings oo_dictionaryForKey:lcDirName] objectForKey:lcName];
+		realFileName = [_directoryListings oo_dictionaryForKey:lcDirName][lcName];
 		
 		if (realFileName != nil)
 		{
-			realDirName = [_directoryCases objectForKey:lcDirName];
+			realDirName = _directoryCases[lcDirName];
 			path = [realDirName stringByAppendingPathComponent:realFileName];
 		}
 	}
 	
 	if (path == nil)
 	{
-		realFileName = [[_directoryListings oo_dictionaryForKey:@""] objectForKey:lcName];
+		realFileName = [_directoryListings oo_dictionaryForKey:@""][lcName];
 		
 		if (realFileName != nil)
 		{
@@ -313,7 +313,7 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 - (NSArray *)filesInFolder:(NSString *)folder
 {
 	if (folder == nil)  return nil;
-	return [[_directoryListings objectForKey:[folder lowercaseString]] allValues];
+	return [_directoryListings[[folder lowercaseString]] allValues];
 }
 
 @end
@@ -367,8 +367,8 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 				OOLog(@"verifyOXP.verbose.listFiles", @"- %@/", name);
 				OOLogIndentIf(@"verifyOXP.verbose.listFiles");
 				dirFiles = [self scanDirectory:path];
-				[directoryListings setObject:dirFiles forKey:lcName];
-				[directoryCases setObject:name forKey:lcName];
+				directoryListings[lcName] = dirFiles;
+				directoryCases[lcName] = name;
 				OOLogOutdentIf(@"verifyOXP.verbose.listFiles");
 			}
 			else
@@ -389,7 +389,7 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 			else if (!CheckNameConflict(lcName, directoryCases, rootFiles, &existing, &existingType))
 			{
 				OOLog(@"verifyOXP.verbose.listFiles", @"- %@", name);
-				[rootFiles setObject:name forKey:lcName];
+				rootFiles[lcName] = name;
 			}
 			else
 			{
@@ -409,7 +409,7 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 	_junkFileNames = nil;
 	_skipDirectoryNames = nil;
 	
-	[directoryListings setObject:rootFiles forKey:@""];
+	directoryListings[@""] = rootFiles;
 	_directoryListings = [directoryListings copy];
 	_directoryCases = [directoryCases copy];
 }
@@ -429,7 +429,7 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 		if (![name isKindOfClass:[NSString class]])  continue;
 		
 		lcName = [name lowercaseString];
-		actual = [_directoryCases objectForKey:lcName];
+		actual = _directoryCases[lcName];
 		if (actual == nil)  continue;
 		
 		if (![actual isEqualToString:name])
@@ -460,9 +460,9 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 		*/
 		
 		lcName = [name lowercaseString];
-		realFileName = [[_directoryListings oo_dictionaryForKey:@"config"] objectForKey:lcName];
+		realFileName = [_directoryListings oo_dictionaryForKey:@"config"][lcName];
 		inConfigDir = realFileName != nil;
-		if (!inConfigDir)  realFileName = [[_directoryListings oo_dictionaryForKey:@""] objectForKey:lcName];
+		if (!inConfigDir)  realFileName = [_directoryListings oo_dictionaryForKey:@""][lcName];
 		if (realFileName == nil)  continue;
 		
 		if (![realFileName isEqualToString:name])
@@ -490,7 +490,7 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 	directories = [[self verifier] configurationDictionaryForKey:@"knownFiles"];
 	for (directoryEnum = [directories keyEnumerator]; (directory = [directoryEnum nextObject]); )
 	{
-		fileList = [directories objectForKey:directory];
+		fileList = directories[directory];
 		lcDirectory = [directory lowercaseString];
 		for (nameEnum = [fileList objectEnumerator]; (name = [nameEnum nextObject]); )
 		{
@@ -501,12 +501,12 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 			*/
 			
 			lcName = [name lowercaseString];
-			realFileName = [[_directoryListings oo_dictionaryForKey:lcDirectory] objectForKey:lcName];
+			realFileName = [_directoryListings oo_dictionaryForKey:lcDirectory][lcName];
 			inDirectory = (realFileName != nil);
 			if (!inDirectory)
 			{
 				// Allow for files in root directory of OXP
-				realFileName = [[_directoryListings oo_dictionaryForKey:@""] objectForKey:lcName];
+				realFileName = [_directoryListings oo_dictionaryForKey:@""][lcName];
 			}
 			if (realFileName == nil)  continue;
 			
@@ -528,7 +528,7 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 	NSMutableDictionary		*result = nil;
 	
 	count = [array count];
-	if (count == 0)  return [NSDictionary dictionary];
+	if (count == 0)  return @{};
 	result = [NSMutableDictionary dictionaryWithCapacity:count];
 	
 	for (i = 0; i != count; ++i)
@@ -537,7 +537,7 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 		if (canonical != nil)
 		{
 			lowercase = [canonical lowercaseString];
-			[result setObject:canonical forKey:lowercase];
+			result[lowercase] = canonical;
 		}
 	}
 	
@@ -572,12 +572,12 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 		else if ([type isEqualToString:NSFileTypeRegular])
 		{
 			lcName = [name lowercaseString];
-			existing = [result objectForKey:lcName];
+			existing = result[lcName];
 			
 			if (existing == nil)
 			{
 				OOLog(@"verifyOXP.verbose.listFiles", @"- %@", name);
-				[result setObject:name forKey:lcName];
+				result[lcName] = name;
 			}
 			else
 			{
@@ -762,7 +762,7 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 {
 	NSString				*existing = nil;
 	
-	existing = [directoryCases objectForKey:lcName];
+	existing = directoryCases[lcName];
 	if (existing != nil)
 	{
 		if (outExisting != NULL)  *outExisting = existing;
@@ -770,7 +770,7 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 		return YES;
 	}
 	
-	existing = [rootFiles objectForKey:lcName];
+	existing = rootFiles[lcName];
 	if (existing != nil)
 	{
 		if (outExisting != NULL)  *outExisting = existing;

@@ -70,16 +70,16 @@ NSString * const kOOMaterialLightMapsName					= @"light_map";
 // Internal. Used to avoid mutual recusion between -oo_specularExponentMapSpecifier and -oo_specularExponent.
 - (int) oo_rawSpecularExponentValue
 {
-	NSObject *value = [self objectForKey:kOOMaterialSpecularExponentName];
-	if (value == nil)  value = [self objectForKey:kOOMaterialSpecularExponentLegacyName];
+	NSObject *value = self[kOOMaterialSpecularExponentName];
+	if (value == nil)  value = self[kOOMaterialSpecularExponentLegacyName];
 	return OOIntFromObject(value, -1);
 }
 
 
 - (OOColor *) oo_diffuseColor
 {
-	OOColor *result = [OOColor colorWithDescription:[self objectForKey:kOOMaterialDiffuseColorName]];
-	if (result == nil)  result = [OOColor colorWithDescription:[self objectForKey:kOOMaterialDiffuseColorLegacyName]];
+	OOColor *result = [OOColor colorWithDescription:self[kOOMaterialDiffuseColorName]];
+	if (result == nil)  result = [OOColor colorWithDescription:self[kOOMaterialDiffuseColorLegacyName]];
 	
 	if ([result isWhite])  result = nil;
 	return result;
@@ -88,16 +88,16 @@ NSString * const kOOMaterialLightMapsName					= @"light_map";
 
 - (OOColor *) oo_ambientColor
 {
-	OOColor *result = [OOColor colorWithDescription:[self objectForKey:kOOMaterialAmbientColorName]];
-	if (result == nil)  result = [OOColor colorWithDescription:[self objectForKey:kOOMaterialAmbientColorLegacyName]];
+	OOColor *result = [OOColor colorWithDescription:self[kOOMaterialAmbientColorName]];
+	if (result == nil)  result = [OOColor colorWithDescription:self[kOOMaterialAmbientColorLegacyName]];
 	return result;
 }
 
 
 - (OOColor *) oo_specularColor
 {
-	OOColor *result = [OOColor colorWithDescription:[self objectForKey:kOOMaterialSpecularColorName]];
-	if (result == nil)  result = [OOColor colorWithDescription:[self objectForKey:kOOMaterialSpecularColorLegacyName]];
+	OOColor *result = [OOColor colorWithDescription:self[kOOMaterialSpecularColorName]];
+	if (result == nil)  result = [OOColor colorWithDescription:self[kOOMaterialSpecularColorLegacyName]];
 	if (result == nil)
 	{
 		result = [OOColor colorWithWhite:0.2f alpha:1.0f];
@@ -108,7 +108,7 @@ NSString * const kOOMaterialLightMapsName					= @"light_map";
 
 - (OOColor *) oo_specularModulateColor
 {
-	OOColor *result = [OOColor colorWithDescription:[self objectForKey:kOOMaterialSpecularModulateColorName]];
+	OOColor *result = [OOColor colorWithDescription:self[kOOMaterialSpecularModulateColorName]];
 	if (result == nil)  result = [OOColor whiteColor];
 	
 	return result;
@@ -117,8 +117,8 @@ NSString * const kOOMaterialLightMapsName					= @"light_map";
 
 - (OOColor *) oo_emissionColor
 {
-	OOColor *result = [OOColor colorWithDescription:[self objectForKey:kOOMaterialEmissionColorName]];
-	if (result == nil)  result = [OOColor colorWithDescription:[self objectForKey:kOOMaterialEmissionColorLegacyName]];
+	OOColor *result = [OOColor colorWithDescription:self[kOOMaterialEmissionColorName]];
+	if (result == nil)  result = [OOColor colorWithDescription:self[kOOMaterialEmissionColorLegacyName]];
 	
 	if ([result isBlack])  result = nil;
 	return result;
@@ -127,7 +127,7 @@ NSString * const kOOMaterialLightMapsName					= @"light_map";
 
 - (OOColor *) oo_emissionModulateColor
 {
-	OOColor *result = [OOColor colorWithDescription:[self objectForKey:kOOMaterialEmissionModulateColorName]];
+	OOColor *result = [OOColor colorWithDescription:self[kOOMaterialEmissionModulateColorName]];
 	
 	if ([result isWhite])  result = nil;
 	return result;
@@ -136,7 +136,7 @@ NSString * const kOOMaterialLightMapsName					= @"light_map";
 
 - (OOColor *) oo_illuminationModulateColor
 {
-	OOColor *result = [OOColor colorWithDescription:[self objectForKey:kOOMaterialIlluminationModulateColorName]];
+	OOColor *result = [OOColor colorWithDescription:self[kOOMaterialIlluminationModulateColorName]];
 	
 	if ([result isWhite])  result = nil;
 	return result;

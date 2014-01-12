@@ -201,8 +201,7 @@ enum
 							(float)DUST_SCALE];
 		
 		// Reuse tangent attribute ID for "warpiness", as we don't need a tangent.
-		NSDictionary *attributes = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kTangentAttributeIndex]
-															   forKey:@"aWarpiness"];
+		NSDictionary *attributes = @{@"aWarpiness": @(kTangentAttributeIndex)};
 		
 		shader = [[OOShaderProgram shaderProgramWithVertexShaderName:@"oolite-dust.vertex"
 												  fragmentShaderName:@"oolite-dust.fragment"

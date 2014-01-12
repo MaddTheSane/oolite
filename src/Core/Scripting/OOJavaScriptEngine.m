@@ -175,7 +175,7 @@ static void ReportJSError(JSContext *context, const char *message, JSErrorReport
 	}
 	
 	// The error message itself
-	messageText = [NSString stringWithUTF8String:message];
+	messageText = @(message);
 	
 	// Get offending line, if present, and trim trailing line breaks
 	lineBuf = [NSString stringWithUTF16String:report->uclinebuf];
@@ -378,8 +378,7 @@ static void ReportJSError(JSContext *context, const char *message, JSErrorReport
 	
 	// Run prefix scripts.
 	[OOJSScript jsScriptFromFileNamed:@"oolite-global-prefix.js"
-						   properties:[NSDictionary dictionaryWithObject:JSSpecialFunctionsObjectWrapper(gOOJSMainThreadContext)
-																  forKey:@"special"]];
+						   properties:@{@"special": JSSpecialFunctionsObjectWrapper(gOOJSMainThreadContext)}];
 	
 	JS_EndRequest(gOOJSMainThreadContext);
 	
@@ -902,7 +901,7 @@ NSString *OOJSDescribeLocation(JSContext *context, JSStackFrame *stackFrame)
 	if (fileName == sConsoleScriptName && lineNo >= sConsoleEvalLineNo)  return @"<console input>";
 	
 	// Objectify it.
-	NSString	*fileNameObj = [NSString stringWithUTF8String:fileName];
+	NSString	*fileNameObj = @(fileName);
 	if (fileNameObj == nil)  fileNameObj = [NSString stringWithCString:fileName encoding:NSISOLatin1StringEncoding];
 	if (fileNameObj == nil)  return nil;
 	
@@ -1219,7 +1218,7 @@ static JSObject *JSArrayFromNSArray(JSContext *context, NSArray *array)
 		{
 			for (i = 0; i != count; ++i)
 			{
-				jsval value = [[array objectAtIndex:i] oo_jsValueInContext:context];
+				jsval value = [array[i] oo_jsValueInContext:context];
 				BOOL OK = JS_SetElement(context, result, i, &value);
 				
 				if (EXPECT_NOT(!OK))
@@ -1297,7 +1296,7 @@ static JSObject *JSObjectFromNSDictionary(JSContext *context, NSDictionary *dict
 			{
 				if ([key isKindOfClass:[NSString class]] && [key length] != 0)
 				{
-					value = [[dictionary objectForKey:key] oo_jsValueInContext:context];
+					value = [dictionary[key] oo_jsValueInContext:context];
 					if (!JSVAL_IS_VOID(value))
 					{
 						OK = JS_SetPropertyById(context, result, OOJSIDFromString(key), &value);
@@ -1309,7 +1308,7 @@ static JSObject *JSObjectFromNSDictionary(JSContext *context, NSDictionary *dict
 					index = [key intValue];
 					if (0 < index)
 					{
-						value = [[dictionary objectForKey:key] oo_jsValueInContext:context];
+						value = [dictionary[key] oo_jsValueInContext:context];
 						if (!JSVAL_IS_VOID(value))
 						{
 							OK = JS_SetElement(context, (JSObject *)result, index, &value);
@@ -1531,7 +1530,7 @@ void OOJSStrLiteralCachePRIVATE(const char *string, jsval *strCache, BOOL *inite
 	JSString *jsString = JS_InternString(context, string);
 	if (EXPECT_NOT(string == NULL))
 	{
-		[NSException raise:NSGenericException format:@"Failed to initialize JavaScript string literal cache for \"%@\".", [[NSString stringWithUTF8String:string] escapedForJavaScriptLiteral]];
+		[NSException raise:NSGenericException format:@"Failed to initialize JavaScript string literal cache for \"%@\".", [@(string) escapedForJavaScriptLiteral]];
 	}
 	
 	*strCache = STRING_TO_JSVAL(jsString);
@@ -1602,7 +1601,7 @@ NSString *OOStringFromJSPropertyIDAndSpec(JSContext *context, jsid propID, JSPro
 		
 		while (propertySpec->name != NULL)
 		{
-			if (propertySpec->tinyid == tinyid)  return [NSString stringWithUTF8String:propertySpec->name];
+			if (propertySpec->tinyid == tinyid)  return @(propertySpec->name);
 			propertySpec++;
 		}
 	}
@@ -2004,7 +2003,7 @@ JSBool OOJSObjectWrapperToString(JSContext *context, uintN argc, jsval *vp)
 		jsClass = OOJSGetClass(context, OOJS_THIS);
 		if (jsClass != NULL)
 		{
-			description = [NSString stringWithFormat:@"[object %@]", [NSString stringWithUTF8String:jsClass->name]];
+			description = [NSString stringWithFormat:@"[object %@]", @(jsClass->name)];
 		}
 	}
 	if (description == nil)  description = @"[object]";
@@ -2243,7 +2242,7 @@ NSDictionary *OOJSDictionaryFromJSObject(JSContext *context, JSObject *object)
 			 * should this instead be making the objKey a string?
 			 * is there anything that relies on the current behaviour?
 			 * - CIM 15/2/13 */
-			objKey = [NSNumber numberWithInt:JSID_TO_INT(thisID)];
+			objKey = @(JSID_TO_INT(thisID));
 		}
 		else
 		{
@@ -2258,7 +2257,7 @@ NSDictionary *OOJSDictionaryFromJSObject(JSContext *context, JSObject *object)
 			objValue = OOJSNativeObjectFromJSValue(context, value);
 			if (objValue != nil)
 			{
-				[result setObject:objValue forKey:objKey];
+				result[objKey] = objValue;
 			}
 		}
 	}
@@ -2316,7 +2315,7 @@ NSDictionary *OOJSDictionaryFromStringTable(JSContext *context, jsval tableValue
 			
 			if (objValue != nil)
 			{
-				[result setObject:objValue forKey:objKey];
+				result[objKey] = objValue;
 			}
 		}
 	}
@@ -2339,15 +2338,15 @@ id OOJSNativeObjectFromJSValue(JSContext *context, jsval value)
 	
 	if (JSVAL_IS_INT(value))
 	{
-		return [NSNumber numberWithInt:JSVAL_TO_INT(value)];
+		return @(JSVAL_TO_INT(value));
 	}
 	if (JSVAL_IS_DOUBLE(value))
 	{
-		return [NSNumber numberWithDouble:JSVAL_TO_DOUBLE(value)];
+		return @(JSVAL_TO_DOUBLE(value));
 	}
 	if (JSVAL_IS_BOOLEAN(value))
 	{
-		return [NSNumber numberWithBool:JSVAL_TO_BOOLEAN(value)];
+		return @((BOOL)JSVAL_TO_BOOLEAN(value));
 	}
 	if (JSVAL_IS_STRING(value))
 	{
@@ -2376,7 +2375,7 @@ id OOJSNativeObjectFromJSObject(JSContext *context, JSObject *tableObject)
 	
 	class = OOJSGetClass(context, tableObject);
 	wrappedClass = [NSValue valueWithPointer:class];
-	if (wrappedClass != nil)  wrappedConverter = [sObjectConverters objectForKey:wrappedClass];
+	if (wrappedClass != nil)  wrappedConverter = sObjectConverters[wrappedClass];
 	if (wrappedConverter != nil)
 	{
 		converter = [wrappedConverter pointerValue];
@@ -2429,7 +2428,7 @@ void OOJSRegisterObjectConverter(JSClass *theClass, OOJSClassConverterCallback c
 	if (converter != NULL)
 	{
 		wrappedConverter = [NSValue valueWithPointer:converter];
-		[sObjectConverters setObject:wrappedConverter forKey:wrappedClass];
+		sObjectConverters[wrappedClass] = wrappedConverter;
 	}
 	else
 	{
@@ -2456,7 +2455,7 @@ static id JSArrayConverter(JSContext *context, JSObject *array)
 	if (!JS_IsArrayObject(context, array)) return nil;
 	if (!JS_GetArrayLength(context, array, &count)) return nil;
 	
-	if (count == 0)  return [NSArray array];
+	if (count == 0)  return @[];
 	
 	values = calloc(count, sizeof *values);
 	if (values == NULL)  return nil;
@@ -2488,7 +2487,7 @@ static id JSNumberConverter(JSContext *context, JSObject *object)
 	jsdouble value;
 	if (JS_ValueToNumber(context, OBJECT_TO_JSVAL(object), &value))
 	{
-		return [NSNumber numberWithDouble:value];
+		return @(value);
 	}
 	return nil;
 }
@@ -2504,7 +2503,7 @@ static id JSBooleanConverter(JSContext *context, JSObject *object)
 	jsdouble value;
 	if (JS_ValueToNumber(context, OBJECT_TO_JSVAL(object), &value))
 	{
-		return [NSNumber numberWithBool:(value != 0)];
+		return @((BOOL)(value != 0));
 	}
 	return nil;
 }

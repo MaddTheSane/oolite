@@ -169,7 +169,7 @@ static NSArray *OOSanitizeLegacyScriptConditionsInternal(NSArray *conditions, Sa
 BOOL OOLegacyConditionsAreSanitized(NSArray *conditions)
 {
 	if ([conditions count] == 0)  return YES;	// Empty array is safe.
-	return [[conditions objectAtIndex:0] isKindOfClass:[NSArray class]];
+	return [conditions[0] isKindOfClass:[NSArray class]];
 }
 
 
@@ -275,12 +275,12 @@ static NSArray *SanitizeCondition(NSString *condition, SanStackElement *stack)
 				if (stringSegment != nil)
 				{
 					// Add stringSegment as a literal token.
-					sanitizedRHSItem = [NSArray arrayWithObjects:[NSNumber numberWithBool:NO], stringSegment, nil];
+					sanitizedRHSItem = @[@NO, stringSegment];
 					[rhs addObject:sanitizedRHSItem];
 					stringSegment = nil;
 				}
 				
-				sanitizedRHSItem = [NSArray arrayWithObjects:[NSNumber numberWithBool:YES], rhsSelector, nil];
+				sanitizedRHSItem = @[@YES, rhsSelector];
 				[rhs addObject:sanitizedRHSItem];
 			}
 			else
@@ -293,13 +293,13 @@ static NSArray *SanitizeCondition(NSString *condition, SanStackElement *stack)
 		
 		if (stringSegment != nil)
 		{
-			sanitizedRHSItem = [NSArray arrayWithObjects:[NSNumber numberWithBool:NO], stringSegment, nil];
+			sanitizedRHSItem = @[@NO, stringSegment];
 			[rhs addObject:sanitizedRHSItem];
 		}
 	}
 	else
 	{
-		rhs = [NSArray array];
+		rhs = [NSMutableArray array];
 	}
 	
 	NSString *rawString = nil;
@@ -309,13 +309,11 @@ static NSArray *SanitizeCondition(NSString *condition, SanStackElement *stack)
 	rawString = @"<condition>";
 #endif
 	
-	return [NSArray arrayWithObjects:
-			[NSNumber numberWithUnsignedInt:opType],
+	return @[[NSNumber numberWithUnsignedInt:opType],
 			rawString,
 			sanitizedSelectorString,
 			[NSNumber numberWithUnsignedInt:comparatorValue],
-			rhs,
-			nil];
+			rhs];
 }
 
 
@@ -361,10 +359,10 @@ static NSArray *SanitizeConditionalStatement(NSDictionary *statement, SanStackEl
 		return nil;
 	}
 	
-	if (doActions == nil)  doActions = [NSArray array];
-	if (elseActions == nil)  elseActions = [NSArray array];
+	if (doActions == nil)  doActions = @[];
+	if (elseActions == nil)  elseActions = @[];
 	
-	return [NSArray arrayWithObjects:[NSNumber numberWithBool:YES], conditions, doActions, elseActions, nil];
+	return @[@YES, conditions, doActions, elseActions];
 }
 
 
@@ -380,7 +378,7 @@ static NSArray *SanitizeActionStatement(NSString *statement, SanStackElement *st
 	tokenCount = [tokens count];
 	if (tokenCount == 0)  return nil;
 	
-	rawSelectorString = [tokens objectAtIndex:0];
+	rawSelectorString = tokens[0];
 	selectorString = SanitizeActionMethod(rawSelectorString, allowAIMethods);
 	if (selectorString == nil)
 	{
@@ -398,7 +396,7 @@ static NSArray *SanitizeActionStatement(NSString *statement, SanStackElement *st
 		// Expects an argument
 		if (tokenCount == 2)
 		{
-			argument = [tokens objectAtIndex:1];
+			argument = tokens[1];
 		}
 		else
 		{
@@ -409,7 +407,7 @@ static NSArray *SanitizeActionStatement(NSString *statement, SanStackElement *st
 		argument = [argument stringByReplacingOccurrencesOfString:@"[credits_number]" withString:@"[_oo_legacy_credits_number]"];
 	}
 	
-	return [NSArray arrayWithObjects:[NSNumber numberWithBool:NO], selectorString, argument, nil];
+	return @[@NO, selectorString, argument];
 }
 
 
@@ -480,8 +478,8 @@ static NSString *SanitizeActionMethod(NSString *selectorString, BOOL allowAIMeth
 		aiMethods = [[ResourceManager whitelistDictionary] oo_arrayForKey:@"ai_methods"];
 		aiAndActionMethods = [[ResourceManager whitelistDictionary] oo_arrayForKey:@"ai_and_action_methods"];
 		
-		if (actionMethods == nil)  actionMethods = [NSArray array];
-		if (aiMethods == nil)  aiMethods = [NSArray array];
+		if (actionMethods == nil)  actionMethods = @[];
+		if (aiMethods == nil)  aiMethods = @[];
 		
 		if (aiAndActionMethods != nil)  actionMethods = [actionMethods arrayByAddingObjectsFromArray:aiAndActionMethods];
 		
@@ -516,7 +514,7 @@ static NSArray *AlwaysFalseConditions(void)
 	static NSArray *alwaysFalse = nil;
 	if (alwaysFalse != nil)
 	{
-		alwaysFalse = [NSArray arrayWithObject:[NSArray arrayWithObject:[NSNumber numberWithUnsignedInt:OP_FALSE]]];
+		alwaysFalse = @[@[@(OP_FALSE)]];
 		[alwaysFalse retain];
 	}
 	

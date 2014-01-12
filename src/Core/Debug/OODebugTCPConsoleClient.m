@@ -156,10 +156,8 @@ OOINLINE BOOL StatusIsSendable(OOTCPClientConnectionStatus status)
 			
 			
 			// Attempt to connect
-			parameters = [NSDictionary dictionaryWithObjectsAndKeys:
-							[NSNumber numberWithUnsignedInt:kOOTCPProtocolVersion_1_1_0], kOOTCPProtocolVersion,
-							[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"], kOOTCPOoliteVersion,
-							nil];
+			parameters = @{kOOTCPProtocolVersion: [NSNumber numberWithUnsignedInt:kOOTCPProtocolVersion_1_1_0],
+							kOOTCPOoliteVersion: [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"]};
 			[self sendPacket:kOOTCPPacket_RequestConnection
 			   withParameters:parameters];
 			
@@ -237,15 +235,13 @@ OOINLINE BOOL StatusIsSendable(OOTCPClientConnectionStatus status)
 	NSArray						*range = nil;
 	
 	parameters = [NSMutableDictionary dictionaryWithCapacity:3];
-	[parameters setObject:output forKey:kOOTCPMessage];
-	[parameters setObject:colorKey ? colorKey : (NSString *)@"general" forKey:kOOTCPColorKey];
+	parameters[kOOTCPMessage] = output;
+	parameters[kOOTCPColorKey] = colorKey ? colorKey : (NSString *)@"general";
 	if (emphasisRange.length != 0)
 	{
-		range = [NSArray arrayWithObjects:
-						[NSNumber numberWithUnsignedInteger:emphasisRange.location],
-						[NSNumber numberWithUnsignedInteger:emphasisRange.length],
-						nil];
-		[parameters setObject:range forKey:kOOTCPEmphasisRanges];
+		range = @[@(emphasisRange.location),
+						@(emphasisRange.length)];
+		parameters[kOOTCPEmphasisRanges] = range;
 	}
 	
 	[self sendPacket:kOOTCPPacket_ConsoleOutput
@@ -283,13 +279,13 @@ noteChangedConfigrationValue:(in id)newValue
 	if (newValue != nil)
 	{
 		[self sendPacket:kOOTCPPacket_NoteConfiguration
-				withValue:[NSDictionary dictionaryWithObject:newValue forKey:key]
+				withValue:@{key: newValue}
 			 forParameter:kOOTCPConfiguration];
 	}
 	else
 	{
 		[self sendPacket:kOOTCPPacket_NoteConfiguration
-				withValue:[NSArray arrayWithObject:key]
+				withValue:@[key]
 			 forParameter:kOOTCPRemovedConfigurationKeys];
 	}
 }
@@ -443,7 +439,7 @@ noteChangedConfigrationValue:(in id)newValue
 	}
 	else
 	{
-		dict = [NSDictionary dictionaryWithObjectsAndKeys:packetType, kOOTCPPacketType, nil];
+		dict = @{kOOTCPPacketType: packetType};
 	}
 	
 	[self sendDictionary:dict];
@@ -457,10 +453,8 @@ noteChangedConfigrationValue:(in id)newValue
 	if (packetType == nil)  return;
 	if (paramKey == nil)  value = nil;
 	
-	[self sendDictionary:[NSDictionary dictionaryWithObjectsAndKeys:
-		packetType, kOOTCPPacketType,
-		value, paramKey,
-		nil]];
+	[self sendDictionary:@{kOOTCPPacketType: packetType,
+		paramKey: value}];
 }
 
 
@@ -586,7 +580,7 @@ noteChangedConfigrationValue:(in id)newValue
 	{
 		for (keyEnum = [configuration keyEnumerator]; (key = [keyEnum nextObject]); )
 		{
-			value = [configuration objectForKey:key];
+			value = configuration[key];
 			[_monitor setConfigurationValue:value forKey:key];
 		}
 	}
@@ -628,7 +622,7 @@ noteChangedConfigrationValue:(in id)newValue
 {
 	id						message = nil;
 	
-	message = [packet objectForKey:kOOTCPMessage];
+	message = packet[kOOTCPMessage];
 	[self sendPacket:kOOTCPPacket_Pong
 			withValue:message
 		 forParameter:kOOTCPMessage];

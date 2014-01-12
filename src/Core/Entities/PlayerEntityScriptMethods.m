@@ -114,12 +114,12 @@ MA 02110-1301, USA.
 				if (specialCargo)
 				{
 					NSMutableArray* manifest =  [NSMutableArray arrayWithArray:shipCommodityData];
-					NSMutableArray* manifest_commodity =	[NSMutableArray arrayWithArray:(NSArray *)[manifest objectAtIndex:type]];
-					int manifest_quantity = [(NSNumber *)[manifest_commodity objectAtIndex:MARKET_QUANTITY] intValue];
+					NSMutableArray* manifest_commodity =	[NSMutableArray arrayWithArray:(NSArray *)manifest[type]];
+					int manifest_quantity = [(NSNumber *)manifest_commodity[MARKET_QUANTITY] intValue];
 					manifest_quantity += amount;
 					amount = 0;
-					[manifest_commodity replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt:manifest_quantity]];
-					[manifest replaceObjectAtIndex:type withObject:[NSArray arrayWithArray:manifest_commodity]];
+					manifest_commodity[MARKET_QUANTITY] = @(manifest_quantity);
+					manifest[type] = [NSArray arrayWithArray:manifest_commodity];
 					[shipCommodityData release];
 					shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
 				}
@@ -183,8 +183,8 @@ MA 02110-1301, USA.
 			amount--;
 			if (unit == UNITS_TONS)  current_cargo++;
 		}
-		[manifest_commodity replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt:manifest_quantity]];
-		[manifest replaceObjectAtIndex:type withObject:[NSArray arrayWithArray:manifest_commodity]];
+		manifest_commodity[MARKET_QUANTITY] = @(manifest_quantity);
+		manifest[type] = [NSArray arrayWithArray:manifest_commodity];
 		[shipCommodityData release];
 		shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
 	}
@@ -275,45 +275,37 @@ MA 02110-1301, USA.
 
 - (NSDictionary *) passengerContractMarker:(OOSystemID)system
 {
-	return [[[NSDictionary dictionaryWithObjectsAndKeys:
-								[NSNumber numberWithInt:system], @"system",
-								MISSION_DEST_LEGACY, @"name",
-								@"orangeColor", @"markerColor",
-								@"MARKER_DIAMOND", @"markerShape",
-								nil] retain] autorelease];
+	return [[@{@"system": @(system),
+								@"name": MISSION_DEST_LEGACY,
+								@"markerColor": @"orangeColor",
+								@"markerShape": @"MARKER_DIAMOND"} retain] autorelease];
 }
 
 
 - (NSDictionary *) parcelContractMarker:(OOSystemID)system
 {
-	return [[[NSDictionary dictionaryWithObjectsAndKeys:
-								[NSNumber numberWithInt:system], @"system",
-								MISSION_DEST_LEGACY, @"name",
-								@"orangeColor", @"markerColor",
-								@"MARKER_PLUS", @"markerShape",
-								nil] retain] autorelease];
+	return [[@{@"system": @(system),
+								@"name": MISSION_DEST_LEGACY,
+								@"markerColor": @"orangeColor",
+								@"markerShape": @"MARKER_PLUS"} retain] autorelease];
 }
 
 
 - (NSDictionary *) cargoContractMarker:(OOSystemID)system
 {
-	return [[[NSDictionary dictionaryWithObjectsAndKeys:
-								[NSNumber numberWithInt:system], @"system",
-								MISSION_DEST_LEGACY, @"name",
-								@"orangeColor", @"markerColor",
-								@"MARKER_SQUARE", @"markerShape",
-								nil] retain] autorelease];
+	return [[@{@"system": @(system),
+								@"name": MISSION_DEST_LEGACY,
+								@"markerColor": @"orangeColor",
+								@"markerShape": @"MARKER_SQUARE"} retain] autorelease];
 }
 
 
 - (NSDictionary *) defaultMarker:(OOSystemID)system
 {
-	return [[[NSDictionary dictionaryWithObjectsAndKeys:
-								[NSNumber numberWithInt:system], @"system",
-								MISSION_DEST_LEGACY, @"name",
-								@"redColor", @"markerColor",
-								@"MARKER_X", @"markerShape",
-								nil] retain] autorelease];
+	return [[@{@"system": @(system),
+								@"name": MISSION_DEST_LEGACY,
+								@"markerColor": @"redColor",
+								@"markerShape": @"MARKER_X"} retain] autorelease];
 }
 
 
@@ -327,13 +319,11 @@ MA 02110-1301, USA.
 	}
 	NSString *group = [marker oo_stringForKey:@"name" defaultValue:MISSION_DEST_LEGACY];
 
-	return [[[NSDictionary dictionaryWithObjectsAndKeys:
-								[NSNumber numberWithInt:dest], @"system",
-								group, @"name",
-								[marker oo_stringForKey:@"markerColor" defaultValue:@"redColor"], @"markerColor",
-								[marker oo_stringForKey:@"markerShape" defaultValue:@"MARKER_X"], @"markerShape",
-							  [NSNumber numberWithFloat:[marker oo_floatForKey:@"markerScale" defaultValue:1.0]], @"markerScale",
-								nil] retain] autorelease];
+	return [[@{@"system": @(dest),
+								@"name": group,
+								@"markerColor": [marker oo_stringForKey:@"markerColor" defaultValue:@"redColor"],
+								@"markerShape": [marker oo_stringForKey:@"markerShape" defaultValue:@"MARKER_X"],
+							  @"markerScale": @([marker oo_floatForKey:@"markerScale" defaultValue:1.0])} retain] autorelease];
 
 }
 

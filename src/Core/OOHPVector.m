@@ -47,10 +47,9 @@ NSString *HPVectorDescription(HPVector vector)
 
 NSArray *ArrayFromHPVector(HPVector vec)
 {
-	return [NSArray arrayWithObjects:[NSNumber numberWithDouble:vec.x],
-					[NSNumber numberWithDouble:vec.y],
-					[NSNumber numberWithDouble:vec.z],
-					nil];
+	return @[@(vec.x),
+					@(vec.y),
+					@(vec.z)];
 }
 
 #endif

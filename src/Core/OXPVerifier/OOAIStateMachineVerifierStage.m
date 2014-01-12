@@ -157,7 +157,7 @@ static NSString * const kStageName	= @"Validating AIs";
 	// Validate each state.
 	for (stateEnum = [aiStateMachine keyEnumerator]; (stateKey = [stateEnum nextObject]); )
 	{
-		stateHandlers = [aiStateMachine objectForKey:stateKey];
+		stateHandlers = aiStateMachine[stateKey];
 		if (![stateHandlers isKindOfClass:[NSDictionary class]])
 		{
 			OOLog(@"verifyOXP.validateAI.failed.invalidFormat.state", @"***** ERROR: state \"%@\" in AI \"%@\" is not a dictionary.", stateKey, aiName);
@@ -167,7 +167,7 @@ static NSString * const kStageName	= @"Validating AIs";
 		// Verify handlers for this state.
 		for (handlerEnum = [stateHandlers keyEnumerator]; (handlerKey = [handlerEnum nextObject]); )
 		{
-			handlerActions = [stateHandlers objectForKey:handlerKey];
+			handlerActions = stateHandlers[handlerKey];
 			if (![handlerActions isKindOfClass:[NSArray class]])
 			{
 				OOLog(@"verifyOXP.validateAI.failed.invalidFormat.handler", @"***** ERROR: handler \"%@\" for state \"%@\" in AI \"%@\" is not an array, ignoring.", handlerKey, stateKey, aiName);

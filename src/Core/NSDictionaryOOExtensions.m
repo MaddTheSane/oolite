@@ -36,7 +36,7 @@ SOFTWARE.
 	if (object == nil || key == nil)  return [[self copy] autorelease];
 	
 	NSMutableDictionary *temp = [self mutableCopy];
-	[temp setObject:object forKey:key];
+	temp[key] = object;
 	NSDictionary *result = [[temp copy] autorelease];
 	[temp release];
 	

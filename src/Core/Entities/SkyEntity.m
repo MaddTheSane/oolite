@@ -72,7 +72,7 @@ MA 02110-1301, USA.
 	// Load colours
 	BOOL nebulaColorSet = [self readColor1:&col1 andColor2:&col2 andColor3:&col3 andColor4:&col4 fromDictionary:systemInfo];
 	
-	skyColor = [[OOColor colorWithDescription:[systemInfo objectForKey:@"sun_color"]] retain];
+	skyColor = [[OOColor colorWithDescription:systemInfo[@"sun_color"]] retain];
 	if (skyColor == nil)
 	{
 		skyColor = [[col2 blendedColorWithFraction:0.5 ofColor:col1] retain];
@@ -157,7 +157,7 @@ MA 02110-1301, USA.
 
 - (BOOL) changeProperty:(NSString *)key withDictionary:(NSDictionary*)dict
 {
-	id	object = [dict objectForKey:key];
+	id	object = dict[key];
 	
 	// TODO: properties requiring reInit?
 	if ([key isEqualToString:@"sun_color"])
@@ -268,14 +268,14 @@ MA 02110-1301, USA.
 			OOLogWARN(@"sky.fromDict", @"could not interpret \"%@\" as two RGB colours (must be six numbers).", string);
 		}
 	}
-	colorDesc = [dictionary objectForKey:@"sky_color_1"];
+	colorDesc = dictionary[@"sky_color_1"];
 	if (colorDesc != nil)
 	{
 		color = [[OOColor colorWithDescription:colorDesc] premultipliedColor];
 		if (color != nil)  *ioColor1 = color;
 		else  OOLogWARN(@"sky.fromDict", @"could not interpret \"%@\" as a colour.", colorDesc);
 	}
-	colorDesc = [dictionary objectForKey:@"sky_color_2"];
+	colorDesc = dictionary[@"sky_color_2"];
 	if (colorDesc != nil)
 	{
 		color = [[OOColor colorWithDescription:colorDesc] premultipliedColor];
@@ -283,7 +283,7 @@ MA 02110-1301, USA.
 		else  OOLogWARN(@"sky.fromDict", @"could not interpret \"%@\" as a colour.", colorDesc);
 	}
 
-	colorDesc = [dictionary objectForKey:@"nebula_color_1"];
+	colorDesc = dictionary[@"nebula_color_1"];
 	if (colorDesc != nil)
 	{
 		color = [[OOColor colorWithDescription:colorDesc] premultipliedColor];
@@ -296,7 +296,7 @@ MA 02110-1301, USA.
 	}
 	else
 	{
-		colorDesc = [dictionary objectForKey:@"sky_color_1"];
+		colorDesc = dictionary[@"sky_color_1"];
 		if (colorDesc != nil)
 		{
 			color = [[OOColor colorWithDescription:colorDesc] premultipliedColor];
@@ -305,7 +305,7 @@ MA 02110-1301, USA.
 		}
 	}
 	
-	colorDesc = [dictionary objectForKey:@"nebula_color_2"];
+	colorDesc = dictionary[@"nebula_color_2"];
 	if (colorDesc != nil)
 	{
 		color = [[OOColor colorWithDescription:colorDesc] premultipliedColor];
@@ -318,7 +318,7 @@ MA 02110-1301, USA.
 	}
 	else
 	{
-		colorDesc = [dictionary objectForKey:@"sky_color_2"];
+		colorDesc = dictionary[@"sky_color_2"];
 		if (colorDesc != nil)
 		{
 			color = [[OOColor colorWithDescription:colorDesc] premultipliedColor];

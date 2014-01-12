@@ -68,7 +68,7 @@ static JSBool WorldScriptsGetProperty(JSContext *context, JSObject *this, jsid p
 	
 	if (scriptName != nil)
 	{
-		script = [[player worldScriptsByName] objectForKey:scriptName];
+		script = [player worldScriptsByName][scriptName];
 		if (script != nil)
 		{
 			/*	If script is an OOJSScript, this should return a JS Script

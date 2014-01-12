@@ -477,7 +477,7 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 		}
 	}
 	
-	[[bitmapRep representationUsingType:NSPNGFileType properties:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], NSImageInterlaced, NULL]]
+	[[bitmapRep representationUsingType:NSPNGFileType properties:@{NSImageInterlaced: @YES}]
 		writeToFile:pathToPic atomically:YES];			// save PNG representation of image
 	
 	// free allocated objects and memory

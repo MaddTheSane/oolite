@@ -75,7 +75,7 @@ MA 02110-1301, USA.
 
 - (NSDictionary *) currentDisplayMode
 {
-	return [[self displayModes] objectAtIndex:[self indexOfCurrentDisplayMode]];
+	return [self displayModes][[self indexOfCurrentDisplayMode]];
 }
 
 

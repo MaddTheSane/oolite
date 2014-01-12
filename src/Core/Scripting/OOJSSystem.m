@@ -334,15 +334,15 @@ static JSBool SystemGetProperty(JSContext *context, JSObject *this, jsid propID,
 			switch (JSID_TO_INT(propID))
 			{
 				case kSystem_name:
-					result = [systemData objectForKey:KEY_NAME];
+					result = systemData[KEY_NAME];
 					break;
 					
 				case kSystem_description:
-					result = [systemData objectForKey:KEY_DESCRIPTION];
+					result = systemData[KEY_DESCRIPTION];
 					break;
 					
 				case kSystem_inhabitantsDescription:
-					result = [systemData objectForKey:KEY_INHABITANTS];
+					result = systemData[KEY_INHABITANTS];
 					break;
 					
 				case kSystem_government:
@@ -508,7 +508,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 			{
 				if (iValue < 0)  iValue = 0;
 				if (7 < iValue)  iValue = 7;
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_GOVERNMENT value:[NSNumber numberWithInt:iValue]];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_GOVERNMENT value:@(iValue)];
 				return YES;
 			}
 			break;
@@ -518,7 +518,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 			{
 				if (iValue < 0)  iValue = 0;
 				if (7 < iValue)  iValue = 7;
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_ECONOMY value:[NSNumber numberWithInt:iValue]];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_ECONOMY value:@(iValue)];
 				return YES;
 			}
 			break;
@@ -528,7 +528,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 			{
 				if (iValue < 0)  iValue = 0;
 				if (15 < iValue)  iValue = 15;
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_TECHLEVEL value:[NSNumber numberWithInt:iValue]];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_TECHLEVEL value:@(iValue)];
 				return YES;
 			}
 			break;
@@ -536,7 +536,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 		case kSystem_population:
 			if (JS_ValueToInt32(context, *value, &iValue))
 			{
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_POPULATION value:[NSNumber numberWithInt:iValue]];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_POPULATION value:@(iValue)];
 				return YES;
 			}
 			break;
@@ -544,7 +544,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 		case kSystem_productivity:
 			if (JS_ValueToInt32(context, *value, &iValue))
 			{
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_PRODUCTIVITY value:[NSNumber numberWithInt:iValue]];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_PRODUCTIVITY value:@(iValue)];
 				return YES;
 			}
 			break;
@@ -571,7 +571,7 @@ static JSBool SystemToString(JSContext *context, uintN argc, jsval *vp)
 	PlayerEntity		*player = OOPlayerForScripting();
 	NSString			*systemDesc = nil;
 	
-	systemDesc = [NSString stringWithFormat:@"[System %u:%u \"%@\"]", [player currentGalaxyID], [player currentSystemID], [[UNIVERSE currentSystemData] objectForKey:KEY_NAME]];
+	systemDesc = [NSString stringWithFormat:@"[System %u:%u \"%@\"]", [player currentGalaxyID], [player currentSystemID], [UNIVERSE currentSystemData][KEY_NAME]];
 	OOJS_RETURN_OBJECT(systemDesc);
 	
 	OOJS_NATIVE_EXIT
@@ -1293,7 +1293,7 @@ static JSBool SystemSetPopulator(JSContext *context, uintN argc, jsval *vp)
 		[populator setCallback:callback];
 
 		settings = OOJSNativeObjectFromJSObject(context, JSVAL_TO_OBJECT(OOJS_ARGV[1]));
-		[settings setObject:populator forKey:@"callbackObj"];
+		settings[@"callbackObj"] = populator;
 
 		jsval				coords = JSVAL_NULL;
 		if (JS_GetProperty(context, params, "coordinates", &coords) != JS_FALSE && !JSVAL_IS_VOID(coords))
@@ -1302,7 +1302,7 @@ static JSBool SystemSetPopulator(JSContext *context, uintN argc, jsval *vp)
 			if (JSValueToVector(context, coords, &coordinates))
 			{
 				// convert vector in NS-storable form
-				[settings setObject:[NSArray arrayWithObjects:[NSNumber numberWithFloat:coordinates.x],[NSNumber numberWithFloat:coordinates.y],[NSNumber numberWithFloat:coordinates.z],nil] forKey:@"coordinates"];
+				settings[@"coordinates"] = @[@(coordinates.x),@(coordinates.y),@(coordinates.z)];
 			}
 		}
 
@@ -1362,8 +1362,8 @@ static JSBool SystemSetWaypoint(JSContext *context, uintN argc, jsval *vp)
 		}
 		
 		settings = [[OOJSNativeObjectFromJSObject(context, JSVAL_TO_OBJECT(OOJS_ARGV[3])) mutableCopy] autorelease];
-		[settings setObject:[NSArray arrayWithObjects:[NSNumber numberWithDouble:position.x],[NSNumber numberWithDouble:position.y],[NSNumber numberWithDouble:position.z],nil] forKey:@"position"];
-		[settings setObject:[NSArray arrayWithObjects:[NSNumber numberWithDouble:orientation.w],[NSNumber numberWithDouble:orientation.x],[NSNumber numberWithDouble:orientation.y],[NSNumber numberWithDouble:orientation.z],nil] forKey:@"orientation"];
+		settings[@"position"] = @[@(position.x),@(position.y),@(position.z)];
+		settings[@"orientation"] = @[@(orientation.w),@(orientation.x),@(orientation.y),@(orientation.z)];
 
 		[UNIVERSE defineWaypoint:settings forKey:key];
 	}	
@@ -1431,7 +1431,7 @@ static JSBool SystemAddShipsOrGroup(JSContext *context, uintN argc, jsval *vp, B
 	if (isGroup)
 	{
 		NSArray *array = result;
-		if ([array count] > 0)  result = [(ShipEntity *)[array objectAtIndex:0] group];
+		if ([array count] > 0)  result = [(ShipEntity *)array[0] group];
 		else  result = nil;
 	}
 	OOJS_END_FULL_NATIVE
@@ -1499,7 +1499,7 @@ static JSBool SystemAddShipsOrGroupToRoute(JSContext *context, uintN argc, jsval
 	if (isGroup)
 	{
 		NSArray *array = result;
-		if ([array count] > 0)  result = [(ShipEntity *)[array objectAtIndex:0] group];
+		if ([array count] > 0)  result = [(ShipEntity *)array[0] group];
 		else  result = nil;
 	}
 	OOJS_END_FULL_NATIVE
@@ -1565,7 +1565,7 @@ static NSArray *FindJSVisibleEntities(EntityFilterPredicate predicate, void *par
 	{
 		[result sortUsingFunction:CompareEntitiesByDistance context:relativeTo];
 	}
-	if (result == nil)  result = [NSArray array];
+	if (result == nil)  result = @[];
 	return result;
 	
 	OOJS_PROFILE_EXIT

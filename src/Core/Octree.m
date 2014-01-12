@@ -115,7 +115,7 @@ static BOOL	isHitByOctree(Octree_details axialDetails, Octree_details otherDetai
 
 - (id) initWithDictionary:(NSDictionary *)dict
 {
-	NSData *data = [dict objectForKey:@"octree"];
+	NSData *data = dict[@"octree"];
 	if (![data isKindOfClass:[NSData class]] || ([data length] % sizeof (int)) != 0)
 	{
 		// Invalid representation.
@@ -666,10 +666,8 @@ static BOOL isHitByOctree(Octree_details axialDetails,
 
 - (NSDictionary *) dictionaryRepresentation
 {
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-		_data, @"octree",
-		[NSNumber numberWithFloat:_radius],	@"radius",
-		nil];
+	return @{@"octree": _data,
+		@"radius": @(_radius)};
 }
 
 

@@ -25,12 +25,12 @@ OOALStringRef OOALGetConstantString(const char *string)
 	}
 	
 	key = [NSValue valueWithPointer:string];
-	value = [sStrings objectForKey:key];
+	value = sStrings[key];
 	if (value == nil)
 	{
 		// Note: non-ASCII strings are not permitted, but we don't bother to detect them.
-		value = [NSString stringWithUTF8String:string];
-		if (value != nil)  [sStrings setObject:value forKey:key];
+		value = @(string);
+		if (value != nil)  sStrings[key] = value;
 	}
 	
 	return value;
@@ -69,7 +69,7 @@ bool OOALIsDictionary(OOALObjectRef object)
 
 OOALObjectRef OOALDictionaryGetValue(OOALDictionaryRef dictionary, OOALObjectRef key)
 {
-	return [dictionary objectForKey:key];
+	return dictionary[key];
 }
 
 

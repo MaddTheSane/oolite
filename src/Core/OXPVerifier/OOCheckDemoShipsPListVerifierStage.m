@@ -111,7 +111,7 @@ static NSString * const kStageName	= @"Checking demoships.plist";
 	
 	for (nameEnum = [demoshipsPList objectEnumerator]; (name = [nameEnum nextObject]); )
 	{
-		if ([shipdataPList objectForKey:name] == nil)
+		if (shipdataPList[name] == nil)
 		{
 			OOLog(@"verifyOXP.demoshipsPList.unknownShip", @"----- WARNING: demoships.plist entry \"%@\" not found in shipdata.plist.", name);
 		}

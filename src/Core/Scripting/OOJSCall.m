@@ -127,7 +127,7 @@ BOOL OOJSCallObjCObjectMethod(JSContext *context, id object, NSString *oo_jsClas
 					
 				case kMethodTypeObjectVoid:
 					result = [object performSelector:selector];
-					if ([selectorString hasSuffix:@"_bool"])  result = [NSNumber numberWithBool:OOBooleanFromObject(result, NO)];
+					if ([selectorString hasSuffix:@"_bool"])  result = @(OOBooleanFromObject(result, NO));
 					break;
 					
 				case kMethodTypeVoidVoid:
@@ -141,16 +141,16 @@ BOOL OOJSCallObjCObjectMethod(JSContext *context, id object, NSString *oo_jsClas
 				case kMethodTypeIntVoid:
 				case kMethodTypeUnsignedIntVoid:
 				case kMethodTypeLongVoid:
-					result = [NSNumber numberWithLongLong:OOCallIntegerMethod(object, selector, method, (OOShaderUniformType)type)];
+					result = @(OOCallIntegerMethod(object, selector, method, (OOShaderUniformType)type));
 					break;
 					
 				case kMethodTypeUnsignedLongVoid:
-					result = [NSNumber numberWithUnsignedLongLong:OOCallIntegerMethod(object, selector, method, (OOShaderUniformType)type)];
+					result = @((unsigned long long)OOCallIntegerMethod(object, selector, method, (OOShaderUniformType)type));
 					break;
 					
 				case kMethodTypeFloatVoid:
 				case kMethodTypeDoubleVoid:
-					result = [NSNumber numberWithDouble:OOCallFloatMethod(object, selector, method, (OOShaderUniformType)type)];
+					result = @(OOCallFloatMethod(object, selector, method, (OOShaderUniformType)type));
 					break;
 					
 				case kMethodTypeVectorVoid:

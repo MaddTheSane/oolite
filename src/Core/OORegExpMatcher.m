@@ -126,7 +126,7 @@ static OORegExpMatcher *sActiveInstance;
 	
 	BOOL result = [_tester evaluatePredicateWithContext:context
 												  scope:nil
-											  arguments:[NSArray arrayWithObjects:string, _cachedRegExpObject, nil]];
+											  arguments:@[string, _cachedRegExpObject]];
 	
 	OOJSRelinquishContext(context);
 	

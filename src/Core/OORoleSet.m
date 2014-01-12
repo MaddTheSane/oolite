@@ -67,7 +67,7 @@ SOFTWARE.
 	
 	if (role != nil && 0 <= probability)
 	{
-		dict = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:probability] forKey:role];
+		dict = @{role: @(probability)};
 	}
 	return [self initWithRolesAndProbabilities:dict];
 }
@@ -149,7 +149,7 @@ SOFTWARE.
 
 - (BOOL)hasRole:(NSString *)role
 {
-	return role != nil && [_rolesAndProbabilities objectForKey:role] != nil;
+	return role != nil && _rolesAndProbabilities[role] != nil;
 }
 
 
@@ -225,7 +225,7 @@ SOFTWARE.
 	}
 	
 	dict = [[_rolesAndProbabilities mutableCopy] autorelease];
-	[dict setObject:[NSNumber numberWithFloat:probability] forKey:role];
+	dict[role] = @(probability);
 	return [[[[self class] alloc] initWithRolesAndProbabilities:dict] autorelease];
 }
 
@@ -240,7 +240,7 @@ SOFTWARE.
 	}
 	
 	dict = [[_rolesAndProbabilities mutableCopy] autorelease];
-	[dict setObject:[NSNumber numberWithFloat:probability] forKey:role];
+	dict[role] = @(probability);
 	return [[[[self class] alloc] initWithRolesAndProbabilities:dict] autorelease];
 }
 
@@ -285,9 +285,9 @@ SOFTWARE.
 	NSMutableDictionary		*tDict = [[dict mutableCopy] autorelease];
 	float					thargProb = [dict oo_floatForKey:@"thargon" defaultValue:0.0f];
 	
-	if ( thargProb > 0.0f && [dict objectForKey:@"EQ_THARGON"] == nil)
+	if ( thargProb > 0.0f && dict[@"EQ_THARGON"] == nil)
 	{
-		[tDict setObject:[NSNumber numberWithFloat:thargProb] forKey:@"EQ_THARGON"];
+		tDict[@"EQ_THARGON"] = @(thargProb);
 		[tDict removeObjectForKey:@"thargon"];
 	}
 	
@@ -333,7 +333,7 @@ NSDictionary *OOParseRolesFromString(NSString *string)
 	// Scan tokens, looking for probabilities.
 	for (i = 0; i != count; ++i)
 	{
-		role = [tokens objectAtIndex:i];
+		role = tokens[i];
 		
 		probability = 1.0f;
 		if ([role rangeOfString:@"("].location != NSNotFound)
@@ -350,7 +350,7 @@ NSDictionary *OOParseRolesFromString(NSString *string)
 		// shipKey roles start with [ so other roles can't
 		if (0 <= probability && ![role hasPrefix:@"["])
 		{
-			[result setObject:[NSNumber numberWithFloat:probability] forKey:role];
+			result[role] = @(probability);
 		}
 	}
 	

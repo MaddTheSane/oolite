@@ -166,10 +166,10 @@ static OOCacheManager *sSingleton = nil;
 	
 	NSParameterAssert(inKey != nil && inCacheKey != nil);
 	
-	cache = [_caches objectForKey:inCacheKey];
+	cache = _caches[inCacheKey];
 	if (cache != nil)
 	{
-		result = [cache objectForKey:inKey];
+		result = cache[inKey];
 		if (result != nil)
 		{
 			OODebugLog(kOOLogDataCacheRetrieveSuccess, @"Retrieved \"%@\" cache object %@.", inCacheKey, inKey);
@@ -197,7 +197,7 @@ static OOCacheManager *sSingleton = nil;
 	
 	if (EXPECT_NOT(_caches == nil))  return;
 	
-	cache = [_caches objectForKey:inCacheKey];
+	cache = _caches[inCacheKey];
 	if (cache == nil)
 	{
 		cache = [NSMutableDictionary dictionary];
@@ -206,10 +206,10 @@ static OOCacheManager *sSingleton = nil;
 			OODebugLog(kOOLogDataCacheSetFailed, @"Failed to create cache for key \"%@\".", inCacheKey);
 			return;
 		}
-		[_caches setObject:cache forKey:inCacheKey];
+		_caches[inCacheKey] = cache;
 	}
 	
-	[cache setObject:inObject forKey:inKey];
+	cache[inKey] = inObject;
 	_dirty = YES;
 	OODebugLog(kOOLogDataCacheSetSuccess, @"Updated entry %@ in cache \"%@\".", inKey, inCacheKey);
 }
@@ -221,10 +221,10 @@ static OOCacheManager *sSingleton = nil;
 	
 	NSParameterAssert(inKey != nil && inCacheKey != nil);
 	
-	cache = [_caches objectForKey:inCacheKey];
+	cache = _caches[inCacheKey];
 	if (cache != nil)
 	{
-		if (nil != [cache objectForKey:inKey])
+		if (nil != cache[inKey])
 		{
 			[cache removeObjectForKey:inKey];
 			_dirty = YES;
@@ -246,7 +246,7 @@ static OOCacheManager *sSingleton = nil;
 {
 	NSParameterAssert(inCacheKey != nil);
 	
-	if (nil != [_caches objectForKey:inCacheKey])
+	if (nil != _caches[inCacheKey])
 	{
 		[_caches removeObjectForKey:inCacheKey];
 		_dirty = YES;
@@ -312,7 +312,7 @@ static OOCacheManager *sSingleton = nil;
 	BOOL					accept = YES;
 	uint64_t				endianTagValue = 0;
 	
-	ooliteVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+	ooliteVersion = [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"];
 	
 	[self clear];
 	
@@ -323,14 +323,14 @@ static OOCacheManager *sSingleton = nil;
 		OOLog(kOOLogDataCacheFound, @"Found data cache.");
 		OOLogIndentIf(kOOLogDataCacheFound);
 		
-		cacheVersion = [cache objectForKey:kCacheKeyVersion];
+		cacheVersion = cache[kCacheKeyVersion];
 		if (![cacheVersion isEqual:ooliteVersion])
 		{
 			OOLog(kOOLogDataCacheRebuild, @"Data cache version (%@) does not match Oolite version (%@), rebuilding cache.", cacheVersion, ooliteVersion);
 			accept = NO;
 		}
 		
-		formatVersion = [cache objectForKey:kCacheKeyFormatVersion];
+		formatVersion = cache[kCacheKeyFormatVersion];
 		if (accept && [formatVersion unsignedIntValue] != kFormatVersionValue)
 		{
 			OOLog(kOOLogDataCacheRebuild, @"Data cache format (%@) is not supported format (%u), rebuilding cache.", formatVersion, kFormatVersionValue);
@@ -339,7 +339,7 @@ static OOCacheManager *sSingleton = nil;
 		
 		if (accept)
 		{
-			endianTag = [cache objectForKey:kCacheKeyEndianTag];
+			endianTag = cache[kCacheKeyEndianTag];
 			if (![endianTag isKindOfClass:[NSData class]] || [endianTag length] != sizeof endianTagValue)
 			{
 				OOLog(kOOLogDataCacheRebuild, @"Data cache endian tag is invalid, rebuilding cache.");
@@ -359,7 +359,7 @@ static OOCacheManager *sSingleton = nil;
 		if (accept)
 		{
 			// We have a cache, and it's the right format.
-			[self buildCachesFromDictionary:[cache objectForKey:kCacheKeyCaches]];
+			[self buildCachesFromDictionary:cache[kCacheKeyCaches]];
 		}
 		
 		OOLogOutdentIf(kOOLogDataCacheFound);
@@ -398,9 +398,9 @@ static OOCacheManager *sSingleton = nil;
 	OOLog(@"dataCache.willWrite", @"About to write cache.");
 #endif
 	
-	ooliteVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+	ooliteVersion = [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"];
 	endianTag = [NSData dataWithBytes:&endianTagValue length:sizeof endianTagValue];
-	formatVersion = [NSNumber numberWithUnsignedInt:kFormatVersionValue];
+	formatVersion = @((unsigned int)kFormatVersionValue);
 	
 	pListRep = [self dictionaryOfCaches];
 	if (ooliteVersion == nil || endianTag == nil || formatVersion == nil || pListRep == nil)
@@ -410,10 +410,10 @@ static OOCacheManager *sSingleton = nil;
 	}
 	
 	newCache = [NSMutableDictionary dictionaryWithCapacity:4];
-	[newCache setObject:ooliteVersion forKey:kCacheKeyVersion];
-	[newCache setObject:formatVersion forKey:kCacheKeyFormatVersion];
-	[newCache setObject:endianTag forKey:kCacheKeyEndianTag];
-	[newCache setObject:pListRep forKey:kCacheKeyCaches];
+	newCache[kCacheKeyVersion] = ooliteVersion;
+	newCache[kCacheKeyFormatVersion] = formatVersion;
+	newCache[kCacheKeyEndianTag] = endianTag;
+	newCache[kCacheKeyCaches] = pListRep;
 	
 #if PROFILE_WRITES && !WRITE_ASYNC
 	OOTimeDelta prepareT = [stopwatch reset];
@@ -568,7 +568,7 @@ static OOCacheManager *sSingleton = nil;
 			cache = [NSMutableDictionary dictionaryWithDictionary:value];
 			if (cache != nil)
 			{
-				[_caches setObject:cache forKey:key];
+				_caches[key] = cache;
 			}
 		}
 	}
@@ -623,7 +623,7 @@ static OOCacheManager *sSingleton = nil;
 		~/Library/Caches has the particular advantage of not being indexed by
 		Spotlight or, in future, backed up by Time Machine.
 	*/
-	cachePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+	cachePath = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES)[0];
 	cachePath = [cachePath stringByAppendingPathComponent:@"Caches"];
 	if (![self directoryExists:cachePath create:inCreate]) return nil;
 	cachePath = [cachePath stringByAppendingPathComponent:@"org.aegidian.oolite"];

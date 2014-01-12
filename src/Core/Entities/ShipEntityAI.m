@@ -281,7 +281,7 @@
 	NSMutableDictionary		*properties = nil;
 	
 	properties = [NSMutableDictionary dictionary];
-	[properties setObject:self forKey:@"ship"];
+	properties[@"ship"] = self;
 	
 	[aiScript autorelease];
 	aiScript = [OOScript jsAIScriptFromFileNamed:aiString properties:properties];
@@ -561,9 +561,9 @@
 		{
 			[self recallDockingInstructions];
 			
-			message = [dockingInstructions objectForKey:@"ai_message"];
+			message = dockingInstructions[@"ai_message"];
 			if (message != nil)  [shipAI message:message];
-			message = [dockingInstructions objectForKey:@"comms_message"];
+			message = dockingInstructions[@"comms_message"];
 			if (message != nil)  [station sendExpandedMessage:message toShip:self];
 		}
 	}
@@ -586,9 +586,9 @@
 		destination = [dockingInstructions oo_hpvectorForKey:@"destination"];
 		desired_speed = fmin([dockingInstructions oo_floatForKey:@"speed"], maxFlightSpeed);
 		desired_range = [dockingInstructions oo_floatForKey:@"range"];
-		if ([dockingInstructions objectForKey:@"station"])
+		if (dockingInstructions[@"station"])
 		{
-			StationEntity *targetStation = [[dockingInstructions objectForKey:@"station"] weakRefUnderlyingObject];
+			StationEntity *targetStation = [dockingInstructions[@"station"] weakRefUnderlyingObject];
 			if (targetStation != nil)
 			{
 				[self addTarget:targetStation];
@@ -608,7 +608,7 @@
 {
 	BinaryOperationPredicateParameter param =
 	{
-		HasScanClassPredicate, [NSNumber numberWithInt:CLASS_MISSILE],
+		HasScanClassPredicate, @(CLASS_MISSILE),
 		IsHostileAgainstTargetPredicate, self
 	};
 	[self scanForNearestShipWithPredicate:ANDPredicate parameter:&param];
@@ -1547,7 +1547,7 @@
 {
 	/*-- Locates all the ships in range and compares their legal status or bounty against ranrot_rand() & 255 - chooses the worst offender --*/
 	NSDictionary		*systeminfo = [UNIVERSE currentSystemData];
-	float gov_factor =	0.4 * [(NSNumber *)[systeminfo objectForKey:KEY_GOVERNMENT] intValue]; // 0 .. 7 (0 anarchic .. 7 most stable) --> [0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8]
+	float gov_factor =	0.4 * [(NSNumber *)systeminfo[KEY_GOVERNMENT] intValue]; // 0 .. 7 (0 anarchic .. 7 most stable) --> [0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8]
 	//
 	if ([UNIVERSE sun] == nil)
 		gov_factor = 1.0;
@@ -2286,7 +2286,7 @@
 
 - (void) scanForNearestShipWithScanClass:(NSString *)scanScanClass
 {
-	NSNumber *parameter = [NSNumber numberWithInt:OOScanClassFromString(scanScanClass)];
+	NSNumber *parameter = @(OOScanClassFromString(scanScanClass));
 	[self scanForNearestShipWithPredicate:HasScanClassPredicate parameter:parameter];
 }
 
@@ -2319,7 +2319,7 @@
 
 - (void) scanForNearestShipWithoutScanClass:(NSString *)scanScanClass
 {
-	NSNumber *parameter = [NSNumber numberWithInt:OOScanClassFromString(scanScanClass)];
+	NSNumber *parameter = @(OOScanClassFromString(scanScanClass));
 	[self scanForNearestShipWithNegatedPredicate:HasScanClassPredicate parameter:parameter];
 }
 
@@ -2364,7 +2364,7 @@
 #endif
 	
 	// Look for cached function
-	function = [scriptCache objectForKey:key];
+	function = scriptCache[key];
 	if (function == nil)
 	{
 		NSString					*predicateCode = nil;
@@ -2386,7 +2386,7 @@
 		if (function != nil)
 		{
 			if (scriptCache == nil)  scriptCache = [[NSMutableDictionary alloc] init];
-			[scriptCache setObject:function forKey:key];
+			scriptCache[key] = function;
 		}
 	}
 	
@@ -2436,16 +2436,16 @@
 		return;
 	}
 	
-	systemString = (NSString *)[tokens objectAtIndex:0];
-	xString = (NSString *)[tokens objectAtIndex:1];
+	systemString = (NSString *)tokens[0];
+	xString = (NSString *)tokens[1];
 	if ([xString hasPrefix:@"rand:"])
-		xString = [NSString stringWithFormat:@"%.3f", bellf([(NSString*)[[xString componentsSeparatedByString:@":"] objectAtIndex:1] intValue])];
-	yString = (NSString *)[tokens objectAtIndex:2];
+		xString = [NSString stringWithFormat:@"%.3f", bellf([(NSString*)[xString componentsSeparatedByString:@":"][1] intValue])];
+	yString = (NSString *)tokens[2];
 	if ([yString hasPrefix:@"rand:"])
-		yString = [NSString stringWithFormat:@"%.3f", bellf([(NSString*)[[yString componentsSeparatedByString:@":"] objectAtIndex:1] intValue])];
-	zString = (NSString *)[tokens objectAtIndex:3];
+		yString = [NSString stringWithFormat:@"%.3f", bellf([(NSString*)[yString componentsSeparatedByString:@":"][1] intValue])];
+	zString = (NSString *)tokens[3];
 	if ([zString hasPrefix:@"rand:"])
-		zString = [NSString stringWithFormat:@"%.3f", bellf([(NSString*)[[zString componentsSeparatedByString:@":"] objectAtIndex:1] intValue])];
+		zString = [NSString stringWithFormat:@"%.3f", bellf([(NSString*)[zString componentsSeparatedByString:@":"][1] intValue])];
 	
 	HPVector posn = make_HPvector([xString floatValue], [yString floatValue], [zString floatValue]);
 	GLfloat	scalar = 1.0;
@@ -2566,7 +2566,7 @@
 	{
 		oldTarget = [player scriptTarget];
 		[player setScriptTarget:(ShipEntity*)targEnt];
-		[player runUnsanitizedScriptActions:[NSArray arrayWithObject:action]
+		[player runUnsanitizedScriptActions:@[action]
 						  allowingAIMethods:YES
 							withContextName:[NSString stringWithFormat:@"<AI \"%@\" state %@ - scriptActionOnTarget:>", [[self getAI] name], [[self getAI] state]]
 								  forTarget:targEnt];
@@ -2586,7 +2586,7 @@
 	{
 		oldTarget = [player scriptTarget];
 		[player setScriptTarget:(ShipEntity*)targEnt];
-		[player runUnsanitizedScriptActions:[NSArray arrayWithObject:action]
+		[player runUnsanitizedScriptActions:@[action]
 						  allowingAIMethods:YES
 							withContextName:[NSString stringWithFormat:@"<AI \"%@\" state %@ - safeScriptActionOnTarget:>", [[self getAI] name], [[self getAI] state]]
 								  forTarget:targEnt];
@@ -2606,7 +2606,7 @@
 	}
 	else
 	{
-		NSString *function = [components objectAtIndex:0];
+		NSString *function = components[0];
 		components = [components subarrayWithRange:NSMakeRange(1, [components count] - 1)];
 		[self doScriptEvent:OOJSIDFromString(function) withArgument:components];
 	}
@@ -2640,7 +2640,7 @@
 	NSArray			*all_beacons = [UNIVERSE listBeaconsWithCode: code];
 	if ([all_beacons count])
 	{
-		[self addTarget:(ShipEntity*)[all_beacons objectAtIndex:0]];
+		[self addTarget:(ShipEntity*)all_beacons[0]];
 		[shipAI message:@"TARGET_FOUND"];
 	}
 	else
@@ -2674,7 +2674,7 @@
 	if (i < [all_beacons count])
 	{
 		// locate current target in list
-		[self addTarget:(ShipEntity*)[all_beacons objectAtIndex:i]];
+		[self addTarget:(ShipEntity*)all_beacons[i]];
 		[shipAI message:@"TARGET_FOUND"];
 	}
 	else
@@ -2789,7 +2789,7 @@
 			i = ranrot_rand() % n_dests;
 		}
 		
-		NSString *systemSeedKey = [[sDests oo_dictionaryAtIndex:i] objectForKey:@"system_seed"];
+		NSString *systemSeedKey = [sDests oo_dictionaryAtIndex:i][@"system_seed"];
 		targetSystem = RandomSeedFromString(systemSeedKey);
 	}
 	else

@@ -133,9 +133,9 @@ static void APIENTRY ErrorCallback(GLenum error, void *polygonData);
 		}
 		
 		// Normalize data to array-of-arrays form.
-		if (![[dataArray objectAtIndex:0] isKindOfClass:[NSArray class]])
+		if (![dataArray[0] isKindOfClass:[NSArray class]])
 		{
-			dataArray = [NSArray arrayWithObject:dataArray];
+			dataArray = @[dataArray];
 		}
 		if (![self loadPolygons:dataArray outlineWidth:outlineWidth])
 		{
@@ -424,7 +424,7 @@ static void SubmitVertices(GLUtesselator *tesselator, TessPolygonData *polygonDa
 		
 		for (vertexIndex = 0; vertexIndex < vertexCount && polygonData->OK; vertexIndex++)
 		{
-			NSValue *pointValue = [contour objectAtIndex:vertexIndex];
+			NSValue *pointValue = contour[vertexIndex];
 			NSPoint p = [pointValue pointValue];
 			GLdouble vert[3] = { p.x, p.y, 0.0 };
 			
@@ -456,7 +456,7 @@ static NSArray *DataArrayToPoints(TessPolygonData *data, NSArray *dataArray)
 	
 	for (polyIter = 0; polyIter < polyCount; polyIter++)
 	{
-		NSArray *polyDef = [dataArray objectAtIndex:polyIter];
+		NSArray *polyDef = dataArray[polyIter];
 		NSUInteger vertIter, vertCount = [polyDef count] / 2;
 		NSMutableArray *newPolyDef = [NSMutableArray arrayWithCapacity:vertCount];
 		CGFloat area = 0;
@@ -483,7 +483,7 @@ static NSArray *DataArrayToPoints(TessPolygonData *data, NSArray *dataArray)
 		}
 		
 		// Eliminate duplicates at ends - the initialization of oldX and oldY will catch one pair, but not extra-silly cases.
-		while ([newPolyDef count] > 1 && [[newPolyDef objectAtIndex:0] isEqual:[newPolyDef lastObject]])
+		while ([newPolyDef count] > 1 && [newPolyDef[0] isEqual:[newPolyDef lastObject]])
 		{
 			[newPolyDef removeLastObject];
 		}
@@ -547,15 +547,15 @@ static NSArray *BuildOutlineContour(NSArray *dataArray, GLfloat width, BOOL inne
 	NSPoint prev, current, next;
 	if (inner)
 	{
-		prev = [[dataArray objectAtIndex:0] pointValue];
-		current = [[dataArray objectAtIndex:count -1] pointValue];
-		next = [[dataArray objectAtIndex:count - 2] pointValue];	
+		prev = [dataArray[0] pointValue];
+		current = [dataArray[count -1] pointValue];
+		next = [dataArray[count - 2] pointValue];	
 	}
 	else
 	{
-		prev = [[dataArray objectAtIndex:count - 1] pointValue];
-		current = [[dataArray objectAtIndex:0] pointValue];
-		next = [[dataArray objectAtIndex:1] pointValue];
+		prev = [dataArray[count - 1] pointValue];
+		current = [dataArray[0] pointValue];
+		next = [dataArray[1] pointValue];
 	}
 	
 	NSMutableArray *result = [NSMutableArray arrayWithCapacity:count];
@@ -600,11 +600,11 @@ static NSArray *BuildOutlineContour(NSArray *dataArray, GLfloat width, BOOL inne
 		
 		if (inner)
 		{
-			next = [[dataArray objectAtIndex:(count * 2 - 3 - i) % count] pointValue];
+			next = [dataArray[(count * 2 - 3 - i) % count] pointValue];
 		}
 		else
 		{
-			next = [[dataArray objectAtIndex:(i + 2) % count] pointValue];
+			next = [dataArray[(i + 2) % count] pointValue];
 		}
 	}
 	
@@ -842,12 +842,12 @@ static void SVGDumpAppendBaseContour(TessPolygonData *data, NSArray *points)
 	NSUInteger i, count = [points count];
 	for (i = 0; i < count; i++)
 	{
-		NSPoint p = [[points objectAtIndex:i] pointValue];
+		NSPoint p = [points[i] pointValue];
 		[data->debugSVG appendFormat:@"%c %f %f ", (i == 0) ? 'M' : 'L', p.x, -p.y];
 	}
 	
 	// Close and add a circle at the first vertex. (SVG has support for end markers, but this isn’t reliable across implementations.)
-	NSPoint p = [[points objectAtIndex:0] pointValue];
+	NSPoint p = [points[0] pointValue];
 	[data->debugSVG appendFormat:@"z\"/>\n\t\t\t<circle cx=\"%f\" cy=\"%f\" r=\"0.1\" fill=\"#BBB\" stroke=\"none\"/>\n\t\t</g>\n", p.x, -p.y];
 }
 

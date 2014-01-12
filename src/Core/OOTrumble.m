@@ -590,7 +590,7 @@ static void PlayTrumbleSqueal(void);
 		float foodfactor[17] = { 1.00, 0.25, 0.75, 0.01, 0.95, 1.25, 1.05, 0.00, 0.00, 0.00, 0.00, 0.15, 0.00, 0.00, 0.00, 0.00, 0.00};
 		for (i = 0 ; i < n_pods; i++)
 		{
-			ShipEntity *cargopod = [cargopods objectAtIndex:i];
+			ShipEntity *cargopod = cargopods[i];
 			OOCommodityType cargo_type = [cargopod commodityType];
 			float yumminess = (1.0 + randf()) * foodfactor[cargo_type];
 			if (yumminess > mostYummy)
@@ -940,31 +940,29 @@ static void PlayTrumbleSqueal(void);
 
 - (NSDictionary*) dictionary
 {
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-		[NSString stringWithCharacters:digram length:2],	@"digram",
-		[NSNumber numberWithFloat:hunger],					@"hunger",
-		[NSNumber numberWithFloat:discomfort],				@"discomfort",
-		[NSNumber numberWithFloat:size],					@"size",
-		[NSNumber numberWithFloat:growth_rate],				@"growth_rate",
-		[NSNumber numberWithFloat:rotation],				@"rotation",
-		[NSNumber numberWithFloat:rotational_velocity],		@"rotational_velocity",
-		StringFromPoint(position),							@"position",
-		StringFromPoint(movement),							@"movement",
-		nil];
+	return @{@"digram": [NSString stringWithCharacters:digram length:2],
+		@"hunger": @(hunger),
+		@"discomfort": @(discomfort),
+		@"size": @(size),
+		@"growth_rate": @(growth_rate),
+		@"rotation": @(rotation),
+		@"rotational_velocity": @(rotational_velocity),
+		@"position": StringFromPoint(position),
+		@"movement": StringFromPoint(movement)};
 }
 
 - (void) setFromDictionary:(NSDictionary*) dict
 {
-	NSString* digramString = (NSString*)[dict objectForKey:@"digram"];
+	NSString* digramString = (NSString*)dict[@"digram"];
 	[self setupForPlayer: player digram: digramString];
-	hunger =		[[dict objectForKey: @"hunger"]			floatValue];
-	discomfort =	[[dict objectForKey: @"discomfort"]		floatValue];
-	size =			[[dict objectForKey: @"size"]			floatValue];
-	growth_rate =	[[dict objectForKey: @"growth_rate"]	floatValue];
-	rotation =		[[dict objectForKey: @"rotation"]		floatValue];
-	rotational_velocity =	[[dict objectForKey: @"rotational_velocity"]	floatValue];
-	position =	PointFromString([dict objectForKey: @"position"]);
-	movement =	PointFromString([dict objectForKey: @"movement"]);
+	hunger =		[dict[@"hunger"]			floatValue];
+	discomfort =	[dict[@"discomfort"]		floatValue];
+	size =			[dict[@"size"]			floatValue];
+	growth_rate =	[dict[@"growth_rate"]	floatValue];
+	rotation =		[dict[@"rotation"]		floatValue];
+	rotational_velocity =	[dict[@"rotational_velocity"]	floatValue];
+	position =	PointFromString(dict[@"position"]);
+	movement =	PointFromString(dict[@"movement"]);
 }
 
 @end

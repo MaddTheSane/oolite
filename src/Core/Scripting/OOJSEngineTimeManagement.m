@@ -638,7 +638,7 @@ static void UpdateProfileForFrame(OOHighResTimeValue now, OOJSProfileStackFrame 
 		{
 		//	[result appendFormat:@"\n    %@", [_profileEntries objectAtIndex:i]];
 			
-			OOTimeProfileEntry *entry = [profileEntries objectAtIndex:i];
+			OOTimeProfileEntry *entry = profileEntries[i];
 			
 			double totalPc = [entry totalTimeSum] * 100.0 / totalTime;
 			double selfPc = [entry selfTimeSum] * 100.0 / totalTime;
@@ -759,15 +759,13 @@ static void UpdateProfileForFrame(OOHighResTimeValue now, OOJSProfileStackFrame 
 		[convertedEntries addObject:[entry propertyListRepresentation]];
 	}
 	
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-			profileEntries, @"profiles",
-			[NSNumber numberWithDouble:[self totalTime]], @"totalTime",
-			[NSNumber numberWithDouble:[self javaScriptTime]], @"javaScriptTime",
-			[NSNumber numberWithDouble:[self nativeTime]], @"nativeTime",
-			[NSNumber numberWithDouble:[self extensionTime]], @"extensionTime",
-			[NSNumber numberWithDouble:[self nonExtensionTime]], @"nonExtensionTime",
-			[NSNumber numberWithDouble:[self profilerOverhead]], @"profilerOverhead",
-			nil];
+	return @{@"profiles": profileEntries,
+			@"totalTime": @([self totalTime]),
+			@"javaScriptTime": @([self javaScriptTime]),
+			@"nativeTime": @([self nativeTime]),
+			@"extensionTime": @([self extensionTime]),
+			@"nonExtensionTime": @([self nonExtensionTime]),
+			@"profilerOverhead": @([self profilerOverhead])};
 }
 
 @end
@@ -783,7 +781,7 @@ static void UpdateProfileForFrame(OOHighResTimeValue now, OOJSProfileStackFrame 
 	{
 		if (name != NULL)
 		{
-			_function = [[NSString stringWithUTF8String:name] retain];
+			_function = [@(name) retain];
 		}
 	}
 	
@@ -983,17 +981,15 @@ static void UpdateProfileForFrame(OOHighResTimeValue now, OOJSProfileStackFrame 
 
 - (NSDictionary *) propertyListRepresentation
 {
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-			_function, @"name",
-			[NSNumber numberWithUnsignedInteger:[self hitCount]], @"hitCount",
-			[NSNumber numberWithDouble:[self totalTimeSum]], @"totalTimeSum",
-			[NSNumber numberWithDouble:[self selfTimeSum]], @"selfTimeSum",
-			[NSNumber numberWithDouble:[self totalTimeAverage]], @"totalTimeAverage",
-			[NSNumber numberWithDouble:[self selfTimeAverage]], @"selfTimeAverage",
-			[NSNumber numberWithDouble:[self totalTimeMax]], @"totalTimeMax",
-			[NSNumber numberWithDouble:[self selfTimeMax]], @"selfTimeMax",
-			[NSNumber numberWithBool:[self isJavaScriptFrame]], @"isJavaScriptFrame",
-			nil];
+	return @{@"name": _function,
+			@"hitCount": @([self hitCount]),
+			@"totalTimeSum": @([self totalTimeSum]),
+			@"selfTimeSum": @([self selfTimeSum]),
+			@"totalTimeAverage": @([self totalTimeAverage]),
+			@"selfTimeAverage": @([self selfTimeAverage]),
+			@"totalTimeMax": @([self totalTimeMax]),
+			@"selfTimeMax": @([self selfTimeMax]),
+			@"isJavaScriptFrame": @([self isJavaScriptFrame])};
 }
 
 @end

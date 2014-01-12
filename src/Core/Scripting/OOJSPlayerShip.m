@@ -1039,13 +1039,13 @@ static JSBool PlayerShipSetCustomView(JSContext *context, uintN argc, jsval *vp)
 	}
 	NSString *orientationstr = [[NSString alloc] initWithFormat:@"%f %f %f %f",orientation.w,orientation.x,orientation.y,orientation.z];
 
-	[viewData setObject:positionstr forKey:@"view_position"];
-	[viewData setObject:orientationstr forKey:@"view_orientation"];
+	viewData[@"view_position"] = positionstr;
+	viewData[@"view_orientation"] = orientationstr;
 
 	if (argc > 2)
 	{
 		NSString* facing = OOStringFromJSValue(context,OOJS_ARGV[2]);
-		[viewData setObject:facing forKey:@"weapon_facing"];
+		viewData[@"weapon_facing"] = facing;
 	} 
 
 	[player setCustomViewDataFromDictionary:viewData];

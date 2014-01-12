@@ -198,16 +198,16 @@ static GLfloat		sBaseMass = 0.0;
 	// step through the cargo pods adding in the quantities	
 	for (i =  cargoCount - 1; i >= 0 ; i--)
 	{
-		ShipEntity *cargoItem = [cargo objectAtIndex:i];
+		ShipEntity *cargoItem = cargo[i];
 		OOCommodityType commodityType = [cargoItem commodityType];
 		if (commodityType == COMMODITY_UNDEFINED || commodityType == type)
 		{
 			if (commodityType == type)
 			{
-				NSMutableArray	*commodityInfo = [NSMutableArray arrayWithArray:[manifest objectAtIndex:commodityType]];	
+				NSMutableArray	*commodityInfo = [NSMutableArray arrayWithArray:manifest[commodityType]];	
 				OOCargoQuantity amount = [commodityInfo oo_unsignedIntAtIndex:MARKET_QUANTITY] + [cargoItem commodityAmount];
-				[commodityInfo replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithUnsignedInt:amount]]; // enter the adjusted amount
-				[manifest replaceObjectAtIndex:commodityType withObject:commodityInfo];
+				commodityInfo[MARKET_QUANTITY] = @(amount); // enter the adjusted amount
+				manifest[commodityType] = commodityInfo;
 			}
 			else	// undefined
 			{
@@ -233,7 +233,7 @@ static GLfloat		sBaseMass = 0.0;
 	// step through the cargo pods removing pods or quantities	
 	for (i =  n_cargo - 1; (i >= 0 && cargoToGo > 0) ; i--)
 	{
-		cargoItem = [cargo objectAtIndex:i];
+		cargoItem = cargo[i];
 		co_type = [cargoItem commodityType];
 		if (co_type == COMMODITY_UNDEFINED || co_type == type)
 		{
@@ -265,10 +265,10 @@ static GLfloat		sBaseMass = 0.0;
 	if (cargoToGo > 0)
 	{
 		NSMutableArray* manifest = [[NSMutableArray arrayWithArray:shipCommodityData] retain];
-		NSMutableArray	*commodityInfo = [NSMutableArray arrayWithArray:[manifest objectAtIndex:type]];	
+		NSMutableArray	*commodityInfo = [NSMutableArray arrayWithArray:manifest[type]];	
 		amount = [commodityInfo oo_unsignedIntAtIndex:MARKET_QUANTITY] - cargoToGo;
-		[commodityInfo replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithUnsignedInt:amount]]; // enter the adjusted amount
-		[manifest replaceObjectAtIndex:type withObject:commodityInfo];
+		commodityInfo[MARKET_QUANTITY] = @(amount); // enter the adjusted amount
+		manifest[type] = commodityInfo;
 		
 		[shipCommodityData release];
 		shipCommodityData = manifest;
@@ -294,8 +294,8 @@ static GLfloat		sBaseMass = 0.0;
 		NSMutableArray *commodityInfo = [NSMutableArray arrayWithArray:[manifest oo_arrayAtIndex:i]];
 		NSArray *shipCommInfo = [NSArray arrayWithArray:[shipCommodityData oo_arrayAtIndex:i]];
 		amount = [shipCommInfo oo_intAtIndex:MARKET_QUANTITY];
-		[commodityInfo replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt:amount]];
-		[manifest replaceObjectAtIndex:i withObject:commodityInfo];
+		commodityInfo[MARKET_QUANTITY] = @(amount);
+		manifest[i] = commodityInfo;
 		[self unloadAllCargoPodsForType:i fromArray:manifest];
 	}
 	
@@ -347,8 +347,8 @@ static GLfloat		sBaseMass = 0.0;
 				[self createCargoPodWithType:type andAmount:1];		// or CTD if unsuccesful (!)
 			}
 			// adjust manifest for this commodity
-			[commodityInfo replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt:0]];
-			[manifest replaceObjectAtIndex:type withObject:[NSArray arrayWithArray:commodityInfo]];
+			commodityInfo[MARKET_QUANTITY] = @0;
+			manifest[type] = [NSArray arrayWithArray:commodityInfo];
 		}
 		else
 		{
@@ -397,8 +397,8 @@ static GLfloat		sBaseMass = 0.0;
 					quantity -= amountToLoadInCargopod;
 				}
 				// adjust manifest for this commodity
-				[commodityInfo replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt:tmpQuantity]];
-				[manifest replaceObjectAtIndex:type withObject:[NSArray arrayWithArray:commodityInfo]];
+				commodityInfo[MARKET_QUANTITY] = @(tmpQuantity);
+				manifest[type] = [NSArray arrayWithArray:commodityInfo];
 			}
 		}
 	}
@@ -436,13 +436,13 @@ static GLfloat		sBaseMass = 0.0;
 					// try to squeeze any surplus, up to half a ton, in the manifest.
 					int amount;		
 					NSMutableArray* manifest = [[NSMutableArray arrayWithArray:shipCommodityData] retain];
-					NSMutableArray	*commodityInfo = [NSMutableArray arrayWithArray:[manifest objectAtIndex:type]];	
+					NSMutableArray	*commodityInfo = [NSMutableArray arrayWithArray:manifest[type]];	
 					amount = [commodityInfo oo_intAtIndex:MARKET_QUANTITY] + smaller_quantity;
 					if (amount > MAX_GRAMS_IN_SAFE && unit == UNITS_GRAMS) amount = MAX_GRAMS_IN_SAFE;
 					else if (amount > MAX_KILOGRAMS_IN_SAFE && unit == UNITS_KILOGRAMS) amount = MAX_KILOGRAMS_IN_SAFE;
 
-					[commodityInfo replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt:amount]]; // enter the adjusted amount
-					[manifest replaceObjectAtIndex:type withObject:commodityInfo];
+					commodityInfo[MARKET_QUANTITY] = @(amount); // enter the adjusted amount
+					manifest[type] = commodityInfo;
 					
 					[shipCommodityData release];
 					shipCommodityData = manifest;
@@ -489,7 +489,7 @@ static GLfloat		sBaseMass = 0.0;
 		[self loadCargoPodsForType:i fromArray: manifest];
 	}
 	[shipCommodityData release];
-	shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
+	shipCommodityData = [[NSMutableArray arrayWithArray:manifest] retain];
 	[manifest release]; // release, done
 }
 
@@ -601,7 +601,7 @@ static GLfloat		sBaseMass = 0.0;
 	
 	NSMutableDictionary *result = [NSMutableDictionary dictionary];
 	
-	[result setObject:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] forKey:@"written_by_version"];
+	result[@"written_by_version"] = [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"];
 
 	NSString	*gal_seed = [NSString stringWithFormat:@"%d %d %d %d %d %d", galaxy_seed.a, galaxy_seed.b, galaxy_seed.c, galaxy_seed.d, galaxy_seed.e, galaxy_seed.f];
 	NSString	*gal_coords = [NSString stringWithFormat:@"%d %d",(int)galaxy_coordinates.x,(int)galaxy_coordinates.y];
@@ -610,25 +610,25 @@ static GLfloat		sBaseMass = 0.0;
 	//unsigned 	passenger_space = [[OOEquipmentType equipmentTypeWithIdentifier:@"EQ_PASSENGER_BERTH"] requiredCargoSpace];
 	//if (passenger_space == 0) passenger_space = PASSENGER_BERTH_SPACE;
 	
-	[result setObject:gal_seed		forKey:@"galaxy_seed"];
-	[result setObject:gal_coords	forKey:@"galaxy_coordinates"];
-	[result setObject:tgt_coords	forKey:@"target_coordinates"];
+	result[@"galaxy_seed"] = gal_seed;
+	result[@"galaxy_coordinates"] = gal_coords;
+	result[@"target_coordinates"] = tgt_coords;
 	
 	if (!equal_seeds(found_system_seed,kNilRandomSeed))
 	{
 		NSString *found_seed = [NSString stringWithFormat:@"%d %d %d %d %d %d", found_system_seed.a, found_system_seed.b, found_system_seed.c, found_system_seed.d, found_system_seed.e, found_system_seed.f];
-		[result setObject:found_seed	forKey:@"found_system_seed"];
+		result[@"found_system_seed"] = found_seed;
 	}
 	
 	// Write the name of the current system. Useful for looking up saved game information and for overlapping systems.
-	[result setObject:[UNIVERSE getSystemName:[self system_seed]] forKey:@"current_system_name"];
+	result[@"current_system_name"] = [UNIVERSE getSystemName:[self system_seed]];
 	// Write the name of the targeted system. Useful for overlapping systems.
-	[result setObject:[UNIVERSE getSystemName:[self target_system_seed]] forKey:@"target_system_name"];
+	result[@"target_system_name"] = [UNIVERSE getSystemName:[self target_system_seed]];
 	
-	[result setObject:[self commanderName] forKey:@"player_name"];
-	[result setObject:[self lastsaveName] forKey:@"player_save_name"];
-	[result setObject:[self shipUniqueName] forKey:@"ship_unique_name"];
-	[result setObject:[self shipClassName] forKey:@"ship_class_name"];
+	result[@"player_name"] = [self commanderName];
+	result[@"player_save_name"] = [self lastsaveName];
+	result[@"ship_unique_name"] = [self shipUniqueName];
+	result[@"ship_class_name"] = [self shipClassName];
 
 	/*
 		BUG: GNUstep truncates integer values to 32 bits when loading XML plists.
@@ -648,11 +648,11 @@ static GLfloat		sBaseMass = 0.0;
 	[result oo_setInteger:aft_weapon_type		forKey:@"aft_weapon"];
 	[result oo_setInteger:port_weapon_type		forKey:@"port_weapon"];
 	[result oo_setInteger:starboard_weapon_type	forKey:@"starboard_weapon"];
-	[result setObject:[self serializeShipSubEntities] forKey:@"subentities_status"];
+	result[@"subentities_status"] = [self serializeShipSubEntities];
 	
 	[result oo_setInteger:max_cargo + PASSENGER_BERTH_SPACE * max_passengers	forKey:@"max_cargo"];
 	
-	[result setObject:shipCommodityData		forKey:@"shipCommodityData"];
+	result[@"shipCommodityData"] = shipCommodityData;
 	
 	// sanitise commodity units - the savegame might contain the wrong units
 	NSMutableArray *manifest = [NSMutableArray arrayWithArray:shipCommodityData];
@@ -661,12 +661,12 @@ static GLfloat		sBaseMass = 0.0;
 	{
 		NSMutableArray	*commodityInfo = [NSMutableArray arrayWithArray:[manifest oo_arrayAtIndex:i]];
 		// manifest contains entries for all 17 commodities, whether their quantity is 0 or more.
-		[commodityInfo replaceObjectAtIndex:MARKET_UNITS withObject:[NSNumber numberWithInt:[UNIVERSE unitsForCommodity:i]]];
-		[manifest replaceObjectAtIndex:i withObject:[NSArray arrayWithArray:commodityInfo]];
+		commodityInfo[MARKET_UNITS] = @([UNIVERSE unitsForCommodity:i]);
+		manifest[i] = [NSArray arrayWithArray:commodityInfo];
 
 	}
 	[shipCommodityData release];
-	shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
+	shipCommodityData = [[NSMutableArray arrayWithArray:manifest] retain];
 	
 	// Deprecated equipment flags. New equipment shouldn't be added here (it'll be handled by the extra_equipment dictionary).
 	[result oo_setBool:[self hasDockingComputer]		forKey:@"has_docking_computer"];
@@ -700,7 +700,7 @@ static GLfloat		sBaseMass = 0.0;
 			[missileRoles addObject:@"NONE"];
 		}
 	}
-	[result setObject:missileRoles forKey:@"missile_roles"];
+	result[@"missile_roles"] = missileRoles;
 	
 	[result oo_setInteger:missiles forKey:@"missiles"];
 	
@@ -714,12 +714,12 @@ static GLfloat		sBaseMass = 0.0;
 	// mission variables
 	if (mission_variables != nil)
 	{
-		[result setObject:[NSDictionary dictionaryWithDictionary:mission_variables] forKey:@"mission_variables"];
+		result[@"mission_variables"] = [NSDictionary dictionaryWithDictionary:mission_variables];
 	}
 
 	// communications log
 	NSArray *log = [self commLog];
-	if (log != nil)  [result setObject:log forKey:@"comm_log"];
+	if (log != nil)  result[@"comm_log"] = log;
 	
 	[result oo_setUnsignedInteger:entity_personality forKey:@"entity_personality"];
 	
@@ -733,24 +733,24 @@ static GLfloat		sBaseMass = 0.0;
 	}
 	if ([equipment count] != 0)
 	{
-		[result setObject:equipment forKey:@"extra_equipment"];
+		result[@"extra_equipment"] = equipment;
 	}
-	if (primedEquipment < [eqScripts count]) [result setObject:[[eqScripts oo_arrayAtIndex:primedEquipment] oo_stringAtIndex:0] forKey:@"primed_equipment"];
+	if (primedEquipment < [eqScripts count]) result[@"primed_equipment"] = [[eqScripts oo_arrayAtIndex:primedEquipment] oo_stringAtIndex:0];
 	
-	[result setObject:[self fastEquipmentA] forKey:@"primed_equipment_a"];
-	[result setObject:[self fastEquipmentB] forKey:@"primed_equipment_b"];
+	result[@"primed_equipment_a"] = [self fastEquipmentA];
+	result[@"primed_equipment_b"] = [self fastEquipmentB];
 
 	// roles
-	[result setObject:roleWeights forKey:@"role_weights"];
+	result[@"role_weights"] = roleWeights;
 
 	// role information
-	[result setObject:roleWeightFlags forKey:@"role_weight_flags"];
+	result[@"role_weight_flags"] = roleWeightFlags;
 
 	// role information
-	[result setObject:roleSystemList forKey:@"role_system_memory"];
+	result[@"role_system_memory"] = roleSystemList;
 
 	// reputation
-	[result setObject:reputation forKey:@"reputation"];
+	result[@"reputation"] = reputation;
 	
 	// initialise parcel reputations in dictionary if not set
 	int pGood = [reputation oo_intForKey:PARCEL_GOOD_KEY];
@@ -765,65 +765,65 @@ static GLfloat		sBaseMass = 0.0;
 
 	// passengers
 	[result oo_setInteger:max_passengers forKey:@"max_passengers"];
-	[result setObject:passengers forKey:@"passengers"];
-	[result setObject:passenger_record forKey:@"passenger_record"];
+	result[@"passengers"] = passengers;
+	result[@"passenger_record"] = passenger_record;
 
 	// parcels
-	[result setObject:parcels forKey:@"parcels"];
-	[result setObject:parcel_record forKey:@"parcel_record"];
+	result[@"parcels"] = parcels;
+	result[@"parcel_record"] = parcel_record;
 	
 	//specialCargo
-	if (specialCargo)  [result setObject:specialCargo forKey:@"special_cargo"];
+	if (specialCargo)  result[@"special_cargo"] = specialCargo;
 	
 	// contracts
-	[result setObject:contracts forKey:@"contracts"];
-	[result setObject:contract_record forKey:@"contract_record"];
+	result[@"contracts"] = contracts;
+	result[@"contract_record"] = contract_record;
 
-	[result setObject:missionDestinations forKey:@"mission_destinations"];
+	result[@"mission_destinations"] = missionDestinations;
 
 	//shipyard
-	[result setObject:shipyard_record forKey:@"shipyard_record"];
+	result[@"shipyard_record"] = shipyard_record;
 
 	//ship's clock
-	[result setObject:[NSNumber numberWithDouble:ship_clock] forKey:@"ship_clock"];
+	result[@"ship_clock"] = @(ship_clock);
 
 	//speech
-	[result setObject:[NSNumber numberWithBool:isSpeechOn] forKey:@"speech_on"];
+	result[@"speech_on"] = @((BOOL)isSpeechOn);
 #if OOLITE_ESPEAK
 	[result setObject:[UNIVERSE voiceName:voice_no] forKey:@"speech_voice"];
 	[result setObject:[NSNumber numberWithBool:voice_gender_m] forKey:@"speech_gender"];
 #endif
 
 	// gamma control
-	[result setObject:[NSNumber numberWithFloat:[[UNIVERSE gameView] gammaValue]] forKey:@"gamma_control"];
+	result[@"gamma_control"] = @([[UNIVERSE gameView] gammaValue]);
 	
 	// docking clearance
-	[result setObject:[NSNumber numberWithBool:[UNIVERSE dockingClearanceProtocolActive]] forKey:@"docking_clearance_protocol"];
+	result[@"docking_clearance_protocol"] = @([UNIVERSE dockingClearanceProtocolActive]);
 
 	//base ship description
-	[result setObject:[self shipDataKey] forKey:@"ship_desc"];
-	[result setObject:[[self shipInfoDictionary] oo_stringForKey:KEY_NAME] forKey:@"ship_name"];
+	result[@"ship_desc"] = [self shipDataKey];
+	result[@"ship_name"] = [[self shipInfoDictionary] oo_stringForKey:KEY_NAME];
 
 	//custom view no.
 	[result oo_setUnsignedInteger:_customViewIndex forKey:@"custom_view_index"];
 
 	//local market for main station
-	if ([[UNIVERSE station] localMarket])  [result setObject:[[UNIVERSE station] localMarket] forKey:@"localMarket"];
+	if ([[UNIVERSE station] localMarket])  result[@"localMarket"] = [[UNIVERSE station] localMarket];
 
 	// strict UNIVERSE?
 	if ([UNIVERSE strict])
 	{
-		[result setObject:[NSNumber numberWithBool:YES] forKey:@"strict"];
+		result[@"strict"] = @YES;
 	}
 
 	// persistant UNIVERSE information
 	if ([UNIVERSE localPlanetInfoOverrides])
 	{
-		[result setObject:[UNIVERSE localPlanetInfoOverrides] forKey:@"local_planetinfo_overrides"];
+		result[@"local_planetinfo_overrides"] = [UNIVERSE localPlanetInfoOverrides];
 	}
 
 	// trumble information
-	[result setObject:[self trumbleValue] forKey:@"trumbles"];
+	result[@"trumbles"] = [self trumbleValue];
 
 	// wormhole information
 	NSMutableArray *wormholeDicts = [NSMutableArray arrayWithCapacity:[scannedWormholes count]];
@@ -833,19 +833,19 @@ static GLfloat		sBaseMass = 0.0;
 	{
 		[wormholeDicts addObject:[wh getDict]];
 	}
-	[result setObject:wormholeDicts forKey:@"wormholes"];
+	result[@"wormholes"] = wormholeDicts;
 
 	// docked station
 	StationEntity *dockedStation = [self dockedStation];
-	[result setObject:[dockedStation primaryRole] forKey:@"docked_station_role"];
+	result[@"docked_station_role"] = [dockedStation primaryRole];
 	HPVector dpos = [dockedStation position];
-	[result setObject:ArrayFromHPVector(dpos) forKey:@"docked_station_position"];
-	[result setObject:[UNIVERSE getStationMarkets] forKey:@"station_markets"];
+	result[@"docked_station_position"] = ArrayFromHPVector(dpos);
+	result[@"station_markets"] = [UNIVERSE getStationMarkets];
 
 	// scenario information
 	if (scenarioKey != nil)
 	{
-		[result setObject:scenarioKey forKey:@"scenario"];
+		result[@"scenario"] = scenarioKey;
 	}
 
 	// create checksum
@@ -1123,15 +1123,15 @@ static GLfloat		sBaseMass = 0.0;
 					}
 				}
 				
-				[manifest_commodity replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt: oldAmount - toRemove]];
-				[manifest replaceObjectAtIndex:type withObject:[NSArray arrayWithArray:manifest_commodity]];
+				manifest_commodity[MARKET_QUANTITY] = @(oldAmount - toRemove);
+				manifest[type] = [NSArray arrayWithArray:manifest_commodity];
 			}
 		}
 		[shipCommodityData release];
-		shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
+		shipCommodityData = [[NSMutableArray arrayWithArray:manifest] retain];
 	}
 	
-	credits = OODeciCreditsFromObject([dict objectForKey:@"credits"]);
+	credits = OODeciCreditsFromObject(dict[@"credits"]);
 	
 	fuel = [dict oo_unsignedIntForKey:@"fuel" defaultValue:fuel];
 	galaxy_number = [dict oo_intForKey:@"galaxy_number"];
@@ -1218,7 +1218,7 @@ static GLfloat		sBaseMass = 0.0;
 	NSUInteger commCount = [savedCommLog count];
 	for (i = 0; i < commCount; i++)
 	{
-		[UNIVERSE addCommsMessage:[savedCommLog objectAtIndex:i] forCount:0 andShowComms:NO logOnly:YES];
+		[UNIVERSE addCommsMessage:savedCommLog[i] forCount:0 andShowComms:NO logOnly:YES];
 	}
 
 	/*	entity_personality for scripts and shaders. If undefined, we fall back
@@ -1321,7 +1321,7 @@ static GLfloat		sBaseMass = 0.0;
 	
 	// wormholes
 	NSArray * whArray;
-	whArray = [dict objectForKey:@"wormholes"];
+	whArray = dict[@"wormholes"];
 	NSEnumerator * whDicts = [whArray objectEnumerator];
 	NSDictionary * whCurrDict;
 	[scannedWormholes release];
@@ -1353,7 +1353,7 @@ static GLfloat		sBaseMass = 0.0;
 	
 	// trumble information
 	[self setUpTrumbles];
-	[self setTrumbleValueFrom:[dict objectForKey:@"trumbles"]];	// if it doesn't exist we'll check user-defaults
+	[self setTrumbleValueFrom:dict[@"trumbles"]];	// if it doesn't exist we'll check user-defaults
 
 	return YES;
 }
@@ -1385,7 +1385,7 @@ static GLfloat		sBaseMass = 0.0;
 - (void) deferredInit
 {
 	NSAssert(gOOPlayer == self, @"Expected only one PlayerEntity to exist at a time.");
-	NSAssert([super initWithKey:PLAYER_SHIP_DESC definition:[NSDictionary dictionary]] == self, @"PlayerEntity requires -[ShipEntity initWithKey:definition:] to return unmodified self.");
+	NSAssert([super initWithKey:PLAYER_SHIP_DESC definition:@{}] == self, @"PlayerEntity requires -[ShipEntity initWithKey:definition:] to return unmodified self.");
 	
 	compassMode = COMPASS_MODE_BASIC;
 	
@@ -1409,8 +1409,8 @@ static GLfloat		sBaseMass = 0.0;
 	target_memory_index = 0;
 	
 	dockingReport = [[NSMutableString alloc] init];
-	[hud resetGuis:[NSDictionary dictionaryWithObjectsAndKeys:[NSDictionary dictionaryWithObjectsAndKeys:nil], @"message_gui",
-														[NSDictionary dictionaryWithObjectsAndKeys:nil], @"comm_log_gui", nil]];
+	[hud resetGuis:@{@"message_gui": @{},
+														@"comm_log_gui": @{}}];
 	
 	[self initControls];
 }
@@ -1644,7 +1644,7 @@ static GLfloat		sBaseMass = 0.0;
 	
 	max_cargo				= 20; // will be reset later
 	
-	shipCommodityData = [[[ResourceManager dictionaryFromFilesNamed:@"commodities.plist" inFolder:@"Config" andMerge:YES] objectForKey:@"default"] retain];
+	shipCommodityData = [[ResourceManager dictionaryFromFilesNamed:@"commodities.plist" inFolder:@"Config" andMerge:YES][@"default"] retain];
 	
 	// set up missiles
 	missiles				= PLAYER_STARTING_MISSILES;
@@ -1796,7 +1796,7 @@ static GLfloat		sBaseMass = 0.0;
 	[self setPrimaryRole:@"player"];
 	
 	[self removeAllEquipment];
-	[self addEquipmentFromCollection:[shipDict objectForKey:@"extra_equipment"]];
+	[self addEquipmentFromCollection:shipDict[@"extra_equipment"]];
 
 	[self resetHud];
 	[hud setHidden:NO];
@@ -1843,7 +1843,7 @@ static GLfloat		sBaseMass = 0.0;
 	
 	// Load js script
 	[script autorelease];
-	NSDictionary *scriptProperties = [NSDictionary dictionaryWithObject:self forKey:@"ship"];
+	NSDictionary *scriptProperties = @{@"ship": self};
 	script = [OOScript jsScriptFromFileNamed:[shipDict oo_stringForKey:@"script"] 
 										 properties:scriptProperties];
 	if (script == nil)
@@ -2578,7 +2578,7 @@ static GLfloat		sBaseMass = 0.0;
 	while (prev_day < now_day)
 	{
 		prev_day++;
-		[self doScriptEvent:OOJSID("dayChanged") withArgument:[NSNumber numberWithUnsignedInt:prev_day]];
+		[self doScriptEvent:OOJSID("dayChanged") withArgument:@(prev_day)];
 		// not impossible that at ultra-low frame rates two of these will
 		// happen in a single update.
 	}
@@ -2996,7 +2996,7 @@ static GLfloat		sBaseMass = 0.0;
 
 - (void) showGameOver
 {
-	[hud resetGuis:[NSDictionary dictionaryWithObject:[NSDictionary dictionary] forKey:@"message_gui"]];
+	[hud resetGuis:@{@"message_gui": @{}}];
 	NSString *scoreMS = [NSString stringWithFormat:OOExpandKey(@"gameoverscreen-score-@"),
 							KillCountToRatingAndKillString(ship_kills)];
 	
@@ -3835,7 +3835,7 @@ static GLfloat		sBaseMass = 0.0;
 	}
 	NSUInteger times = [roleWeightFlags oo_intForKey:role defaultValue:0];
 	times++;
-	[roleWeightFlags setObject:[NSNumber numberWithInt:times] forKey:role];
+	roleWeightFlags[role] = @(times);
 	if ((times & (times-1)) == 0) // is power of 2
 	{
 		[self addRoleToPlayer:role];
@@ -3848,7 +3848,7 @@ static GLfloat		sBaseMass = 0.0;
 	NSString *role = @"miner";
 	NSUInteger times = [roleWeightFlags oo_intForKey:role defaultValue:0];
 	times++;
-	[roleWeightFlags setObject:[NSNumber numberWithInt:times] forKey:role];
+	roleWeightFlags[role] = @(times);
 	if ((times & (times-1)) == 0) // is power of 2
 	{
 		[self addRoleToPlayer:role];
@@ -3875,7 +3875,7 @@ static GLfloat		sBaseMass = 0.0;
 	}
 	else
 	{
-		[roleWeights replaceObjectAtIndex:slot withObject:role];
+		roleWeights[slot] = role;
 	}
 }
 
@@ -3885,14 +3885,14 @@ static GLfloat		sBaseMass = 0.0;
 	NSUInteger slot = Ranrot() % [roleWeights count];
 	if (!includingLongRange)
 	{
-		NSString *role = [roleWeights objectAtIndex:slot];
+		NSString *role = roleWeights[slot];
 		// long range roles cleared at 1/2 normal rate
 		if ([role hasSuffix:@"+"] && randf() > 0.5)
 		{
 			return;
 		}
 	}
-	[roleWeights replaceObjectAtIndex:slot withObject:@"player-unknown"];
+	roleWeights[slot] = @"player-unknown";
 }
 
 
@@ -3903,7 +3903,7 @@ static GLfloat		sBaseMass = 0.0;
 	{
 		if (randf() < chance)
 		{
-			[roleWeights replaceObjectAtIndex:i withObject:@"player-unknown"];
+			roleWeights[i] = @"player-unknown";
 		}
 	}
 }
@@ -3950,7 +3950,7 @@ static GLfloat		sBaseMass = 0.0;
 	{
 		[roleSystemList removeObjectAtIndex:0];
 	}
-	[roleSystemList addObject:[NSNumber numberWithInt:sys]];
+	[roleSystemList addObject:@(sys)];
 }
 
 
@@ -4032,7 +4032,7 @@ static GLfloat		sBaseMass = 0.0;
 		if (EXPECT_NOT(new_target != [self compassTarget]))
 		{
 			[self setCompassTarget:new_target];
-			[self doScriptEvent:OOJSID("compassTargetChanged") withArguments:[NSArray arrayWithObjects:new_target, OOStringFromCompassMode([self compassMode]), nil]];
+			[self doScriptEvent:OOJSID("compassTargetChanged") withArguments:@[new_target, OOStringFromCompassMode([self compassMode])]];
 		}
 	}
 }
@@ -4269,7 +4269,7 @@ static GLfloat		sBaseMass = 0.0;
 {
 	if (text != nil)
 	{
-		[multiFunctionDisplayText setObject:text forKey:key];
+		multiFunctionDisplayText[key] = text;
 	}
 	else if (key != nil)
 	{
@@ -4278,7 +4278,7 @@ static GLfloat		sBaseMass = 0.0;
 		NSUInteger index;
 		while ((index = [multiFunctionDisplaySettings indexOfObject:key]) != NSNotFound)
 		{
-			[multiFunctionDisplaySettings replaceObjectAtIndex:index withObject:[NSNull null]];
+			multiFunctionDisplaySettings[index] = [NSNull null];
 		}
 	}
 }
@@ -4300,11 +4300,11 @@ static GLfloat		sBaseMass = 0.0;
 	{
 		if (key == nil)
 		{
-			[multiFunctionDisplaySettings replaceObjectAtIndex:index withObject:[NSNull null]];
+			multiFunctionDisplaySettings[index] = [NSNull null];
 		}
 		else
 		{
-			[multiFunctionDisplaySettings replaceObjectAtIndex:index withObject:key];
+			multiFunctionDisplaySettings[index] = key;
 		}
 		return YES;
 	}
@@ -4323,10 +4323,10 @@ static GLfloat		sBaseMass = 0.0;
 		[self setMultiFunctionDisplay:index toKey:nil];
 		return;
 	}
-	id current = [multiFunctionDisplaySettings objectAtIndex:index];
+	id current = multiFunctionDisplaySettings[index];
 	if (current == [NSNull null])
 	{
-		[self setMultiFunctionDisplay:index toKey:[keys objectAtIndex:0]];
+		[self setMultiFunctionDisplay:index toKey:keys[0]];
 	}
 	else
 	{
@@ -4337,7 +4337,7 @@ static GLfloat		sBaseMass = 0.0;
 		}
 		else 
 		{
-			[self setMultiFunctionDisplay:index toKey:[keys objectAtIndex:(cIndex+1)]];
+			[self setMultiFunctionDisplay:index toKey:keys[(cIndex+1)]];
 		}
 	}
 }
@@ -5402,7 +5402,7 @@ static GLfloat		sBaseMass = 0.0;
 	NSInteger i, n_cargo = [cargo count];
 	if (n_cargo == 0)  return;
 	
-	ShipEntity *pod = (ShipEntity *)[[cargo objectAtIndex:0] retain];
+	ShipEntity *pod = (ShipEntity *)[cargo[0] retain];
 	OOCommodityType current_contents = [pod commodityType];
 	OOCommodityType contents;
 	NSInteger rotates = 0;
@@ -5412,7 +5412,7 @@ static GLfloat		sBaseMass = 0.0;
 		[cargo removeObjectAtIndex:0];	// take it from the eject position
 		[cargo addObject:pod];	// move it to the last position
 		[pod release];
-		pod = (ShipEntity*)[[cargo objectAtIndex:0] retain];
+		pod = (ShipEntity*)[cargo[0] retain];
 		contents = [pod commodityType];
 		rotates++;
 	} while ((contents == current_contents)&&(rotates < n_cargo));
@@ -5430,7 +5430,7 @@ static GLfloat		sBaseMass = 0.0;
 	// this means the cargo gets to be sorted as it is rotated through
 	for (i = 1; i < (n_cargo - rotates); i++)
 	{
-		pod = [cargo objectAtIndex:i];
+		pod = cargo[i];
 		if ([pod commodityType] == current_contents)
 		{
 			[pod retain];
@@ -5583,7 +5583,7 @@ static GLfloat		sBaseMass = 0.0;
 	// cargo damage
 	if (damage_to < [cargo count])
 	{
-		ShipEntity* pod = (ShipEntity*)[cargo objectAtIndex:damage_to];
+		ShipEntity* pod = (ShipEntity*)cargo[damage_to];
 		NSString* cargo_desc = [UNIVERSE displayNameForCommodity:[pod commodityType]];
 		if (!cargo_desc)
 			return NO;
@@ -6188,8 +6188,8 @@ static GLfloat		sBaseMass = 0.0;
 		{
 			// set the expected arrival time to now, so they storm off the ship at the first port
 			NSMutableDictionary* passenger_info = [NSMutableDictionary dictionaryWithDictionary:[passengers oo_dictionaryAtIndex:i]];
-			[passenger_info setObject:[NSNumber numberWithDouble:ship_clock] forKey:CONTRACT_KEY_ARRIVAL_TIME];
-			[passengers replaceObjectAtIndex:i withObject:passenger_info];
+			passenger_info[CONTRACT_KEY_ARRIVAL_TIME] = @(ship_clock);
+			passengers[i] = passenger_info;
 		}
 	}
 
@@ -6250,7 +6250,7 @@ static GLfloat		sBaseMass = 0.0;
 	
 	[self witchEnd];
 	
-	[self doScriptEvent:OOJSID("playerEnteredNewGalaxy") withArgument:[NSNumber numberWithUnsignedInt:galaxy_number]];
+	[self doScriptEvent:OOJSID("playerEnteredNewGalaxy") withArgument:@(galaxy_number)];
 }
 
 
@@ -6326,7 +6326,7 @@ static GLfloat		sBaseMass = 0.0;
 	NSUInteger legality = [self legalStatusOfCargoList];
 	OOCargoQuantity maxSpace = [self maxAvailableCargoSpace];
 	OOCargoQuantity availSpace = [self availableCargoSpace];
-	if ([roleWeightFlags objectForKey:@"bought-legal"])
+	if (roleWeightFlags[@"bought-legal"])
 	{
 		if (maxSpace != availSpace)
 		{
@@ -6340,7 +6340,7 @@ static GLfloat		sBaseMass = 0.0;
 			}
 		}
 	}
-	if ([roleWeightFlags objectForKey:@"bought-illegal"])
+	if (roleWeightFlags[@"bought-illegal"])
 	{
 		if (maxSpace != availSpace && legality > 0)
 		{
@@ -6501,7 +6501,7 @@ static GLfloat		sBaseMass = 0.0;
 	[self playExitWitchspace];
 	if ([self currentSystemID] >= 0)
 	{
-		if (![roleSystemList containsObject:[NSNumber numberWithInt:[self currentSystemID]]])
+		if (![roleSystemList containsObject:@([self currentSystemID])])
 		{
 			// going somewhere new?
 			[self clearRoleFromPlayer:NO];
@@ -6569,13 +6569,13 @@ static GLfloat		sBaseMass = 0.0;
 		
 		[gui setText:shipName forRow:0 align:GUI_ALIGN_CENTER];
 		
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"status-present-system"), systemName, nil]	forRow:1];
-		if ([self hasHyperspaceMotor]) [gui setArray:[NSArray arrayWithObjects:DESC(@"status-hyperspace-system"), targetSystemName, nil] forRow:2];
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"status-condition"), alert_desc, nil]			forRow:3];
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"status-fuel"), fuel_desc, nil]				forRow:4];
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"status-cash"), credits_desc, nil]			forRow:5];
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"status-legal-status"), legal_desc, nil]		forRow:6];
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"status-rating"), rating_desc, nil]			forRow:7];
+		[gui setArray:@[DESC(@"status-present-system"), systemName]	forRow:1];
+		if ([self hasHyperspaceMotor]) [gui setArray:@[DESC(@"status-hyperspace-system"), targetSystemName] forRow:2];
+		[gui setArray:@[DESC(@"status-condition"), alert_desc]			forRow:3];
+		[gui setArray:@[DESC(@"status-fuel"), fuel_desc]				forRow:4];
+		[gui setArray:@[DESC(@"status-cash"), credits_desc]			forRow:5];
+		[gui setArray:@[DESC(@"status-legal-status"), legal_desc]		forRow:6];
+		[gui setArray:@[DESC(@"status-rating"), rating_desc]			forRow:7];
 		
 		[gui setText:DESC(@"status-equipment") forRow:9];
 		
@@ -6633,7 +6633,7 @@ static GLfloat		sBaseMass = 0.0;
 		{
 			if ([self hasEquipmentItem:[eqType identifier]])
 			{
-				[quip addObject:[NSArray arrayWithObjects:[eqType name], [NSNumber numberWithBool:YES], nil]];
+				[quip addObject:@[[eqType name], @YES]];
 			}
 			else 
 			{
@@ -6641,7 +6641,7 @@ static GLfloat		sBaseMass = 0.0;
 				if ([self hasEquipmentItem:[[eqType identifier] stringByAppendingString:@"_DAMAGED"]])
 				{
 					desc = [NSString stringWithFormat:DESC(@"equipment-@-not-available"), [eqType name]];
-					[quip addObject:[NSArray arrayWithObjects:desc, [NSNumber numberWithBool:NO], nil]];
+					[quip addObject:@[desc, @NO]];
 				}
 			}
 		}
@@ -6650,28 +6650,28 @@ static GLfloat		sBaseMass = 0.0;
 	if (max_passengers > 0)
 	{
 		desc = [NSString stringWithFormat:DESC_PLURAL(@"equipment-pass-berth-@", max_passengers), max_passengers];
-		[quip addObject:[NSArray arrayWithObjects:desc, [NSNumber numberWithBool:YES], nil]];
+		[quip addObject:@[desc, @YES]];
 	}
 	
 	if (forward_weapon_type > WEAPON_NONE)
 	{
 		desc = [NSString stringWithFormat:DESC(@"equipment-fwd-weapon-@"),[[OOEquipmentType equipmentTypeWithIdentifier:OOEquipmentIdentifierFromWeaponType(forward_weapon_type)] name]];
-		[quip addObject:[NSArray arrayWithObjects:desc, [NSNumber numberWithBool:YES], nil]];
+		[quip addObject:@[desc, @YES]];
 	}
 	if (aft_weapon_type > WEAPON_NONE)
 	{
 		desc = [NSString stringWithFormat:DESC(@"equipment-aft-weapon-@"),[[OOEquipmentType equipmentTypeWithIdentifier:OOEquipmentIdentifierFromWeaponType(aft_weapon_type)] name]];
-		[quip addObject:[NSArray arrayWithObjects:desc, [NSNumber numberWithBool:YES], nil]];
+		[quip addObject:@[desc, @YES]];
 	}
 	if (port_weapon_type > WEAPON_NONE)
 	{
 		desc = [NSString stringWithFormat:DESC(@"equipment-port-weapon-@"),[[OOEquipmentType equipmentTypeWithIdentifier:OOEquipmentIdentifierFromWeaponType(port_weapon_type)] name]];
-		[quip addObject:[NSArray arrayWithObjects:desc, [NSNumber numberWithBool:YES], nil]];
+		[quip addObject:@[desc, @YES]];
 	}
 	if (starboard_weapon_type > WEAPON_NONE)
 	{
 		desc = [NSString stringWithFormat:DESC(@"equipment-stb-weapon-@"),[[OOEquipmentType equipmentTypeWithIdentifier:OOEquipmentIdentifierFromWeaponType(starboard_weapon_type)] name]];
-		[quip addObject:[NSArray arrayWithObjects:desc, [NSNumber numberWithBool:YES], nil]];
+		[quip addObject:@[desc, @YES]];
 	}
 	
 	return quip;
@@ -6704,7 +6704,7 @@ static GLfloat		sBaseMass = 0.0;
 	// index == [eqScripts count] means we don't want to activate any equipment.
 	if(index < [eqScripts count])
 	{
-		OOJSScript *eqScript = [[eqScripts oo_arrayAtIndex:index] objectAtIndex:1];
+		OOJSScript *eqScript = [eqScripts oo_arrayAtIndex:index][1];
 		JSContext *context = OOJSAcquireContext();
 		NSAssert1(mode <= OOPRIMEDEQUIP_MODE, @"Primable equipment mode %i out of range", (int)mode);
 		
@@ -6821,7 +6821,7 @@ static GLfloat		sBaseMass = 0.0;
 	}
 	for (i = 0; i < [cargo count]; i++)
 	{
-		ShipEntity *container = [cargo objectAtIndex:i];
+		ShipEntity *container = cargo[i];
 		quantityInHold[[container commodityType]] += [container commodityAmount];
 	}
 	
@@ -6832,10 +6832,10 @@ static GLfloat		sBaseMass = 0.0;
 			NSMutableDictionary	*commodity = [NSMutableDictionary dictionaryWithCapacity:4];
 			NSString *symName = [[shipCommodityData oo_arrayAtIndex:i] oo_stringAtIndex:MARKET_NAME];
 			// commodity, quantity - keep consistency between .manifest and .contracts
-			[commodity setObject:CommodityTypeToString(i) forKey:@"commodity"];
-			[commodity setObject:[NSNumber numberWithUnsignedInt:quantityInHold[i]] forKey:@"quantity"];
-			[commodity setObject:CommodityDisplayNameForSymbolicName(symName) forKey:@"displayName"]; 
-			[commodity setObject:DisplayStringForMassUnitForCommodity(i)forKey:@"unit"]; 
+			commodity[@"commodity"] = CommodityTypeToString(i);
+			commodity[@"quantity"] = @(quantityInHold[i]);
+			commodity[@"displayName"] = CommodityDisplayNameForSymbolicName(symName); 
+			commodity[@"unit"] = DisplayStringForMassUnitForCommodity(i); 
 			[list addObject:commodity];
 		}
 	}
@@ -6874,30 +6874,30 @@ static GLfloat		sBaseMass = 0.0;
 		if (forCargo)
 		{
 			// commodity, quantity - keep consistency between .manifest and .contracts
-			[contract setObject:[[UNIVERSE symbolicNameForCommodity:[dict oo_intForKey:CARGO_KEY_TYPE]] lowercaseString] forKey:@"commodity"];
-			[contract setObject:[NSNumber numberWithUnsignedInt:[dict oo_intForKey:CARGO_KEY_AMOUNT]] forKey:@"quantity"];
-			[contract setObject:[dict oo_stringForKey:CARGO_KEY_DESCRIPTION] forKey:@"description"];
+			contract[@"commodity"] = [[UNIVERSE symbolicNameForCommodity:[dict oo_intForKey:CARGO_KEY_TYPE]] lowercaseString];
+			contract[@"quantity"] = @([dict oo_intForKey:CARGO_KEY_AMOUNT]);
+			contract[@"description"] = [dict oo_stringForKey:CARGO_KEY_DESCRIPTION];
 		}
 		else
 		{
-			[contract setObject:[dict oo_stringForKey:PASSENGER_KEY_NAME] forKey:PASSENGER_KEY_NAME];
-			[contract setObject:[NSNumber numberWithUnsignedInt:[dict oo_unsignedIntForKey:CONTRACT_KEY_RISK]] forKey:CONTRACT_KEY_RISK]; 
+			contract[PASSENGER_KEY_NAME] = [dict oo_stringForKey:PASSENGER_KEY_NAME];
+			contract[CONTRACT_KEY_RISK] = @([dict oo_unsignedIntForKey:CONTRACT_KEY_RISK]); 
 		}
 		
 		OOSystemID 	planet = [dict oo_intForKey:CONTRACT_KEY_DESTINATION];
 		NSString 	*planetName = [UNIVERSE getSystemName: [UNIVERSE systemSeedForSystemNumber:planet]];
-		[contract setObject:[NSNumber numberWithUnsignedInt:planet] forKey:CONTRACT_KEY_DESTINATION];
-		[contract setObject:planetName forKey:@"destinationName"];
+		contract[CONTRACT_KEY_DESTINATION] = @(planet);
+		contract[@"destinationName"] = planetName;
 		planet = [dict oo_intForKey:CONTRACT_KEY_START];
 		planetName = [UNIVERSE getSystemName: [UNIVERSE systemSeedForSystemNumber:planet]];
-		[contract setObject:[NSNumber numberWithUnsignedInt:planet] forKey:CONTRACT_KEY_START];
-		[contract setObject:planetName forKey:@"startName"];
+		contract[CONTRACT_KEY_START] = @(planet);
+		contract[@"startName"] = planetName;
 		
 		int 		dest_eta = [dict oo_doubleForKey:CONTRACT_KEY_ARRIVAL_TIME] - ship_clock;
-		[contract setObject:[NSNumber numberWithInt:dest_eta] forKey:@"eta"];
-		[contract setObject:[UNIVERSE shortTimeDescription:dest_eta] forKey:@"etaDescription"];
-		[contract setObject:[NSNumber numberWithInt:[dict oo_intForKey:CONTRACT_KEY_PREMIUM]] forKey:CONTRACT_KEY_PREMIUM]; 
-		[contract setObject:[NSNumber numberWithInt:[dict oo_intForKey:CONTRACT_KEY_FEE]] forKey:CONTRACT_KEY_FEE]; 
+		contract[@"eta"] = @(dest_eta);
+		contract[@"etaDescription"] = [UNIVERSE shortTimeDescription:dest_eta];
+		contract[CONTRACT_KEY_PREMIUM] = @([dict oo_intForKey:CONTRACT_KEY_PREMIUM]); 
+		contract[CONTRACT_KEY_FEE] = @([dict oo_intForKey:CONTRACT_KEY_FEE]); 
 		[result addObject:contract];
 	}
 
@@ -6975,13 +6975,13 @@ static GLfloat		sBaseMass = 0.0;
 		
 		[gui setTitle:[NSString stringWithFormat:DESC(@"sysdata-planet-name-@"),   targetSystemName]];
 		
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"sysdata-eco"), economy_desc, nil]					forRow:1];
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"sysdata-govt"), government_desc, nil]				forRow:3];
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"sysdata-tl"), [NSString stringWithFormat:@"%d", techlevel + 1], nil]	forRow:5];
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"sysdata-pop"), [NSString stringWithFormat:@"%.1f %@", 0.1*population, DESC(@"sysdata-billion-word")], nil]	forRow:7];
-		[gui setArray:[NSArray arrayWithObjects:@"", [NSString stringWithFormat:@"(%@)", inhabitants], nil]				forRow:8];
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"sysdata-prod"), @"", [NSString stringWithFormat:DESC(@"sysdata-prod-worth"), productivity], nil]	forRow:10];
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"sysdata-radius"), @"", [NSString stringWithFormat:@"%5d km", radius], nil]	forRow:12];
+		[gui setArray:@[DESC(@"sysdata-eco"), economy_desc]					forRow:1];
+		[gui setArray:@[DESC(@"sysdata-govt"), government_desc]				forRow:3];
+		[gui setArray:@[DESC(@"sysdata-tl"), [NSString stringWithFormat:@"%d", techlevel + 1]]	forRow:5];
+		[gui setArray:@[DESC(@"sysdata-pop"), [NSString stringWithFormat:@"%.1f %@", 0.1*population, DESC(@"sysdata-billion-word")]]	forRow:7];
+		[gui setArray:@[@"", [NSString stringWithFormat:@"(%@)", inhabitants]]				forRow:8];
+		[gui setArray:@[DESC(@"sysdata-prod"), @"", [NSString stringWithFormat:DESC(@"sysdata-prod-worth"), productivity]]	forRow:10];
+		[gui setArray:@[DESC(@"sysdata-radius"), @"", [NSString stringWithFormat:@"%5d km", radius]]	forRow:12];
 		
 		OOGUIRow i = [gui addLongText:system_desc startingAtRow:15 align:GUI_ALIGN_LEFT];
 		missionTextRow = i;
@@ -7036,8 +7036,8 @@ static GLfloat		sBaseMass = 0.0;
 
 - (void) prepareMarkedDestination:(NSMutableDictionary *)markers :(NSDictionary *)marker
 {
-	NSNumber *key = [NSNumber numberWithInt:[marker oo_intForKey:@"system"]];
-	NSMutableArray *list = [markers objectForKey:key];
+	NSNumber *key = @([marker oo_intForKey:@"system"]);
+	NSMutableArray *list = markers[key];
 	if (list == nil)
 	{
 		list = [NSMutableArray arrayWithObject:marker];
@@ -7046,7 +7046,7 @@ static GLfloat		sBaseMass = 0.0;
 	{
 		[list addObject:marker];
 	}
-	[markers setObject:list forKey:key];
+	markers[key] = list;
 }
 
 
@@ -7082,7 +7082,7 @@ static GLfloat		sBaseMass = 0.0;
 
 	for (keyEnum = [missionDestinations keyEnumerator]; (key = [keyEnum nextObject]); )
 	{
-		marker = [missionDestinations objectForKey:key];
+		marker = missionDestinations[key];
 		[self prepareMarkedDestination:destinations:marker];
 	}
 	
@@ -7714,7 +7714,7 @@ static NSString *last_outfitting_key=nil;
 					[gui setKey:[NSString stringWithFormat:@"More:%d", previous] forRow:row];
 				}
 				[gui setColor:[OOColor greenColor] forRow:row];
-				[gui setArray:[NSArray arrayWithObjects:DESC(@"gui-back"), @" <-- ", nil] forRow:row];
+				[gui setArray:@[DESC(@"gui-back"), @" <-- "] forRow:row];
 				row++;
 			}
 			
@@ -7796,7 +7796,7 @@ static NSString *last_outfitting_key=nil;
 						if (displayRow)	// Always true for the first pass. The first pass is used to display the name of the weapon being purchased.
 						{
 							[gui setKey:eqKey forRow:row];
-							[gui setArray:[NSArray arrayWithObjects:desc, (facing_count > 0 ? priceString : (NSString *)@""), nil] forRow:row];
+							[gui setArray:@[desc, (facing_count > 0 ? priceString : (NSString *)@"")] forRow:row];
 							row++;
 						}
 						facing_count++;
@@ -7806,7 +7806,7 @@ static NSString *last_outfitting_key=nil;
 				{
 					// Normal equipment list.
 					[gui setKey:eqKey forRow:row];
-					[gui setArray:[NSArray arrayWithObjects:desc, priceString, nil] forRow:row];
+					[gui setArray:@[desc, priceString] forRow:row];
 					row++;
 				}
 			}
@@ -7815,7 +7815,7 @@ static NSString *last_outfitting_key=nil;
 			{
 				// just overwrite the last item :-)
 				[gui setColor:[OOColor greenColor] forRow:row - 1];
-				[gui setArray:[NSArray arrayWithObjects:DESC(@"gui-more"), @" --> ", nil] forRow:row - 1];
+				[gui setArray:@[DESC(@"gui-more"), @" --> "] forRow:row - 1];
 				[gui setKey:[NSString stringWithFormat:@"More:%d", i - 1] forRow:row - 1];
 			}
 			
@@ -7975,17 +7975,17 @@ static NSString *last_outfitting_key=nil;
 				
 				[gui setKey:[NSString stringWithFormat:@"More:%d", previous] forRow:row];
 				[gui setColor:[OOColor greenColor] forRow:row];
-				[gui setArray:[NSArray arrayWithObjects:DESC(@"gui-back"), @" <-- ", nil] forRow:row];
+				[gui setArray:@[DESC(@"gui-back"), @" <-- "] forRow:row];
 				row++;
 			}
 			
 			for (i = skip; i < (NSInteger)count && (row - start_row < (OOGUIRow)n_rows); i++)
 			{
-				NSString *interfaceKey = [interfaceKeys objectAtIndex:i];
-				OOJSInterfaceDefinition *definition = [interfaces objectForKey:interfaceKey];
+				NSString *interfaceKey = interfaceKeys[i];
+				OOJSInterfaceDefinition *definition = interfaces[interfaceKey];
 
 				[gui setKey:interfaceKey forRow:row];
-				[gui setArray:[NSArray arrayWithObjects:[definition title],[definition category], nil] forRow:row];
+				[gui setArray:@[[definition title],[definition category]] forRow:row];
 
 				row++;
 			}
@@ -7994,7 +7994,7 @@ static NSString *last_outfitting_key=nil;
 			{
 				// just overwrite the last item :-)
 				[gui setColor:[OOColor greenColor] forRow:row - 1];
-				[gui setArray:[NSArray arrayWithObjects:DESC(@"gui-more"), @" --> ", nil] forRow:row - 1];
+				[gui setArray:@[DESC(@"gui-more"), @" --> "] forRow:row - 1];
 				[gui setKey:[NSString stringWithFormat:@"More:%d", i - 1] forRow:row - 1];
 			}
 			
@@ -8062,7 +8062,7 @@ static NSString *last_outfitting_key=nil;
 	if (interfaceKey && ![interfaceKey hasPrefix:@"More:"])
 	{
 		NSDictionary *interfaces = [[self dockedStation] localInterfaces];
-		OOJSInterfaceDefinition *definition = [interfaces objectForKey:interfaceKey];
+		OOJSInterfaceDefinition *definition = interfaces[interfaceKey];
 		if (definition)
 		{
 			[gui addLongText:[definition summary] startingAtRow:GUI_ROW_INTERFACES_DETAIL align:GUI_ALIGN_LEFT];
@@ -8093,7 +8093,7 @@ static NSString *last_outfitting_key=nil;
 	}
 
 	NSDictionary *interfaces = [[self dockedStation] localInterfaces];
-	OOJSInterfaceDefinition *definition = [interfaces objectForKey:key];
+	OOJSInterfaceDefinition *definition = interfaces[key];
 	if (definition)
 	{
 		[[UNIVERSE gameView] clearKeys];
@@ -8235,7 +8235,7 @@ static NSString *last_outfitting_key=nil;
 		unsigned i;
 		for (i = 0; i < [arguments count]; i++)
 		{
-			if (([[arguments objectAtIndex:i] isEqual:@"-message"])&&(i < [arguments count] - 1))
+			if (([arguments[i] isEqual:@"-message"])&&(i < [arguments count] - 1))
 			{
 				OOGUIRow ms_start = msgLine;
 				NSString* message = [arguments oo_stringAtIndex:i + 1];
@@ -8245,10 +8245,10 @@ static NSString *last_outfitting_key=nil;
 					[gui setColor:[OOColor magentaColor] forRow:i];
 				}
 			}
-			if ([[arguments objectAtIndex:i] isEqual:@"-showversion"])
+			if ([arguments[i] isEqual:@"-showversion"])
 			{
 				OOGUIRow ms_start = msgLine;
-				NSString *version = [NSString stringWithFormat:@"Version %@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]];
+				NSString *version = [NSString stringWithFormat:@"Version %@", [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"]];
 				OOGUIRow i = msgLine = [gui addLongText:version startingAtRow:ms_start align:GUI_ALIGN_CENTER];
 				for (i-- ; i >= ms_start; i--)
 				{
@@ -8736,7 +8736,7 @@ static NSString *last_outfitting_key=nil;
 		
 		for (i = [cargo count] - 1; i >= 0 ; i--)
 		{
-			cargoItem = [cargo objectAtIndex:i];
+			cargoItem = cargo[i];
 			co_type = [cargoItem commodityType];
 			if (co_type == type)
 			{
@@ -8792,10 +8792,10 @@ static NSString *last_outfitting_key=nil;
 	{
 		NSMutableArray* manifest = [[NSMutableArray arrayWithArray:shipCommodityData] retain];
 		NSMutableArray* manifest_commodity = [NSMutableArray arrayWithArray:[manifest oo_arrayAtIndex:type]];
-		[manifest_commodity replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt:amount]];
-		[manifest replaceObjectAtIndex:type withObject:[NSArray arrayWithArray:manifest_commodity]];
+		manifest_commodity[MARKET_QUANTITY] = @(amount);
+		manifest[type] = [NSArray arrayWithArray:manifest_commodity];
 		[shipCommodityData release];
-		shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
+		shipCommodityData = [[NSMutableArray arrayWithArray:manifest] retain];
 		[manifest release];
 	}
 
@@ -8830,7 +8830,7 @@ static NSString *last_outfitting_key=nil;
 	
 	for (i = count - 1; i >= 0 ; i--)
 	{
-		NSArray *commodityInfo = [NSArray arrayWithArray:[manifest objectAtIndex:i]];
+		NSArray *commodityInfo = [NSArray arrayWithArray:manifest[i]];
 		OOCargoQuantity quantity = [commodityInfo oo_intAtIndex:MARKET_QUANTITY];
 		
 		// manifest contains entries for all 17 commodities, even when their quantity is 0.
@@ -8883,10 +8883,10 @@ static NSString *last_outfitting_key=nil;
 		NSMutableArray *ourEconomy = [NSMutableArray arrayWithArray:[UNIVERSE commodityDataForEconomy:0 andStation:(StationEntity*)nil andRandomFactor:0]];
 		for (i = 0; i < [ourEconomy count]; i++)
 		{
-			NSMutableArray *commodityInfo = [NSMutableArray arrayWithArray:[ourEconomy objectAtIndex:i]];
-			[commodityInfo replaceObjectAtIndex:MARKET_PRICE withObject:[NSNumber numberWithInt: 0]];
-			[commodityInfo replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt: 0]];
-			[ourEconomy replaceObjectAtIndex:i withObject:[NSArray arrayWithArray:commodityInfo]];
+			NSMutableArray *commodityInfo = [NSMutableArray arrayWithArray:ourEconomy[i]];
+			commodityInfo[MARKET_PRICE] = @0;
+			commodityInfo[MARKET_QUANTITY] = @0;
+			ourEconomy[i] = [NSArray arrayWithArray:commodityInfo];
 		}
 		localMarket = [NSArray arrayWithArray:ourEconomy];
 	}
@@ -8907,7 +8907,7 @@ static NSString *last_outfitting_key=nil;
 		}
 		for (i = 0; i < [cargo count]; i++)
 		{
-			ShipEntity *container = (ShipEntity *)[cargo objectAtIndex:i];
+			ShipEntity *container = (ShipEntity *)cargo[i];
 			quantityInHold[[container commodityType]] += [container commodityAmount];
 		}
 		
@@ -8931,8 +8931,8 @@ static NSString *last_outfitting_key=nil;
 		[gui setTabStops:tab_stops];
 		
 		[gui setColor:[OOColor greenColor] forRow:GUI_ROW_MARKET_KEY];
-		[gui setArray:[NSArray arrayWithObjects: DESC(@"commodity-column-title"), OOPadStringTo(DESC(@"price-column-title"),7.0),
-							 OOPadStringTo(DESC(@"for-sale-column-title"),11.0), OOPadStringTo(DESC(@"in-hold-column-title"),15.0), nil] forRow:GUI_ROW_MARKET_KEY];
+		[gui setArray:@[DESC(@"commodity-column-title"), OOPadStringTo(DESC(@"price-column-title"),7.0),
+							 OOPadStringTo(DESC(@"for-sale-column-title"),11.0), OOPadStringTo(DESC(@"in-hold-column-title"),15.0)] forRow:GUI_ROW_MARKET_KEY];
 		
 		for (i = 0; i < commodityCount; i++)
 		{
@@ -8955,7 +8955,7 @@ static NSString *last_outfitting_key=nil;
 			NSString *units_owned = [NSString stringWithFormat:@" %@ %@ ",owned, units];
 			
 			[gui setKey:[NSString stringWithFormat:@"%ld",i] forRow:row];
-			[gui setArray:[NSArray arrayWithObjects: desc, price, units_available, units_owned, nil] forRow:row++];
+			[gui setArray:@[desc, price, units_available, units_owned] forRow:row++];
 		}
 		 // actually count the containers and  valuables (may be > max_cargo)
 		current_cargo = [self cargoQuantityOnBoard];
@@ -9011,7 +9011,7 @@ static NSString *last_outfitting_key=nil;
 	if (![self isDocked])  return NO; // can't buy if not docked.
 	
 	NSMutableArray		*localMarket = [self localMarket];
-	NSArray				*commodityArray	= [localMarket objectAtIndex:index];
+	NSArray				*commodityArray	= localMarket[index];
 	OOCreditsQuantity	pricePerUnit	= [commodityArray oo_unsignedIntAtIndex:MARKET_PRICE];
 	OOMassUnit			unit			= [UNIVERSE unitsForCommodity:index];
 
@@ -9073,26 +9073,26 @@ static NSString *last_outfitting_key=nil;
 	market_quantity -= purchase;
 	credits -= pricePerUnit * purchase;
 	
-	[manifest_commodity replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt:manifest_quantity]];
-	[market_commodity replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt:market_quantity]];
-	[manifest replaceObjectAtIndex:index withObject:[NSArray arrayWithArray:manifest_commodity]];
-	[localMarket replaceObjectAtIndex:index withObject:[NSArray arrayWithArray:market_commodity]];
+	manifest_commodity[MARKET_QUANTITY] = @(manifest_quantity);
+	market_commodity[MARKET_QUANTITY] = @(market_quantity);
+	manifest[index] = [NSArray arrayWithArray:manifest_commodity];
+	localMarket[index] = [NSArray arrayWithArray:market_commodity];
 	
 	[shipCommodityData release];
-	shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
+	shipCommodityData = [[NSMutableArray arrayWithArray:manifest] retain];
 	
 	[self calculateCurrentCargo];
 	
 	if ([UNIVERSE autoSave])  [UNIVERSE setAutoSaveNow:YES];
 	
-	[self doScriptEvent:OOJSID("playerBoughtCargo") withArguments:[NSArray arrayWithObjects:CommodityTypeToString(index), [NSNumber numberWithInt:purchase], [NSNumber numberWithUnsignedLongLong:pricePerUnit], nil]];
-	if ([UNIVERSE legalStatusOfCommodity:[market_commodity objectAtIndex:MARKET_NAME]] > 0)
+	[self doScriptEvent:OOJSID("playerBoughtCargo") withArguments:@[CommodityTypeToString(index), @(purchase), @(pricePerUnit)]];
+	if ([UNIVERSE legalStatusOfCommodity:market_commodity[MARKET_NAME]] > 0)
 	{
-		[roleWeightFlags setObject:[NSNumber numberWithInt:1] forKey:@"bought-illegal"];
+		roleWeightFlags[@"bought-illegal"] = @1;
 	}
 	else
 	{
-		[roleWeightFlags setObject:[NSNumber numberWithInt:1] forKey:@"bought-legal"];
+		roleWeightFlags[@"bought-legal"] = @1;
 	}
 	
 	return YES;
@@ -9128,17 +9128,17 @@ static NSString *last_outfitting_key=nil;
 	market_quantity += sell;
 	credits += pricePerUnit * sell;
 	
-	[manifest_commodity replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt:manifest_quantity]];
-	[market_commodity replaceObjectAtIndex:MARKET_QUANTITY withObject:[NSNumber numberWithInt:market_quantity]];
-	[manifest replaceObjectAtIndex:index withObject:[NSArray arrayWithArray:manifest_commodity]];
-	[localMarket replaceObjectAtIndex:index withObject:[NSArray arrayWithArray:market_commodity]];
+	manifest_commodity[MARKET_QUANTITY] = @(manifest_quantity);
+	market_commodity[MARKET_QUANTITY] = @(market_quantity);
+	manifest[index] = [NSArray arrayWithArray:manifest_commodity];
+	localMarket[index] = [NSArray arrayWithArray:market_commodity];
 	
 	[shipCommodityData release];
-	shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
+	shipCommodityData = [[NSMutableArray arrayWithArray:manifest] retain];
 	
 	if ([UNIVERSE autoSave]) [UNIVERSE setAutoSaveNow:YES];
 	
-	[self doScriptEvent:OOJSID("playerSoldCargo") withArguments:[NSArray arrayWithObjects:CommodityTypeToString(index), [NSNumber numberWithInt:sell], [NSNumber numberWithInt: pricePerUnit], nil]];
+	[self doScriptEvent:OOJSID("playerSoldCargo") withArguments:@[CommodityTypeToString(index), @(sell), @(pricePerUnit)]];
 	
 	return YES;
 }
@@ -9232,7 +9232,7 @@ static NSString *last_outfitting_key=nil;
 	}
 	else if ([equipment isKindOfClass:[NSString class]])
 	{
-		eqEnum = [[NSArray arrayWithObject:equipment] objectEnumerator];
+		eqEnum = [@[equipment] objectEnumerator];
 	}
 	else
 	{
@@ -9278,7 +9278,7 @@ static NSString *last_outfitting_key=nil;
 	}
 	else if ([equipment isKindOfClass:[NSString class]])
 	{
-		eqEnum = [[NSArray arrayWithObject:equipment] objectEnumerator];
+		eqEnum = [@[equipment] objectEnumerator];
 	}
 	// Now remove items that should not be in the equipment list.
 	while ((eqDesc = [eqEnum nextObject]))
@@ -9623,7 +9623,7 @@ static NSString *last_outfitting_key=nil;
 		[trumbleArray addObject:[trumble[i] dictionary]];
 	}
 	
-	return [NSArray arrayWithObjects:[NSNumber numberWithUnsignedInteger:trumbleCount], [NSNumber numberWithInt:trumbleHash], trumbleArray, nil];
+	return @[@(trumbleCount), @(trumbleHash), trumbleArray];
 }
 
 
@@ -9821,14 +9821,14 @@ static NSString *last_outfitting_key=nil;
 			// find and use a blank space in memory
 			if (i != NSNotFound)
 			{
-				[target_memory replaceObjectAtIndex:i withObject:targetRef];
+				target_memory[i] = targetRef;
 				target_memory_index = i;
 			}
 			else
 			{
 				// use the next memory space
 				target_memory_index = (target_memory_index + 1) % PLAYER_TARGET_MEMORY_SIZE;
-				[target_memory replaceObjectAtIndex:target_memory_index withObject:targetRef];
+				target_memory[target_memory_index] = targetRef;
 			}
 		}
 	}
@@ -9865,7 +9865,7 @@ static NSString *last_outfitting_key=nil;
 	{
 		if (j > i)
 		{
-			[target_memory replaceObjectAtIndex:i withObject:[NSNull null]];
+			target_memory[i] = [NSNull null];
 		}
 		else
 		{
@@ -9889,7 +9889,7 @@ static NSString *last_outfitting_key=nil;
 		target_memory_index += delta;
 		while (target_memory_index < 0)  target_memory_index += PLAYER_TARGET_MEMORY_SIZE;
 		while (target_memory_index >= PLAYER_TARGET_MEMORY_SIZE)  target_memory_index -= PLAYER_TARGET_MEMORY_SIZE;
-		id targ_id = [target_memory objectAtIndex:target_memory_index];
+		id targ_id = target_memory[target_memory_index];
 		if ([targ_id isProxy])
 		{
 			ShipEntity *potential_target = [(OOWeakReference *)targ_id weakRefUnderlyingObject];
@@ -9925,7 +9925,7 @@ static NSString *last_outfitting_key=nil;
 			}
 			else
 			{
-				[target_memory replaceObjectAtIndex:target_memory_index withObject:[NSNull null]];
+				target_memory[target_memory_index] = [NSNull null];
 			}
 		}
 	}
@@ -10550,13 +10550,13 @@ else _dockTarget = NO_TARGET;
 
 	for (keyEnum = [destinations keyEnumerator]; (key = [keyEnum nextObject]); )
 	{
-		value = [destinations objectForKey:key];
+		value = destinations[key];
 		if (value != nil)
 		{
 			if ([value isKindOfClass:[NSDictionary class]])
 			{
 				value = [value mutableCopy];
-				[missionDestinations setObject:value forKey:key];
+				missionDestinations[key] = value;
 				[value release];
 			}
 		}
@@ -10590,7 +10590,7 @@ else _dockTarget = NO_TARGET;
 		return;
 	}
 	
-	[missionDestinations setObject:validated forKey:[self markerKey:validated]];
+	missionDestinations[[self markerKey:validated]] = validated;
 }
 
 
@@ -10602,7 +10602,7 @@ else _dockTarget = NO_TARGET;
 		return NO;
 	}
 	BOOL result = NO;
-	if ([missionDestinations objectForKey:[self markerKey:validated]] != nil) {
+	if (missionDestinations[[self markerKey:validated]] != nil) {
 		result = YES;
 	}
 	[missionDestinations removeObjectForKey:[self markerKey:validated]];

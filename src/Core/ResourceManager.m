@@ -129,11 +129,11 @@ static NSMutableDictionary *sOXPManifests;
 	result = [NSMutableArray arrayWithCapacity:count];
 	for (i = 0; i != count; ++i)
 	{
-		error = [sErrors objectAtIndex:i];
+		error = sErrors[i];
 		errStr = [UNIVERSE descriptionForKey:[error oo_stringAtIndex:0]];
 		if (errStr != nil)
 		{
-			errStr = [NSString stringWithFormat:errStr, [error objectAtIndex:1], [error objectAtIndex:2]];
+			errStr = [NSString stringWithFormat:errStr, error[1], error[2]];
 			[result addObject:errStr];
 		}
 	}
@@ -312,7 +312,7 @@ static NSMutableDictionary *sOXPManifests;
 			sSearchPaths = [[NSMutableArray alloc] init];
 		}
 	}
-	return sUseAddOns ? [self pathsWithAddOns] : (NSArray *)[NSArray arrayWithObject:[self builtInPath]];
+	return sUseAddOns ? [self pathsWithAddOns] : (NSArray *)@[[self builtInPath]];
 }
 
 
@@ -415,7 +415,7 @@ static NSMutableDictionary *sOXPManifests;
 	}
 	if (!requirementsMet)
 	{
-		NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+		NSString *version = [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"];
 		OOLog(@"oxp.versionMismatch", @"OXP %@ is incompatible with version %@ of Oolite.", path, version);
 		[self addErrorWithKey:@"oxp-is-incompatible" param1:[path lastPathComponent] param2:version];
 		return;
@@ -487,21 +487,21 @@ static NSMutableDictionary *sOXPManifests;
 	NSString *maxRequired = [manifest oo_stringForKey:kOOManifestMaximumOoliteVersion defaultValue:nil];
 	if (maxRequired == nil)
 	{
-		OK = [self areRequirementsFulfilled:[NSDictionary dictionaryWithObjectsAndKeys:required, @"version", nil] forOXP:title andFile:@"manifest.plist"];
+		OK = [self areRequirementsFulfilled:@{@"version": required} forOXP:title andFile:@"manifest.plist"];
 	}
 	else
 	{
-		OK = [self areRequirementsFulfilled:[NSDictionary dictionaryWithObjectsAndKeys:required, @"version", maxRequired, @"max_version", nil] forOXP:title andFile:@"manifest.plist"];
+		OK = [self areRequirementsFulfilled:@{@"version": required, @"max_version": maxRequired} forOXP:title andFile:@"manifest.plist"];
 	}
 	if (!OK)
 	{
-		NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+		NSString *version = [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"];
 		OOLog(@"oxp.versionMismatch", @"OXP %@ is incompatible with version %@ of Oolite.", path, version);
 		[self addErrorWithKey:@"oxp-is-incompatible" param1:[path lastPathComponent] param2:version];
 		return NO;
 	}
 
-	NSDictionary *duplicate = [sOXPManifests objectForKey:identifier];
+	NSDictionary *duplicate = sOXPManifests[identifier];
 	if (duplicate != nil)
 	{
 		OOLog(@"oxp.duplicate", @"OXP %@ has the same identifier (%@) as %@ which has already been loaded.",path,identifier,[duplicate oo_stringForKey:kOOManifestFilePath]);
@@ -509,9 +509,9 @@ static NSMutableDictionary *sOXPManifests;
 		return NO;
 	}
 	NSMutableDictionary *mData = [NSMutableDictionary dictionaryWithDictionary:manifest];
-	[mData setObject:path forKey:kOOManifestFilePath];
+	mData[kOOManifestFilePath] = path;
 	// add an extra key
-	[sOXPManifests setObject:mData forKey:identifier];
+	sOXPManifests[identifier] = mData;
 	return YES;
 }
 
@@ -529,7 +529,7 @@ static NSMutableDictionary *sOXPManifests;
 	
 	if (ooVersionComponents == nil)
 	{
-		ooVersionComponents = ComponentsFromVersionString([[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]);
+		ooVersionComponents = ComponentsFromVersionString([[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"]);
 		[ooVersionComponents retain];
 	}
 	
@@ -537,7 +537,7 @@ static NSMutableDictionary *sOXPManifests;
 	if (OK)
 	{
 		// Not oo_stringForKey:, because we need to be able to complain about non-strings.
-		requiredVersion = [requirements objectForKey:@"version"];
+		requiredVersion = requirements[@"version"];
 		if (requiredVersion != nil)
 		{
 			++conditionsHandled;
@@ -558,7 +558,7 @@ static NSMutableDictionary *sOXPManifests;
 	if (OK)
 	{
 		// Not oo_stringForKey:, because we need to be able to complain about non-strings.
-		maxVersion = [requirements objectForKey:@"max_version"];
+		maxVersion = requirements[@"max_version"];
 		if (maxVersion != nil)
 		{
 			++conditionsHandled;
@@ -600,7 +600,7 @@ static NSMutableDictionary *sOXPManifests;
 	// foreach identified add-on
 	foreach (identifier, identifiers)
 	{
-		manifest = [sOXPManifests objectForKey:identifier];
+		manifest = sOXPManifests[identifier];
 		if (manifest != nil)
 		{
 			conflicts = [manifest oo_arrayForKey:kOOManifestConflictOXPs defaultValue:nil];
@@ -611,7 +611,7 @@ static NSMutableDictionary *sOXPManifests;
 				foreach (conflicting, conflicts)
 				{
 					conflictID = [conflicting oo_stringForKey:kOOManifestRelationIdentifier];
-					conflictManifest = [sOXPManifests objectForKey:conflictID];
+					conflictManifest = sOXPManifests[conflictID];
 					// if the other OXP is in the list
 					if (conflictManifest != nil)
 					{
@@ -649,7 +649,7 @@ static NSMutableDictionary *sOXPManifests;
 	// foreach identified add-on
 	foreach (identifier, identifiers)
 	{
-		manifest = [sOXPManifests objectForKey:identifier];
+		manifest = sOXPManifests[identifier];
 		if (manifest != nil)
 		{
 			requireds = [manifest oo_arrayForKey:kOOManifestRequiresOXPs defaultValue:nil];
@@ -660,7 +660,7 @@ static NSMutableDictionary *sOXPManifests;
 				foreach (required, requireds)
 				{
 					requiredID = [required oo_stringForKey:kOOManifestRelationIdentifier];
-					requiredManifest = [sOXPManifests objectForKey:requiredID];
+					requiredManifest = sOXPManifests[requiredID];
 					// if the other OXP is in the list
 					BOOL requirementsMet = NO;
 					if (requiredManifest != nil)
@@ -725,7 +725,7 @@ static NSMutableDictionary *sOXPManifests;
 	if (descriptionKey != nil)
 	{
 		if (sErrors == nil)  sErrors = [[NSMutableArray alloc] init];
-		[sErrors addObject:[NSArray arrayWithObjects:descriptionKey, param1 ?: (id)@"", param2 ?: (id)@"", nil]];
+		[sErrors addObject:@[descriptionKey, param1 ?: (id)@"", param2 ?: (id)@""]];
 	}
 }
 
@@ -771,11 +771,11 @@ static NSMutableDictionary *sOXPManifests;
 	modDates = [NSMutableArray arrayWithCapacity:[searchPaths count]];
 	for (pathEnum = [searchPaths objectEnumerator]; (path = [pathEnum nextObject]); )
 	{
-		modDate = [[fmgr oo_fileAttributesAtPath:path traverseLink:YES] objectForKey:NSFileModificationDate];
+		modDate = [fmgr oo_fileAttributesAtPath:path traverseLink:YES][NSFileModificationDate];
 		if (modDate != nil)
 		{
 			// Converts to double because I'm not sure the cache can deal with dates under GNUstep.
-			modDate = [NSNumber numberWithDouble:[modDate timeIntervalSince1970]];
+			modDate = @([modDate timeIntervalSince1970]);
 			[modDates addObject:modDate];
 		}
 	}
@@ -966,7 +966,7 @@ static NSMutableDictionary *sOXPManifests;
 			// Special handling for arrays merging. Currently, equipment.plist only gets its objects merged.
 			// A lookup index is required. For the equipment.plist items, this is the index corresponging to the
 			// EQ_* string, which describes the role of an equipment item and is unique.
-			if ([array count] != 0 && [[array objectAtIndex:0] isKindOfClass:[NSArray class]])
+			if ([array count] != 0 && [array[0] isKindOfClass:[NSArray class]])
 			{
 				if ([[fileName lowercaseString] isEqualToString:@"equipment.plist"])
 					[self handleEquipmentListMerging:results forLookupIndex:3]; // Index 3 is the role string (EQ_*).
@@ -977,7 +977,7 @@ static NSMutableDictionary *sOXPManifests;
 				array = [[OOArrayFromFile(arrayPath) mutableCopy] autorelease];
 				if (array != nil)  [results addObject:array];
 				
-				if ([array count] != 0 && [[array objectAtIndex:0] isKindOfClass:[NSArray class]])
+				if ([array count] != 0 && [array[0] isKindOfClass:[NSArray class]])
 				{
 					if ([[fileName lowercaseString] isEqualToString:@"equipment.plist"])
 						[self handleEquipmentListMerging:results forLookupIndex:3]; // Index 3 is the role string (EQ_*).
@@ -1009,7 +1009,7 @@ static NSMutableDictionary *sOXPManifests;
 + (void) handleEquipmentListMerging: (NSMutableArray *)arrayToProcess forLookupIndex:(unsigned)lookupIndex
 {
 	NSUInteger i,j,k;
-	NSMutableArray *refArray = [arrayToProcess objectAtIndex:[arrayToProcess count] - 1];
+	NSMutableArray *refArray = arrayToProcess[[arrayToProcess count] - 1];
 	
 	// Any change to arrayRef will directly modify arrayToProcess.
 	
@@ -1027,7 +1027,7 @@ static NSMutableDictionary *sOXPManifests;
 				
 				if ([processValue isEqual:refValue])
 				{
-					[[arrayToProcess objectAtIndex:j] replaceObjectAtIndex:k withObject:[refArray objectAtIndex:i]];
+					arrayToProcess[j][k] = refArray[i];
 					[refArray removeObjectAtIndex:i];
 				}
 			}
@@ -1107,7 +1107,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 		{
 			if (![coreRoots containsObject:LogClassKeyRoot(key)])
 			{
-				[logControl setObject:[dict objectForKey:key] forKey:key];
+				logControl[key] = dict[key];
 			}
 		}
 	}
@@ -1126,7 +1126,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 		}
 		foreachkey (key, dict)
 		{
-			[logControl setObject:[dict objectForKey:key] forKey:key];
+			logControl[key] = dict[key];
 		}
 	}
 	
@@ -1160,7 +1160,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 	
 	/* If the old pirate-victim-roles files exist, merge them in */
 	NSArray *pirateVictims = [ResourceManager arrayFromFilesNamed:@"pirate-victim-roles.plist" inFolder:@"Config" andMerge:YES];
-	[ResourceManager mergeRoleCategories:[NSDictionary dictionaryWithObject:pirateVictims forKey:@"oolite-pirate-victim"] intoDictionary:roleCategories];
+	[ResourceManager mergeRoleCategories:@{@"oolite-pirate-victim": pirateVictims} intoDictionary:roleCategories];
 
 	return [[roleCategories copy] autorelease];
 }
@@ -1173,11 +1173,11 @@ static NSString *LogClassKeyRoot(NSString *key)
 	NSString *key;
 	foreachkey(key, catData)
 	{
-		contents = [categories objectForKey:key];
+		contents = categories[key];
 		if (contents == nil)
 		{
 			contents = [NSMutableSet setWithCapacity:16];
-			[categories setObject:contents forKey:key];
+			categories[key] = contents;
 		}
 		catDataEntry = [catData oo_arrayForKey:key];
 		OOLog(@"shipData.load.roleCategories", @"Adding %ld entries for category %@", (unsigned long)[catDataEntry count], key);
@@ -1218,7 +1218,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 						[mutableValue addEntriesFromDictionary:inherited];
 					}
 					
-					[dict setObject:[[mutableValue copy] autorelease] forKey:key];
+					dict[key] = [[mutableValue copy] autorelease];
 				}
 			}
 		} while (changeCount != 0);
@@ -1305,7 +1305,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 		if (*ioCache != nil)
 		{
 			// return the cached object, if any
-			result = [*ioCache objectForKey:key];
+			result = (*ioCache)[key];
 			if (result)  return result;
 		}
 	}
@@ -1316,7 +1316,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 	if (result != nil && ioCache != NULL)
 	{
 		if (*ioCache == nil)  *ioCache = [[NSMutableDictionary alloc] init];
-		[*ioCache setObject:result forKey:key];
+		(*ioCache)[key] = result;
 	}
 	
 	return result;
@@ -1363,7 +1363,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 		if (sStringCache != nil)
 		{
 			// return the cached object, if any
-			result = [sStringCache objectForKey:key];
+			result = sStringCache[key];
 			if (result)  return result;
 		}
 	}
@@ -1374,7 +1374,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 	if (result != nil && useCache)
 	{
 		if (sStringCache == nil)  sStringCache = [[NSMutableDictionary alloc] init];
-		[sStringCache setObject:result forKey:key];
+		sStringCache[key] = result;
 	}
 	
 	return result;
@@ -1410,7 +1410,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 				for (scriptEnum = [results objectEnumerator]; (script = [scriptEnum nextObject]); )
 				{
 					name = [script name];
-					if (name != nil)  [loadedScripts setObject:script forKey:name];
+					if (name != nil)  loadedScripts[name] = script;
 					else  OOLog(@"script.load.unnamed", @"Discarding anonymous script %@", script);
 				}
 			}
@@ -1469,7 +1469,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 		
 		for (NSUInteger i = 0; i < count - 1; i++)
 		{
-			NSString *component = [nameComponents objectAtIndex:i];
+			NSString *component = nameComponents[i];
 			if ([component hasPrefix:@"."])
 			{
 				component = [@"!" stringByAppendingString:[component substringFromIndex:1]];

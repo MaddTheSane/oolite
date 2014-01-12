@@ -78,7 +78,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject);
 	
 	// Use cache to avoid creating duplicate shader programs -- saves on GPU resources and potentially state changes.
 	// FIXME: probably needs to respond to graphics resets.
-	result = [[sShaderCache objectForKey:cacheKey] pointerValue];
+	result = [sShaderCache[cacheKey] pointerValue];
 	
 	if (result == nil)
 	{
@@ -96,7 +96,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject);
 		{
 			// ...and add it to the cache.
 			if (sShaderCache == nil)  sShaderCache = [[NSMutableDictionary alloc] init];
-			[sShaderCache setObject:[NSValue valueWithPointer:result] forKey:cacheKey];	// Use NSValue so dictionary doesn't retain program
+			sShaderCache[cacheKey] = [NSValue valueWithPointer:result];	// Use NSValue so dictionary doesn't retain program
 		}
 	}
 	
@@ -119,7 +119,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject);
 	// Use cache to avoid creating duplicate shader programs -- saves on GPU resources and potentially state changes.
 	// FIXME: probably needs to respond to graphics resets.
 	cacheKey = [NSString stringWithFormat:@"vertex:%@\nfragment:%@\n----\n%@", vertexShaderName, fragmentShaderName, prefixString ?: (NSString *)@""];
-	result = [[sShaderCache objectForKey:cacheKey] pointerValue];
+	result = [sShaderCache[cacheKey] pointerValue];
 	
 	if (result == nil)
 	{
@@ -139,7 +139,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject);
 			// ...and add it to the cache.
 			[result autorelease];
 			if (sShaderCache == nil)  sShaderCache = [[NSMutableDictionary alloc] init];
-			[sShaderCache setObject:[NSValue valueWithPointer:result] forKey:cacheKey];	// Use NSValue so dictionary doesn't retain program
+			sShaderCache[cacheKey] = [NSValue valueWithPointer:result];	// Use NSValue so dictionary doesn't retain program
 		}
 	}
 	
@@ -405,7 +405,7 @@ static BOOL GetShaderSource(NSString *fileName, NSString *shaderType, NSString *
 	result = [ResourceManager stringFromFilesNamed:fileName inFolder:@"Shaders"];
 	if (result == nil)
 	{
-		extensions = [NSArray arrayWithObjects:shaderType, [shaderType substringToIndex:4], nil];	// vertex and vert, or fragment and frag
+		extensions = @[shaderType, [shaderType substringToIndex:4]];	// vertex and vert, or fragment and frag
 		
 		// Futureproofing -- in future, we may wish to support automatic selection between supported shader languages.
 		if (![fileName pathHasExtensionInArray:extensions])
@@ -455,7 +455,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject)
 	}
 	OOGL(glGetInfoLogARB(shaderObject, length, NULL, log));
 	
-	result = [NSString stringWithUTF8String:log];
+	result = @(log);
 	if (result == nil)  result = [[[NSString alloc] initWithBytes:log length:length - 1 encoding:NSISOLatin1StringEncoding] autorelease];
 	free(log);
 	

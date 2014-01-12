@@ -187,8 +187,8 @@ static NSTimeInterval	time_last_frame;
 	keys = [kdic allKeys];
 	for (i = 0; i < [keys count]; i++)
 	{
-		key = [keys objectAtIndex:i];
-		value = [kdic objectForKey: key];
+		key = keys[i];
+		value = kdic[key];
 		iValue = [value intValue];
 		
 		//	for '0' '1' '2' '3' '4' '5' '6' '7' '8' '9' - we want to interpret those as strings - not numbers
@@ -204,14 +204,14 @@ static NSTimeInterval	time_last_frame;
 			else if (iValue <= 0xFF)  keychar = iValue;
 			else continue;
 			
-			[kdic setObject:[NSNumber numberWithUnsignedChar:keychar] forKey:key];
+			kdic[key] = @(keychar);
 		}
 	}
 
 	// set default keys.
-#define LOAD_KEY_SETTING(name, default)	name = [kdic oo_unsignedShortForKey:@#name defaultValue:default]; [kdic setObject:[NSNumber numberWithUnsignedChar:name] forKey:@#name]
+#define LOAD_KEY_SETTING(name, default)	name = [kdic oo_unsignedShortForKey:@#name defaultValue:default]; [kdic setObject:@(name) forKey:@#name]
 
-#define LOAD_KEY_SETTING_ALIAS(name, oldname, default) name = [kdic oo_unsignedShortForKey:@#name defaultValue:[kdic oo_unsignedShortForKey:@#oldname defaultValue:default]]; [kdic setObject:[NSNumber numberWithUnsignedChar:name] forKey:@#name]
+#define LOAD_KEY_SETTING_ALIAS(name, oldname, default) name = [kdic oo_unsignedShortForKey:@#name defaultValue:[kdic oo_unsignedShortForKey:@#oldname defaultValue:default]]; [kdic setObject:@(name) forKey:@#name]
 
 	
 	LOAD_KEY_SETTING(key_roll_left,				gvArrowKeyLeft		);
@@ -531,7 +531,7 @@ static NSTimeInterval	time_last_frame;
 		[UNIVERSE clearPreviousMessage];
 		[UNIVERSE addMessage:[NSString stringWithFormat:DESC(@"witch-to-@-in-f-seconds"), [UNIVERSE getSystemName:target_system_seed], witchspaceCountdown] forCount:1.0];
 		[self doScriptEvent:OOJSID("playerStartedJumpCountdown")
-					withArguments:[NSArray arrayWithObjects:@"standard", [NSNumber numberWithFloat:witchspaceCountdown], nil]];
+					withArguments:@[@"standard", [NSNumber numberWithFloat:witchspaceCountdown]]];
 		[UNIVERSE preloadPlanetTexturesForSystem:target_system_seed];
 	}
 }
@@ -880,7 +880,7 @@ static NSTimeInterval	time_last_frame;
 					hyperspeed_engaged = NO;
 				}
 
-				NSDictionary *functionForThrustAxis = [[stickHandler axisFunctions] oo_dictionaryForKey:[[NSNumber numberWithInt:AXIS_THRUST] stringValue]];
+				NSDictionary *functionForThrustAxis = [[stickHandler axisFunctions] oo_dictionaryForKey:[@(AXIS_THRUST) stringValue]];
 				if([stickHandler joystickCount] != 0 && functionForThrustAxis != nil)
 				{
 					if (flightSpeed < maxFlightSpeed * reqSpeed)
@@ -1348,7 +1348,7 @@ static NSTimeInterval	time_last_frame;
 							// FIXME: how to preload target system for hyperspace jump?
 							
 							[self doScriptEvent:OOJSID("playerStartedJumpCountdown")
-								  withArguments:[NSArray arrayWithObjects:@"galactic", [NSNumber numberWithFloat:witchspaceCountdown], nil]];
+								  withArguments:@[@"galactic", [NSNumber numberWithFloat:witchspaceCountdown]]];
 						}
 					}
 					galhyperspace_pressed = YES;

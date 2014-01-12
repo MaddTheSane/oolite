@@ -288,7 +288,7 @@ static JSBool VisualEffectGetProperty(JSContext *context, JSObject *this, jsid p
 
 		case kVisualEffect_scriptInfo:
 			result = [entity scriptInfo];
-			if (result == nil)  result = [NSDictionary dictionary];	// empty rather than null
+			if (result == nil)  result = @{};	// empty rather than null
 			break;
 
 		default:
@@ -529,7 +529,7 @@ static JSBool VisualEffectGetMaterials(JSContext *context, uintN argc, jsval *vp
 	GET_THIS_EFFECT(thisEnt);
 	
 	result = [[thisEnt mesh] materials];
-	if (result == nil)  result = [NSDictionary dictionary];
+	if (result == nil)  result = @{};
 	OOJS_RETURN_OBJECT(result);
 	
 	OOJS_PROFILE_EXIT
@@ -546,7 +546,7 @@ static JSBool VisualEffectGetShaders(JSContext *context, uintN argc, jsval *vp)
 	GET_THIS_EFFECT(thisEnt);
 	
 	result = [[thisEnt mesh] shaders];
-	if (result == nil)  result = [NSDictionary dictionary];
+	if (result == nil)  result = @{};
 	OOJS_RETURN_OBJECT(result);
 	
 	OOJS_PROFILE_EXIT

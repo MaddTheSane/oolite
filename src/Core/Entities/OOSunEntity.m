@@ -273,12 +273,12 @@ MA 02110-1301, USA.
 				if (sky_bri == 1.0)
 				{	
 					// This sun has now gone nova!
-					[UNIVERSE setSystemDataKey:@"sun_gone_nova" value:[NSNumber numberWithBool:YES]];
+					[UNIVERSE setSystemDataKey:@"sun_gone_nova" value:@YES];
 					OOLog(@"sun.nova.start", @"DEBUG: NOVA original radius %.1f", collision_radius);
 				}
 				discColor[0] = 1.0;	discColor[1] = 1.0;	discColor[2] = 1.0;
 				_novaExpansionTimer += delta_t;
-				NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithFloat:collision_radius + delta_t * _novaExpansionRate], @"sun_radius", [NSNumber numberWithFloat:0.3], @"corona_flare", [NSNumber numberWithFloat:0.05], @"corona_hues", nil];
+				NSDictionary *dict = @{@"sun_radius": @(collision_radius + delta_t * _novaExpansionRate), @"corona_flare": @0.3, @"corona_hues": @0.05};
 				[self changeSunProperty:@"sun_radius" withDictionary:dict];
 			}
 			else
@@ -590,7 +590,7 @@ MA 02110-1301, USA.
 
 - (BOOL) changeSunProperty:(NSString *)key withDictionary:(NSDictionary*) dict
 {
-	id	object = [dict objectForKey:key];
+	id	object = dict[key];
 	static GLfloat oldRadius = 0.0;
 	if ([key isEqualToString:@"sun_radius"])
 	{

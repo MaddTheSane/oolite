@@ -50,7 +50,7 @@ NSMutableArray *ScanTokensFromString(NSString *values)
 	static NSCharacterSet	*space_set = nil;
 	
 	// Note: Shark suggests we're getting a lot of early exits, but testing showed a pretty steady 2% early exit rate.
-	if (EXPECT_NOT(values == nil))  return [NSArray array];
+	if (EXPECT_NOT(values == nil))  return @[];
 	if (EXPECT_NOT(space_set == nil)) space_set = [[NSCharacterSet whitespaceAndNewlineCharacterSet] retain];
 	
 	result = [NSMutableArray array];
@@ -213,8 +213,8 @@ NSPoint PointFromString(NSString *xyString)
 	NSUInteger n_tokens = [tokens count];
 	if (n_tokens == 2)
 	{
-		result.x = [[tokens objectAtIndex:0] floatValue];
-		result.y = [[tokens objectAtIndex:1] floatValue];
+		result.x = [tokens[0] floatValue];
+		result.y = [tokens[1] floatValue];
 	}
 	return result;
 }
@@ -341,22 +341,22 @@ NSArray *ComponentsFromVersionString(NSString *string)
 	NSArray				*stringComponents = nil;
 	NSMutableArray		*result = nil;
 	NSUInteger			i, count;
-	int					value;
+	unsigned int		value;
 	id					component;
 	
 	stringComponents = [string componentsSeparatedByString:@" "];
-	stringComponents = [[stringComponents objectAtIndex:0] componentsSeparatedByString:@"-"];
-	stringComponents = [[stringComponents objectAtIndex:0] componentsSeparatedByString:@"."];
+	stringComponents = [stringComponents[0] componentsSeparatedByString:@"-"];
+	stringComponents = [stringComponents[0] componentsSeparatedByString:@"."];
 	count = [stringComponents count];
 	result = [NSMutableArray arrayWithCapacity:count];
 	
 	for (i = 0; i != count; ++i)
 	{
-		component = [stringComponents objectAtIndex:i];
+		component = stringComponents[i];
 		if ([component respondsToSelector:@selector(intValue)])  value = MAX([component intValue], 0);
 		else  value = 0;
 		
-		[result addObject:[NSNumber numberWithUnsignedInt:value]];
+		[result addObject:@(value)];
 	}
 	
 	return result;

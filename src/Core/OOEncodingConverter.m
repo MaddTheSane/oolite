@@ -171,7 +171,7 @@ static unsigned				sCacheMisses = 0;
 	for (substEnum = [_substitutions keyEnumerator]; (subst = [substEnum nextObject]); )
 	{
 		[mutable replaceOccurrencesOfString:subst
-								 withString:[_substitutions objectForKey:subst]
+								 withString:_substitutions[subst]
 									options:0
 									  range:NSMakeRange(0, [mutable length])];
 	}

@@ -445,7 +445,7 @@ static NSString *sGlobalTraceContext = nil;
 	if (EXPECT_NOT(sLiveTextureCache == nil))  sLiveTextureCache = [[NSMutableDictionary alloc] init];
 	
 	SET_TRACE_CONTEXT(@"in-use textures cache - SHOULD NOT RETAIN");
-	[sLiveTextureCache setObject:[NSValue valueWithPointer:self] forKey:cacheKey];
+	sLiveTextureCache[cacheKey] = [NSValue valueWithPointer:self];
 	CLEAR_TRACE_CONTEXT();
 	
 	// Add self to recent textures cache.
@@ -483,7 +483,7 @@ static NSString *sGlobalTraceContext = nil;
 #ifndef OOTEXTURE_NO_CACHE
 	if (key != nil)
 	{
-		return (OOTexture *)[[sLiveTextureCache objectForKey:key] pointerValue];
+		return (OOTexture *)[sLiveTextureCache[key] pointerValue];
 	}
 	return nil;
 #else
@@ -609,7 +609,7 @@ static NSString *sGlobalTraceContext = nil;
 
 - (NSDictionary *) oo_textureSpecifierForKey:(id)key defaultName:(NSString *)name
 {
-	return OOTextureSpecFromObject([self objectForKey:key], name);
+	return OOTextureSpecFromObject(self[key], name);
 }
 
 @end
@@ -618,7 +618,7 @@ static NSString *sGlobalTraceContext = nil;
 
 - (NSDictionary *) oo_textureSpecifierAtIndex:(unsigned)index defaultName:(NSString *)name
 {
-	return OOTextureSpecFromObject([self objectAtIndex:index], name);
+	return OOTextureSpecFromObject(self[index], name);
 }
 
 @end
@@ -629,7 +629,7 @@ NSDictionary *OOTextureSpecFromObject(id object, NSString *defaultName)
 	if ([object isKindOfClass:[NSString class]])
 	{
 		if ([object isEqualToString:@""])  return nil;
-		return [NSDictionary dictionaryWithObject:object forKey:@"name"];
+		return @{@"name": object};
 	}
 	if (![object isKindOfClass:[NSDictionary class]])  return nil;
 	
@@ -638,7 +638,7 @@ NSDictionary *OOTextureSpecFromObject(id object, NSString *defaultName)
 	
 	// If we get here, there's no "name" key and there is a default, so we fill it in:
 	NSMutableDictionary *mutableResult = [NSMutableDictionary dictionaryWithDictionary:object];
-	[mutableResult setObject:[[defaultName copy] autorelease] forKey:@"name"];
+	mutableResult[@"name"] = [[defaultName copy] autorelease];
 	return mutableResult;
 }
 
@@ -754,7 +754,7 @@ NSDictionary *OOMakeTextureSpecifier(NSString *name, OOTextureFlags options, flo
 {
 	NSMutableDictionary *result = [NSMutableDictionary dictionary];
 	
-	[result setObject:name forKey:kOOTextureSpecifierNameKey];
+	result[kOOTextureSpecifierNameKey] = name;
 	
 	if (anisotropy != kOOTextureDefaultAnisotropy)  [result oo_setFloat:anisotropy forKey:kOOTextureSpecifierAnisotropyKey];
 	if (lodBias != kOOTextureDefaultLODBias)  [result oo_setFloat:lodBias forKey:kOOTextureSpecifierLODBiasKey];
@@ -783,7 +783,7 @@ NSDictionary *OOMakeTextureSpecifier(NSString *name, OOTextureFlags options, flo
 				value = @"mipmap";
 				break;
 		}
-		if (value != nil)  [result setObject:value forKey:kOOTextureSpecifierNoShrinkKey];
+		if (value != nil)  result[kOOTextureSpecifierNoShrinkKey] = value;
 		
 		value = nil;
 		switch (options & kOOTextureMagFilterMask)
@@ -795,7 +795,7 @@ NSDictionary *OOMakeTextureSpecifier(NSString *name, OOTextureFlags options, flo
 			case kOOTextureMagFilterLinear:
 				break;
 		}
-		if (value != nil)  [result setObject:value forKey:kOOTextureSpecifierMagFilterKey];
+		if (value != nil)  result[kOOTextureSpecifierMagFilterKey] = value;
 		
 		value = nil;
 		switch (options & kOOTextureExtractChannelMask)
@@ -819,7 +819,7 @@ NSDictionary *OOMakeTextureSpecifier(NSString *name, OOTextureFlags options, flo
 				value = @"a";
 				break;
 		}
-		if (value != nil)  [result setObject:value forKey:kOOTextureSpecifierSwizzleKey];
+		if (value != nil)  result[kOOTextureSpecifierSwizzleKey] = value;
 		
 		if (options & kOOTextureNoShrink)  [result oo_setBool:YES forKey:kOOTextureSpecifierNoShrinkKey];
 		if (options & kOOTextureRepeatS)  [result oo_setBool:YES forKey:kOOTextureSpecifierRepeatSKey];

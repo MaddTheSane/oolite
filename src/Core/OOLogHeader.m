@@ -160,7 +160,7 @@ void OOPrintLogHeader(void)
 	#if (defined (SNAPSHOT_BUILD) && defined (OOLITE_SNAPSHOT_VERSION))
 		versionString = @"development version " OOLITE_SNAPSHOT_VERSION;
 	#else
-		versionString = [NSString stringWithFormat:@"version %@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]];
+		versionString = [NSString stringWithFormat:@"version %@", [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"]];
 	#endif
 	if (versionString == nil)  versionString = @"<unknown version>";
 	
@@ -299,7 +299,7 @@ static NSString *GetSysCtlString(const char *name)
 	
 	buffer = alloca(size);
 	if (sysctlbyname(name, buffer, &size, NULL, 0) != 0)  return nil;
-	return [NSString stringWithUTF8String:buffer];
+	return @(buffer);
 }
 
 

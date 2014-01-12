@@ -92,7 +92,7 @@ static NSString * const kStageName	= @"Checking requires.plist";
 	}
 	
 	// Sanity check the known keys.
-	version = [requiresPList objectForKey:@"version"];
+	version = requiresPList[@"version"];
 	if (version != nil)
 	{
 		if (![version isKindOfClass:[NSString class]])
@@ -102,7 +102,7 @@ static NSString * const kStageName	= @"Checking requires.plist";
 		}
 	}
 	
-	maxVersion = [requiresPList objectForKey:@"max_version"];
+	maxVersion = requiresPList[@"max_version"];
 	if (maxVersion != nil)
 	{
 		if (![maxVersion isKindOfClass:[NSString class]])
@@ -114,7 +114,7 @@ static NSString * const kStageName	= @"Checking requires.plist";
 	
 	if (version != nil || maxVersion != nil)
 	{
-		ooVersionComponents = ComponentsFromVersionString([[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]);
+		ooVersionComponents = ComponentsFromVersionString([[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"]);
 		if (ooVersionComponents == nil)
 		{
 			OOLog(@"verifyOXP.requiresPList.cantFindOoliteVersion", @"----- WARNING: could not find Oolite's version for requires.plist sanity check.");

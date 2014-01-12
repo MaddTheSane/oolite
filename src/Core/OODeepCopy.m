@@ -117,7 +117,7 @@ id OODeepCopy(id object)
 	BOOL					tempObjects = NO;
 	
 	count = [self count];
-	if (count == 0)  return [[NSArray array] retain];
+	if (count == 0)  return [@[] retain];
 	
 	members = calloc(sizeof *members, count);
 	if (members == NULL)
@@ -232,7 +232,7 @@ id OODeepCopy(id object)
 	BOOL					tempObjects = NO;
 	
 	count = [self count];
-	if (count == 0)  return [[NSDictionary dictionary] retain];
+	if (count == 0)  return [@{} retain];
 	
 	keys = malloc(sizeof *keys * count);
 	values = malloc(sizeof *values * count);
@@ -258,7 +258,7 @@ id OODeepCopy(id object)
 		foreachkey (key, self)
 		{
 			keys[i] = [key ooDeepCopyWithSharedObjects:objects];
-			values[i] = [[self objectForKey:key] ooDeepCopyWithSharedObjects:objects];
+			values[i] = [self[key] ooDeepCopyWithSharedObjects:objects];
 			i++;
 		}
 		

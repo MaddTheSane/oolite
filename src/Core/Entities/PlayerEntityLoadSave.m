@@ -228,14 +228,14 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 
 		NSDictionary *scenario = nil;
 
-		[gui setArray:[NSArray arrayWithObjects:DESC(@"oolite-scenario-exit"), @" <----- ", nil] forRow:start_row - 2];
+		[gui setArray:@[DESC(@"oolite-scenario-exit"), @" <----- "] forRow:start_row - 2];
 		[gui setColor:[OOColor redColor] forRow:start_row - 2];
 		[gui setKey:@"exit" forRow:start_row - 2];
 		
 
 		if (page > 0)
 		{
-			[gui setArray:[NSArray arrayWithObjects:DESC(@"gui-back"), @" <-- ", nil] forRow:start_row - 1];
+			[gui setArray:@[DESC(@"gui-back"), @" <-- "] forRow:start_row - 1];
 			[gui setColor:[OOColor greenColor] forRow:start_row - 1];
 			[gui setKey:[NSString stringWithFormat:@"__page:%i",page-1] forRow:start_row - 1];
 		}
@@ -244,7 +244,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 
 		for (i = page*n_rows ; i < count && row < start_row + n_rows ; i++)
 		{
-			scenario = [[UNIVERSE scenarios] objectAtIndex:i];
+			scenario = [UNIVERSE scenarios][i];
 			[gui setText:OOExpand([NSString stringWithFormat:@" %@ ",[scenario oo_stringForKey:@"name"]]) forRow:row];
 			[gui setKey:[NSString stringWithFormat:@"Scenario:%lu", (unsigned long)i] forRow:row];
 			++row;
@@ -252,7 +252,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 
 		if ((page+1) * n_rows < count)
 		{
-			[gui setArray:[NSArray arrayWithObjects:DESC(@"gui-more"), @" --> ", nil] forRow:row];
+			[gui setArray:@[DESC(@"gui-more"), @" --> "] forRow:row];
 			[gui setColor:[OOColor greenColor] forRow:row];
 			[gui setKey:[NSString stringWithFormat:@"__page:%i",page+1] forRow:row];
 			++row;
@@ -296,7 +296,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	[ship setPitch: M_PI/25.0];
 	if([ship pendingEscortCount] > 0) [ship setPendingEscortCount:0];
 	[ship setAITo: @"nullAI.plist"];
-	id subEntStatus = [shipData objectForKey:@"subentities_status"];
+	id subEntStatus = shipData[@"subentities_status"];
 	// show missing subentities if there's a subentities_status key
 	if (subEntStatus != nil) [ship deserializeShipSubEntitiesFrom:(NSString *)subEntStatus];
 	[UNIVERSE addEntity: ship];
@@ -318,7 +318,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	if ([key hasPrefix:@"Scenario"])
 	{
 		int item = [[key componentsSeparatedByString:@":"] oo_intAtIndex:1];
-		NSDictionary *scenario = [[UNIVERSE scenarios] objectAtIndex:item];
+		NSDictionary *scenario = [UNIVERSE scenarios][item];
 		[self setShowDemoShips:NO];
 		for (NSUInteger i=GUI_ROW_SCENARIOS_DETAIL;i<=27;i++)
 		{
@@ -357,7 +357,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	}
 	int selection = [[key componentsSeparatedByString:@":"] oo_intAtIndex:1];
 
-	NSDictionary *scenario = [[UNIVERSE scenarios] objectAtIndex:selection];
+	NSDictionary *scenario = [UNIVERSE scenarios][selection];
 	NSString *file = [scenario oo_stringForKey:@"file" defaultValue:nil];
 	if (file == nil) 
 	{
@@ -813,7 +813,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	NSOpenPanel *oPanel = [NSOpenPanel openPanel];
 	
 	oPanel.allowsMultipleSelection = NO;
-	oPanel.allowedFileTypes = [NSArray arrayWithObject:@"oolite-save"];
+	oPanel.allowedFileTypes = @[@"oolite-save"];
 	
 	if ([oPanel runModal] == NSOKButton)
 	{
@@ -832,7 +832,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 {
 	NSSavePanel *sPanel = [NSSavePanel savePanel];
 	
-	sPanel.allowedFileTypes = [NSArray arrayWithObject:@"oolite-save"];
+	sPanel.allowedFileTypes = @[@"oolite-save"];
 	sPanel.canSelectHiddenExtension = YES;
 	sPanel.nameFieldStringValue = self.lastsaveName;
 	

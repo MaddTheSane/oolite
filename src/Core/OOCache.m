@@ -374,8 +374,8 @@ static void CacheCheckIntegrity(OOCacheImpl *cache, NSString *context);
 	{
 		if ([entry isKindOfClass:[NSDictionary class]])
 		{
-			key = [entry objectForKey:kSerializedEntryKeyKey];
-			value = [entry objectForKey:kSerializedEntryKeyValue];
+			key = entry[kSerializedEntryKeyKey];
+			value = entry[kSerializedEntryKeyValue];
 			if ([key isKindOfClass:[NSString class]] && value != nil)
 			{
 				[self setObject:value forKey:key];
@@ -558,7 +558,7 @@ static NSArray *CacheArrayOfNodesByAge(OOCacheImpl *cache)
 	
 	for (node = cache->oldest; node != NULL; node = node->younger)
 	{
-		[result addObject:[NSDictionary dictionaryWithObjectsAndKeys:node->key, kSerializedEntryKeyKey, node->value, kSerializedEntryKeyValue, nil]];
+		[result addObject:@{kSerializedEntryKeyKey: node->key, kSerializedEntryKeyValue: node->value}];
 	}
 	return result;
 }

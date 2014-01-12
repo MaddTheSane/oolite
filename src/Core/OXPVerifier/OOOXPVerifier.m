@@ -171,7 +171,7 @@ static void OpenLogFile(NSString *name);
 	}
 		
 	// We can only have one stage with a given name. Registering the same stage twice is OK, though.
-	existing = [_stagesByName objectForKey:name];
+	existing = _stagesByName[name];
 	if (existing == stage)  return;
 	if (existing != nil)
 	{
@@ -181,7 +181,7 @@ static void OpenLogFile(NSString *name);
 	
 	// Checks passed, store state.
 	[stage setVerifier:self];
-	[_stagesByName setObject:stage forKey:name];
+	_stagesByName[name] = stage;
 	[_waitingStages addObject:stage];
 }
 
@@ -202,13 +202,13 @@ static void OpenLogFile(NSString *name);
 {
 	if (name == nil)  return nil;
 	
-	return [_stagesByName objectForKey:name];
+	return _stagesByName[name];
 }
 
 
 - (id)configurationValueForKey:(NSString *)key
 {
-	return [_verifierPList objectForKey:key];
+	return _verifierPList[key];
 }
 
 
@@ -399,15 +399,13 @@ static void OpenLogFile(NSString *name);
 		dependencies = [stage dependencies];
 		if (dependencies != nil)
 		{
-			[dependenciesByStage setObject:dependencies
-									forKey:key];
+			dependenciesByStage[key] = dependencies;
 		}
 		
 		dependents = [stage dependents];
 		if (dependents != nil)
 		{
-			[dependentsByStage setObject:dependents
-								  forKey:key];
+			dependentsByStage[key] = dependents;
 		}
 	}
 	[_waitingStages release];
@@ -419,7 +417,7 @@ static void OpenLogFile(NSString *name);
 	
 	for (stageEnum = [stageKeys objectEnumerator]; (stageKey = [stageEnum nextObject]); )
 	{
-		stage = [_stagesByName objectForKey:stageKey];
+		stage = _stagesByName[stageKey];
 		if (stage == nil)  continue;
 		
 		// Sanity check
@@ -433,7 +431,7 @@ static void OpenLogFile(NSString *name);
 		
 		// Get dependency set
 		key = [NSValue valueWithNonretainedObject:stage];
-		dependencies = [dependenciesByStage objectForKey:key];
+		dependencies = dependenciesByStage[key];
 		
 		if (dependencies != nil && ![self setUpDependencies:dependencies forStage:stage])
 		{
@@ -449,12 +447,12 @@ static void OpenLogFile(NSString *name);
 	
 	for (stageEnum = [stageKeys objectEnumerator]; (stageKey = [stageEnum nextObject]); )
 	{
-		stage = [_stagesByName objectForKey:stageKey];
+		stage = _stagesByName[stageKey];
 		if (stage == nil)  continue;
 		
 		// Get dependent set
 		key = [NSValue valueWithNonretainedObject:stage];
-		dependents = [dependentsByStage objectForKey:key];
+		dependents = dependentsByStage[key];
 		
 		if (dependents != nil)
 		{
@@ -562,7 +560,7 @@ static void OpenLogFile(NSString *name);
 	// Iterate over dependencies, connecting them up.
 	for (depEnum = [dependencies objectEnumerator]; (depName = [depEnum nextObject]); )
 	{
-		depStage = [_stagesByName objectForKey:depName];
+		depStage = _stagesByName[depName];
 		if (depStage == nil)
 		{
 			OOLog(@"verifyOXP.buildDependencyGraph.unresolved", @"Verifier stage %@ has unresolved dependency \"%@\", skipping.", stage, depName);
@@ -593,7 +591,7 @@ static void OpenLogFile(NSString *name);
 	// Iterate over dependents, connecting them up.
 	for (depEnum = [dependents objectEnumerator]; (depName = [depEnum nextObject]); )
 	{
-		depStage = [_stagesByName objectForKey:depName];
+		depStage = _stagesByName[depName];
 		if (depStage == nil)
 		{
 			OOLog(@"verifyOXP.buildDependencyGraph.unresolved", @"Verifier stage %@ has unresolved dependent \"%@\".", stage, depName);

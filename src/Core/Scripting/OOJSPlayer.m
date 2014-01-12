@@ -619,7 +619,7 @@ static JSBool PlayerSetEscapePodDestination(JSContext *context, uintN argc, jsva
 				if (nDests > 0)	// we have a system with a main station!
 				{
 					if (nDests > 1)  i = ranrot_rand() % nDests;	// any nearby system will do.
-					NSDictionary *dest = [sDests objectAtIndex:i];
+					NSDictionary *dest = sDests[i];
 					
 					// add more time until rescue, with overheads for entering witchspace in case of overlapping systems.
 					double dist = [dest oo_doubleForKey:@"distance"];

@@ -75,7 +75,7 @@ const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect starts 
 
 - (id) initFromDictionary:(NSDictionary *)dict withAtmosphere:(BOOL)atmosphere andSeed:(Random_Seed)seed
 {
-	if (dict == nil)  dict = [NSDictionary dictionary];
+	if (dict == nil)  dict = @{};
 	RANROTSeed savedRanrotSeed = RANROTGetFullSeed();
 	
 	self = [self init];
@@ -108,7 +108,7 @@ const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect starts 
 																			// make delay > 0 to allow scripts adding a station nearby.
 	
 	int percent_land = [planetInfo oo_intForKey:@"percent_land" defaultValue:24 + (gen_rnd_number() % 48)];
-	[planetInfo setObject:[NSNumber numberWithFloat:0.01 * percent_land] forKey:@"land_fraction"];
+	planetInfo[@"land_fraction"] = @(0.01 * percent_land);
 	
 	RNG_Seed savedRndSeed = currentRandomSeed();
 	
@@ -116,7 +116,7 @@ const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect starts 
 	
 	// Load material parameters, including atmosphere.
 	RANROTSeed planetNoiseSeed = RANROTGetFullSeed();
-	[planetInfo setObject:[NSValue valueWithBytes:&planetNoiseSeed objCType:@encode(RANROTSeed)] forKey:@"noise_map_seed"];
+	planetInfo[@"noise_map_seed"] = [NSValue valueWithBytes:&planetNoiseSeed objCType:@encode(RANROTSeed)];
 	[self setUpLandParametersWithSourceInfo:dict targetInfo:planetInfo];
 	
 	_airColor = nil;	// default to no air
@@ -128,14 +128,14 @@ const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect starts 
 		
 		// convert the atmosphere settings to generic 'material parameters'
 		percent_land = 100 - [dict oo_intForKey:@"percent_cloud" defaultValue:100 - (3 + (gen_rnd_number() & 31)+(gen_rnd_number() & 31))];
-		[planetInfo setObject:[NSNumber numberWithFloat:0.01 * percent_land] forKey:@"cloud_fraction"];
+		planetInfo[@"cloud_fraction"] = @(0.01 * percent_land);
 		[self setUpAtmosphereParametersWithSourceInfo:dict targetInfo:planetInfo];
 		// planetInfo now contains a valid air_color
-		_airColor = [planetInfo objectForKey:@"air_color"];
+		_airColor = planetInfo[@"air_color"];
 		// OOLog (@"planet.debug",@" translated air colour:%@ cloud colour:%@ polar cloud color:%@", [_airColor rgbaDescription],[(OOColor *)[planetInfo objectForKey:@"cloud_color"] rgbaDescription],[(OOColor *)[planetInfo objectForKey:@"polar_cloud_color"] rgbaDescription]);
 
-		_materialParameters = [planetInfo dictionaryWithValuesForKeys:[NSArray arrayWithObjects:@"cloud_fraction", @"air_color",  @"cloud_color", @"polar_cloud_color", @"cloud_alpha",
-															@"land_fraction", @"land_color", @"sea_color", @"polar_land_color", @"polar_sea_color", @"noise_map_seed", @"economy", nil]];
+		_materialParameters = [planetInfo dictionaryWithValuesForKeys:@[@"cloud_fraction", @"air_color",  @"cloud_color", @"polar_cloud_color", @"cloud_alpha",
+															@"land_fraction", @"land_color", @"sea_color", @"polar_land_color", @"polar_sea_color", @"noise_map_seed", @"economy"]];
 	}
 	else
 #else
@@ -148,7 +148,7 @@ const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect starts 
 	if (YES) // create _materialParameters when NEW_ATMOSPHERE is set to 0
 #endif
 	{
-		_materialParameters = [planetInfo dictionaryWithValuesForKeys:[NSArray arrayWithObjects:@"land_fraction", @"land_color", @"sea_color", @"polar_land_color", @"polar_sea_color", @"noise_map_seed", @"economy", nil]];
+		_materialParameters = [planetInfo dictionaryWithValuesForKeys:@[@"land_fraction", @"land_color", @"sea_color", @"polar_land_color", @"polar_sea_color", @"noise_map_seed", @"economy"]];
 	}
 	[_materialParameters retain];
 	
@@ -163,7 +163,7 @@ const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect starts 
 	_rotationAxis = vector_up_from_quaternion(orientation);
 	
 	// set speed of rotation.
-	if ([dict objectForKey:@"rotational_velocity"])
+	if (dict[@"rotational_velocity"])
 	{
 		_rotationalVelocity = [dict oo_floatForKey:@"rotational_velocity" defaultValue:0.01f * randf()];	// 0.0 .. 0.01 avr 0.005
 	}
@@ -266,11 +266,11 @@ static OOColor *ColorWithHSBColor(Vector c)
 		if (landHSB.z > 0.66f) landHSB.z = 0.66f;
 		
 		// planetinfo.plist overrides
-		color = [OOColor colorWithDescription:[sourceInfo objectForKey:@"land_color"]];
+		color = [OOColor colorWithDescription:sourceInfo[@"land_color"]];
 		if (color != nil) landHSB = HSBColorWithColor(color);
 		else ScanVectorFromString([sourceInfo oo_stringForKey:@"land_hsb_color"], &landHSB);
 		
-		color = [OOColor colorWithDescription:[sourceInfo objectForKey:@"sea_color"]];
+		color = [OOColor colorWithDescription:sourceInfo[@"sea_color"]];
 		if (color != nil) seaHSB = HSBColorWithColor(color);
 		else ScanVectorFromString([sourceInfo oo_stringForKey:@"sea_hsb_color"], &seaHSB);
 		
@@ -278,10 +278,10 @@ static OOColor *ColorWithHSBColor(Vector c)
 		landPolarHSB = LighterHSBColor(landHSB);
 		seaPolarHSB = LighterHSBColor(seaHSB);
 		
-		[targetInfo setObject:ColorWithHSBColor(landHSB) forKey:@"land_color"];
-		[targetInfo setObject:ColorWithHSBColor(seaHSB) forKey:@"sea_color"];
-		[targetInfo setObject:ColorWithHSBColor(landPolarHSB) forKey:@"polar_land_color"];
-		[targetInfo setObject:ColorWithHSBColor(seaPolarHSB) forKey:@"polar_sea_color"];
+		targetInfo[@"land_color"] = ColorWithHSBColor(landHSB);
+		targetInfo[@"sea_color"] = ColorWithHSBColor(seaHSB);
+		targetInfo[@"polar_land_color"] = ColorWithHSBColor(landPolarHSB);
+		targetInfo[@"polar_sea_color"] = ColorWithHSBColor(seaPolarHSB);
 	}
 	else
 	{
@@ -292,24 +292,24 @@ static OOColor *ColorWithHSBColor(Vector c)
 		scale_vector(&seaHSB, 0.333);
 				
 		float cloudAlpha = OOClamp_0_1_f([sourceInfo oo_floatForKey:@"cloud_alpha" defaultValue:1.0f]);
-		[targetInfo setObject:[NSNumber numberWithFloat:cloudAlpha] forKey:@"cloud_alpha"];
+		targetInfo[@"cloud_alpha"] = @(cloudAlpha);
 		
 		// planetinfo overrides
-		color = [OOColor colorWithDescription:[sourceInfo objectForKey:@"atmosphere_color"]];
+		color = [OOColor colorWithDescription:sourceInfo[@"atmosphere_color"]];
 		if (color != nil) seaHSB = HSBColorWithColor(color);
-		color = [OOColor colorWithDescription:[sourceInfo objectForKey:@"cloud_color"]];
+		color = [OOColor colorWithDescription:sourceInfo[@"cloud_color"]];
 	if (color != nil) landHSB = HSBColorWithColor(color);
 		
 		// polar areas: brighter, less saturation
 		landPolarHSB = vector_add(landHSB,LighterHSBColor(landHSB));
 		scale_vector(&landPolarHSB, 0.5);
 		
-		color = [OOColor colorWithDescription:[sourceInfo objectForKey:@"polar_cloud_color"]];
+		color = [OOColor colorWithDescription:sourceInfo[@"polar_cloud_color"]];
 		if (color != nil) landPolarHSB = HSBColorWithColor(color);
 		
-		[targetInfo setObject:ColorWithHSBColor(seaHSB) forKey:@"air_color"];
-		[targetInfo setObject:ColorWithHSBColor(landHSB) forKey:@"cloud_color"];
-		[targetInfo setObject:ColorWithHSBColor(landPolarHSB) forKey:@"polar_cloud_color"];
+		targetInfo[@"air_color"] = ColorWithHSBColor(seaHSB);
+		targetInfo[@"cloud_color"] = ColorWithHSBColor(landHSB);
+		targetInfo[@"polar_cloud_color"] = ColorWithHSBColor(landPolarHSB);
 	}
 }
 
@@ -653,7 +653,7 @@ static OOColor *ColorWithHSBColor(Vector c)
 	
 	if (textureName != nil)
 	{
-		NSDictionary *spec = [NSDictionary dictionaryWithObjectsAndKeys:textureName, @"name", @"yes", @"repeat_s", @"linear", @"min_filter", @"yes", @"cube_map", nil];
+		NSDictionary *spec = @{@"name": textureName, @"repeat_s": @"yes", @"min_filter": @"linear", @"cube_map": @"yes"};
 		diffuseMap = [OOTexture textureWithConfiguration:spec];
 		if (diffuseMap == nil)  return;		// OOTexture will have logged a file-not-found warning.
 		if (shadersOn)  
@@ -717,7 +717,7 @@ static OOColor *ColorWithHSBColor(Vector c)
 	if (shadersOn)
 	{
 		NSMutableDictionary *config = [[[materialDefaults oo_dictionaryForKey:@"planet-material"] mutableCopy] autorelease];
-		[config setObject:[NSArray arrayWithObjects:diffuseMap, normalMap, nil] forKey:@"_oo_texture_objects"];
+		config[@"_oo_texture_objects"] = @[diffuseMap, normalMap];
 		
 		material = [OOShaderMaterial shaderMaterialWithName:textureName
 											  configuration:config

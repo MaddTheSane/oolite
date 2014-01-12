@@ -188,7 +188,7 @@ static JSBool MissionGetProperty(JSContext *context, JSObject *this, jsid propID
 	{
 		case kMission_markedSystems:
 			result = [player getMissionDestinations];
-			if (result == nil)  result = [NSDictionary dictionary];
+			if (result == nil)  result = @{};
 			result = [result allValues];
 			break;
 

@@ -235,7 +235,7 @@ static GameController *sSharedController = nil;
 		{
 			for (i = 0; i < [expansionPathsToInclude count]; i++)
 			{
-				[ResourceManager addExternalPath: (NSString*)[expansionPathsToInclude objectAtIndex: i]];
+				[ResourceManager addExternalPath: (NSString*)expansionPathsToInclude[i]];
 			}
 		}
 		
@@ -475,7 +475,7 @@ static void RemovePreference(NSString *key)
 		NSArray *searchPaths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES);
 		if ([searchPaths count] > 0)
 		{
-			path = [[searchPaths objectAtIndex:0] stringByAppendingPathComponent:name];
+			path = [searchPaths[0] stringByAppendingPathComponent:name];
 		}
 		url = [NSURL fileURLWithPath:path];
 		

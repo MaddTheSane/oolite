@@ -73,7 +73,7 @@ NSDictionary *JAPersistentFileReferenceFromURL(NSURL *url)
 	if (url == nil)  return nil;
 	
 	NSMutableDictionary *result = [NSMutableDictionary dictionaryWithCapacity:3];
-	[result setObject:[url absoluteString] forKey:kURLKey];
+	result[kURLKey] = [url absoluteString];
 	
 	if ([url isFileURL])
 	{
@@ -86,7 +86,7 @@ NSDictionary *JAPersistentFileReferenceFromURL(NSURL *url)
 				NSData *aliasData = [NSData dataWithBytes:*alias length:GetAliasSize(alias)];
 				if (aliasData != NULL)
 				{
-					[result setObject:aliasData forKey:kAliasKey];
+					result[kAliasKey] = aliasData;
 				}
 				DisposeHandle((Handle)alias);
 			}
@@ -104,7 +104,7 @@ NSDictionary *JAPersistentFileReferenceFromURL(NSURL *url)
 															 error:NULL];
 			if (bookmarkData != nil)
 			{
-				[result setObject:bookmarkData forKey:kBookmarkKey];
+				result[kBookmarkKey] = bookmarkData;
 			}
 		}
 	}
@@ -138,7 +138,7 @@ NSURL *JAURLFromPersistentFileReference(NSDictionary *fileRef, JAPersistentFileR
 	// Try bookmark.
 	if (BookmarkDataSupported())
 	{
-		NSData *bookmarkData = [fileRef objectForKey:kBookmarkKey];
+		NSData *bookmarkData = fileRef[kBookmarkKey];
 		if ([bookmarkData isKindOfClass:[NSData class]])
 		{
 			result = [NSURL URLByResolvingBookmarkData:bookmarkData
@@ -153,7 +153,7 @@ NSURL *JAURLFromPersistentFileReference(NSDictionary *fileRef, JAPersistentFileR
 	// Try alias.
 	if (result == nil)
 	{
-		NSData *aliasData = [fileRef objectForKey:kAliasKey];
+		NSData *aliasData = fileRef[kAliasKey];
 		if ([aliasData isKindOfClass:[NSData class]])
 		{
 			size_t size = [aliasData length];
@@ -182,7 +182,7 @@ NSURL *JAURLFromPersistentFileReference(NSDictionary *fileRef, JAPersistentFileR
 	// Try URL.
 	if (result == nil)
 	{
-		NSString *urlString = [fileRef objectForKey:kURLKey];
+		NSString *urlString = fileRef[kURLKey];
 		if ([urlString isKindOfClass:[NSString class]])
 		{
 			result = [NSURL URLWithString:urlString relativeToURL:nil];

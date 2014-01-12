@@ -948,7 +948,7 @@ static JSBool ShipGetProperty(JSContext *context, JSObject *this, jsid propID, j
 			
 		case kShip_scriptInfo:
 			result = [entity scriptInfo];
-			if (result == nil)  result = [NSDictionary dictionary];	// empty rather than null
+			if (result == nil)  result = @{};	// empty rather than null
 			break;
 			
 		case kShip_trackCloseContacts:
@@ -2045,7 +2045,7 @@ static JSBool ShipRemove(JSContext *context, uintN argc, jsval *vp)
 		return NO;
 	}
 
-	[thisEnt doScriptEvent:OOJSID("shipRemoved") withArgument:[NSNumber numberWithBool:suppressDeathEvent]];
+	[thisEnt doScriptEvent:OOJSID("shipRemoved") withArgument:@((BOOL)suppressDeathEvent)];
 
 	if (suppressDeathEvent)
 	{
@@ -2976,7 +2976,7 @@ static JSBool ShipGetMaterials(JSContext *context, uintN argc, jsval *vp)
 	GET_THIS_SHIP(thisEnt);
 	
 	result = [[thisEnt mesh] materials];
-	if (result == nil)  result = [NSDictionary dictionary];
+	if (result == nil)  result = @{};
 	OOJS_RETURN_OBJECT(result);
 	
 	OOJS_PROFILE_EXIT
@@ -2993,7 +2993,7 @@ static JSBool ShipGetShaders(JSContext *context, uintN argc, jsval *vp)
 	GET_THIS_SHIP(thisEnt);
 	
 	result = [[thisEnt mesh] shaders];
-	if (result == nil)  result = [NSDictionary dictionary];
+	if (result == nil)  result = @{};
 	OOJS_RETURN_OBJECT(result);
 	
 	OOJS_PROFILE_EXIT

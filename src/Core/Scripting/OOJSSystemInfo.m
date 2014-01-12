@@ -206,7 +206,7 @@ DEFINE_JS_OBJECT_GETTER(JSSystemInfoGetSystemInfo, &sSystemInfoClass, sSystemInf
 {
 	if ([UNIVERSE inInterstellarSpace] && _system == -1) 
 	{
-		return [[UNIVERSE currentSystemData] objectForKey:key];
+		return [UNIVERSE currentSystemData][key];
 	}
 	return [UNIVERSE systemDataForGalaxy:_galaxy planet:_system key:key];
 }

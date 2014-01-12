@@ -223,7 +223,7 @@ static id ShipGroupIterate(OOShipGroupEnumerator *enumerator);
 	NSUInteger				count = 0;
 	NSArray					*result = nil;
 	
-	if (_count == 0)  return [NSArray array];
+	if (_count == 0)  return @[];
 	
 	objects = malloc(sizeof *objects * _count);
 	for (id ship in self)
@@ -245,7 +245,7 @@ static id ShipGroupIterate(OOShipGroupEnumerator *enumerator);
 	NSArray					*result = nil;
 	ShipEntity				*leader = nil;
 	
-	if (_count == 0)  return [NSArray array];
+	if (_count == 0)  return @[];
 	leader = self.leader;
 	
 	objects = malloc(sizeof *objects * _count);

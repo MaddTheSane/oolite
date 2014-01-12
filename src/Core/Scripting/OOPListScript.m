@@ -77,19 +77,19 @@ static NSString * const kCacheName			= @"sanitized legacy scripts";
 
 - (NSString *)name
 {
-	return [_metadata objectForKey:kMDKeyName];
+	return _metadata[kMDKeyName];
 }
 
 
 - (NSString *)scriptDescription
 {
-	return [_metadata objectForKey:kMDKeyDescription];
+	return _metadata[kMDKeyDescription];
 }
 
 
 - (NSString *)version
 {
-	return [_metadata objectForKey:kMDKeyVersion];
+	return _metadata[kMDKeyVersion];
 }
 
 
@@ -136,12 +136,12 @@ static NSString * const kCacheName			= @"sanitized legacy scripts";
 	result = [NSMutableArray arrayWithCapacity:count];
 	cachedScripts = [NSMutableDictionary dictionaryWithCapacity:count];
 	
-	metadata = [dictionary objectForKey:kKeyMetadata];
+	metadata = dictionary[kKeyMetadata];
 	if (![metadata isKindOfClass:[NSDictionary class]]) metadata = nil;
 	
 	for (keyEnum = [dictionary keyEnumerator]; (key = [keyEnum nextObject]); )
 	{
-		scriptArray = [dictionary objectForKey:key];
+		scriptArray = dictionary[key];
 		if ([key isKindOfClass:[NSString class]] &&
 			[scriptArray isKindOfClass:[NSArray class]] &&
 			![key isEqual:kKeyMetadata])
@@ -153,7 +153,7 @@ static NSString * const kCacheName			= @"sanitized legacy scripts";
 				if (script != nil)
 				{
 					[result addObject:script];
-					[cachedScripts setObject:[NSDictionary dictionaryWithObjectsAndKeys:scriptArray, kKeyScript, metadata, kKeyMetadata, nil] forKey:key];
+					cachedScripts[key] = @{kKeyScript: scriptArray, kKeyMetadata: metadata};
 					
 					[script release];
 				}
@@ -199,11 +199,11 @@ static NSString * const kCacheName			= @"sanitized legacy scripts";
 		_script = [script retain];
 		if (name != nil)
 		{
-			if (metadata == nil)  metadata = [NSDictionary dictionaryWithObject:name forKey:kMDKeyName];
+			if (metadata == nil)  metadata = @{kMDKeyName: name};
 			else
 			{
 				NSMutableDictionary *mutableMetadata = [[metadata mutableCopy] autorelease];
-				[mutableMetadata setObject:name forKey:kMDKeyName];
+				mutableMetadata[kMDKeyName] = name;
 				metadata = mutableMetadata;
 			}
 		}

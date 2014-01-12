@@ -212,11 +212,9 @@ static id sSharedStickHandler = nil;
 		{
 			if(axismap[j][i] >= 0)
 			{
-				NSDictionary *fnDict=[NSDictionary dictionaryWithObjectsAndKeys:
-									  [NSNumber numberWithBool:YES], STICK_ISAXIS,
-									  [NSNumber numberWithInt:j], STICK_NUMBER, 
-									  [NSNumber numberWithInt:i], STICK_AXBUT,
-									  nil];
+				NSDictionary *fnDict=@{STICK_ISAXIS: @YES,
+									  STICK_NUMBER: @(j), 
+									  STICK_AXBUT: @(i)};
 				[fnList setValue: fnDict
 						  forKey: ENUMKEY(axismap[j][i])];
 			}
@@ -238,11 +236,9 @@ static id sSharedStickHandler = nil;
 		{
 			if(buttonmap[j][i] >= 0)
 			{
-				NSDictionary *fnDict = [NSDictionary dictionaryWithObjectsAndKeys:
-										[NSNumber numberWithBool:NO], STICK_ISAXIS, 
-										[NSNumber numberWithInt:j], STICK_NUMBER, 
-										[NSNumber numberWithInt:i], STICK_AXBUT, 
-										nil];
+				NSDictionary *fnDict = @{STICK_ISAXIS: @NO, 
+										STICK_NUMBER: @(j), 
+										STICK_AXBUT: @(i)};
 				[fnList setValue:fnDict
 						  forKey:ENUMKEY(buttonmap[j][i])];
 			}
@@ -425,11 +421,9 @@ static id sSharedStickHandler = nil;
 		// ...then check if axis moved more than AXCBTHRESH - (fix for BUG #17482)
 		if(axisvalue > AXCBTHRESH) 
 		{
-			NSDictionary *fnDict = [NSDictionary dictionaryWithObjectsAndKeys:
-									[NSNumber numberWithBool: YES], STICK_ISAXIS,
-									[NSNumber numberWithInt: evt->which], STICK_NUMBER, 
-									[NSNumber numberWithInt: evt->axis], STICK_AXBUT,
-									nil];
+			NSDictionary *fnDict = @{STICK_ISAXIS: @YES,
+									STICK_NUMBER: @(evt->which),
+									STICK_AXBUT: @( evt->axis)};
 			cbHardware = 0;
 			[cbObject performSelector:cbSelector withObject:fnDict];
 			cbObject = nil;
@@ -487,11 +481,9 @@ static id sSharedStickHandler = nil;
 	// Is there a callback we need to make?
 	if(cbObject && (cbHardware & HW_BUTTON))
 	{
-		NSDictionary *fnDict = [NSDictionary dictionaryWithObjectsAndKeys:
-								[NSNumber numberWithBool: NO], STICK_ISAXIS,
-								[NSNumber numberWithInt: evt->which], STICK_NUMBER, 
-								[NSNumber numberWithInt: evt->button], STICK_AXBUT,
-								nil];
+		NSDictionary *fnDict = @{STICK_ISAXIS: @NO,
+								STICK_NUMBER: @( evt->which),
+								STICK_AXBUT: @( evt->button)};
 		cbHardware = 0;
 		[cbObject performSelector:cbSelector withObject:fnDict];
 		cbObject = nil;
@@ -582,9 +574,9 @@ static id sSharedStickHandler = nil;
 		NSArray *keys = [axisSettings allKeys];
 		for (i = 0; i < [keys count]; i++)
 		{
-			NSString *key = [keys objectAtIndex: i];
+			NSString *key = keys[i];
 			[self setFunction: [key intValue]
-					 withDict: [axisSettings objectForKey: key]];
+					 withDict: axisSettings[key]];
 		}
 	}
 	if(buttonSettings)
@@ -592,9 +584,9 @@ static id sSharedStickHandler = nil;
 		NSArray *keys = [buttonSettings allKeys];
 		for (i = 0; i < [keys count]; i++)
 		{
-			NSString *key = [keys objectAtIndex: i];
+			NSString *key = keys[i];
 			[self setFunction:[key intValue]
-					 withDict:[buttonSettings objectForKey: key]];
+					 withDict:buttonSettings[key]];
 		}
 	}
 	else

@@ -955,15 +955,15 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 	BOOL includeNormals = IsPerVertexNormalMode(_normalMode);
 	
 	// Prepare cache data elements.
-	vertCnt = [NSNumber numberWithUnsignedInt:vertexCount];
-	faceCnt = [NSNumber numberWithUnsignedInt:faceCount];
+	vertCnt = @(vertexCount);
+	faceCnt = @(faceCount);
 	
-	vertData = [_retainedObjects objectForKey:@"vertices"];
-	faceData = [_retainedObjects objectForKey:@"faces"];
+	vertData = _retainedObjects[@"vertices"];
+	faceData = _retainedObjects[@"faces"];
 	if (includeNormals)
 	{
-		normData = [_retainedObjects objectForKey:@"normals"];
-		tanData = [_retainedObjects objectForKey:@"tangents"];
+		normData = _retainedObjects[@"normals"];
+		tanData = _retainedObjects[@"tangents"];
 	}
 	
 	if (materialCount != 0)
@@ -972,9 +972,9 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 	}
 	else
 	{
-		mtlKeys = [NSArray array];
+		mtlKeys = @[];
 	}
-	normMode = [NSNumber numberWithUnsignedChar:_normalMode];
+	normMode = @(_normalMode);
 	
 	// Ensure we have all the required data elements.
 	if (vertCnt == nil ||
@@ -993,20 +993,18 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 	}
 	
 	// All OK; stick 'em in a dictionary.
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-						vertCnt, @"vertex count",
-						vertData, @"vertex data",
-						faceCnt, @"face count",
-						faceData, @"face data",
-						mtlKeys, @"material keys",
-						normMode, @"normal mode",
+	return @{@"vertex count": vertCnt,
+						@"vertex data": vertData,
+						@"face count": faceCnt,
+						@"face data": faceData,
+						@"material keys": mtlKeys,
+						@"normal mode": normMode,
 						/*	NOTE: order matters. Since normData and tanData
 							are last, if they're nil the dictionary will be
 							built without them, which is desired behaviour.
 						*/
-						normData, @"normal data",
-						tanData, @"tangent data",
-						nil];
+						@"normal data": normData,
+						@"tangent data": tanData};
 	
 	OOJS_PROFILE_EXIT
 }
@@ -1164,21 +1162,21 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 			NSMutableArray *lines = [NSMutableArray arrayWithArray:[data componentsSeparatedByString:@"\n"]];
 			for (i = 0; i < [lines count]; i++)
 			{
-				NSString *line = [lines objectAtIndex:i];
+				NSString *line = lines[i];
 				NSArray *parts;
 				//
 				// comments
 				//
 				parts = [line componentsSeparatedByString:@"#"];
-				line = [parts objectAtIndex:0];
+				line = parts[0];
 				parts = [line componentsSeparatedByString:@"//"];
-				line = [parts objectAtIndex:0];
+				line = parts[0];
 				//
 				// commas
 				//
 				line = [[line componentsSeparatedByString:@","] componentsJoinedByString:@" "];
 				//
-				[lines replaceObjectAtIndex:i withObject:line];
+				lines[i] = line;
 			}
 			
 			data = [lines componentsJoinedByString:@"\n"];
@@ -1387,7 +1385,7 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 					}
 					else
 					{
-						NSNumber *index = [texFileName2Idx objectForKey:materialKey];
+						NSNumber *index = texFileName2Idx[materialKey];
 						if (index != nil)
 						{
 							_faces[j].materialIndex = [index unsignedIntValue];
@@ -1401,8 +1399,8 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 							}
 							_faces[j].materialIndex = materialCount;
 							materialKeys[materialCount] = [materialKey retain];
-							index = [NSNumber numberWithUnsignedInt:materialCount];
-							[texFileName2Idx setObject:index forKey:materialKey];
+							index = @(materialCount);
+							texFileName2Idx[materialKey] = index;
 							++materialCount;
 						}
 					}
@@ -2051,7 +2049,7 @@ static float FaceAreaCorrect(GLuint *vertIndices, Vector *vertices)
 	if (object != nil)
 	{
 		if (_retainedObjects == nil)  _retainedObjects = [[NSMutableDictionary alloc] init];
-		[_retainedObjects setObject:object forKey:key];
+		_retainedObjects[key] = object;
 	}
 }
 
@@ -2213,7 +2211,7 @@ static void VFRAddFace(VertexFaceRef *vfr, NSUInteger index)
 	else
 	{
 		if (vfr->extra == nil)  vfr->extra = [NSMutableArray array];
-		[vfr->extra addObject:[NSNumber numberWithInteger:index]];
+		[vfr->extra addObject:@(index)];
 	}
 }
 

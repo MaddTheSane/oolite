@@ -65,7 +65,7 @@ static OOBasicMaterial *sDefaultMaterial = nil;
 	self = [self initWithName:name];
 	if (EXPECT_NOT(self == nil))  return nil;
 	
-	if (configuration == nil)  configuration = [NSDictionary dictionary];
+	if (configuration == nil)  configuration = @{};
 	
 	colorDesc = [configuration oo_diffuseColor];
 	if (colorDesc != nil)  [self setDiffuseColor:[OOColor colorWithDescription:colorDesc]];

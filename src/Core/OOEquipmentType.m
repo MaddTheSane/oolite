@@ -71,7 +71,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 		if (item != nil)
 		{
 			[equipmentTypes addObject:item];
-			[equipmentTypesByIdentifier setObject:item forKey:[item identifier]];
+			equipmentTypesByIdentifier[[item identifier]] = item;
 		}
 		NSString* condition_script = [item conditionScript];
 		if (condition_script != nil)
@@ -98,7 +98,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 	if (item != nil)
 	{
 		[equipmentTypes addObject:item];
-		[equipmentTypesByIdentifier setObject:item forKey:[item identifier]];
+		equipmentTypesByIdentifier[[item identifier]] = item;
 		
 		[sEquipmentTypes release];
 		sEquipmentTypes = nil;
@@ -143,7 +143,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 
 + (OOEquipmentType *) equipmentTypeWithIdentifier:(NSString *)identifier
 {
-	return [sEquipmentTypesByIdentifier objectForKey:identifier];
+	return sEquipmentTypesByIdentifier[identifier];
 }
 
 
@@ -223,7 +223,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 
 			_damageProbability = [extra oo_floatForKey:@"damage_probability" defaultValue:(_isMissileOrMine?0.0:1.0)];
 			
-			id object = [extra objectForKey:@"requires_equipment"];
+			id object = extra[@"requires_equipment"];
 			if ([object isKindOfClass:[NSString class]])  _requiresEquipment = [[NSSet setWithObject:object] retain];
 			else if ([object isKindOfClass:[NSArray class]])  _requiresEquipment = [[NSSet setWithArray:object] retain];
 			else if (object != nil)
@@ -231,7 +231,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 				OOLog(@"equipment.load", @"***** ERROR: %@ for equipment item %@ is not a string or an array.", @"requires_equipment", _identifier);
 			}
 			
-			object = [extra objectForKey:@"requires_any_equipment"];
+			object = extra[@"requires_any_equipment"];
 			if ([object isKindOfClass:[NSString class]])  _requiresAnyEquipment = [[NSSet setWithObject:object] retain];
 			else if ([object isKindOfClass:[NSArray class]])  _requiresAnyEquipment = [[NSSet setWithArray:object] retain];
 			else if (object != nil)
@@ -239,7 +239,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 				OOLog(@"equipment.load", @"***** ERROR: %@ for equipment item %@ is not a string or an array.", @"requires_any_equipment", _identifier);
 			}
 			
-			object = [extra objectForKey:@"incompatible_with_equipment"];
+			object = extra[@"incompatible_with_equipment"];
 			if ([object isKindOfClass:[NSString class]])  _incompatibleEquipment = [[NSSet setWithObject:object] retain];
 			else if ([object isKindOfClass:[NSArray class]])  _incompatibleEquipment = [[NSSet setWithArray:object] retain];
 			else if (object != nil)
@@ -247,8 +247,8 @@ static NSDictionary		*sMissilesRegistry = nil;
 				OOLog(@"equipment.load", @"***** ERROR: %@ for equipment item %@ is not a string or an array.", @"incompatible_with_equipment", _identifier);
 			}
 			
-			object = [extra objectForKey:@"conditions"];
-			if ([object isKindOfClass:[NSString class]])  conditions = [NSArray arrayWithObject:object];
+			object = extra[@"conditions"];
+			if ([object isKindOfClass:[NSString class]])  conditions = @[object];
 			else if ([object isKindOfClass:[NSArray class]])  conditions = object;
 			else if (object != nil)
 			{
@@ -260,7 +260,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 				[_conditions retain];
 			}
 
-			object = [extra objectForKey:@"condition_script"];
+			object = extra[@"condition_script"];
 			if ([object isKindOfClass:[NSString class]])
 			{
 				condition_script = object;

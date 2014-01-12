@@ -182,7 +182,7 @@ static JSFunctionSpec sScriptMethods[] =
 			{
 				if ([key isKindOfClass:[NSString class]])
 				{
-					property = [properties objectForKey:key];
+					property = properties[key];
 					[self defineProperty:property named:key];
 				}
 			}

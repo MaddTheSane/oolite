@@ -272,7 +272,7 @@ MA 02110-1301, USA.
 	if (ship == nil)  return nil;
 	
 	OOUniversalID	ship_id = [ship universalID];
-	NSNumber		*shipID = [NSNumber numberWithUnsignedShort:ship_id];
+	NSNumber		*shipID = @(ship_id);
 	StationEntity	*station = (StationEntity *)[self parentEntity];
 
 	HPVector launchVector = HPvector_forward_from_quaternion(quaternion_multiply(orientation, [station orientation]));
@@ -284,7 +284,7 @@ MA 02110-1301, USA.
 	
 	// check if this is a new ship on approach
 	//
-	if (![shipsOnApproach objectForKey:shipID])
+	if (!shipsOnApproach[shipID])
 	{
 		HPVector	delta = HPvector_subtract([ship position], [self absolutePositionForSubentity]);
 		float	ship_distance = HPmagnitude(delta);
@@ -315,7 +315,7 @@ MA 02110-1301, USA.
 		}
 	}
 	
-	if (![shipsOnApproach objectForKey:shipID])
+	if (!shipsOnApproach[shipID])
 	{
 		// some error has occurred - log it, and send the try-again message
 		OOLogERR(@"station.issueDockingInstructions.failed", @"couldn't addShipToShipsOnApproach:%@ in %@, retrying later -- shipsOnApproach:\n%@", ship, self, shipsOnApproach);
@@ -326,7 +326,7 @@ MA 02110-1301, USA.
 
 	//	shipsOnApproach now has an entry for the ship.
 	//
-	NSMutableArray* coordinatesStack = [shipsOnApproach objectForKey:shipID];
+	NSMutableArray* coordinatesStack = shipsOnApproach[shipID];
 
 	if ([coordinatesStack count] == 0)
 	{
@@ -336,7 +336,7 @@ MA 02110-1301, USA.
 	}
 	
 	// get the docking information from the instructions	
-	NSMutableDictionary *nextCoords = (NSMutableDictionary *)[coordinatesStack objectAtIndex:0];
+	NSMutableDictionary *nextCoords = (NSMutableDictionary *)coordinatesStack[0];
 	int docking_stage = [nextCoords oo_intForKey:@"docking_stage"];
 	float speedAdvised = [nextCoords oo_floatForKey:@"speed"];
 	float rangeAdvised = [nextCoords oo_floatForKey:@"range"];
@@ -420,12 +420,12 @@ MA 02110-1301, USA.
 			//
 			[[ship getAI] message:@"HOLD_POSITION"];
 			
-			if (![nextCoords objectForKey:@"hold_message_given"])
+			if (!nextCoords[@"hold_message_given"])
 			{
 				// COMM-CHATTER
 				[UNIVERSE clearPreviousMessage];
 				[self sendExpandedMessage: @"[station-hold-position]" toShip: ship];
-				[nextCoords setObject:@"YES" forKey:@"hold_message_given"];
+				nextCoords[@"hold_message_given"] = @"YES";
 			}
 
 			return OOMakeDockingInstructions(station, ship->position, 0, 100, @"HOLD_POSITION", nil, NO);
@@ -452,7 +452,7 @@ MA 02110-1301, USA.
 	int			corridor_count = 9;
 	int			corridor_final_approach = 3;
 	
-	NSNumber		*shipID = [NSNumber numberWithUnsignedShort:[ship universalID]];
+	NSNumber		*shipID = @([ship universalID]);
 	StationEntity	*station = (StationEntity *)[self parentEntity];
 	
 	HPVector launchVector = HPvector_forward_from_quaternion(quaternion_multiply(orientation, [station orientation]));
@@ -513,25 +513,25 @@ MA 02110-1301, USA.
 		
 		if (corridor_rotate[i])
 		{
-			[nextCoords setObject:@"YES" forKey:@"match_rotation"];
+			nextCoords[@"match_rotation"] = @"YES";
 		}
 		
 		if (i == corridor_final_approach)
 		{
 			if (station == [UNIVERSE station])
 			{
-				[nextCoords setObject:@"[station-begin-final-aproach]" forKey:@"comms_message"];
+				nextCoords[@"comms_message"] = @"[station-begin-final-aproach]";
 			}
 			else
 			{
-				[nextCoords setObject:@"[docking-begin-final-aproach]" forKey:@"comms_message"];
+				nextCoords[@"comms_message"] = @"[docking-begin-final-aproach]";
 			}
 		}
 		
 		[coordinatesStack addObject:nextCoords];
 	}
 	
-	[shipsOnApproach setObject:coordinatesStack forKey:shipID];
+	shipsOnApproach[shipID] = coordinatesStack;
 	
 	approach_spacing += 500;  // space out incoming ships by 500m
 	
@@ -570,9 +570,9 @@ MA 02110-1301, USA.
 - (void) abortDockingForShip:(ShipEntity *)ship
 {
 	OOUniversalID	ship_id = [ship universalID];
-	NSNumber		*shipID = [NSNumber numberWithUnsignedShort:ship_id];
+	NSNumber		*shipID = @(ship_id);
 	
-	if ([shipsOnApproach objectForKey:shipID])
+	if (shipsOnApproach[shipID])
 	{
 		[shipsOnApproach removeObjectForKey:shipID];
 	}
@@ -623,9 +623,9 @@ MA 02110-1301, USA.
 	if ([ship isPlayer] && [ship status] == STATUS_DEAD)  return NO;
 	
 	OOUniversalID	ship_id = [ship universalID];
-	NSNumber		*shipID = [NSNumber numberWithUnsignedShort:ship_id];
+	NSNumber		*shipID = @(ship_id);
 	
-	if ([shipsOnApproach objectForKey:shipID])
+	if (shipsOnApproach[shipID])
 	{
 		return YES;
 	}
@@ -1190,7 +1190,7 @@ MA 02110-1301, USA.
 	
 	if (([launchQueue count] > 0)&&([shipsOnApproach count] == 0)&&[self dockingCorridorIsEmpty])
 	{
-		ShipEntity *se=(ShipEntity *)[launchQueue objectAtIndex:0];
+		ShipEntity *se=(ShipEntity *)launchQueue[0];
 		[self launchShip:se];
 		[launchQueue removeObjectAtIndex:0];
 	}

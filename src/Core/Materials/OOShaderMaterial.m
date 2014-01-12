@@ -121,8 +121,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 		modifiedMacros = macros ? [macros mutableCopy] : [[NSMutableDictionary alloc] init];
 		[modifiedMacros autorelease];
 		
-		[modifiedMacros setObject:[NSNumber numberWithUnsignedInt:textureUnits]
-						   forKey:@"OO_TEXTURE_UNIT_COUNT"];
+		modifiedMacros[@"OO_TEXTURE_UNIT_COUNT"] = @(textureUnits);
 		
 		// used to test for simplified shaders - OO_REDUCED_COMPLEXITY - here
 		macroString = MacrosToString(modifiedMacros);
@@ -171,8 +170,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 			static NSDictionary *attributeBindings = nil;
 			if (attributeBindings == nil)
 			{
-				attributeBindings = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kTangentAttributeIndex]
-																forKey:@"tangent"];
+				attributeBindings = @{@"tangent": @(kTangentAttributeIndex)};
 				[attributeBindings retain];
 			}
 			
@@ -307,7 +305,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	if (uniform != nil)
 	{
 		OOLog(@"shader.uniform.set", @"Set up uniform %@", uniform);
-		[uniforms setObject:uniform forKey:uniformName];
+		uniforms[uniformName] = uniform;
 		[uniform release];
 		return YES;
 	}
@@ -357,7 +355,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	if (uniform != nil)
 	{
 		OOLog(@"shader.uniform.set", @"Set up uniform %@", uniform);
-		[uniforms setObject:uniform forKey:uniformName];
+		uniforms[uniformName] = uniform;
 		[uniform release];
 	}
 	else
@@ -380,7 +378,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	if (uniform != nil)
 	{
 		OOLog(@"shader.uniform.set", @"Set up uniform %@", uniform);
-		[uniforms setObject:uniform forKey:uniformName];
+		uniforms[uniformName] = uniform;
 		[uniform release];
 	}
 	else
@@ -403,7 +401,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	if (uniform != nil)
 	{
 		OOLog(@"shader.uniform.set", @"Set up uniform %@", uniform);
-		[uniforms setObject:uniform forKey:uniformName];
+		uniforms[uniformName] = uniform;
 		[uniform release];
 	}
 	else
@@ -423,7 +421,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	{
 		for (unsigned i = 0; i < 4; i++)
 		{
-			vecArray[i] = OOFloatFromObject([value objectAtIndex:i], 0.0f);
+			vecArray[i] = OOFloatFromObject(value[i], 0.0f);
 		}
 	}
 	else
@@ -441,7 +439,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	if (uniform != nil)
 	{
 		OOLog(@"shader.uniform.set", @"Set up uniform %@", uniform);
-		[uniforms setObject:uniform forKey:uniformName];
+		uniforms[uniformName] = uniform;
 		[uniform release];
 	}
 	else
@@ -465,7 +463,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	if (uniform != nil)
 	{
 		OOLog(@"shader.uniform.set", @"Set up uniform %@", uniform);
-		[uniforms setObject:uniform forKey:uniformName];
+		uniforms[uniformName] = uniform;
 		[uniform release];
 	}
 	else
@@ -508,7 +506,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	for (uniformEnum = [keys objectEnumerator]; (name = [uniformEnum nextObject]); )
 	{
 		gotValue = NO;
-		definition = [uniformDefs objectForKey:name];
+		definition = uniformDefs[name];
 		
 		type = nil;
 		value = nil;
@@ -516,7 +514,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 		
 		if ([definition isKindOfClass:[NSDictionary class]])
 		{
-			value = [(NSDictionary *)definition objectForKey:@"value"];
+			value = ((NSDictionary *)definition)[@"value"];
 			binding = [(NSDictionary *)definition oo_stringForKey:@"binding"];
 			type = [(NSDictionary *)definition oo_stringForKey:@"type"];
 			scale = [(NSDictionary *)definition oo_floatForKey:@"scale" defaultValue:1.0];
@@ -554,7 +552,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 		if ([type isEqualToString:@"randomFloat"])
 		{
 			type = @"float";
-			value = [NSNumber numberWithFloat:randf() * scale];
+			value = @(randf() * scale);
 		}
 		else if ([type isEqualToString:@"randomUnitVector"])
 		{
@@ -775,7 +773,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	
 	for (i = 0; i < count; i++)
 	{
-		id textureSpec = [textureSpecs objectAtIndex:i];
+		id textureSpec = textureSpecs[i];
 		OOTexture *texture = [OOTexture textureWithConfiguration:textureSpec];
 		if (texture == nil)  texture = [OOTexture nullTexture];
 		[result addObject:texture];
@@ -802,7 +800,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	unsigned i;
 	for (i = 0; i != texCount; ++i)
 	{
-		textures[i] = [textureObjects objectAtIndex:i];
+		textures[i] = textureObjects[i];
 		[textures[i] retain];
 	}
 }
@@ -822,7 +820,7 @@ static NSString *MacrosToString(NSDictionary *macros)
 	for (macroEnum = [macros keyEnumerator]; (key = [macroEnum nextObject]); )
 	{
 		if (![key isKindOfClass:[NSString class]]) continue;
-		value = [macros objectForKey:key];
+		value = macros[key];
 		
 		[result appendFormat:@"#define %@  %@\n", key, value];
 	}
@@ -852,7 +850,7 @@ static BOOL GetShaderSource(NSString *fileName, NSString *shaderType, NSString *
 	result = [ResourceManager stringFromFilesNamed:fileName inFolder:@"Shaders"];
 	if (result == nil)
 	{
-		extensions = [NSArray arrayWithObjects:shaderType, [shaderType substringToIndex:4], nil];	// vertex and vert, or fragment and frag
+		extensions = @[shaderType, [shaderType substringToIndex:4]];	// vertex and vert, or fragment and frag
 		
 		// Futureproofing -- in future, we may wish to support automatic selection between supported shader languages.
 		if (![fileName pathHasExtensionInArray:extensions])

@@ -355,7 +355,7 @@ static JSBool EquipmentInfoGetProperty(JSContext *context, JSObject *this, jsid 
 			
 		case kEquipmentInfo_scriptInfo:
 			result = [eqType scriptInfo];
-			if (result == nil)  result = [NSDictionary dictionary];	// empty rather than null
+			if (result == nil)  result = @{};	// empty rather than null
 			break;
 			
 		case kEquipmentInfo_scriptName:

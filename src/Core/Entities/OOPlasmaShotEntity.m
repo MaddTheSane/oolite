@@ -93,7 +93,7 @@ MA 02110-1301, USA.
 	NSUInteger i, count = [collidingEntities count];
 	for (i = 0; i < count; i++)
 	{
-		Entity *e = (Entity *)[collidingEntities objectAtIndex:i];
+		Entity *e = (Entity *)collidingEntities[i];
 		if ([e rootShipEntity] != [self owner])
 		{
 			[e takeEnergyDamage:[self energy] * attenuation

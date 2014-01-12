@@ -203,7 +203,7 @@ MA 02110-1301, USA.
 	
 	for (i = 0; i < argc; i++)
 	{
-		argv[i] = [[arguments objectAtIndex:i] oo_jsValueInContext:context];
+		argv[i] = [arguments[i] oo_jsValueInContext:context];
 		OOJSAddGCValueRoot(context, &argv[i], "OOJSFunction argv");
 	}
 	

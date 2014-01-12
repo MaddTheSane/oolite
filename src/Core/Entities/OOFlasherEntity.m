@@ -90,7 +90,7 @@ MA 02110-1301, USA.
 
 - (void) getCurrentColorComponents
 {
-	[self setColor:[_colors objectAtIndex:_activeColor] alpha:_colorComponents[3]];
+	[self setColor:_colors[_activeColor] alpha:_colorComponents[3]];
 }
 
 
@@ -168,7 +168,7 @@ MA 02110-1301, USA.
 				_justSwitched = YES;
 				++_activeColor;
 				_activeColor %= count;	//_activeColor = ++_activeColor % count; is potentially undefined operation
-				[self setColor:[_colors objectAtIndex:_activeColor]];
+				[self setColor:_colors[_activeColor]];
 			}
 		}
 		else if (_justSwitched)

@@ -583,7 +583,7 @@ NSString *OOLogHandlerGetLogBasePath(void)
 	if (basePath == nil)
 	{
 		// ~/Library
-		basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+		basePath = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES)[0];
 		
 		// ~/Library/Logs
 		basePath = [basePath stringByAppendingPathComponent:@"Logs"];

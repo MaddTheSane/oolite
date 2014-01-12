@@ -184,7 +184,7 @@ static NSArray *ArrayOfExtensions(NSString *extensionString)
 	DESTROY(vendor);
 	DESTROY(renderer);
 	
-	NSString *extensionsStr = [NSString stringWithUTF8String:(char *)glGetString(GL_EXTENSIONS)];
+	NSString *extensionsStr = @((char *)glGetString(GL_EXTENSIONS));
 	extensions = [[NSSet alloc] initWithArray:ArrayOfExtensions(extensionsStr)];
 	
 	vendor = [[NSString alloc] initWithUTF8String:(const char *)glGetString(GL_VENDOR)];
@@ -704,7 +704,7 @@ NSComparisonResult CompareGPUSettingsByPriority(id a, id b, void *context)
 		NSDictionary *match = [config oo_dictionaryForKey:@"match"];
 		NSString *expr = nil;
 		
-		expr = [match objectForKey:@"vendor"];
+		expr = match[@"vendor"];
 		if (!CheckRegExps(vendor, expr))  continue;
 		
 		expr = [match oo_stringForKey:@"renderer"];
@@ -720,7 +720,7 @@ NSComparisonResult CompareGPUSettingsByPriority(id a, id b, void *context)
 		return config;
 	}
 	
-	return [NSDictionary dictionary];
+	return @{};
 }
 
 @end

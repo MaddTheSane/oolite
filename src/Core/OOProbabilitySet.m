@@ -344,8 +344,8 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 
 - (NSDictionary *) propertyListRepresentation
 {
-	NSArray *empty = [NSArray array];
-	return [NSDictionary dictionaryWithObjectsAndKeys:empty, kObjectsKey, empty, kWeightsKey, nil];
+	NSArray *empty = @[];
+	return @{kObjectsKey: empty, kWeightsKey: empty};
 }
 
 
@@ -375,7 +375,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 
 - (NSArray *) allObjects
 {
-	return [NSArray array];
+	return @[];
 }
 
 
@@ -468,10 +468,8 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 
 - (NSDictionary *) propertyListRepresentation
 {
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-			[NSArray arrayWithObject:_object], kObjectsKey,
-			[NSArray arrayWithObject:[NSNumber numberWithFloat:_weight]], kWeightsKey,
-			nil];
+	return @{kObjectsKey: @[_object],
+			kWeightsKey: @[@(_weight)]};
 }
 
 
@@ -502,7 +500,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 
 - (NSArray *) allObjects
 {
-	return [NSArray arrayWithObject:_object];
+	return @[_object];
 }
 
 
@@ -589,10 +587,8 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 		sum = cuWeight;
 	}
 	
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-			objects, kObjectsKey,
-			[[weights copy] autorelease], kWeightsKey,
-			nil];
+	return @{kObjectsKey: objects,
+			kWeightsKey: [[weights copy] autorelease]};
 }
 
 - (NSUInteger) count
@@ -850,7 +846,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 	{
 		for (i = 0; i < count; ++i)
 		{
-			[self setWeight:[weights oo_floatAtIndex:i] forObject:[objects objectAtIndex:i]];
+			[self setWeight:[weights oo_floatAtIndex:i] forObject:objects[i]];
 		}
 	}
 	
@@ -875,10 +871,8 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 
 - (NSDictionary *) propertyListRepresentation
 {
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-			_objects, kObjectsKey,
-			_weights, kWeightsKey,
-			nil];
+	return @{kObjectsKey: _objects,
+			kWeightsKey: _weights};
 }
 
 
@@ -901,11 +895,11 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 	for (i = 0; i < count; ++i)
 	{
 		sum += [_weights oo_floatAtIndex:i];
-		if (sum >= target)  return [_objects objectAtIndex:i];
+		if (sum >= target)  return _objects[i];
 	}
 	
 	OOLog(@"probabilitySet.broken", @"%s fell off end, returning first object. Nominal sum = %f, target = %f, actual sum = %f, count = %lu. %@", __PRETTY_FUNCTION__, sumOfWeights, target, sum, count,@"This is an internal error, please report it.");
-	return [_objects objectAtIndex:0];
+	return _objects[0];
 }
 
 
@@ -974,7 +968,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 	else
 	{
 		_sumOfWeights = -1.0f;	// Simply subtracting the relevant weight doesn't work if the weight is large, due to floating-point precision issues.
-		[_weights replaceObjectAtIndex:index withObject:[NSNumber numberWithFloat:weight]];
+		_weights[index] = @(weight);
 	}
 }
 

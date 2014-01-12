@@ -281,8 +281,8 @@ static OODebugMonitor *sSingleton = nil;
 	
 	if (class == Nil)  class = [NSObject class];
 	
-	result = [_configOverrides objectForKey:key];
-	if (![result isKindOfClass:class] && result != [NSNull null])  result = [_configFromOXPs objectForKey:key];
+	result = _configOverrides[key];
+	if (![result isKindOfClass:class] && result != [NSNull null])  result = _configFromOXPs[key];
 	if (![result isKindOfClass:class] && result != [NSNull null])  result = [[value retain] autorelease];
 	if (result == [NSNull null])  result = nil;
 	
@@ -317,7 +317,7 @@ static OODebugMonitor *sSingleton = nil;
 	else
 	{
 		if (_configOverrides == nil)  _configOverrides = [[NSMutableDictionary alloc] init];
-		[_configOverrides setObject:value forKey:key];
+		_configOverrides[key] = value;
 	}
 	
 	// Send changed value to debugger
@@ -498,7 +498,7 @@ typedef struct
 		NSDictionary *shipInfo = nil;
 		for (shipEnum = [[entity shipsInTransit] objectEnumerator]; (shipInfo = [shipEnum nextObject]); )
 		{
-			ShipEntity *ship = [shipInfo objectForKey:@"ship"];
+			ShipEntity *ship = shipInfo[@"ship"];
 			[self dumpEntity:ship withState:state parentVisible:NO];
 		}
 	}
@@ -520,7 +520,7 @@ typedef struct
 	for (texEnum = [allTextures objectEnumerator]; (tex = [texEnum nextObject]); )
 	{
 		// We subtract one because allTextures retains the textures.
-		[textureRefCounts setObject:[NSNumber numberWithUnsignedInteger:[tex retainCount] - 1] forKey:[NSValue valueWithNonretainedObject:tex]];
+		textureRefCounts[[NSValue valueWithNonretainedObject:tex]] = @([tex retainCount] - 1);
 	}
 	
 	size_t totalSize = 0;
@@ -679,20 +679,20 @@ typedef struct
 {
 	id							linesForFile = nil;
 	
-	linesForFile = [_sourceFiles objectForKey:filePath];
+	linesForFile = _sourceFiles[filePath];
 	
 	if (linesForFile == nil)
 	{
 		linesForFile = [self loadSourceFile:filePath];
-		if (linesForFile == nil)  linesForFile = [NSArray arrayWithObject:[NSString stringWithFormat:@"<Can't load file %@>", filePath]];
+		if (linesForFile == nil)  linesForFile = @[[NSString stringWithFormat:@"<Can't load file %@>", filePath]];
 		
 		if (_sourceFiles == nil)  _sourceFiles = [[NSMutableDictionary alloc] init];
-		[_sourceFiles setObject:linesForFile forKey:filePath];
+		_sourceFiles[filePath] = linesForFile;
 	}
 	
 	if ([linesForFile count] < line || line == 0)  return @"<line out of range!>";
 	
-	return [linesForFile objectAtIndex:line - 1];
+	return linesForFile[line - 1];
 }
 
 
@@ -751,10 +751,8 @@ typedef struct
 	}
 	if (path != nil)
 	{
-		NSDictionary *jsProps = [NSDictionary dictionaryWithObjectsAndKeys:
-								 self, @"console",
-								 JSSpecialFunctionsObjectWrapper(context), @"special",
-								 nil];
+		NSDictionary *jsProps = @{@"console": self,
+								 @"special": JSSpecialFunctionsObjectWrapper(context)};
 		_script = [[OOJSScript scriptWithPath:path properties:jsProps] retain];
 	}
 	
@@ -835,10 +833,10 @@ FIXME: this works with CRLF and LF, but not CR.
 	result = [NSMutableDictionary dictionaryWithCapacity:[dictionary count]];
 	for (keyEnum = [dictionary keyEnumerator]; (key = [keyEnum nextObject]); )
 	{
-		value = [dictionary objectForKey:key];
+		value = dictionary[key];
 		value = [self normalizeConfigValue:value forKey:key];
 		
-		if (key != nil && value != nil)  [result setObject:value forKey:key];
+		if (key != nil && value != nil)  result[key] = value;
 	}
 	
 	return result;
@@ -860,7 +858,7 @@ FIXME: this works with CRLF and LF, but not CR.
 		else if ([key hasPrefix:@"show-console"])
 		{
 			boolValue = OOBooleanFromObject(value, NO);
-			value = [NSNumber numberWithBool:boolValue];
+			value = @(boolValue);
 		}
 	}
 	
@@ -928,7 +926,7 @@ FIXME: this works with CRLF and LF, but not CR.
 	if (showLocation && stackSkip == 0)
 	{
 		// Append file name and line
-		if (errorReport->filename != NULL)  filePath = [NSString stringWithUTF8String:errorReport->filename];
+		if (errorReport->filename != NULL)  filePath = @(errorReport->filename);
 		if ([filePath length] != 0)
 		{
 			[formattedMessage appendFormat:@"\n    %@, line %u", [filePath lastPathComponent], errorReport->lineno];

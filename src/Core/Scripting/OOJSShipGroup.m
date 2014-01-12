@@ -116,7 +116,7 @@ static JSBool ShipGroupGetProperty(JSContext *context, JSObject *this, jsid prop
 	{
 		case kShipGroup_ships:
 			result = [group memberArray];
-			if (result == nil)  result = [NSArray array];
+			if (result == nil)  result = @[];
 			break;
 			
 		case kShipGroup_leader:

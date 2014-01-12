@@ -84,7 +84,7 @@ SOFTWARE.
 		//  Go through list and load textures.
 		for (i = 0; i != count; ++i)
 		{
-			entry = [config objectAtIndex:i];
+			entry = config[i];
 			if ([entry isKindOfClass:[NSDictionary class]])
 			{
 				name = [(NSDictionary *)entry oo_stringForKey:@"texture"];

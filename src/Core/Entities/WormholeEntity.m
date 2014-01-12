@@ -131,10 +131,8 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 																  context:restoreContext];
 				if (ship != nil)
 				{
-					[shipsInTransit addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-											   ship, @"ship",
-											   [currShipDict objectForKey:@"time_delta"], @"time",
-											   nil]];
+					[shipsInTransit addObject:@{@"ship": ship,
+											   @"time": currShipDict[@"time_delta"]}];
 				}
 				else
 				{
@@ -298,11 +296,9 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 		}
 	}
 	
-	[shipsInTransit addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-						ship, @"ship",
-						[NSNumber numberWithDouble: now + travel_time - arrival_time], @"time",
-						[ship beaconCode], @"shipBeacon",	// in case a beacon code has been set, nil otherwise
-						nil]];
+	[shipsInTransit addObject:@{@"ship": ship,
+						@"time": @(now + travel_time - arrival_time),
+						@"shipBeacon": [ship beaconCode]}];
 	witch_mass += [ship mass];
 	expiry_time = now + (witch_mass / WORMHOLE_SHRINK_RATE / shrink_factor);
 	// and, again, cap to be earlier than arrival time
@@ -348,8 +344,8 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 	NSDictionary *shipInfo = nil;
 	foreach (shipInfo, shipsInTransit)
 	{
-		ShipEntity *ship = [shipInfo objectForKey:@"ship"];
-		NSString *shipBeacon = [shipInfo objectForKey:@"shipBeacon"];
+		ShipEntity *ship = shipInfo[@"ship"];
+		NSString *shipBeacon = shipInfo[@"shipBeacon"];
 		double	ship_arrival_time = arrival_time + [shipInfo oo_doubleForKey:@"time"];
 		double	time_passed = now - ship_arrival_time;
 		
@@ -796,10 +792,10 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 {
 	NSMutableDictionary *myDict = [NSMutableDictionary dictionary];
 
-	[myDict setObject:StringFromRandomSeed(origin) forKey:@"origin_seed"];
-	[myDict setObject:StringFromRandomSeed(destination) forKey:@"dest_seed"];
-	[myDict setObject:StringFromPoint(originCoords) forKey:@"origin_coords"];
-	[myDict setObject:StringFromPoint(destinationCoords) forKey:@"dest_coords"];
+	myDict[@"origin_seed"] = StringFromRandomSeed(origin);
+	myDict[@"dest_seed"] = StringFromRandomSeed(destination);
+	myDict[@"origin_coords"] = StringFromPoint(originCoords);
+	myDict[@"dest_coords"] = StringFromPoint(destinationCoords);
 	// Anything converting a wormhole to a dictionary should already have 
 	// modified its time to shipClock time
 	[myDict oo_setFloat:(expiry_time) forKey:@"expiry_time"];
@@ -814,13 +810,11 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 	NSMutableDictionary *context = [NSMutableDictionary dictionary];
 	while ((currShipDict = [ships nextObject]) != nil)
 	{
-		id ship = [currShipDict objectForKey:@"ship"];
-		[shipArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-							  [NSNumber numberWithDouble:[currShipDict oo_doubleForKey:@"time"]], @"time_delta",
-							  [ship savedShipDictionaryWithContext:context], @"ship_info",
-							  nil]];
+		id ship = currShipDict[@"ship"];
+		[shipArray addObject:@{@"time_delta": @([currShipDict oo_doubleForKey:@"time"]),
+							  @"ship_info": [ship savedShipDictionaryWithContext:context]}];
 	}
-	[myDict setObject:shipArray forKey:@"ships"];
+	myDict[@"ships"] = shipArray;
 
 	return myDict;
 }
@@ -856,7 +850,7 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 	for (i = 0; i < [shipsInTransit count]; ++i)
 	{
 		NSDictionary *shipDict = [shipsInTransit oo_dictionaryAtIndex:i];
-		ShipEntity* ship = (ShipEntity*)[shipDict objectForKey:@"ship"];
+		ShipEntity* ship = (ShipEntity*)shipDict[@"ship"];
 		double	ship_arrival_time = arrival_time + [shipDict oo_doubleForKey:@"time"];
 		OOLog(@"dumpState.wormholeEntity.ships", @"Ship %d: %@  mass %.2f  arrival time %@", i+1, ship, [ship mass], ClockToString(ship_arrival_time, false));
 	}

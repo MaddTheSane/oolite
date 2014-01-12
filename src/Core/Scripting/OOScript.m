@@ -82,7 +82,7 @@ static NSString * const kOOLogLoadScriptNone				= @"script.load.none";
 			script = [OOJSScript scriptWithPath:filePath properties:nil];
 			if (script != nil)
 			{
-				result = [NSArray arrayWithObject:script];
+				result = @[script];
 				OOLog(kOOLogLoadScriptOK, @"Successfully loaded JavaScript script %@", filePath);
 			}
 			else  OOLogERR(kOOLogLoadScriptParseError, @"Failed to load JavaScript script %@", filePath);
@@ -166,7 +166,7 @@ static NSString * const kOOLogLoadScriptNone				= @"script.load.none";
 	{
 		NSArray		*result = nil;
 		OOScript	*script = [OOJSScript scriptWithPath:filePath properties:nil];
-		if (script != nil) result = [NSArray arrayWithObject:script];
+		if (script != nil) result = @[script];
 		return result;
 	}
 	else if ([extension isEqualToString:@"plist"])

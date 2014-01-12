@@ -34,19 +34,19 @@ MA 02110-1301, USA.
 	 
 	for (otherKeysEnum = [otherDictionary keyEnumerator]; (key = [otherKeysEnum nextObject]); )
 	{
-		if (![self objectForKey:key])
-			[self setObject:[otherDictionary objectForKey:key] forKey:key];
+		if (!self[key])
+			self[key] = otherDictionary[key];
 		else
 		{
 			BOOL merged = NO;
-			id thisObject = [self objectForKey:key];
-			id otherObject = [otherDictionary objectForKey:key];
+			id thisObject = self[key];
+			id otherObject = otherDictionary[key];
 			
 			if ([thisObject isKindOfClass:[NSDictionary class]]&&[otherObject isKindOfClass:[NSDictionary class]]&&(![thisObject isEqual:otherObject]))
 			{
 				NSMutableDictionary* mergeObject = [NSMutableDictionary dictionaryWithDictionary:(NSDictionary*)thisObject];
 				[mergeObject mergeEntriesFromDictionary:(NSDictionary*)otherObject];
-				[self setObject:mergeObject forKey:key];
+				self[key] = mergeObject;
 				merged = YES;
 			}
 			
@@ -54,12 +54,12 @@ MA 02110-1301, USA.
 			{
 				NSMutableArray* mergeObject = [NSMutableArray arrayWithArray:(NSArray*)thisObject];
 				[mergeObject addObjectsFromArray:(NSArray*)otherObject];
-				[self setObject:mergeObject forKey:key];
+				self[key] = mergeObject;
 				merged = YES;
 			}
 			
 			if (!merged)
-				[self setObject:otherObject forKey:key];
+				self[key] = otherObject;
 		}
 	}	
 }

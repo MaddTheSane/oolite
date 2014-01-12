@@ -67,7 +67,7 @@ static NSString * const kOOLogNoteAddShips = @"script.debug.note.addShips";
 	ShipEntity				*spawned = nil;
 	NSMutableArray			*result = nil;
 	
-	if (count == 0)  return [NSArray array];
+	if (count == 0)  return @[];
 	
 	OOLog(kOOLogNoteAddShips, @"Spawning %ld x '%@' near %@ %d", count, role, [self shortDescription], [self universalID]);
 	

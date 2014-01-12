@@ -194,9 +194,9 @@ void InitOOJSManifest(JSContext *context, JSObject *global)
 	unsigned i;
 	for (i = 0; i < kManifestCaseInsensitiveLimit; i++)
 	{
-		NSString *key = [NSString stringWithUTF8String:sManifestProperties[i].name];
-		NSNumber *value = [NSNumber numberWithInt:sManifestProperties[i].tinyid];
-		[manifestNameMap setObject:value forKey:key];
+		NSString *key = @(sManifestProperties[i].name);
+		NSNumber *value = @(sManifestProperties[i].tinyid);
+		manifestNameMap[key] = value;
 	}
 	
 	// EMMSTRAN: use NSMapTable. -- Ahruman 2011-02-10
@@ -223,7 +223,7 @@ static BOOL GetCommodityID(JSContext *context, jsid property, unsigned *outCommo
 	else if (JSID_IS_STRING(property))
 	{
 		NSString *key = [OOStringFromJSString(context, JSID_TO_STRING(property)) lowercaseString];
-		NSNumber *value = [sManifestNameMap objectForKey:key];
+		NSNumber *value = sManifestNameMap[key];
 		if (value == nil)  return NO;
 		
 		*outCommodity = [value intValue];

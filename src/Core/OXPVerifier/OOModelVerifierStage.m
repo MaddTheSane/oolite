@@ -108,12 +108,12 @@ static id NSNULL = nil;
 	{
 		pool = [[NSAutoreleasePool alloc] init];
 		
-		name = [info objectForKey:@"name"];
-		context = [info objectForKey:@"context"];
+		name = info[@"name"];
+		context = info[@"context"];
 		if (context == NSNULL)  context = nil;
-		materials = [info objectForKey:@"materials"];
+		materials = info[@"materials"];
 		if (materials == NSNULL)  materials = nil;
-		shaders = [info objectForKey:@"shaders"];
+		shaders = info[@"shaders"];
 		if (shaders == NSNULL)  shaders = nil;
 		
 		[self checkModel:name
@@ -156,12 +156,10 @@ static id NSNULL = nil;
 	if (materials == nil)  materials = NSNULL;
 	if (shaders == nil)  shaders = NSNULL;
 	
-	info = [NSDictionary dictionaryWithObjectsAndKeys:
-				name, @"name",
-				context, @"context",
-				materials, @"materials",
-				shaders, @"shaders",
-				nil];
+	info = @{@"name": name,
+				@"context": context,
+				@"materials": materials,
+				@"shaders": shaders};
 	
 	[_modelsToCheck addObject:info];
 	

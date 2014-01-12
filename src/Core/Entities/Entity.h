@@ -52,9 +52,26 @@ extern size_t gTotalEntityMemory;
 
 #define CLOSE_COLLISION_CHECK_MAX_RANGE2 1000000000.0
 
-
 #define ENTRY(label, value) label = value,
 
+#ifdef __APPLE__
+typedef NS_ENUM(int, OOEntityStatus)
+{
+#include "OOEntityStatus.tbl"
+};
+
+
+#ifndef OO_SCANCLASS_TYPE
+#define OO_SCANCLASS_TYPE
+//typedef enum OOScanClass OOScanClass;
+#endif
+
+typedef NS_ENUM(int, OOScanClass)
+{
+#include "OOScanClass.tbl"
+};
+
+#else
 typedef enum OOEntityStatus
 {
 	#include "OOEntityStatus.tbl"
@@ -71,6 +88,7 @@ enum OOScanClass
 	#include "OOScanClass.tbl"
 };
 
+#endif
 #undef ENTRY
 
 

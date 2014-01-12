@@ -440,11 +440,9 @@ static void QueueDeferredOperation(NSString *opType, uint32 trackingID, OOJSValu
 	NSCAssert1(sRunning, @"%s can only be called while frame callbacks are running.", __PRETTY_FUNCTION__);
 	
 	if (sDeferredOps == nil)  sDeferredOps = [[NSMutableArray alloc] init];
-	[sDeferredOps addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-							 opType, @"operation",
-							 [NSNumber numberWithInt:trackingID], @"trackingID",
-							 value, @"value",
-							 nil]];
+	[sDeferredOps addObject:@{@"operation": opType,
+							 @"trackingID": @(trackingID),
+							 @"value": value}];
 }
 
 
@@ -458,12 +456,12 @@ static void RunDeferredOperations(JSContext *context)
 	
 	for (operationEnum = [sDeferredOps objectEnumerator]; (operation = [operationEnum nextObject]); )
 	{
-		NSString	*opType = [operation objectForKey:@"operation"];
+		NSString	*opType = operation[@"operation"];
 		uint32		trackingID = [operation oo_intForKey:@"trackingID"];
 		
 		if ([opType isEqualToString:@"add"])
 		{
-			OOJSValue	*callbackObj = [operation objectForKey:@"value"];
+			OOJSValue	*callbackObj = operation[@"value"];
 			NSString	*errorString = nil;
 			
 			if (!AddCallback(context, OOJSValueFromNativeObject(context, callbackObj), trackingID, &errorString))

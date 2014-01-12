@@ -62,16 +62,14 @@ MA 02110-1301, USA.
 	
 	for(i=0; i < [stickList count]; i++)
 	{
-		[gui setArray:[NSArray arrayWithObjects:
-					   [NSString stringWithFormat: @"Stick %d", i+1],
-					   [stickList objectAtIndex: i],
-					   nil]
+		[gui setArray:@[[NSString stringWithFormat: @"Stick %d", i+1],
+					   stickList[i]]
 			   forRow:i + GUI_ROW_STICKNAME];
 	}
 	
 	[self displayFunctionList:gui skip:skip];
 	
-	[gui setArray:[NSArray arrayWithObject:@"Select a function and press Enter to modify or 'u' to unset."]
+	[gui setArray:@[@"Select a function and press Enter to modify or 'u' to unset."]
 		   forRow:GUI_ROW_INSTRUCT];
 	
 	[gui setSelectedRow: selFunctionIdx + GUI_ROW_FUNCSTART];
@@ -93,8 +91,7 @@ MA 02110-1301, USA.
 		if([gameView isDown: 27])
 		{
 			[stickHandler clearCallback];
-			[gui setArray: [NSArray arrayWithObjects:
-							@"Function setting aborted.", nil]
+			[gui setArray: @[@"Function setting aborted."]
 				   forRow: GUI_ROW_INSTRUCT];
 			waitingForStickCallback=NO;
 		}
@@ -107,7 +104,7 @@ MA 02110-1301, USA.
 	
 	NSString* key = [gui keyForRow: [gui selectedRow]];
 	if ([key hasPrefix:@"Index:"])
-		selFunctionIdx=[[[key componentsSeparatedByString:@":"] objectAtIndex: 1] intValue];
+		selFunctionIdx=[[key componentsSeparatedByString:@":"][1] intValue];
 	else
 		selFunctionIdx=-1;
 
@@ -115,7 +112,7 @@ MA 02110-1301, USA.
 	{
 		if ([key hasPrefix:@"More:"])
 		{
-			int from_function = [[[key componentsSeparatedByString:@":"] objectAtIndex: 1] intValue];
+			int from_function = [[key componentsSeparatedByString:@":"][1] intValue];
 			if (from_function < 0)  from_function = 0;
 			
 			[self setGuiToStickMapperScreen:from_function];
@@ -126,8 +123,8 @@ MA 02110-1301, USA.
 			return;
 		}
 		
-		NSDictionary *entry=[stickFunctions objectAtIndex: selFunctionIdx];
-		int hw=[(NSNumber *)[entry objectForKey: KEY_ALLOWABLE] intValue];
+		NSDictionary *entry=stickFunctions[selFunctionIdx];
+		int hw=[(NSNumber *)entry[KEY_ALLOWABLE] intValue];
 		[stickHandler setCallback: @selector(updateFunction:)
 						   object: self 
 						 hardware: hw];
@@ -145,7 +142,7 @@ MA 02110-1301, USA.
 			default:
 				instructions = @"Press the button or deflect the axis you want to use for this function.";
 		}
-		[gui setArray: [NSArray arrayWithObjects: instructions, nil] forRow: GUI_ROW_INSTRUCT];
+		[gui setArray: @[instructions] forRow: GUI_ROW_INSTRUCT];
 		waitingForStickCallback=YES;
 	}
 	
@@ -172,7 +169,7 @@ MA 02110-1301, USA.
 	
 	// What moved?
 	int function;
-	NSDictionary *entry = [stickFunctions objectAtIndex:selFunctionIdx];
+	NSDictionary *entry = stickFunctions[selFunctionIdx];
 	if([hwDict oo_boolForKey:STICK_ISAXIS])
 	{
 		function=[entry oo_intForKey: KEY_AXISFN];
@@ -229,9 +226,9 @@ MA 02110-1301, USA.
 - (void) removeFunction:(int)idx
 {
 	OOJoystickManager	*stickHandler = [OOJoystickManager sharedStickHandler];
-	NSDictionary		*entry = [stickFunctions objectAtIndex:idx];
-	NSNumber			*butfunc = [entry objectForKey:KEY_BUTTONFN];
-	NSNumber			*axfunc = [entry objectForKey:KEY_AXISFN];
+	NSDictionary		*entry = stickFunctions[idx];
+	NSNumber			*butfunc = entry[KEY_BUTTONFN];
+	NSNumber			*axfunc = entry[KEY_AXISFN];
 	selFunctionIdx = idx;
 	
 	// Some things can have either axis or buttons - make sure we clear
@@ -261,8 +258,7 @@ MA 02110-1301, USA.
 	OOJoystickManager	*stickHandler = [OOJoystickManager sharedStickHandler];
 	
 	[gui setColor:[OOColor greenColor] forRow: GUI_ROW_HEADING];
-	[gui setArray:[NSArray arrayWithObjects:
-				   @"Function", @"Assigned to", @"Type", nil]
+	[gui setArray:@[@"Function", @"Assigned to", @"Type"]
 		   forRow:GUI_ROW_HEADING];
 	
 	if(!stickFunctions)
@@ -305,7 +301,7 @@ MA 02110-1301, USA.
 		if (skip > 0)
 		{
 			[gui setColor:[OOColor greenColor] forRow:GUI_ROW_FUNCSTART];
-			[gui setArray:[NSArray arrayWithObjects:DESC(@"gui-back"), @" <-- ", nil] forRow:GUI_ROW_FUNCSTART];
+			[gui setArray:@[DESC(@"gui-back"), @" <-- "] forRow:GUI_ROW_FUNCSTART];
 			[gui setKey:[NSString stringWithFormat:@"More:%ld", previous] forRow:GUI_ROW_FUNCSTART];
 		}
 		
@@ -313,7 +309,7 @@ MA 02110-1301, USA.
 		{
 			NSString *allowedThings;
 			NSString *assignment;
-			NSDictionary *entry = [stickFunctions objectAtIndex: i + skip];
+			NSDictionary *entry = stickFunctions[i + skip];
 			NSString *axFuncKey = [entry oo_stringForKey:KEY_AXISFN];
 			NSString *butFuncKey = [entry oo_stringForKey:KEY_BUTTONFN];
 			int allowable = [entry oo_intForKey:KEY_ALLOWABLE];
@@ -322,22 +318,22 @@ MA 02110-1301, USA.
 				case HW_AXIS:
 					allowedThings=@"Axis";
 					assignment=[self describeStickDict:
-								[assignedAxes objectForKey: axFuncKey]];
+								assignedAxes[axFuncKey]];
 					break;
 				case HW_BUTTON:
 					allowedThings=@"Button";
 					assignment=[self describeStickDict:
-								[assignedButs objectForKey: butFuncKey]];
+								assignedButs[butFuncKey]];
 					break;
 				default:
 					allowedThings=@"Axis/Button";
 					
 					// axis has priority
 					assignment=[self describeStickDict:
-								[assignedAxes objectForKey: axFuncKey]];
+								assignedAxes[axFuncKey]];
 					if(!assignment)
 						assignment=[self describeStickDict:
-									[assignedButs objectForKey: butFuncKey]];
+									assignedButs[butFuncKey]];
 			}
 			
 			// Find out what's assigned for this function currently.
@@ -346,8 +342,7 @@ MA 02110-1301, USA.
 				assignment = @"   -   ";
 			}
 			
-			[gui setArray: [NSArray arrayWithObjects: 
-							[entry objectForKey: KEY_GUIDESC], assignment, allowedThings, nil]
+			[gui setArray: @[entry[KEY_GUIDESC], assignment, allowedThings]
 				   forRow: i + start_row];
 			//[gui setKey: GUI_KEY_OK forRow: i + start_row];
 			[gui setKey: [NSString stringWithFormat: @"Index:%ld", i + skip] forRow: i + start_row];
@@ -355,7 +350,7 @@ MA 02110-1301, USA.
 		if (i < n_functions - skip)
 		{
 			[gui setColor: [OOColor greenColor] forRow: start_row + i];
-			[gui setArray: [NSArray arrayWithObjects: DESC(@"gui-more"), @" --> ", nil] forRow: start_row + i];
+			[gui setArray: @[DESC(@"gui-more"), @" --> "] forRow: start_row + i];
 			[gui setKey: [NSString stringWithFormat: @"More:%ld", n_rows + skip] forRow: start_row + i];
 			i++;
 		}
@@ -371,12 +366,12 @@ MA 02110-1301, USA.
 	NSString *desc=nil;
 	if(stickDict)
 	{
-		int thingNumber=[(NSNumber *)[stickDict objectForKey: STICK_AXBUT]
+		int thingNumber=[(NSNumber *)stickDict[STICK_AXBUT]
 						 intValue];
-		int stickNumber=[(NSNumber *)[stickDict objectForKey: STICK_NUMBER]
+		int stickNumber=[(NSNumber *)stickDict[STICK_NUMBER]
 						 intValue];
 		// Button or axis?
-		if([(NSNumber *)[stickDict objectForKey: STICK_ISAXIS] boolValue])
+		if([(NSNumber *)stickDict[STICK_ISAXIS] boolValue])
 		{
 			desc=[NSString stringWithFormat: @"Stick %d axis %d",
 				  stickNumber+1, thingNumber+1];
@@ -584,15 +579,12 @@ MA 02110-1301, USA.
 	NSMutableDictionary *guiDict = [NSMutableDictionary dictionary];
 	
 	if ([what length] > 30)  what = [[what substringToIndex:28] stringByAppendingString:@"..."];
-	[guiDict setObject: what  forKey: KEY_GUIDESC];
-	[guiDict setObject: [NSNumber numberWithInt: allowable]  
-				forKey: KEY_ALLOWABLE];
+	guiDict[KEY_GUIDESC] = what;
+	guiDict[KEY_ALLOWABLE] = @(allowable);
 	if(axisfn >= 0)
-		[guiDict setObject: [NSNumber numberWithInt: axisfn]
-					forKey: KEY_AXISFN];
+		guiDict[KEY_AXISFN] = @(axisfn);
 	if(butfn >= 0)
-		[guiDict setObject: [NSNumber numberWithInt: butfn]
-					forKey: KEY_BUTTONFN];
+		guiDict[KEY_BUTTONFN] = @(butfn);
 	return guiDict;
 } 
 

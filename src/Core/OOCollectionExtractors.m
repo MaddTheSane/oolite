@@ -330,7 +330,7 @@ static NSString *StringForObject(id object, NSString *defaultValue);
 
 - (id) oo_objectAtIndex:(NSUInteger)index
 {
-	if (index < [self count])  return [self objectAtIndex:index];
+	if (index < [self count])  return self[index];
 	else  return nil;
 }
 
@@ -391,117 +391,117 @@ static NSString *StringForObject(id object, NSString *defaultValue);
 
 - (char) oo_charForKey:(id)key defaultValue:(char)value
 {
-	return OOCharFromObject([self objectForKey:key], value);
+	return OOCharFromObject(self[key], value);
 }
 
 
 - (short) oo_shortForKey:(id)key defaultValue:(short)value
 {
-	return OOShortFromObject([self objectForKey:key], value);
+	return OOShortFromObject(self[key], value);
 }
 
 
 - (int) oo_intForKey:(id)key defaultValue:(int)value
 {
-	return OOIntFromObject([self objectForKey:key], value);
+	return OOIntFromObject(self[key], value);
 }
 
 
 - (long) oo_longForKey:(id)key defaultValue:(long)value
 {
-	return OOLongFromObject([self objectForKey:key], value);
+	return OOLongFromObject(self[key], value);
 }
 
 
 - (long long) oo_longLongForKey:(id)key defaultValue:(long long)value
 {
-	return OOLongLongFromObject([self objectForKey:key], value);
+	return OOLongLongFromObject(self[key], value);
 }
 
 
 - (NSInteger) oo_integerForKey:(id)key defaultValue:(NSInteger)value
 {
-	return OOIntegerFromObject([self objectForKey:key], value);
+	return OOIntegerFromObject(self[key], value);
 }
 
 
 - (unsigned char) oo_unsignedCharForKey:(id)key defaultValue:(unsigned char)value
 {
-	return OOUnsignedCharFromObject([self objectForKey:key], value);
+	return OOUnsignedCharFromObject(self[key], value);
 }
 
 
 - (unsigned short) oo_unsignedShortForKey:(id)key defaultValue:(unsigned short)value
 {
-	return OOUnsignedShortFromObject([self objectForKey:key], value);
+	return OOUnsignedShortFromObject(self[key], value);
 }
 
 
 - (unsigned int) oo_unsignedIntForKey:(id)key defaultValue:(unsigned int)value
 {
-	return OOUnsignedIntFromObject([self objectForKey:key], value);
+	return OOUnsignedIntFromObject(self[key], value);
 }
 
 
 - (unsigned long) oo_unsignedLongForKey:(id)key defaultValue:(unsigned long)value
 {
-	return OOUnsignedLongFromObject([self objectForKey:key], value);
+	return OOUnsignedLongFromObject(self[key], value);
 }
 
 
 - (unsigned long long) oo_unsignedLongLongForKey:(id)key defaultValue:(unsigned long long)value
 {
-	return OOUnsignedLongLongFromObject([self objectForKey:key], value);
+	return OOUnsignedLongLongFromObject(self[key], value);
 }
 
 
 - (NSUInteger) oo_unsignedIntegerForKey:(id)key defaultValue:(NSUInteger)value
 {
-	return OOUIntegerFromObject([self objectForKey:key], value);
+	return OOUIntegerFromObject(self[key], value);
 }
 
 
 - (BOOL) oo_boolForKey:(id)key defaultValue:(BOOL)value
 {
-	return OOBooleanFromObject([self objectForKey:key], value);
+	return OOBooleanFromObject(self[key], value);
 }
 
 
 #ifndef OOCOLLECTIONEXTRACTORS_SIMPLE
 - (BOOL) oo_fuzzyBooleanForKey:(id)key defaultValue:(float)value
 {
-	return OOFuzzyBooleanFromObject([self objectForKey:key], value);
+	return OOFuzzyBooleanFromObject(self[key], value);
 }
 #endif
 
 
 - (float) oo_floatForKey:(id)key defaultValue:(float)value
 {
-	return OOFloatFromObject([self objectForKey:key], value);
+	return OOFloatFromObject(self[key], value);
 }
 
 
 - (double) oo_doubleForKey:(id)key defaultValue:(double)value
 {
-	return OODoubleFromObject([self objectForKey:key], value);
+	return OODoubleFromObject(self[key], value);
 }
 
 
 - (float) oo_nonNegativeFloatForKey:(id)key defaultValue:(float)value
 {
-	return OONonNegativeFloatFromObject([self objectForKey:key], value);
+	return OONonNegativeFloatFromObject(self[key], value);
 }
 
 
 - (double) oo_nonNegativeDoubleForKey:(id)key defaultValue:(double)value
 {
-	return OONonNegativeDoubleFromObject([self objectForKey:key], value);
+	return OONonNegativeDoubleFromObject(self[key], value);
 }
 
 
 - (id) oo_objectForKey:(id)key defaultValue:(id)value
 {
-	id					objVal = [self objectForKey:key];
+	id					objVal = self[key];
 	id					result;
 	
 	if (objVal != nil)  result = objVal;
@@ -513,7 +513,7 @@ static NSString *StringForObject(id object, NSString *defaultValue);
 
 - (id) oo_objectOfClass:(Class)class forKey:(id)key defaultValue:(id)value
 {
-	id					objVal = [self objectForKey:key];
+	id					objVal = self[key];
 	id					result;
 	
 	if ([objVal isKindOfClass:class])  result = objVal;
@@ -525,7 +525,7 @@ static NSString *StringForObject(id object, NSString *defaultValue);
 
 - (NSString *) oo_stringForKey:(id)key defaultValue:(NSString *)value
 {
-	return StringForObject([self objectForKey:key], value);
+	return StringForObject(self[key], value);
 }
 
 
@@ -537,7 +537,7 @@ static NSString *StringForObject(id object, NSString *defaultValue);
 
 - (NSSet *) oo_setForKey:(id)key defaultValue:(NSSet *)value
 {
-	return SetForObject([self objectForKey:key], value);
+	return SetForObject(self[key], value);
 }
 
 
@@ -556,18 +556,18 @@ static NSString *StringForObject(id object, NSString *defaultValue);
 #ifndef OOCOLLECTIONEXTRACTORS_SIMPLE
 - (Vector) oo_vectorForKey:(id)key defaultValue:(Vector)value
 {
-	return OOVectorFromObject([self objectForKey:key], value);
+	return OOVectorFromObject(self[key], value);
 }
 
 - (HPVector) oo_hpvectorForKey:(id)key defaultValue:(HPVector)value
 {
-	return OOHPVectorFromObject([self objectForKey:key], value);
+	return OOHPVectorFromObject(self[key], value);
 }
 
 
 - (Quaternion) oo_quaternionForKey:(id)key defaultValue:(Quaternion)value
 {
-	return OOQuaternionFromObject([self objectForKey:key], value);
+	return OOQuaternionFromObject(self[key], value);
 }
 #endif
 
@@ -660,25 +660,25 @@ static NSString *StringForObject(id object, NSString *defaultValue);
 
 - (float) oo_floatForKey:(id)key
 {
-	return OOFloatFromObject([self objectForKey:key], 0.0f);
+	return OOFloatFromObject(self[key], 0.0f);
 }
 
 
 - (double) oo_doubleForKey:(id)key
 {
-	return OODoubleFromObject([self objectForKey:key], 0.0);
+	return OODoubleFromObject(self[key], 0.0);
 }
 
 
 - (float) oo_nonNegativeFloatForKey:(id)key
 {
-	return OONonNegativeFloatFromObject([self objectForKey:key], 0.0f);
+	return OONonNegativeFloatFromObject(self[key], 0.0f);
 }
 
 
 - (double) oo_nonNegativeDoubleForKey:(id)key
 {
-	return OONonNegativeDoubleFromObject([self objectForKey:key], 0.0);
+	return OONonNegativeDoubleFromObject(self[key], 0.0);
 }
 
 
@@ -1009,25 +1009,25 @@ static NSString *StringForObject(id object, NSString *defaultValue);
 
 - (void) oo_addInteger:(long)value
 {
-	[self addObject:[NSNumber numberWithLong:value]];
+	[self addObject:@(value)];
 }
 
 
 - (void) oo_addUnsignedInteger:(unsigned long)value
 {
-	[self addObject:[NSNumber numberWithUnsignedLong:value]];
+	[self addObject:@(value)];
 }
 
 
 - (void) oo_addFloat:(double)value
 {
-	[self addObject:[NSNumber numberWithDouble:value]];
+	[self addObject:@(value)];
 }
 
 
 - (void) oo_addBool:(BOOL)value
 {
-	[self addObject:[NSNumber numberWithBool:value]];
+	[self addObject:@(value)];
 }
 
 
@@ -1047,25 +1047,25 @@ static NSString *StringForObject(id object, NSString *defaultValue);
 
 - (void) oo_insertInteger:(long)value atIndex:(NSUInteger)index
 {
-	[self insertObject:[NSNumber numberWithLong:value] atIndex:index];
+	[self insertObject:@(value) atIndex:index];
 }
 
 
 - (void) oo_insertUnsignedInteger:(unsigned long)value atIndex:(NSUInteger)index
 {
-	[self insertObject:[NSNumber numberWithUnsignedLong:value] atIndex:index];
+	[self insertObject:@(value) atIndex:index];
 }
 
 
 - (void) oo_insertFloat:(double)value atIndex:(NSUInteger)index
 {
-	[self insertObject:[NSNumber numberWithDouble:value] atIndex:index];
+	[self insertObject:@(value) atIndex:index];
 }
 
 
 - (void) oo_insertBool:(BOOL)value atIndex:(NSUInteger)index
 {
-	[self insertObject:[NSNumber numberWithBool:value] atIndex:index];
+	[self insertObject:@(value) atIndex:index];
 }
 
 
@@ -1089,54 +1089,54 @@ static NSString *StringForObject(id object, NSString *defaultValue);
 
 - (void) oo_setInteger:(long)value forKey:(id)key
 {
-	[self setObject:[NSNumber numberWithLong:value] forKey:key];
+	self[key] = @(value);
 }
 
 
 - (void) oo_setUnsignedInteger:(unsigned long)value forKey:(id)key
 {
-	[self setObject:[NSNumber numberWithUnsignedLong:value] forKey:key];
+	self[key] = @(value);
 }
 
 
 - (void) oo_setLongLong:(long long)value forKey:(id)key
 {
-	[self setObject:[NSNumber numberWithLongLong:value] forKey:key];
+	self[key] = @(value);
 }
 
 
 - (void) oo_setUnsignedLongLong:(unsigned long long)value forKey:(id)key
 {
-	[self setObject:[NSNumber numberWithUnsignedLongLong:value] forKey:key];
+	self[key] = @(value);
 }
 
 
 - (void) oo_setFloat:(double)value forKey:(id)key
 {
-	[self setObject:[NSNumber numberWithDouble:value] forKey:key];
+	self[key] = @(value);
 }
 
 
 - (void) oo_setBool:(BOOL)value forKey:(id)key
 {
-	[self setObject:[NSNumber numberWithBool:value] forKey:key];
+	self[key] = @(value);
 }
 
 
 #ifndef OOCOLLECTIONEXTRACTORS_SIMPLE
 - (void) oo_setVector:(Vector)value forKey:(id)key
 {
-	[self setObject:OOPropertyListFromVector(value) forKey:key];
+	self[key] = OOPropertyListFromVector(value);
 }
 
 - (void) oo_setHPVector:(HPVector)value forKey:(id)key
 {
-	[self setObject:OOPropertyListFromHPVector(value) forKey:key];
+	self[key] = OOPropertyListFromHPVector(value);
 }
 
 - (void) oo_setQuaternion:(Quaternion)value forKey:(id)key
 {
-	[self setObject:OOPropertyListFromQuaternion(value) forKey:key];
+	self[key] = OOPropertyListFromQuaternion(value);
 }
 #endif
 
@@ -1147,25 +1147,25 @@ static NSString *StringForObject(id object, NSString *defaultValue);
 
 - (void) oo_addInteger:(long)value
 {
-	[self addObject:[NSNumber numberWithLong:value]];
+	[self addObject:@(value)];
 }
 
 
 - (void) oo_addUnsignedInteger:(unsigned long)value
 {
-	[self addObject:[NSNumber numberWithUnsignedLong:value]];
+	[self addObject:@(value)];
 }
 
 
 - (void) oo_addFloat:(double)value
 {
-	[self addObject:[NSNumber numberWithDouble:value]];
+	[self addObject:@(value)];
 }
 
 
 - (void) oo_addBool:(BOOL)value
 {
-	[self addObject:[NSNumber numberWithBool:value]];
+	[self addObject:@(value)];
 }
 
 
@@ -1411,9 +1411,9 @@ Vector OOVectorFromObject(id object, Vector defaultValue)
 	{
 		dict = object;
 		// Require at least one of the keys x, y, or z
-		if ([dict objectForKey:@"x"] != nil ||
-			[dict objectForKey:@"y"] != nil ||
-			[dict objectForKey:@"z"] != nil)
+		if (dict[@"x"] != nil ||
+			dict[@"y"] != nil ||
+			dict[@"z"] != nil)
 		{
 			// Note: uses 0 for unknown components rather than components of defaultValue.
 			result.x = [dict oo_floatForKey:@"x" defaultValue:0.0f];
@@ -1445,9 +1445,9 @@ HPVector OOHPVectorFromObject(id object, HPVector defaultValue)
 	{
 		dict = object;
 		// Require at least one of the keys x, y, or z
-		if ([dict objectForKey:@"x"] != nil ||
-			[dict objectForKey:@"y"] != nil ||
-			[dict objectForKey:@"z"] != nil)
+		if (dict[@"x"] != nil ||
+			dict[@"y"] != nil ||
+			dict[@"z"] != nil)
 		{
 			// Note: uses 0 for unknown components rather than components of defaultValue.
 			result.x = [dict oo_doubleForKey:@"x" defaultValue:0.0];
@@ -1481,10 +1481,10 @@ Quaternion OOQuaternionFromObject(id object, Quaternion defaultValue)
 	{
 		dict = object;
 		// Require at least one of the keys w, x, y, or z
-		if ([dict objectForKey:@"w"] != nil ||
-			[dict objectForKey:@"x"] != nil ||
-			[dict objectForKey:@"y"] != nil ||
-			[dict objectForKey:@"z"] != nil)
+		if (dict[@"w"] != nil ||
+			dict[@"x"] != nil ||
+			dict[@"y"] != nil ||
+			dict[@"z"] != nil)
 		{
 			// Note: uses 0 for unknown components rather than components of defaultValue.
 			result.w = [dict oo_floatForKey:@"w" defaultValue:0.0f];
@@ -1507,22 +1507,18 @@ NSDictionary *OOPropertyListFromVector(Vector value)
 
 NSDictionary *OOPropertyListFromHPVector(HPVector value)
 {
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-			@(value.x), @"x",
-			@(value.y), @"y",
-			@(value.z), @"z",
-			nil];
+	return @{@"x": @(value.x),
+			@"y": @(value.y),
+			@"z": @(value.z)};
 }
 
 
 NSDictionary *OOPropertyListFromQuaternion(Quaternion value)
 {
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-			@(value.w), @"w",
-			@(value.x), @"x",
-			@(value.y), @"y",
-			@(value.z), @"z",
-			nil];
+	return @{@"w": @(value.w),
+			@"x": @(value.x),
+			@"y": @(value.y),
+			@"z": @(value.z)};
 }
 #endif
 
