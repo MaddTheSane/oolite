@@ -19,6 +19,8 @@
 			<string>Editor</string>
 			<key>LSHandlerRank</key>
 			<string>Owner</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>org.aegidian.oolite.save</string>
@@ -137,6 +139,8 @@
 			</array>
 			<key>UTTypeDescription</key>
 			<string>Oolite Expansion Pack</string>
+			<key>UTTypeIconFile</key>
+			<string>oolite-expansion-document</string>
 			<key>UTTypeIdentifier</key>
 			<string>org.aegidian.oolite.oxp</string>
 			<key>UTTypeTagSpecification</key>
@@ -155,6 +159,8 @@
 			</array>
 			<key>UTTypeDescription</key>
 			<string>Oolite Expansion Pack</string>
+			<key>UTTypeIconFile</key>
+			<string>oolite-expansion-document</string>
 			<key>UTTypeIdentifier</key>
 			<string>org.aegidian.oolite.oxp.compressed</string>
 			<key>UTTypeReferenceURL</key>
