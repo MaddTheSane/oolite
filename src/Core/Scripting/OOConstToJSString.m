@@ -140,8 +140,10 @@ static void InitTable(JSContext *context, ConstTable *table);
 
 void OOConstToJSStringInit(JSContext *context)
 {
+#ifndef NDEBUG
 	NSCAssert(!sInited, @"OOConstToJSStringInit() called while already inited.");
 	NSCParameterAssert(context != NULL && JS_IsInRequest(context));
+#endif
 	
 	sUndefinedString = JS_InternString(context, "UNDEFINED");
 	
@@ -199,9 +201,11 @@ static void InitTable(JSContext *context, ConstTable *table)
 
 JSString *OOJSStringFromConstantPRIVATE(JSContext *context, NSInteger value, struct ConstTable *table)
 {
+#ifndef NDEBUG
 	NSCAssert1(sInited, @"%s called before OOConstToJSStringInit().", __PRETTY_FUNCTION__);
 	NSCParameterAssert(context != NULL && JS_IsInRequest(context));
 	NSCParameterAssert(table != NULL && table->count > 0);
+#endif
 	
 	// Binary search.
 	NSUInteger min = 0, max = table->count - 1;
@@ -231,8 +235,10 @@ JSString *OOJSStringFromConstantPRIVATE(JSContext *context, NSInteger value, str
 
 NSUInteger OOConstantFromJSStringPRIVATE(JSContext *context, JSString *string, struct ConstTable *table, NSInteger defaultValue)
 {
+#ifndef NDEBUG
 	NSCAssert1(sInited, @"%s called before OOConstToJSStringInit().", __PRETTY_FUNCTION__);
 	NSCParameterAssert(context != NULL && JS_IsInRequest(context) && table != NULL);
+#endif
 	
 	// Quick pass: look for pointer-equal string.
 	NSUInteger i, count = table->count;
