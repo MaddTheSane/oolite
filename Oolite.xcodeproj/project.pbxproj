@@ -3928,7 +3928,6 @@
 			buildSettings = {
 				APPLY_RULES_IN_COPY_FILES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "oolite-icon";
-				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				COPY_SCHEMATA = 1;
 				DEPS_INCLUDE_PATH = "$(SYMROOT)/$(CONFIGURATION)/include";
@@ -3975,7 +3974,6 @@
 			buildSettings = {
 				APPLY_RULES_IN_COPY_FILES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "oolite-icon";
-				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -4038,7 +4036,6 @@
 			buildSettings = {
 				APPLY_RULES_IN_COPY_FILES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "oolite-icon";
-				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				COPY_SCHEMATA = 1;
 				DEPS_INCLUDE_PATH = "$(SYMROOT)/$(CONFIGURATION)/include";
@@ -4083,7 +4080,6 @@
 		1AD267690C8305A200B4BFD1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
 				OOLITE_INCUDE_DEBUG_BUNDLE = 1;
 				PRODUCT_NAME = "Build All";
 			};
@@ -4092,7 +4088,6 @@
 		1AD2676A0C8305A200B4BFD1 /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
 				OOLITE_INCUDE_DEBUG_BUNDLE = 0;
 				PRODUCT_NAME = "Build All";
 			};
@@ -4101,7 +4096,6 @@
 		1AD2676B0C8305A200B4BFD1 /* TestRelease */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
 				OOLITE_INCUDE_DEBUG_BUNDLE = 1;
 				PRODUCT_NAME = "Build All";
 			};
