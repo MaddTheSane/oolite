@@ -121,7 +121,7 @@ MA 02110-1301, USA.
 					manifest_commodity[MARKET_QUANTITY] = @(manifest_quantity);
 					manifest[type] = [NSArray arrayWithArray:manifest_commodity];
 					[shipCommodityData release];
-					shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
+					shipCommodityData = [manifest mutableCopy];
 				}
 				else
 				{
@@ -186,7 +186,7 @@ MA 02110-1301, USA.
 		manifest_commodity[MARKET_QUANTITY] = @(manifest_quantity);
 		manifest[type] = [NSArray arrayWithArray:manifest_commodity];
 		[shipCommodityData release];
-		shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
+		shipCommodityData = [manifest mutableCopy];
 	}
 	[self calculateCurrentCargo];
 }

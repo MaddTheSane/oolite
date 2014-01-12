@@ -740,7 +740,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 														mergeMode:MERGE_SMART
 															cache:NO];
 	
-	playerShips = [NSMutableArray arrayWithCapacity:[shipyard count]];
+	playerShips = [NSMutableSet setWithCapacity:[shipyard count]];
 	
 	// Insert merged shipyard and shipyardOverrides entries.
 	for (shipKeyEnum = [shipyard keyEnumerator]; (shipKey = [shipKeyEnum nextObject]); )

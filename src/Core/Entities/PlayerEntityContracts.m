@@ -322,7 +322,7 @@ static unsigned RepForRisk(unsigned risk);
 					manifest[contract_cargo_type] = commodityInfo;
 					if (shipCommodityData)
 						[shipCommodityData release];
-					shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
+					shipCommodityData = [manifest mutableCopy];
 					// pay the premium and fee
 					// credits += fee + premium;
 					// not any more: all contracts initially awarded by JS, so fee
@@ -358,7 +358,7 @@ static unsigned RepForRisk(unsigned risk);
 						commodityInfo[MARKET_QUANTITY] = @0;
 						manifest[contract_cargo_type] = commodityInfo;
 						[shipCommodityData release];
-						shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
+						shipCommodityData = [manifest mutableCopy];
 						// pay the fee
 						int shortfall = 100 - percent_delivered;
 						int payment = percent_delivered * (fee) / 100.0;
@@ -975,7 +975,7 @@ for (unsigned i=0;i<amount;i++)
 	manifest[type] = [NSArray arrayWithArray:manifest_commodity];
 
 	[shipCommodityData release];
-	shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
+	shipCommodityData = [manifest mutableCopy];
 
 	current_cargo = [self cargoQuantityOnBoard];
 
@@ -1938,7 +1938,7 @@ static NSMutableDictionary *currentShipyard = nil;
 			manifest[i] = manifest_commodity;
 		}
 		[shipCommodityData release];
-		shipCommodityData = [[NSArray arrayWithArray:manifest] retain];
+		shipCommodityData = [manifest mutableCopy];
 		current_cargo = 0;
 	}
 	
