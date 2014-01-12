@@ -7,9 +7,11 @@ MACOSX_DEPLOYMENT_TARGET				= 10.6.8
 
 GCC_VERSION								= com.apple.compilers.llvm.clang.1_0
 
-CLANG_ENABLE_MODULES					= YES
-LLVM_LTO								= YES
+//CLANG_ENABLE_MODULES					= YES //This causes a lot of warnings
+//LLVM_LTO								= YES //This causes the linker to take forever
+LLVM_LTO								= NO
 //CLANG_CXX_LIBRARY						= libc++
 DEBUG_INFORMATION_FORMAT				= dwarf
 GCC_GENERATE_DEBUGGING_SYMBOLS			= YES
 SKIP_INSTALL							= YES
+COMBINE_HIDPI_IMAGES					= YES
