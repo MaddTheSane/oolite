@@ -175,6 +175,7 @@ OOLITE_ENTITY_FILES = \
     PlayerEntityScriptMethods.m \
     PlayerEntitySound.m \
     PlayerEntityStickMapper.m \
+    PlayerEntityStickProfile.m \
     ProxyPlayerEntity.m \
     OOBreakPatternEntity.m \
     ShipEntity.m \
@@ -272,6 +273,7 @@ OOLITE_RSRC_MGMT_FILES = \
     OOCache.m \
     OOCacheManager.m \
     OOConvertSystemDescriptions.m \
+	OOOXZManager.m \
     OOPListParsing.m \
     ResourceManager.m \
     TextureStore.m
@@ -384,6 +386,7 @@ OOLITE_MISC_FILES = \
     GameController.m \
     GameController+SDLFullScreen.m \
     OOJoystickManager.m \
+    OOJoystickProfile.m \
     OOSDLJoystickManager.m \
     main.m \
     MyOpenGLView.m \

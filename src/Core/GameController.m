@@ -41,6 +41,7 @@ MA 02110-1301, USA.
 #import "OOOpenALController.h"
 #import "OODebugSupport.h"
 #import "legacy_random.h"
+#import "OOOXZManager.h"
 
 #if OOLITE_MAC_OS_X
 #import "JAPersistentFileReference.h"
@@ -89,8 +90,8 @@ static GameController *sSharedController = nil;
 	if ((self = [super init]))
 	{
 		last_timeInterval = [NSDate timeIntervalSinceReferenceDate];
-		delta_t = 0.01; // one hundredth of a second
-
+		delta_t = 0.01; // one hundredth of a second 
+		
 		// rather than seeding this with the date repeatedly, seed it
 		// once here at startup
 		ranrot_srand((uint32_t)[[NSDate date] timeIntervalSince1970]);   // reset randomiser with current time
@@ -239,6 +240,9 @@ static GameController *sSharedController = nil;
 			}
 		}
 		
+		// initialise OXZ manager
+		[OOOXZManager sharedManager];
+
 		// moved here to try to avoid initialising this before having an Open GL context
 		//[self logProgress:DESC(@"Initialising universe")]; // DESC expansions only possible after Universe init
 		[[Universe alloc] initWithGameView:gameView];
@@ -367,13 +371,14 @@ static GameController *sSharedController = nil;
 {
 	if (timer == nil)
 	{   
-		NSTimeInterval ti = 0.01;
+		NSTimeInterval ti = 0.005; // one two-hundredth of a second (should be a fair bit faster than expected frame rate ~60Hz to avoid problems with phase differences)
 		timer = [[NSTimer timerWithTimeInterval:ti target:self selector:@selector(performGameTick:) userInfo:nil repeats:YES] retain];
 		
 		[[NSRunLoop currentRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
 #if OOLITE_MAC_OS_X
 		[[NSRunLoop currentRunLoop] addTimer:timer forMode:NSEventTrackingRunLoopMode];
 #endif
+
 	}
 }
 

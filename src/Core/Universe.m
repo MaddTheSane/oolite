@@ -197,7 +197,8 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void * context);
 - (void) prunePreloadingPlanetMaterials;
 #endif
 
-- (BOOL) reinitAndShowDemo:(BOOL) showDemo strictChanged:(BOOL) strictChanged;
+// Set shader effects level without logging or triggering a reset -- should only be used directly during startup.
+- (void) setShaderEffectsLevelDirectly:(OOShaderSetting)value;
 
 - (void) setFirstBeacon:(Entity <OOBeaconEntity> *)beacon;
 - (void) setLastBeacon:(Entity <OOBeaconEntity> *)beacon;
@@ -4371,7 +4372,7 @@ static const OOMatrix	starboard_matrix =
 			}
 			
 #if (defined (SNAPSHOT_BUILD) && defined (OOLITE_SNAPSHOT_VERSION))
-			[theHUD drawWatermarkString:@"Development version " @OOLITE_SNAPSHOT_VERSION];
+			[self drawWatermarkString:@"Development version " @OOLITE_SNAPSHOT_VERSION];
 #endif
 			
 			OOCheckOpenGLErrors(@"Universe after drawing HUD");
@@ -4447,6 +4448,17 @@ static const OOMatrix	starboard_matrix =
 	[comm_log_gui drawGUI:[comm_log_gui alpha] * overallAlpha drawCursor:NO];
 	
 	OOVerifyOpenGLState();
+}
+
+
+- (void) drawWatermarkString:(NSString *) watermarkString
+{
+	NSSize watermarkStringSize = OORectFromString(watermarkString, 0.0f, 0.0f, NSMakeSize(10, 10)).size;
+	
+	OOGL(glColor4f(0.0, 1.0, 0.0, 1.0));
+	// position the watermark string on the top right hand corner of the game window and right-align it
+	OODrawString(watermarkString, MAIN_GUI_PIXEL_WIDTH / 2 - watermarkStringSize.width + 80,
+						MAIN_GUI_PIXEL_HEIGHT / 2 - watermarkStringSize.height, [gameView display_z], NSMakeSize(10,10));
 }
 
 
@@ -8148,12 +8160,21 @@ static NSMutableDictionary	*sCachedSystemData = nil;
 		if (_preloadingPlanetMaterials == nil)  _preloadingPlanetMaterials = [[NSMutableArray alloc] initWithCapacity:4];
 		
 		OOPlanetEntity *planet = [[OOPlanetEntity alloc] initAsMainPlanetForSystemSeed:seed];
-		[_preloadingPlanetMaterials addObject:[planet material]];
+		OOMaterial *surface = [planet material];
+		// can be nil if texture mis-defined
+		if (surface != nil)
+		{
+			// if it's already loaded, no need to continue
+			if (![surface isFinishedLoading])
+			{
+				[_preloadingPlanetMaterials addObject:surface];
 		
-		// In some instances (retextured planets atm), the main planet might not have an atmosphere defined.
-		// Trying to add nil to _preloadingPlanetMaterials will prematurely terminate the calling function.(!) --Kaks 20100107
-		OOMaterial *atmo = [planet atmosphereMaterial];
-		if (atmo != nil)  [_preloadingPlanetMaterials addObject:atmo];
+				// In some instances (retextured planets atm), the main planet might not have an atmosphere defined.
+				// Trying to add nil to _preloadingPlanetMaterials will prematurely terminate the calling function.(!) --Kaks 20100107
+				OOMaterial *atmo = [planet atmosphereMaterial];
+				if (atmo != nil)  [_preloadingPlanetMaterials addObject:atmo];
+			}
+		}
 		
 		[planet release];
 	}

@@ -53,6 +53,7 @@ MA 02110-1301, USA.
 #import "OOColor.h"
 #import "Octree.h"
 #import "OOCacheManager.h"
+#import "OOOXZManager.h"
 #import "OOStringExpander.h"
 #import "OOStringParsing.h"
 #import "OOPListParsing.h"
@@ -79,6 +80,7 @@ MA 02110-1301, USA.
 
 #import "OOJoystickManager.h"
 #import "PlayerEntityStickMapper.h"
+#import "PlayerEntityStickProfile.h"
 
 
 #define PLAYER_DEFAULT_NAME				@"Jameson"
@@ -1739,6 +1741,8 @@ static GLfloat		sBaseMass = 0.0;
 	demoShip = nil;
 	
 	[[OOMusicController sharedController] justStop];
+	[stickProfileScreen release];
+	stickProfileScreen = [[StickProfileScreen alloc] init];
 	return YES;
 }
 
@@ -2012,7 +2016,7 @@ static GLfloat		sBaseMass = 0.0;
 	[self updateTrumbles:delta_t];
 	
 	OOEntityStatus status = [self status];
-	if (EXPECT_NOT(status == STATUS_START_GAME && gui_screen != GUI_SCREEN_INTRO1 && gui_screen != GUI_SCREEN_INTRO2 && gui_screen != GUI_SCREEN_NEWGAME && gui_screen != GUI_SCREEN_LOAD))
+	if (EXPECT_NOT(status == STATUS_START_GAME && gui_screen != GUI_SCREEN_INTRO1 && gui_screen != GUI_SCREEN_INTRO2 && gui_screen != GUI_SCREEN_NEWGAME && gui_screen != GUI_SCREEN_OXZMANAGER && gui_screen != GUI_SCREEN_LOAD))
 	{
 		UPDATE_STAGE(@"setGuiToIntroFirstGo:");
 		[self setGuiToIntroFirstGo:YES];	//set up demo mode
@@ -2617,6 +2621,7 @@ static GLfloat		sBaseMass = 0.0;
 			case GUI_SCREEN_INTRO1:
 			case GUI_SCREEN_INTRO2:
 			case GUI_SCREEN_NEWGAME:
+			case GUI_SCREEN_OXZMANAGER:
 			case GUI_SCREEN_MARKET:
 			case GUI_SCREEN_OPTIONS:
 			case GUI_SCREEN_GAMEOPTIONS:
@@ -2624,6 +2629,7 @@ static GLfloat		sBaseMass = 0.0;
 			case GUI_SCREEN_SAVE:
 			case GUI_SCREEN_SAVE_OVERWRITE:
 			case GUI_SCREEN_STICKMAPPER:
+			case GUI_SCREEN_STICKPROFILE:
 			case GUI_SCREEN_MISSION:
 			case GUI_SCREEN_REPORT:
 				return;
@@ -3008,6 +3014,81 @@ static GLfloat		sBaseMass = 0.0;
 	[UNIVERSE displayMessage:@" " forCount:kDeadResetTime];
 	[UNIVERSE displayMessage:@"" forCount:kDeadResetTime];
 	[self resetShotTime];
+}
+
+
+- (void) showShipModelWithKey:(NSString *)shipKey shipData:(NSDictionary *)shipData personality:(uint16_t)personality factorX:(GLfloat)factorX factorY:(GLfloat)factorY factorZ:(GLfloat)factorZ inContext:(NSString *)context
+{
+	if (shipKey == nil)  return;
+	if (shipData == nil)  shipData = [[OOShipRegistry sharedRegistry] shipInfoForKey:shipKey];
+	if (shipData == nil)  return;
+	
+	// Correct the position of the displayed model in the status screen when viewed in non-4/3 resolutions. Other screens displaying
+	// demoship models remain unaltered - Nikos 20140129
+	NSSize screenSize = [[UNIVERSE gameView] viewSize];
+	GLfloat screenSizeCorrectionFactor = 1.0f;
+	if ([context isEqualToString:@"GUI_SCREEN_STATUS"])
+	{
+		screenSizeCorrectionFactor = screenSize.height <= screenSize.width ?
+										screenSize.height / screenSize.width * (4.0f/3.0f) :
+										screenSize.height / screenSize.width * (3.0f/4.0f);
+	}
+	
+	Quaternion		q2 = { (GLfloat)M_SQRT1_2, (GLfloat)M_SQRT1_2, (GLfloat)0.0f, (GLfloat)0.0f };
+	// MKW - retrieve last demo ships' orientation and release it
+	if( demoShip != nil )
+	{
+		q2 = [demoShip orientation];
+		[demoShip release];
+	}
+	
+	ShipEntity *ship = [[ProxyPlayerEntity alloc] initWithKey:shipKey definition:shipData];
+	if (personality != ENTITY_PERSONALITY_INVALID)  [ship setEntityPersonalityInt:personality];
+	
+	[ship wasAddedToUniverse];
+	
+	if (context)  OOLog(@"script.debug.note.showShipModel", @"::::: showShipModel:'%@' in context: %@.", [ship name], context);
+	
+	GLfloat cr = [ship collisionRadius];
+	[ship setOrientation: q2];
+	[ship setPositionX:factorX * cr * screenSizeCorrectionFactor y:factorY * cr * screenSizeCorrectionFactor z:factorZ * cr];
+	[ship setScanClass: CLASS_NO_DRAW];
+	[ship setRoll: M_PI/10.0];
+	[ship setPitch: M_PI/25.0];
+	if([ship pendingEscortCount] > 0) [ship setPendingEscortCount:0];
+	[ship setAITo: @"nullAI.plist"];
+	id subEntStatus = [shipData objectForKey:@"subentities_status"];
+	// show missing subentities if there's a subentities_status key
+	if (subEntStatus != nil) [ship deserializeShipSubEntitiesFrom:(NSString *)subEntStatus];
+	[UNIVERSE addEntity: ship];
+	// MKW - save demo ship for its rotation
+	demoShip = [ship retain];
+	
+	[ship setStatus: STATUS_COCKPIT_DISPLAY];
+	
+	[ship release];
+}
+
+
+// Game options and status screens (for now) may require an immediate window redraw after
+// said window has been resized. This method must be called after such resize events, including
+// toggle to/from full screen - Nikos 20140129
+- (void) doGuiScreenResizeUpdates
+{
+	switch ([self guiScreen])
+	{
+		case GUI_SCREEN_GAMEOPTIONS:
+			//refresh play windowed / full screen
+			[self setGuiToGameOptionsScreen];
+			break;
+		case GUI_SCREEN_STATUS:
+			// status screen must be redone in order to possibly
+			// refresh displayed model's draw position
+			[self setGuiToStatusScreen];
+			break;
+		default:
+			break;
+	}
 }
 
 
@@ -6590,8 +6671,20 @@ static GLfloat		sBaseMass = 0.0;
 	}
 	
 	[[UNIVERSE gameView] clearMouse];
-		
-	[self setShowDemoShips:NO];
+	
+	// Contributed by Pleb - show ship model if the appropriate user default key has been set - Nikos 20140127
+	if (EXPECT_NOT([[NSUserDefaults standardUserDefaults] boolForKey:@"show-ship-model-in-status-screen"]))
+	{
+		[UNIVERSE removeDemoShips];
+		[self showShipModelWithKey:[self shipDataKey] shipData:nil personality:[self entityPersonalityInt]
+									factorX:2.5 factorY:1.7 factorZ:8.0 inContext:@"GUI_SCREEN_STATUS"];
+		[self setShowDemoShips:YES];
+	}
+	else
+	{
+		[self setShowDemoShips:NO];
+	}
+	
 	[UNIVERSE enterGUIViewModeWithMouseInteraction:NO];
 	
 	if (guiChanged)
@@ -8148,13 +8241,10 @@ static NSString *last_outfitting_key=nil;
 
 	++row;
 
-#if 0
-	// not yet implemented
 	text = DESC(@"oolite-start-option-4");
 	[gui setText:text forRow:row align:GUI_ALIGN_CENTER];
 	[gui setColor:[OOColor yellowColor] forRow:row];
 	[gui setKey:[NSString stringWithFormat:@"Start:%d", row] forRow:row];
-#endif
 
 	++row;
 
@@ -8283,6 +8373,28 @@ static NSString *last_outfitting_key=nil;
 	[gui setBackgroundTextureKey:@"intro"];
 	[UNIVERSE enterGUIViewModeWithMouseInteraction:YES];
 }
+
+
+- (void) setGuiToOXZManager
+{
+
+	[[UNIVERSE gameController] setMouseInteractionModeForUIWithMouseInteraction:NO];
+	[[UNIVERSE gameView] clearMouse];
+	[UNIVERSE removeDemoShips];
+
+	gui_screen = GUI_SCREEN_OXZMANAGER;
+
+	[[UNIVERSE gui] clearAndKeepBackground:NO];
+
+	[[OOOXZManager sharedManager] gui];
+	
+	[[OOMusicController sharedController] playThemeMusic];
+	[[UNIVERSE gui] setBackgroundTextureKey:@"oxz-manager"];
+	[UNIVERSE enterGUIViewModeWithMouseInteraction:YES];
+}
+
+
+
 
 
 - (void) noteGUIWillChangeTo:(OOGUIScreenID)toScreen

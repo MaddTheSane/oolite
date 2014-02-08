@@ -297,6 +297,30 @@ static OOCacheManager *sSingleton = nil;
 	_permitWrites = (flag != NO);
 }
 
+
+- (NSString *)cacheDirectoryPathCreatingIfNecessary:(BOOL)create
+{
+	/*	Construct the path to the directory for cache files, which is:
+			~/Library/Caches/org.aegidian.oolite/
+			or
+			~/GNUStep/Library/Caches/org.aegidian.oolite/
+		In addition to generally being the right place to put caches,
+		~/Library/Caches has the particular advantage of not being indexed by
+		Spotlight or backed up by Time Machine.
+	*/
+	NSString *cachePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+	if (![self directoryExists:cachePath create:create]) return nil;
+
+#if !OOLITE_MAC_OS_X
+	// the old cache file on GNUstep was one level up, so remove it if it exists
+	[[NSFileManager defaultManager] removeFileAtPath:[cachePath stringByAppendingPathComponent:@"Oolite-cache.plist"] handler:nil];
+#endif
+
+	cachePath = [cachePath stringByAppendingPathComponent:@"org.aegidian.oolite"];
+	if (![self directoryExists:cachePath create:create]) return nil;
+	return cachePath;
+}
+
 @end
 
 
@@ -606,54 +630,21 @@ static OOCacheManager *sSingleton = nil;
 	return YES;
 }
 
-@end
-
-
-@implementation OOCacheManager (PlatformSpecific)
 
 #if OOLITE_MAC_OS_X
 
-- (NSString *)cachePathCreatingIfNecessary:(BOOL)inCreate
+- (NSString *)cachePathCreatingIfNecessary:(BOOL)create
 {
-	NSString			*cachePath = nil;
-	
-	/*	Construct the path for the cache file, which is:
-			~/Library/Caches/org.aegidian.oolite/Data Cache.plist
-		In addition to generally being the right place to put caches,
-		~/Library/Caches has the particular advantage of not being indexed by
-		Spotlight or, in future, backed up by Time Machine.
-	*/
-	cachePath = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES)[0];
-	cachePath = [cachePath stringByAppendingPathComponent:@"Caches"];
-	if (![self directoryExists:cachePath create:inCreate]) return nil;
-	cachePath = [cachePath stringByAppendingPathComponent:@"org.aegidian.oolite"];
-	if (![self directoryExists:cachePath create:inCreate]) return nil;
-	cachePath = [cachePath stringByAppendingPathComponent:@"Data Cache.plist"];
-	return cachePath;
+	NSString *cachePath = [self cacheDirectoryPathCreatingIfNecessary:create];
+	return [cachePath stringByAppendingPathComponent:@"Data Cache.plist"];
 }
 
 #else
 
-- (NSString *)cachePathCreatingIfNecessary:(BOOL)inCreate
+- (NSString *)cachePathCreatingIfNecessary:(BOOL)create
 {
-	NSString			*cachePath = nil;
-	
-	/*	Construct the path for the cache file, which is:
-			~/GNUstep/Library/Caches/Oolite-cache.plist
-		
-		FIXME: we shouldn't be hard-coding ~/GNUstep/. Does
-		NSSearchPathForDirectoriesInDomains() not work?
-		-- Ahruman 2009-09-06
-	*/
-	cachePath = [NSHomeDirectory() stringByAppendingPathComponent:@"GNUstep"];
-	if (![self directoryExists:cachePath create:inCreate]) return nil;
-	cachePath = [cachePath stringByAppendingPathComponent:@"Library"];
-	if (![self directoryExists:cachePath create:inCreate]) return nil;
-	cachePath = [cachePath stringByAppendingPathComponent:@"Caches"];
-	if (![self directoryExists:cachePath create:inCreate]) return nil;
-	cachePath = [cachePath stringByAppendingPathComponent:@"Oolite-cache.plist"];
-	
-	return cachePath;
+	NSString *cachePath = [self cacheDirectoryPathCreatingIfNecessary:create];
+	return [cachePath stringByAppendingPathComponent:@"Oolite-cache.plist"];
 }
 
 #endif

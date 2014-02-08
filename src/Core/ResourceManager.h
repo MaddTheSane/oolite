@@ -41,6 +41,8 @@ typedef enum
 
 @interface ResourceManager : NSObject
 
++ (void) reset;
+
 + (NSArray *)rootPaths;			// Places add-ons are searched for, not including add-on paths.
 + (NSString *)builtInPath;		// Path for built-in data only.
 + (NSArray *)pathsWithAddOns;	// Root paths + add-on paths.
@@ -51,6 +53,14 @@ typedef enum
 + (void)addExternalPath:(NSString *)fileName;
 + (NSEnumerator *)pathEnumerator;
 + (NSEnumerator *)reversePathEnumerator;
+
+// get manifest data for identifier
++ (NSDictionary *)manifestForIdentifier:(NSString *)identifier;
+// compatibility checks
++ (BOOL) checkVersionCompatibility:(NSDictionary *)manifest forOXP:(NSString *)title;
++ (BOOL) manifestHasConflicts:(NSDictionary *)manifest logErrors:(BOOL)logErrors;
++ (BOOL) manifestHasMissingDependencies:(NSDictionary *)manifest logErrors:(BOOL)logErrors;
+
 
 + (void)handleEquipmentListMerging: (NSMutableArray *)arrayToProcess forLookupIndex:(unsigned)lookupIndex;
 

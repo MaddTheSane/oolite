@@ -367,11 +367,13 @@ MA 02110-1301, USA.
 
 - (NSString *) keyBindingDescription:(NSString *)binding
 {
-	OOKeyCode key = (OOKeyCode)[keyconfig_settings oo_unsignedCharForKey:binding];
-	if (key == 0)
+	if ([keyconfig_settings objectForKey:binding] == nil)
 	{
+		// no such setting
 		return nil;
 	}
+	OOKeyCode key = (OOKeyCode)[keyconfig_settings oo_unsignedCharForKey:binding];
+	// 0 = key not set
 	return [self keyCodeDescription:key];
 }
 
@@ -380,6 +382,8 @@ MA 02110-1301, USA.
 {
 	switch (code)
 	{
+	case 0:
+		return DESC(@"oolite-keycode-unset");
 	case 9:
 		return DESC(@"oolite-keycode-tab");
 	case 27:

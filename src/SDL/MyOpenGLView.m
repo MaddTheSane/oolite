@@ -147,6 +147,8 @@ MA 02110-1301, USA.
 
 	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
 	showSplashScreen = [prefs oo_boolForKey:@"splash-screen" defaultValue:YES];
+	BOOL	vSyncPreference = [prefs oo_boolForKey:@"v-sync" defaultValue:YES];
+	int		vSyncValue;
 
 	NSArray				*arguments = nil;
 	NSEnumerator		*argEnum = nil;
@@ -219,7 +221,16 @@ MA 02110-1301, USA.
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);	// V-sync on by default.
+	
+	// V-sync settings
+	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, vSyncPreference);	// V-sync on by default.
+	OOLog(@"display.initGL", @"V-Sync %@requested.", vSyncPreference ? @"" : @"not ");
+	// Verify V-sync successfully set - report it if not
+	if (vSyncPreference && SDL_GL_GetAttribute(SDL_GL_SWAP_CONTROL, &vSyncValue) == -1)
+	{
+		OOLogWARN(@"display.initGL", @"Could not enable V-Sync. Please check that your graphics driver supports the %@_swap_control extension.",
+					OOLITE_WINDOWS ? @"WGL_EXT" : @"[GLX_SGI/GLX_MESA]");
+	}
 
 
 	/* Multisampling significantly improves graphics quality with
@@ -1561,11 +1572,9 @@ if (shift) { keys[a] = YES; keys[b] = NO; } else { keys[a] = NO; keys[b] = YES; 
 
 					case SDLK_F12:
 						[self toggleScreenMode];
-							if([[PlayerEntity sharedPlayer] guiScreen]==GUI_SCREEN_GAMEOPTIONS)
-							{
-								//refresh play windowed / full screen
-								[[PlayerEntity sharedPlayer] setGuiToGameOptionsScreen];
-							}
+						// normally we would want to do a gui screen resize update here, but
+						// toggling full screen mode executes an SDL_VIDEORESIZE event, which
+						// takes care of this for us - Nikos 20140129
 						break;
 
 					case SDLK_ESCAPE:
@@ -1782,6 +1791,12 @@ keys[a] = NO; keys[b] = NO; \
 #else
 				[self saveWindowSize: newSize];
 #endif
+				// certain gui screens will require an immediate redraw after
+				// a resize event - Nikos 20140129
+				if ([PlayerEntity sharedPlayer])
+				{
+					[[PlayerEntity sharedPlayer] doGuiScreenResizeUpdates];
+				}
 				break;
 			}
 

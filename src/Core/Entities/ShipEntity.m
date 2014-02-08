@@ -2001,8 +2001,17 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		}
 	}
 	
+	/* This does not appear to save a significant amount of time in
+	 * most situations. No significant change in frame rate with a
+	 * 350-segment planetary ring at 1400 collision candidates, even
+	 * on old hardware. There are perhaps situations in which it could
+	 * be a significant optimisation, but those are likely to also be
+	 * the situations where the effect of adding hundreds of extra
+	 * false-positive collisions leaves the player returning to a
+	 * mess... So, commented out: CIM 21 Jan 2014
 	if (zero_distance > CLOSE_COLLISION_CHECK_MAX_RANGE2)	// don't work too hard on entities that are far from the player
-		return YES;
+	return YES; 
+	*/
 	
 	if (otherShip != nil)
 	{
@@ -3090,7 +3099,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	// while loading, we mainly need to catch changes when the installed oxps set has changed since saving. 
 	if ([eqType requiresEmptyPylon] && [self missileCount] >= [self missileCapacity] && !loading)  return NO;
 	if ([eqType  requiresMountedPylon] && [self missileCount] == 0 && !loading)  return NO;
-	if ([self availableCargoSpace] < [eqType requiredCargoSpace])  return NO;
+	if ([self availableCargoSpace] < [eqType requiredCargoSpace] && !loading)  return NO;
 	if ([eqType requiresEquipment] != nil && ![self hasAllEquipment:[eqType requiresEquipment] includeWeapons:YES whileLoading:loading])  return NO;
 	if ([eqType requiresAnyEquipment] != nil && ![self hasEquipmentItem:[eqType requiresAnyEquipment] includeWeapons:YES whileLoading:loading])  return NO;
 	if ([eqType incompatibleEquipment] != nil && [self hasEquipmentItem:[eqType incompatibleEquipment] includeWeapons:YES whileLoading:loading])  return NO;
@@ -7633,7 +7642,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 - (OOCargoQuantity) availableCargoSpace
 {
 	// OOCargoQuantity is unsigned, we need to check for underflows.
-	if (EXPECT_NOT([self cargoQuantityOnBoard] + equipment_weight >= [self maxAvailableCargoSpace])) return 0;
+	if (EXPECT_NOT([self cargoQuantityOnBoard] + equipment_weight >= max_cargo)) return 0;
 	return [self maxAvailableCargoSpace] - [self cargoQuantityOnBoard];
 }
 
@@ -8192,6 +8201,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 - (void) getDestroyedBy:(Entity *)whom damageType:(OOShipDamageType)type
 {
 	[self noteKilledBy:whom damageType:type];
+	[self abortDocking];
 	[self becomeExplosion];
 }
 

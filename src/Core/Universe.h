@@ -340,6 +340,8 @@ enum
 - (BOOL) setStrict:(BOOL)value fromSaveGame: (BOOL)saveGame;
 
 - (void) reinitAndShowDemo:(BOOL)showDemo;
+// called from OXZ manager
+- (BOOL) reinitAndShowDemo:(BOOL) showDemo strictChanged:(BOOL) strictChanged;
 
 - (BOOL) doingStartUp;	// True during initial game startup (not reset).
 
@@ -489,6 +491,8 @@ enum
 - (BOOL) viewFrustumIntersectsSphereAt:(Vector)position withRadius:(GLfloat)radius;
 
 - (void) drawMessage;
+
+- (void) drawWatermarkString:(NSString *)watermarkString;
 
 // Used to draw subentities. Should be getting this from camera.
 - (OOMatrix) viewMatrix;

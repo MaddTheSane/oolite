@@ -29,6 +29,7 @@ MA 02110-1301, USA.
 #import "PlayerEntitySound.h"
 #import "PlayerEntityLoadSave.h"
 #import "PlayerEntityStickMapper.h"
+#import "PlayerEntityStickProfile.h"
 
 #import "ShipEntityAI.h"
 #import "StationEntity.h"
@@ -41,6 +42,7 @@ MA 02110-1301, USA.
 #import "OOSound.h"
 #import "OOStringParsing.h"
 #import "OOCollectionExtractors.h"
+#import "OOOXZManager.h"
 #import "OOStringExpander.h"
 #import "ResourceManager.h"
 #import "HeadUpDisplay.h"
@@ -1427,7 +1429,7 @@ static NSTimeInterval	time_last_frame;
 			[self pollCustomViewControls];	// allow custom views during pause
 			#endif
 			
-			if (gui_screen == GUI_SCREEN_OPTIONS || gui_screen == GUI_SCREEN_GAMEOPTIONS || gui_screen == GUI_SCREEN_STICKMAPPER)
+			if (gui_screen == GUI_SCREEN_OPTIONS || gui_screen == GUI_SCREEN_GAMEOPTIONS || gui_screen == GUI_SCREEN_STICKMAPPER || gui_screen == GUI_SCREEN_STICKPROFILE )
 			{
 				if ([UNIVERSE pauseMessageVisible]) [[UNIVERSE messageGUI] leaveLastLine];
 				else [[UNIVERSE messageGUI] clear];
@@ -1902,7 +1904,7 @@ static NSTimeInterval	time_last_frame;
 					if (from_function < 0)  from_function = 0;
 					
 					[self setGuiToStickMapperScreen:from_function];
-					if ([[UNIVERSE gui] selectedRow] < 0)
+					if ([[UNIVERSE gui] selectedRow] < GUI_ROW_FUNCSTART)
 					{
 						[[UNIVERSE gui] setSelectedRow: GUI_ROW_FUNCSTART];
 					}
@@ -1912,6 +1914,10 @@ static NSTimeInterval	time_last_frame;
 					}
 				}
 			}
+			break;
+		
+		case GUI_SCREEN_STICKPROFILE:
+			[self stickProfileInputHandler: gui view: gameView];
 			break;
 			
 		case GUI_SCREEN_GAMEOPTIONS:
@@ -2402,6 +2408,23 @@ static NSTimeInterval	time_last_frame;
 			{
 				selectPressed = NO;
 			}
+			if ([gameView isDown:gvMouseDoubleClick])
+			{
+				if (([gui selectedRow] == GUI_ROW_SHIPYARD_START + MAX_ROWS_SHIPS_FOR_SALE - 1) && [[gui keyForRow:GUI_ROW_SHIPYARD_START + MAX_ROWS_SHIPS_FOR_SALE - 1] hasPrefix:@"More:"])
+				{
+					[self playMenuPageNext];
+					[gui setSelectedRow:GUI_ROW_SHIPYARD_START + MAX_ROWS_SHIPS_FOR_SALE - 1];
+					[self buySelectedShip];
+				}
+				else if (([gui selectedRow] == GUI_ROW_SHIPYARD_START) && [[gui keyForRow:GUI_ROW_SHIPYARD_START] hasPrefix:@"More:"])
+				{
+					[self playMenuPagePrevious];
+					[gui setSelectedRow:GUI_ROW_SHIPYARD_START];
+					[self buySelectedShip];
+				}
+				[gameView clearMouse];
+			}
+
 			break;
 			
 		default:
@@ -3467,7 +3490,8 @@ static BOOL autopilot_pause;
 	MyOpenGLView	*gameView = [UNIVERSE gameView];
 	GuiDisplayGen	*gui = [UNIVERSE gui];
 	NSUInteger end_row = 21;
-	
+	OOOXZManager *oxzmanager = [OOOXZManager sharedManager];
+
 	switch (gui_screen)
 	{
 		case GUI_SCREEN_INTRO1:
@@ -3499,6 +3523,10 @@ static BOOL autopilot_pause;
 				else if (([gameView isDown:gvMouseDoubleClick] || [gameView isDown:13]) && [gui selectedRow] == 3+row_zero)
 				{
 					[self setGuiToIntroFirstGo:NO];
+				}
+				else if (([gameView isDown:gvMouseDoubleClick] || [gameView isDown:13]) && [gui selectedRow] == 4+row_zero)
+				{
+					[self setGuiToOXZManager];
 				}
 				else if (([gameView isDown:gvMouseDoubleClick] || [gameView isDown:13]) && [gui selectedRow] == 5+row_zero)
 				{
@@ -3557,7 +3585,47 @@ static BOOL autopilot_pause;
 				[gameView clearMouse];
 			}
 			break;
+
+		case GUI_SCREEN_OXZMANAGER:
+			if (EXPECT(![oxzmanager isRestarting]))
+			{
+				if ([self handleGUIUpDownArrowKeys])
+				{
+					// only has an effect on install/remove selection screens
+					[oxzmanager showOptionsUpdate];
+				}
+				if ([gameView isDown:key_gui_arrow_left])
+				{
+					if ((!leftRightKeyPressed))
+					{
+						[oxzmanager showOptionsPrev];
+					}
+				}
+				if ([gameView isDown:key_gui_arrow_right])
+				{
+					if ((!leftRightKeyPressed))
+					{
+						[oxzmanager showOptionsNext];
+					}
+				}
+				leftRightKeyPressed = [gameView isDown:key_gui_arrow_right]|[gameView isDown:key_gui_arrow_left];
+
+				if (!selectPressed)
+				{
+					if ([gameView isDown:13] || [gameView isDown:gvMouseDoubleClick]) // enter
+					{
+						[oxzmanager processSelection];
+					}
+				}
+				selectPressed = [gameView isDown:13];
+				if ([gameView isDown:gvMouseDoubleClick] || [gameView isDown:gvMouseLeftButton])
+				{
+					[gameView clearMouse];
+				}
+			}
+			break;
 	
+
 	
 		case GUI_SCREEN_MISSION:
 			if ([[self hud] isHidden])

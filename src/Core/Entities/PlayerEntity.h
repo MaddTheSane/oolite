@@ -37,6 +37,7 @@ MA 02110-1301, USA.
 @class GuiDisplayGen, OOTrumble, MyOpenGLView, HeadUpDisplay, ShipEntity;
 @class OOSound, OOSoundSource, OOSoundReferencePoint;
 @class OOJoystickManager, OOTexture, OOLaserShotEntity;
+@class StickProfileScreen;
 
 #define ALLOW_CUSTOM_VIEWS_WHILE_PAUSED	1
 #define SCRIPT_TIMER_INTERVAL			10.0
@@ -612,6 +613,8 @@ typedef enum
 
 	ShipEntity				*demoShip; // Used while docked to maintain demo ship rotation.
 	OOLaserShotEntity *lastShot; // used to correctly position laser shots on first frame of firing
+	
+	StickProfileScreen		*stickProfileScreen;
 }
 
 + (PlayerEntity *) sharedPlayer;
@@ -862,6 +865,7 @@ typedef enum
 
 - (void) setupStartScreenGui;
 - (void) setGuiToIntroFirstGo:(BOOL)justCobra;
+- (void) setGuiToOXZManager;
 
 - (void) noteGUIWillChangeTo:(OOGUIScreenID)toScreen;
 - (void) noteGUIDidChangeFrom:(OOGUIScreenID)fromScreen to:(OOGUIScreenID)toScreen;
@@ -995,6 +999,10 @@ typedef enum
 - (NSMutableDictionary*) getMissionDestinations;
 
 - (void) setLastShot:(OOLaserShotEntity *)shot;
+
+- (void) showShipModelWithKey:(NSString *)shipKey shipData:(NSDictionary *)shipData personality:(uint16_t)personality factorX:(GLfloat)factorX factorY:(GLfloat)factorY factorZ:(GLfloat)factorZ inContext:(NSString *)context;
+
+- (void) doGuiScreenResizeUpdates;
 
 @end
 
