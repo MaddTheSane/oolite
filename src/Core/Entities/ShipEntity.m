@@ -7318,7 +7318,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 		  [crewMember shortDescription], @"description",
 		  [crewMember species], @"species",
 		  [NSNumber numberWithInt:[crewMember legalStatus]], @"legalStatus",
-	      [NSNumber numberWithUnsignedInt:[crewMember insuranceCredits]], @"insuranceCredits",
+	      @([crewMember insuranceCredits]), @"insuranceCredits",
 		  [NSNumber numberWithInt:[crewMember planetIDOfOrigin]], @"homeSystem",
 		  nil];
 		[result addObject:crewDict];

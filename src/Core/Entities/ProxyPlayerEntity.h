@@ -32,26 +32,25 @@ MA 02110-1301, USA.
 @interface ProxyPlayerEntity: ShipEntity
 {
 @private
-	float					_fuelLeakRate;
-	GLfloat					_dialForwardShield;
-	GLfloat					_dialAftShield;
 	OOMissileStatus			_missileStatus;
 	OOFuelScoopStatus		_fuelScoopStatus;
 	OOCompassMode			_compassMode;
 	OOAlertCondition		_alertCondition;
-	NSUInteger				_trumbleCount;
-	NSUInteger				_tradeInFactor;
 	unsigned				_massLocked: 1,
 							_atHyperspeed: 1,
 							_dialIdentEngaged: 1;
 }
+@property NSInteger		tradeInFactor;
+// Default: 0
+@property NSUInteger	trumbleCount;
+// Default: 0
+@property (nonatomic) float			fuelLeakRate;
+// Default: 1
+@property GLfloat		dialForwardShield;
+// Default: 1
+@property GLfloat		dialAftShield;
 
 - (void) copyValuesFromPlayer:(PlayerEntity *)player;
-
-
-// Default: 0
-- (float) fuelLeakRate;
-- (void) setFuelLeakRate:(float)value;
 
 // Default: NO
 - (BOOL) massLocked;
@@ -60,14 +59,6 @@ MA 02110-1301, USA.
 // Default: NO
 - (BOOL) atHyperspeed;
 - (void) setAtHyperspeed:(BOOL)value;
-
-// Default: 1
-- (GLfloat) dialForwardShield;
-- (void) setDialForwardShield:(GLfloat)value;
-
-// Default: 1
-- (GLfloat) dialAftShield;
-- (void) setDialAftShield:(GLfloat)value;
 
 // Default: MISSILE_STATUS_SAFE
 - (OOMissileStatus) dialMissileStatus;
@@ -88,13 +79,6 @@ MA 02110-1301, USA.
 // Default: ALERT_CONDITION_DOCKED
 - (OOAlertCondition) alertCondition;
 - (void) setAlertCondition:(OOAlertCondition)condition;
-
-// Default: 0
-- (NSUInteger) trumbleCount;
-- (void) setTrumbleCount:(NSUInteger)value;
-
-- (void) setTradeInFactor:(int)tif;
-- (int) tradeInFactor;
 
 @end
 

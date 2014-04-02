@@ -3572,7 +3572,7 @@ static GLfloat		sBaseMass = 0.0;
 	BOOL 			wasHidden = NO;
 	BOOL 			wasCompassActive = YES;
 	double			scannerZoom = 1.0;
-	int				i;
+	NSInteger		i;
 
 	if (!hudFileName)  return NO;
 	
@@ -10175,8 +10175,8 @@ static NSString *last_outfitting_key=nil;
 
 - (void) clearTargetMemory
 {
-	int i = 0;
-	int j = [target_memory count];
+	NSInteger i = 0;
+	NSInteger j = [target_memory count];
 	for (i = 0; i < PLAYER_TARGET_MEMORY_SIZE; i++)
 	{
 		if (j > i)

@@ -375,10 +375,10 @@ MA 02110-1301, USA.
 }
 
 
-- (int) addControl: (NSPoint) point
+- (NSInteger) addControl: (NSPoint) point
 {
 	NSPoint left, right;
-	NSUInteger i;
+	NSInteger i;
 
 	if (point.x <= SPLINE_POINT_MIN_SPACING || point.x >= 1 - SPLINE_POINT_MIN_SPACING )
 	{
@@ -438,7 +438,7 @@ MA 02110-1301, USA.
 	return point;
 }
 
-- (int) countPoints
+- (NSInteger) countPoints
 {
 	return [controlPoints count];
 }

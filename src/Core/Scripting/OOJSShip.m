@@ -3588,7 +3588,7 @@ static JSBool ShipDamageAssessment(JSContext *context, uintN argc, jsval *vp)
 	/* TODO: when NPC equipment can be damaged in combat, assess this
 	 * here */
 
-	OOJS_RETURN_INT(assessment);
+	OOJS_RETURN_INT((int)assessment);
 
 	OOJS_PROFILE_EXIT
 }

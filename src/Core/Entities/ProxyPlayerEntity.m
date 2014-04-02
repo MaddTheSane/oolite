@@ -27,6 +27,11 @@ MA 02110-1301, USA.
 
 
 @implementation ProxyPlayerEntity
+@synthesize tradeInFactor = _tradeInFactor;
+@synthesize trumbleCount = _trumbleCount;
+@synthesize dialAftShield = _dialAftShield;
+@synthesize dialForwardShield = _dialForwardShield;
+@synthesize fuelLeakRate = _fuelLeakRate;
 
 - (id)initWithKey:(NSString *)key definition:(NSDictionary *)dict
 {
@@ -70,11 +75,6 @@ MA 02110-1301, USA.
 }
 
 
-- (float) fuelLeakRate
-{
-	return _fuelLeakRate;
-}
-
 - (void) setFuelLeakRate:(float)value
 {
 	_fuelLeakRate = fmax(value, 0.0f);
@@ -100,28 +100,6 @@ MA 02110-1301, USA.
 - (void) setAtHyperspeed:(BOOL)value
 {
 	_atHyperspeed = !!value;
-}
-
-
-- (GLfloat) dialForwardShield
-{
-	return _dialForwardShield;
-}
-
-- (void) setDialForwardShield:(GLfloat)value
-{
-	_dialForwardShield = value;
-}
-
-
-- (GLfloat) dialAftShield
-{
-	return _dialAftShield;
-}
-
-- (void) setDialAftShield:(GLfloat)value
-{
-	_dialAftShield = value;
 }
 
 
@@ -178,32 +156,6 @@ MA 02110-1301, USA.
 {
 	_alertCondition = value;
 }
-
-
-- (NSUInteger) trumbleCount
-{
-	return _trumbleCount;
-}
-
-
-- (void) setTrumbleCount:(NSUInteger)value
-{
-	_trumbleCount = value;
-}
-
-
-- (void) setTradeInFactor:(int)tif
-{
-	_tradeInFactor = tif;
-}
-
-
-- (int) tradeInFactor
-{
-	return _tradeInFactor;
-}
-
-
 
 // If you're here to add more properties, don't forget to update -copyValuesFromPlayer:.
 

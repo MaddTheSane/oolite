@@ -141,7 +141,7 @@ static int OOCloseOXZVorbis (void *datasource);
 
 		_name = [[path lastPathComponent] retain];
 
-		unsigned i, cl;
+		NSUInteger i, cl;
 		NSArray *components = [path pathComponents];
 		cl = [components count];
 		for (i = 0 ; i < cl ; i++)
@@ -490,7 +490,7 @@ static size_t OOReadOXZVorbis (void *ptr, size_t size, size_t nmemb, void *datas
 	size_t toRead = size*nmemb;
 	void *buf = (void*)malloc(toRead);
 	int err = UNZ_OK;
-	err = unzReadCurrentFile(src->uf, buf, toRead);
+	err = unzReadCurrentFile(src->uf, buf, (unsigned int)toRead);
 //	OOLog(@"sound.replay",@"Read %d blocks, got %d",toRead,err);
 	if (err > 0)
 	{

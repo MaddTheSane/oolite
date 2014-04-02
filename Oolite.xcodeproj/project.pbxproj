@@ -63,7 +63,6 @@
 		1A0DA2EF0D71D280009B0970 /* OOJSSpecialFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A0DA2ED0D71D280009B0970 /* OOJSSpecialFunctions.m */; };
 		1A11273B105994D000DF9D12 /* OOExhaustPlumeEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A112739105994D000DF9D12 /* OOExhaustPlumeEntity.h */; };
 		1A11273C105994D000DF9D12 /* OOExhaustPlumeEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A11273A105994D000DF9D12 /* OOExhaustPlumeEntity.m */; };
-		1A115ED5158CFB4D005842DA /* splash@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A115ED4158CFB4D005842DA /* splash@2x.png */; };
 		1A11C2B111CFC35000F3EE77 /* OOJSEngineTimeManagement.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A11C2AF11CFC35000F3EE77 /* OOJSEngineTimeManagement.h */; };
 		1A11C2B211CFC35000F3EE77 /* OOJSEngineTimeManagement.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A11C2B011CFC35000F3EE77 /* OOJSEngineTimeManagement.m */; };
 		1A11F84A0F35F60C001C886C /* OOJSShipGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A11F8480F35F60C001C886C /* OOJSShipGroup.m */; };
@@ -91,7 +90,6 @@
 		1A1F7DB7117B5D8200332757 /* OOMaterialSpecifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A1F7DA6117B5BDB00332757 /* OOMaterialSpecifier.h */; };
 		1A20F7060F36EE0500156DE9 /* OOExcludeObjectEnumerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A20F7040F36EE0500156DE9 /* OOExcludeObjectEnumerator.h */; };
 		1A20F7070F36EE0500156DE9 /* OOExcludeObjectEnumerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A20F7050F36EE0500156DE9 /* OOExcludeObjectEnumerator.m */; };
-		1A2315530B9C778400EF0852 /* splash.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A23154F0B9C778400EF0852 /* splash.png */; };
 		1A231A180B9D8B1B00EF0852 /* OOCacheManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A231A160B9D8B1B00EF0852 /* OOCacheManager.h */; };
 		1A26D0AC0BCF9CF80073F257 /* PlayerEntityLegacyScriptEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A26D0880BCF9CF70073F257 /* PlayerEntityLegacyScriptEngine.m */; };
 		1A26D0AD0BCF9CF80073F257 /* ShipEntityAI.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A26D0890BCF9CF70073F257 /* ShipEntityAI.m */; };
@@ -529,6 +527,8 @@
 		2B4CDFED107B3D8400526C98 /* OOJSManifest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B4CDFEB107B3D8400526C98 /* OOJSManifest.m */; };
 		55B0FE4F18826CDA00CDAD04 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 55B0FE5118826CDA00CDAD04 /* InfoPlist.strings */; };
 		55F16D16186F7B6800E75C3E /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 55F16D15186F7B6800E75C3E /* Images.xcassets */; };
+		55FD4D9A18EC9A0700EBD670 /* OOShipLibraryDescriptions.h in Headers */ = {isa = PBXBuildFile; fileRef = 55FD4D9818EC9A0700EBD670 /* OOShipLibraryDescriptions.h */; };
+		55FD4D9B18EC9A0700EBD670 /* OOShipLibraryDescriptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 55FD4D9918EC9A0700EBD670 /* OOShipLibraryDescriptions.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1644,9 +1644,11 @@
 		2B4CDFEA107B3D8400526C98 /* OOJSManifest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOJSManifest.h; sourceTree = "<group>"; };
 		2B4CDFEB107B3D8400526C98 /* OOJSManifest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OOJSManifest.m; sourceTree = "<group>"; };
 		2B9A1088105D526200EE2AE6 /* javascript-errors.plist */ = {isa = PBXFileReference; explicitFileType = text; fileEncoding = 4; path = "javascript-errors.plist"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
-		55B0FE5018826CDA00CDAD04 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		55B0FE5018826CDA00CDAD04 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		55F16D15186F7B6800E75C3E /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Oolite/Images.xcassets; sourceTree = SOURCE_ROOT; };
 		55F16D17186F821300E75C3E /* ARCBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARCBridge.h; sourceTree = "<group>"; };
+		55FD4D9818EC9A0700EBD670 /* OOShipLibraryDescriptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOShipLibraryDescriptions.h; sourceTree = "<group>"; };
+		55FD4D9918EC9A0700EBD670 /* OOShipLibraryDescriptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OOShipLibraryDescriptions.m; sourceTree = "<group>"; };
 		B3460D4315285BDE002592D0 /* oolite-default-planet.fragment */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; path = "oolite-default-planet.fragment"; sourceTree = "<group>"; };
 		B3460D4415285BDE002592D0 /* oolite-default-planet.vertex */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; path = "oolite-default-planet.vertex"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
 		B3A963FD165D7FB5001BB5C1 /* oolite-laser-blur.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "oolite-laser-blur.png"; sourceTree = "<group>"; };
@@ -2705,6 +2707,8 @@
 		1A8A3BFB0B963F91007D20B8 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				55FD4D9818EC9A0700EBD670 /* OOShipLibraryDescriptions.h */,
+				55FD4D9918EC9A0700EBD670 /* OOShipLibraryDescriptions.m */,
 				1ABAD7300F350B3400FD2CBF /* OOShipGroup.h */,
 				1ABAD72F0F350B3400FD2CBF /* OOShipGroup.m */,
 				1A20F7040F36EE0500156DE9 /* OOExcludeObjectEnumerator.h */,
@@ -3187,6 +3191,7 @@
 				1A26D0BC0BCF9CF80073F257 /* PlayerEntityContracts.h in Headers */,
 				1A26D0BE0BCF9CF80073F257 /* PlanetEntity.h in Headers */,
 				1A26D0C10BCF9CF80073F257 /* Entity.h in Headers */,
+				55FD4D9A18EC9A0700EBD670 /* OOShipLibraryDescriptions.h in Headers */,
 				1A26D0C50BCF9CF80073F257 /* WormholeEntity.h in Headers */,
 				1A92AB711846403200C507E3 /* OOJSExhaustPlume.h in Headers */,
 				1A26D0C70BCF9CF80073F257 /* StationEntity.h in Headers */,
@@ -3410,7 +3415,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "the Oolite team";
 			};
 			buildConfigurationList = 08B31CB008FE63D70038D42F /* Build configuration list for PBXProject "Oolite" */;
@@ -3559,8 +3564,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1A2315530B9C778400EF0852 /* splash.png in Resources */,
-				1A115ED5158CFB4D005842DA /* splash@2x.png in Resources */,
 				55F16D16186F7B6800E75C3E /* Images.xcassets in Resources */,
 				55B0FE4F18826CDA00CDAD04 /* InfoPlist.strings in Resources */,
 				1AE8838012EF91E80075814F /* SparkleVerificationKey.pem in Resources */,
@@ -3688,6 +3691,7 @@
 				1A9406850BAF66D6005F6CF3 /* OOVoxel.m in Sources */,
 				1AB01B5F0BB1639600F1B949 /* OOTextureScaling.m in Sources */,
 				1A5DB1EB0BBD8F0000D57389 /* OOConstToString.m in Sources */,
+				55FD4D9B18EC9A0700EBD670 /* OOShipLibraryDescriptions.m in Sources */,
 				1A5DBAA70BC000DC00D57389 /* OOJavaScriptEngine.m in Sources */,
 				1A5DBAA90BC000DC00D57389 /* OOJSScript.m in Sources */,
 				1A5DBAAB0BC000DC00D57389 /* OOPListScript.m in Sources */,
@@ -4041,7 +4045,19 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 1AD88FAF103F29D300AA36F4 /* oolite-options.xcconfig */;
 			buildSettings = {
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "$(HEADER_SEARCH_PATHS_QUOTED_1)";
 				ONLY_ACTIVE_ARCH = YES;
 			};
@@ -4051,6 +4067,18 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 1AD88FAF103F29D300AA36F4 /* oolite-options.xcconfig */;
 			buildSettings = {
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "$(HEADER_SEARCH_PATHS_QUOTED_1)";
 			};
 			name = Deployment;
@@ -4098,6 +4126,18 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 1AD88FAF103F29D300AA36F4 /* oolite-options.xcconfig */;
 			buildSettings = {
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "$(HEADER_SEARCH_PATHS_QUOTED_1)";
 			};
 			name = TestRelease;

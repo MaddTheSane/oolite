@@ -102,7 +102,7 @@ static const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect 
 	OOTechLevelID techLevel = [dict oo_intForKey:KEY_TECHLEVEL defaultValue:[planetInfo oo_intForKey:KEY_TECHLEVEL]];
 	
 	if (techLevel > 14)  techLevel = 14;
-	_shuttlesOnGround = 1 + techLevel / 2;
+	_shuttlesOnGround = (unsigned)(1 + techLevel / 2);
 	_shuttleLaunchInterval = 3600.0 / (double)_shuttlesOnGround;	// All are launched in one hour.
 	_lastLaunchTime = [UNIVERSE getTime] + 30.0 - _shuttleLaunchInterval;	// launch 30s after player enters universe.
 																			// make delay > 0 to allow scripts adding a station nearby.
