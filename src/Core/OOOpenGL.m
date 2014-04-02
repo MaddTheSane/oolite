@@ -87,7 +87,13 @@ void OOGLWireframeModeOn(void)
 {
 	OO_ENTER_OPENGL();
 	
-	OOGL(glPushAttrib(GL_POLYGON_BIT | GL_LINE_BIT | GL_TEXTURE_BIT));
+	/* Because of where this is called relative to the
+	 * OpenGLStateManager methods, pushAttrib/popAttrib causes the
+	 * OpenGL state to move away from where it should be. So, instead,
+	 * just switch polygon mode as needed. Linewidth is set already by
+	 * everything that needs it and not handled by the state
+	 * manager.  - CIM*/
+//	OOGL(glPushAttrib(GL_POLYGON_BIT | GL_LINE_BIT | GL_TEXTURE_BIT));
 	OOGL(GLScaledLineWidth(1.0f));
 	OOGL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 }
@@ -96,8 +102,8 @@ void OOGLWireframeModeOn(void)
 void OOGLWireframeModeOff(void)
 {
 	OO_ENTER_OPENGL();
-	
-	OOGL(glPopAttrib());
+	OOGL(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+//	OOGL(glPopAttrib());
 }
 
 
@@ -164,6 +170,49 @@ void GLDrawFilledOval(GLfloat x, GLfloat y, GLfloat z, NSSize siz, GLfloat step)
 	OOGLBEGIN(GL_TRIANGLE_FAN);
 	GLDrawOvalPoints(x, y, z, siz, step);
 	OOGLEND();
+}
+
+void GLDrawPoints(OOGLVector *points, int n)
+{
+	int i;
+	OO_ENTER_OPENGL();
+	OOGLBEGIN(GL_LINE_STRIP);
+	for (i = 0; i < n; i++)
+	{
+		glVertex3f(points->x, points->y, points->z);
+		points++;
+	}
+	OOGLEND();
+	return;
+}
+
+void GLDrawFilledPoints(OOGLVector *points, int n)
+{
+	int i;
+	OO_ENTER_OPENGL();
+	OOGLBEGIN(GL_TRIANGLE_FAN);
+	for (i = 0; i < n; i++)
+	{
+		glVertex3f(points->x, points->y, points->z);
+		points++;
+	}
+	OOGLEND();
+	return;
+}
+
+
+void GLDrawQuadStrip(OOGLVector *points, int n)
+{
+	int i;
+	OO_ENTER_OPENGL();
+	OOGLBEGIN(GL_QUAD_STRIP);
+	for (i = 0; i < n; i++)
+	{
+		glVertex3f(points->x, points->y, points->z );
+		points++;
+	}
+	OOGLEND();
+	return;
 }
 
 

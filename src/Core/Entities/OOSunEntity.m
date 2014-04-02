@@ -555,6 +555,40 @@ MA 02110-1301, USA.
 }
 
 
+- (void) drawDirectVisionSunGlare
+{
+#if SUN_DIRECT_VISION_GLARE
+	OO_ENTER_OPENGL();
+	
+	OOSetOpenGLState(OPENGL_STATE_OVERLAY);
+	
+	GLfloat sunGlareAngularSize = atan([self radius]/HPdistance([PLAYER viewpointPosition], [self position])) * SUN_GLARE_MULT_FACTOR + (SUN_GLARE_ADD_FACTOR);
+
+	GLfloat	directVisionSunGlare = [PLAYER lookingAtSunWithThresholdAngleCos:cos(sunGlareAngularSize)];
+	if (directVisionSunGlare)
+	{
+		NSSize	siz =	[[UNIVERSE gui]	size];
+		GLfloat z = [[UNIVERSE gameView] display_z];
+		GLfloat atmosphericReductionFactor =  1.0f - [PLAYER insideAtmosphereFraction];
+		// 182: square of ratio of radius to sun-witchpoint distance
+		// in default Lave
+		GLfloat distanceReductionFactor = OOClamp_0_1_f(([self radius] * [self radius] * 182.0) / HPdistance2([PLAYER position], [self position]));
+		GLfloat directVisionSunGlareColor[4] = {discColor[0], discColor[1], discColor[2], directVisionSunGlare *
+													atmosphericReductionFactor * distanceReductionFactor * 0.85f};
+													
+		OOGL(glColor4fv(directVisionSunGlareColor));
+		
+		OOGLBEGIN(GL_QUADS);
+		glVertex3f(siz.width, siz.height, z);
+		glVertex3f(siz.width, -siz.height, z);
+		glVertex3f(-siz.width, -siz.height, z);
+		glVertex3f(-siz.width, siz.height, z);
+		OOGLEND();
+	}
+#endif
+}
+
+
 - (void) drawStarGlare
 {
 	OO_ENTER_OPENGL();
@@ -567,7 +601,7 @@ MA 02110-1301, USA.
 	{
 		return;
 	}
-	double corona = cor16k/1.5;
+	double corona = cor16k/SUN_GLARE_CORONA_FACTOR;
 	if (corona > alt)
 	{
 		double alpha = 1-(alt/corona);

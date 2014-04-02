@@ -28,7 +28,6 @@ MA 02110-1301, USA.
 "use strict";
 
 this.name = "Oolite Trader Opportunist AI";
-this.version = "1.79";
 
 this.aiStarted = function() {
 	var ai = new worldScripts["oolite-libPriorityAI"].PriorityAIController(this.ship);
@@ -76,8 +75,13 @@ this.aiStarted = function() {
 		{
 			condition: ai.conditionScannerContainsLoneVictim,
 			configuration: ai.configurationAcquireScannedTarget,
-			behaviour: ai.behaviourDestroyCurrentTarget,
-			reconsider: 20
+			truebranch: [
+				{
+					condition: ai.conditionCombatOddsGood,
+					behaviour: ai.behaviourDestroyCurrentTarget,
+					reconsider: 20
+				}
+			]
 		},
 		{
 			condition: ai.conditionCargoIsProfitableHere,

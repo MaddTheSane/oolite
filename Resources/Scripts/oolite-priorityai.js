@@ -29,7 +29,6 @@
 
 /* AI Library */
 this.name = "oolite-libPriorityAI";
-this.version = "1.79";
 this.copyright		= "© 2008-2013 the Oolite team.";
 this.author = "cim";
 
@@ -532,6 +531,15 @@ PriorityAIController.prototype.allied = function(ship1,ship2)
 			return true;
 		}
 	}
+	// main and other galcop stations allied with police
+	if (ship1.isStation && (ship1.allegiance == "galcop" || ship1.isMainStation) && ship2.scanClass == "CLASS_POLICE")
+	{
+		return true;
+	}
+	if (ship2.isStation && (ship2.allegiance == "galcop" || ship2.isMainStation) && ship1.scanClass == "CLASS_POLICE")
+	{
+		return true;
+	}
 	// Okay, these ships really do have nothing to do with each other...
 	return false;
 }
@@ -689,11 +697,28 @@ PriorityAIController.prototype.entityCommsParams = function(entity)
 			{
 				params["oolite_entityName"] = entity.displayName;
 			}
+			if (!entity.isPlayer)
+			{
+				var crew = entity.crew;
+				if (entity.crew && entity.crew.length > 0)
+				{
+					params["oolite_entityCrew"] = entity.crew[0].name;
+				}
+				else
+				{
+					params["oolite_entityCrew"] = params["oolite_entityName"];
+				}
+			} 
+			else
+			{
+				params["oolite_entityCrew"] = player.name;
+			}
 		}
 		else if (entity.name)
 		{
 			params["oolite_entityClass"] = entity.name;
 			params["oolite_entityName"] = entity.name;
+			params["oolite_entityCrew"] = entity.name;
 		}
 	}
 	return params;
@@ -1603,7 +1628,7 @@ PriorityAIController.prototype.conditionMothershipIsAttacking = function()
 	if (this.ship.group && this.ship.group.leader != this.ship)
 	{
 		var leader = this.ship.group.leader;
-		if (leader.target && this.isFighting(leader) && this.distance(leader.target) < this.scannerRange)
+		if (leader && leader.target && this.isFighting(leader) && this.distance(leader.target) < this.scannerRange)
 		{
 			return true;
 		}
@@ -1617,7 +1642,7 @@ PriorityAIController.prototype.conditionMothershipIsAttackingHostileTarget = fun
 	if (this.ship.group && this.ship.group.leader != this.ship)
 	{
 		var leader = this.ship.group.leader;
-		if (leader.target && this.isFighting(leader) && this.isAggressive(leader.target) && this.distance(leader.target) < this.scannerRange)
+		if (leader && leader.target && this.isFighting(leader) && this.isAggressive(leader.target) && this.distance(leader.target) < this.scannerRange)
 		{
 			return true;
 		}
@@ -1630,7 +1655,7 @@ PriorityAIController.prototype.conditionMothershipUnderAttack = function()
 	if (this.ship.group && this.ship.group.leader != this.ship)
 	{
 		var leader = this.ship.group.leader;
-		if (leader.target && leader.target.target == leader && leader.target.hasHostileTarget && this.distance(leader.target) < this.scannerRange)
+		if (leader && leader.target && leader.target.target == leader && leader.target.hasHostileTarget && this.distance(leader.target) < this.scannerRange)
 		{
 			return true;
 		}
@@ -2092,9 +2117,12 @@ PriorityAIController.prototype.conditionScannerContainsLoneVictim = function()
 	var target = null;
 	for (var i = scan.length-1 ; i >= 0 ; i--)
 	{
-		if (!this.allied(this.ship,scan[i]) && this.shipInRoleCategory(scan[i],"oolite-pirate-victim") && scan[i].cargoSpaceCapacity > 0)
+		if (!this.allied(this.ship,scan[i]))
 		{
-			target = scan[i];
+			if (this.shipInRoleCategory(scan[i],"oolite-pirate-victim") && scan[i].cargoSpaceCapacity > 0)
+			{
+				target = scan[i];
+			}
 			others++;
 		}
 	}
@@ -2126,7 +2154,7 @@ PriorityAIController.prototype.conditionScannerContainsMiningOpportunity = funct
 PriorityAIController.prototype.conditionScannerContainsNonThargoid = function()
 {
 	var prioritytargets = this.checkScannerWithPredicate(function(s) { 
-		return s.scanClass != "CLASS_THARGOID" && s.scanClass != "CLASS_ROCK" && s.scanClass != "CLASS_CARGO";
+		return s.scanClass != "CLASS_THARGOID" && s.scanClass != "CLASS_ROCK" && s.scanClass != "CLASS_BUOY" && s.scanClass != "CLASS_CARGO";
 	});
 	if (prioritytargets) 
 	{
@@ -2853,7 +2881,16 @@ PriorityAIController.prototype.behaviourEnterWitchspace = function()
 		// wait for escorts to launch
 		if (!this.conditionAllEscortsInFlight())
 		{
-			this.ship.destination = this.ship.position.add(this.ship.vectorForward.multiply(30000));
+			if (this.__ltcache.oolite_nearestStation && this.distance(this.__ltcache.oolite_nearestStation) < 5000)
+			{
+				var launchpos = this.ship.position.add(this.__ltcache.oolite_nearestStation.vectorForward.multiply(12000).add(this.__ltcache.oolite_nearestStation.vectorRight.multiply(30000)));
+				this.ship.destination = launchpos;
+			}
+			else
+			{
+				this.ship.destination = this.ship.position.add(this.ship.vectorForward.multiply(30000));
+			}
+
 			this.ship.desiredRange = 10000;
 			this.ship.desiredSpeed = this.cruiseSpeed();
 			if (this.ship.checkCourseToDestination())
@@ -2888,7 +2925,17 @@ PriorityAIController.prototype.behaviourEnterWitchspace = function()
 				}
 				this.setParameter("oolite_witchspaceEntry",clock.seconds + 15);
 			}
-			this.ship.destination = this.ship.position.add(this.ship.vectorForward.multiply(30000));
+
+			if (this.__ltcache.oolite_nearestStation && this.distance(this.__ltcache.oolite_nearestStation) < 5000)
+			{
+				var launchpos = this.ship.position.add(this.__ltcache.oolite_nearestStation.vectorForward.multiply(8000).add(this.__ltcache.oolite_nearestStation.vectorRight.multiply(30000)));
+				this.ship.destination = launchpos;
+			}
+			else
+			{
+				this.ship.destination = this.ship.position.add(this.ship.vectorForward.multiply(30000));
+			}
+
 			this.ship.desiredRange = 10000;
 			this.ship.desiredSpeed = this.cruiseSpeed();
 			if (this.ship.checkCourseToDestination())
@@ -3029,6 +3076,27 @@ PriorityAIController.prototype.behaviourFleeCombat = function()
 			{
 				this.ship.notifyGroupOfWormhole();
 				delete this.__ltcache.oolite_witchspaceflee;
+			}
+		}
+	}
+	if (this.ship.group && this.ship.group.leader && this.ship.group.leader != this.ship)
+	{
+		var leader = this.ship.group.leader;
+		if (leader.status == "STATUS_ENTERING_WITCHSPACE")
+		{
+			var wormholes = system.wormholes;
+			for (var i=0;i<wormholes.count;i++)
+			{
+				var wormhole = wormholes[i];
+				if (wormhole.expiryTime > clock.seconds && wormhole.position.distanceTo(leader) < 100 && wormhole.position.distanceTo(this.ship) < this.scannerRange)
+				{
+					// if the leader has departed and the wormhole is
+					// reachable, go for it!
+					this.ship.destination = wormhole.position;
+					this.ship.desiredSpeed = this.ship.maxFlightSpeed * 7;
+					this.ship.performFlyToRangeFromDestination();
+					return;
+				}
 			}
 		}
 	}
@@ -4799,6 +4867,7 @@ PriorityAIController.prototype.responseComponent_standard_offenceCommittedNearby
 {
 	if (this.ship == victim) return; // other handlers can get this one
 	if (this.distance(attacker) > this.scannerRange) return; // can't mark what you can't see
+	if (attacker.scanClass == "CLASS_POLICE") return; // ignored
 	if (this.getParameter("oolite_flag_markOffenders")) 
 	{
 		if (attacker.bounty == 0 && victim.bounty == 0)
@@ -4999,6 +5068,12 @@ PriorityAIController.prototype.responseComponent_standard_shipBeingAttacked = fu
 				// ignore it
 				return;
 			}
+			// clean ships ignore friendly fire from police
+			if (this.ship.bounty == 0 && whom.scanClass == "CLASS_POLICE")
+			{
+				this.communicate("oolite_friendlyFire",whom,3);
+				return;
+			}
 			if (Math.random() > 0.1)
 			{
 				// usually ignore it anyway as we know they didn't mean to
@@ -5185,7 +5260,36 @@ PriorityAIController.prototype.responseComponent_standard_shipFiredMissile = fun
 
 PriorityAIController.prototype.responseComponent_standard_shipKilledOther = function(other)
 {
-	this.communicate("oolite_killedTarget",other,3);
+	if (this.ship.target == other)
+	{
+		if (this.allied(this.ship,other))
+		{
+			this.communicate("oolite_killedAlly",other,3);
+		}
+		else if (other.crew && other.crew.length > 0)
+		{
+			this.communicate("oolite_killedTarget",other,2);
+		}
+		else
+		{
+			this.communicate("oolite_killedUncrewedTarget",other,3);
+		}
+	}
+	else
+	{
+		if (this.allied(this.ship,other))
+		{
+			this.communicate("oolite_killedAlly",other,3);
+		}
+		else if (other.crew && other.crew.length > 0)
+		{
+			this.communicate("oolite_killedNonTarget",other,3);
+		}
+		else
+		{
+			this.communicate("oolite_killedUncrewedNonTarget",other,3);
+		}
+	}
 }
 
 
@@ -5423,6 +5527,13 @@ PriorityAIController.prototype.responseComponent_station_shipBeingAttacked = fun
 				// ignore it
 				return;
 			}
+			// allegiance=galcop case covered by this.allied
+			if (whom.scanClass == "CLASS_POLICE" && (this.ship.allegiance == "hunter" || this.ship.allegiance == "neutral"))
+			{
+				this.communicate("oolite_friendlyFire",whom,4);
+				// ignore it
+				return;
+			}
 			if (Math.random() > 0.1)
 			{
 				// usually ignore it anyway
@@ -5490,7 +5601,37 @@ PriorityAIController.prototype.responseComponent_station_shipFiredMissile = func
 
 PriorityAIController.prototype.responseComponent_station_shipKilledOther = function(other)
 {
-	this.communicate("oolite_killedTarget",other,3);
+	// slightly lower message priorities than the ship version
+	if (this.ship.target == other)
+	{
+		if (this.allied(this.ship,other))
+		{
+			this.communicate("oolite_killedAlly",other,3);
+		}
+		else if (other.crew && other.crew.length > 0)
+		{
+			this.communicate("oolite_killedTarget",other,3);
+		}
+		else
+		{
+			this.communicate("oolite_killedUncrewedTarget",other,4);
+		}
+	}
+	else
+	{
+		if (this.allied(this.ship,other))
+		{
+			this.communicate("oolite_killedAlly",other,3);
+		}
+		else if (other.crew && other.crew.length > 0)
+		{
+			this.communicate("oolite_killedNonTarget",other,3);
+		}
+		else
+		{
+			this.communicate("oolite_killedUncrewedNonTarget",other,4);
+		}
+	}
 }
 
 
@@ -6238,6 +6379,9 @@ this.startUp = function()
 	this.$commsSettings.generic.generic.oolite_beginningAttackInanimate = "I've got you this time, [oolite_entityName]!";
 	this.$commsSettings.generic.generic.oolite_hitTarget = "Take that, scum.";
 	this.$commsSettings.generic.generic.oolite_killedTarget = "[oolite_entityClass] down!";
+	this.$commsSettings.station = { generic: {} };
+	this.$commsSettings.station.generic.oolite_killedNonTarget = "Pull up, [oolite_entityName]!";
+	this.$commsSettings.generic.generic.oolite_killedAlly = "No! [oolite_entityName]!";
 	this.$commsSettings.pirate.generic.oolite_hitTarget = "Where's the cargo, [oolite_entityName]?";
 	this.$commsSettings.generic.generic.oolite_friendlyFire = "Watch where you're shooting, [oolite_entityName]!";
 	this.$commsSettings.generic.generic.oolite_eject = "Condition critical! I'm bailing out...";

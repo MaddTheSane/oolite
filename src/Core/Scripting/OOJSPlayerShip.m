@@ -127,8 +127,12 @@ enum
 	kPlayerShip_missilesOnline,      // bool (false for ident mode, true for missile mode)
 	kPlayerShip_pitch,							// pitch (overrules Ship)
 	kPlayerShip_price,							// idealised trade-in value decicredits, positive int, read-only
+	kPlayerShip_renovationCost,					// int read-only current renovation cost
+	kPlayerShip_renovationMultiplier,			// float read-only multiplier for renovation costs
 	kPlayerShip_reticleTargetSensitive,			// target box changes color when primary target in crosshairs, boolean, read/write
 	kPlayerShip_roll,							// roll (overrules Ship)
+	kPlayerShip_scannerNonLinear,				// non linear scanner setting, boolean, read/write
+	kPlayerShip_scannerUltraZoom,				// scanner zoom in powers of 2, boolean, read/write
 	kPlayerShip_scoopOverride,					// Scooping
 	kPlayerShip_serviceLevel,					// servicing level, positive int 75-100, read-only
 	kPlayerShip_specialCargo,					// special cargo, string, read-only
@@ -176,8 +180,12 @@ static JSPropertySpec sPlayerShipProperties[] =
 	{ "multiFunctionDisplays",     		kPlayerShip_multiFunctionDisplays,      OOJS_PROP_READONLY_CB },
 	{ "price",							kPlayerShip_price,							OOJS_PROP_READONLY_CB },
 	{ "pitch",							kPlayerShip_pitch,							OOJS_PROP_READONLY_CB },
+	{ "renovationCost",					kPlayerShip_renovationCost,					OOJS_PROP_READONLY_CB },
+	{ "renovationMultiplier",			kPlayerShip_renovationMultiplier,			OOJS_PROP_READONLY_CB },
 	{ "reticleTargetSensitive",			kPlayerShip_reticleTargetSensitive,			OOJS_PROP_READWRITE_CB },
 	{ "roll",							kPlayerShip_roll,							OOJS_PROP_READONLY_CB },
+	{ "scannerNonLinear",				kPlayerShip_scannerNonLinear,				OOJS_PROP_READWRITE_CB },
+	{ "scannerUltraZoom",				kPlayerShip_scannerUltraZoom,				OOJS_PROP_READWRITE_CB },
 	{ "scoopOverride",					kPlayerShip_scoopOverride,					OOJS_PROP_READWRITE_CB },
 	{ "serviceLevel",					kPlayerShip_serviceLevel,					OOJS_PROP_READWRITE_CB },
 	{ "specialCargo",					kPlayerShip_specialCargo,					OOJS_PROP_READONLY_CB },
@@ -388,6 +396,14 @@ static JSBool PlayerShipGetProperty(JSContext *context, JSObject *this, jsid pro
 			*value = INT_TO_JSVAL([UNIVERSE findSystemNumberAtCoords:[player cursor_coordinates] withGalaxySeed:[player galaxy_seed]]);
 			return YES;
 			
+		case kPlayerShip_scannerNonLinear:
+			*value = OOJSValueFromBOOL([[player hud] nonlinearScanner]);
+			return YES;
+			
+		case kPlayerShip_scannerUltraZoom:
+			*value = OOJSValueFromBOOL([[player hud] scannerUltraZoom]);
+			return YES;
+			
 		case kPlayerShip_scoopOverride:
 			*value = OOJSValueFromBOOL([player scoopOverride]);
 			return YES;
@@ -441,6 +457,13 @@ static JSBool PlayerShipGetProperty(JSContext *context, JSObject *this, jsid pro
 
 	  case kPlayerShip_serviceLevel:
 			return JS_NewNumberValue(context, [player tradeInFactor], value);
+
+		case kPlayerShip_renovationCost:
+			return JS_NewNumberValue(context, [player renovationCosts], value);
+
+		case kPlayerShip_renovationMultiplier:
+			return JS_NewNumberValue(context, [player renovationFactor], value);
+
 
 			// make roll, pitch, yaw reported to JS use same +/- convention as
 			// for NPC ships
@@ -556,6 +579,22 @@ static JSBool PlayerShipSetProperty(JSContext *context, JSObject *this, jsid pro
 			if (JS_ValueToNumber(context, *value, &fValue))
 			{
 				[player setAftShieldLevel:fValue];
+				return YES;
+			}
+			break;
+			
+		case kPlayerShip_scannerNonLinear:
+			if (JS_ValueToBoolean(context, *value, &bValue))
+			{
+				[[player hud] setNonlinearScanner:bValue];
+				return YES;
+			}
+			break;
+			
+		case kPlayerShip_scannerUltraZoom:
+			if (JS_ValueToBoolean(context, *value, &bValue))
+			{
+				[[player hud] setScannerUltraZoom:bValue];
 				return YES;
 			}
 			break;

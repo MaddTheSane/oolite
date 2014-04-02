@@ -48,6 +48,7 @@ MA 02110-1301, USA.
 #import "OOMesh.h"
 #import "OOConstToString.h"
 #import "OOEntityFilterPredicate.h"
+#import "OOCharacter.h"
 
 
 static JSObject *sShipPrototype;
@@ -134,6 +135,7 @@ static JSBool ShipDamageAssessment(JSContext *context, uintN argc, jsval *vp);
 static double ShipThreatAssessmentWeapon(OOWeaponType wt);
 
 static JSBool ShipSetCargoType(JSContext *context, uintN argc, jsval *vp);
+static JSBool ShipSetCrew(JSContext *context, uintN argc, jsval *vp);
 
 static BOOL RemoveOrExplodeShip(JSContext *context, uintN argc, jsval *vp, BOOL explode);
 static JSBool ShipSetMaterialsInternal(JSContext *context, uintN argc, jsval *vp, ShipEntity *thisEnt, BOOL fromShaders);
@@ -196,6 +198,7 @@ enum
 	kShip_commodity,			// commodity of a ship, read only
 	kShip_commodityAmount,		// commodityAmount of a ship, read only
 	kShip_cloakAutomatic,		// should cloack start by itself or by script, read/write
+	kShip_crew,					// crew, list, read only
 	kShip_cruiseSpeed,			// desired cruising speed, number, read only
 	kShip_currentWeapon,		// the ship's active weapon, equipmentType, read/write
 	kShip_dataKey,				// string, read-only, shipdata.plist key
@@ -335,6 +338,7 @@ static JSPropertySpec sShipProperties[] =
 	// contracts instead of cargo to distinguish them from the manifest
 	{ "contracts",				kShip_contracts,			OOJS_PROP_READONLY_CB },
 	{ "cloakAutomatic",			kShip_cloakAutomatic,		OOJS_PROP_READWRITE_CB},
+	{ "crew",					kShip_crew,					OOJS_PROP_READONLY_CB },
 	{ "cruiseSpeed",			kShip_cruiseSpeed,			OOJS_PROP_READONLY_CB },
 	{ "currentWeapon",			kShip_currentWeapon,		OOJS_PROP_READWRITE_CB },
 	{ "dataKey",				kShip_dataKey,				OOJS_PROP_READONLY_CB },
@@ -515,6 +519,7 @@ static JSFunctionSpec sShipMethods[] =
 	{ "setBounty",				ShipSetBounty,				2 },
 	{ "setCargo",				ShipSetCargo,				1 },
 	{ "setCargoType",				ShipSetCargoType,				1 },
+	{ "setCrew",				ShipSetCrew,				1 },
 	{ "setEquipmentStatus",		ShipSetEquipmentStatus,		2 },
 	{ "setMaterials",			ShipSetMaterials,			1 },
 	{ "setScript",				ShipSetScript,				1 },
@@ -680,6 +685,10 @@ static JSBool ShipGetProperty(JSContext *context, JSObject *this, jsid propID, j
 			}
 			break;
 		}		
+
+		case kShip_crew:
+			result = [entity crewForScripting];
+			break;
 	
 		case kShip_escorts:
 			result = [[entity escortGroup] memberArrayExcludingLeader];
@@ -2646,6 +2655,50 @@ static JSBool ShipSetCargo(JSContext *context, uintN argc, jsval *vp)
 	if (commodity != COMMODITY_UNDEFINED)  [thisEnt setCommodityForPod:commodity andAmount:count];
 	
 	OOJS_RETURN_BOOL(commodity != COMMODITY_UNDEFINED);
+	
+	OOJS_NATIVE_EXIT
+}
+
+
+// setCrew(crewDefinition : Object)
+static JSBool ShipSetCrew(JSContext *context, uintN argc, jsval *vp)
+{
+	/* TODO: ships can in theory have multiple crew, so this could
+	 * allow that to be set. Probably not necessary for now. */
+	OOJS_NATIVE_ENTER(context)
+	
+	ShipEntity				*thisEnt = nil;
+	NSDictionary			*crewDefinition = nil;
+	JSObject			*params = NULL;
+
+	GET_THIS_SHIP(thisEnt);
+	
+	if (argc < 1 || (!JSVAL_IS_NULL(OOJS_ARGV[0]) && !JS_ValueToObject(context, OOJS_ARGV[0], &params)))
+	{
+		OOJSReportBadArguments(context, @"Ship", @"setCrew", MIN(argc, 1U), OOJS_ARGV, NULL, @"definition");
+		return NO;
+	}
+	BOOL success = YES;
+
+	if (![thisEnt isExplicitlyUnpiloted])
+	{
+		if (JSVAL_IS_NULL(OOJS_ARGV[0]))
+		{
+			[thisEnt setCrew:nil];
+		}
+		else
+		{
+			crewDefinition = OOJSNativeObjectFromJSObject(context, JSVAL_TO_OBJECT(OOJS_ARGV[0]));
+			OOCharacter *crew = [OOCharacter characterWithDictionary:crewDefinition];
+			[thisEnt setCrew:[NSArray arrayWithObject:crew]];
+		}
+	}
+	else
+	{
+		success = NO;
+	}
+
+	OOJS_RETURN_BOOL(success);
 	
 	OOJS_NATIVE_EXIT
 }
