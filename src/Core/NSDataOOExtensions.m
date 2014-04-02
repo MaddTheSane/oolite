@@ -29,7 +29,10 @@ SOFTWARE.
 
 #import "OOCocoa.h"
 #import "unzip.h"
-#import "ARCBridge.h"
+
+#if !__has_feature(objc_arc)
+#error This file needs to be built under ARC.
+#endif
 
 #define ZIP_BUFFER_SIZE 8192
 
@@ -54,7 +57,7 @@ SOFTWARE.
 /* -initWithContentsOfMappedFile fails quietly under OS X if there's no file,
    but GNUstep complains. */
 #if OOLITE_MAC_OS_X
-		return AUTORELEASEOBJ([[NSData alloc] initWithContentsOfMappedFile:path]);
+		return [[NSData alloc] initWithContentsOfMappedFile:path];
 #else
 		NSFileManager	*fmgr = [NSFileManager defaultManager];
 		BOOL			dir;
@@ -162,7 +165,7 @@ SOFTWARE.
 	}
 	
 	unzClose(uf);
-	return AUTORELEASEOBJ(RETAINOBJ(tmp));
+	return tmp;
 
 }
 

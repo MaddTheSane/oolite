@@ -32,7 +32,10 @@ SOFTWARE.
 #import "OOCollectionExtractors.h"
 #include <limits.h>
 #import "OOMaths.h"
-#import "ARCBridge.h"
+
+#if !__has_feature(objc_arc)
+#error This file needs to be built under ARC.
+#endif
 
 static NSSet *SetForObject(id object, NSSet *defaultValue);
 static NSString *StringForObject(id object, NSString *defaultValue);
@@ -1508,17 +1511,17 @@ NSDictionary *OOPropertyListFromVector(Vector value)
 NSDictionary *OOPropertyListFromHPVector(HPVector value)
 {
 	return @{@"x": @(value.x),
-			@"y": @(value.y),
-			@"z": @(value.z)};
+			 @"y": @(value.y),
+			 @"z": @(value.z)};
 }
 
 
 NSDictionary *OOPropertyListFromQuaternion(Quaternion value)
 {
 	return @{@"w": @(value.w),
-			@"x": @(value.x),
-			@"y": @(value.y),
-			@"z": @(value.z)};
+			 @"x": @(value.x),
+			 @"y": @(value.y),
+			 @"z": @(value.z)};
 }
 #endif
 
@@ -1526,7 +1529,7 @@ NSDictionary *OOPropertyListFromQuaternion(Quaternion value)
 static NSSet *SetForObject(id object, NSSet *defaultValue)
 {
 	if ([object isKindOfClass:[NSArray class]])  return [NSSet setWithArray:object];
-	else if ([object isKindOfClass:[NSSet class]])  return AUTORELEASEOBJ([object copy]);
+	else if ([object isKindOfClass:[NSSet class]])  return [object copy];
 	
 	return defaultValue;
 }

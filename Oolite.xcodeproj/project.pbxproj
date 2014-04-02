@@ -233,7 +233,7 @@
 		1A5D588A1825241800C779AE /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A5D58851825241800C779AE /* unzip.c */; };
 		1A5D588B1825241800C779AE /* unzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A5D58861825241800C779AE /* unzip.h */; };
 		1A5D5893182525DE00C779AE /* NSDataOOExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A5D5891182525DE00C779AE /* NSDataOOExtensions.h */; };
-		1A5D5894182525DE00C779AE /* NSDataOOExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5D5892182525DE00C779AE /* NSDataOOExtensions.m */; };
+		1A5D5894182525DE00C779AE /* NSDataOOExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5D5892182525DE00C779AE /* NSDataOOExtensions.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		1A5DB1EA0BBD8F0000D57389 /* OOConstToString.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A5DB1E80BBD8F0000D57389 /* OOConstToString.h */; };
 		1A5DB1EB0BBD8F0000D57389 /* OOConstToString.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DB1E90BBD8F0000D57389 /* OOConstToString.m */; };
 		1A5DBAA60BC000DC00D57389 /* OOJavaScriptEngine.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A5DBA9A0BC000DC00D57389 /* OOJavaScriptEngine.h */; };
@@ -341,7 +341,7 @@
 		1A9400BE0BAF0ECD005F6CF3 /* OOStringParsing.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A9400BD0BAF0ECD005F6CF3 /* OOStringParsing.m */; };
 		1A9400C00BAF0EDB005F6CF3 /* OOStringParsing.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A9400BF0BAF0EDB005F6CF3 /* OOStringParsing.h */; };
 		1A9403D00BAF36C3005F6CF3 /* OOFunctionAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A9403CF0BAF36C3005F6CF3 /* OOFunctionAttributes.h */; };
-		1A9404260BAF3DED005F6CF3 /* OOCollectionExtractors.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A9404240BAF3DED005F6CF3 /* OOCollectionExtractors.m */; };
+		1A9404260BAF3DED005F6CF3 /* OOCollectionExtractors.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A9404240BAF3DED005F6CF3 /* OOCollectionExtractors.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		1A9404270BAF3DED005F6CF3 /* OOCollectionExtractors.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A9404250BAF3DED005F6CF3 /* OOCollectionExtractors.h */; };
 		1A9404660BAF42BF005F6CF3 /* OOPListParsing.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A9404640BAF42BE005F6CF3 /* OOPListParsing.h */; };
 		1A9404670BAF42BF005F6CF3 /* OOPListParsing.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A9404650BAF42BF005F6CF3 /* OOPListParsing.m */; };
