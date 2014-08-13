@@ -43,10 +43,12 @@ MA 02110-1301, USA.
 #import "OOCollectionExtractors.h"
 
 #import "OOPlanetTextureGenerator.h"
+#import "OOStandaloneAtmosphereGenerator.h"
 #import "OOSingleTextureMaterial.h"
 #import "OOShaderMaterial.h"
 #import "OOEntityFilterPredicate.h"
 #import "OOGraphicsResetManager.h"
+#import "OOStringExpander.h"
 
 @interface OOPlanetEntity (Private) <OOGraphicsResetClient>
 
@@ -96,6 +98,9 @@ static const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect 
 	seed_for_planet_description(seed);
 	NSMutableDictionary *planetInfo = [[UNIVERSE generateSystemData:seed] mutableCopy];
 	[planetInfo autorelease];
+
+	_name = nil;
+	[self setName:OOExpand([dict oo_stringForKey:KEY_PLANETNAME defaultValue:[planetInfo oo_stringForKey:KEY_PLANETNAME defaultValue:@"%H"]])];
 	
 	int radius_km = [dict oo_intForKey:KEY_RADIUS defaultValue:[planetInfo oo_intForKey:KEY_RADIUS]];
 	collision_radius = radius_km * 10.0;	// Scale down by a factor of 100
@@ -352,6 +357,7 @@ static OOColor *ColorWithHSBColor(Vector c)
 
 - (void) dealloc
 {
+	DESTROY(_name);
 	DESTROY(_planetDrawable);
 	DESTROY(_atmosphereDrawable);
 	//DESTROY(_airColor);	// this CTDs on loading savegames.. :(
@@ -480,7 +486,7 @@ static OOColor *ColorWithHSBColor(Vector c)
 
 - (void) drawImmediate:(bool)immediate translucent:(bool)translucent
 {
-	if (translucent || [UNIVERSE breakPatternHide])   return; // DON'T DRAW
+	if ([UNIVERSE breakPatternHide])   return; // DON'T DRAW
 	if (_miniature && ![self isFinishedLoading])  return; // For responsiveness, don't block to draw as miniature.
 	
 	if (![UNIVERSE viewFrustumIntersectsSphereAt:cameraRelativePosition withRadius:([self radius] + ATMOSPHERE_DEPTH)])
@@ -496,14 +502,37 @@ static OOColor *ColorWithHSBColor(Vector c)
 		[_planetDrawable calculateLevelOfDetailForViewDistance:cam_zero_distance];
 		[_atmosphereDrawable setLevelOfDetail:[_planetDrawable levelOfDetail]];
 	}
-	
-	[_planetDrawable renderOpaqueParts];
-//#if NEW_ATMOSPHERE
-	if (_atmosphereDrawable != nil)
+
+	// 500km squared
+	if (magnitude2(cameraRelativePosition) > 250000000000.0) 
 	{
-		[_atmosphereDrawable renderOpaqueParts];
+		/* at this distance the atmosphere is too close to the planet
+		 * for a 24-bit depth buffer to reliably distinguish the two,
+		 * so cheat and draw the atmosphere on the opaque pass: it's
+		 * far enough away that painter's algorithm should do fine */
+		[_planetDrawable renderOpaqueParts];
+		if (_atmosphereDrawable != nil)
+		{
+			[_atmosphereDrawable renderTranslucentPartsOnOpaquePass];
+		}
 	}
-//#endif
+	else 
+	{
+		/* At close range we can do this properly and draw the
+		 * atmosphere on the transparent pass */
+		if (translucent)
+		{
+			if (_atmosphereDrawable != nil)
+			{
+				[_atmosphereDrawable renderTranslucentParts];
+			}
+		}
+		else
+		{
+			[_planetDrawable renderOpaqueParts];
+		}
+	}
+
 	
 	if ([UNIVERSE wireframeGraphics])  OOGLWireframeModeOff();
 }
@@ -544,8 +573,15 @@ static OOColor *ColorWithHSBColor(Vector c)
 
 - (void) launchShuttle
 {
-	if (_shuttlesOnGround == 0)  return;
-	
+	if (_shuttlesOnGround == 0)  
+	{
+		return;
+	}
+	if ([PLAYER status] == STATUS_START_GAME)
+	{
+		// don't launch if game not started
+		return;
+	}
 	if (self != [UNIVERSE planet] && ![self planetHasStation])
 	{
 		// don't launch shuttles when no station is nearby.
@@ -670,47 +706,36 @@ static OOColor *ColorWithHSBColor(Vector c)
 		}
 		else textureName = @"dynamic";
 
-		if (!isMoon)
-		{
-			/* Generate the atmosphere texture anyway */
-			OOTexture *diffuseTmp = nil;
-			OOTexture *atmosphere = nil;
-			[OOPlanetTextureGenerator generatePlanetTexture:&diffuseTmp
-									   secondaryTexture:NULL
-										  andAtmosphere:&atmosphere
-											   withInfo:_materialParameters];
-
-			OOSingleTextureMaterial *dynamicMaterial = [[OOSingleTextureMaterial alloc] initWithName:@"dynamic" texture:atmosphere configuration:nil];
-			[_atmosphereDrawable setMaterial:dynamicMaterial];
-			[dynamicMaterial release];
-		}
 	}
 	else
 	{
-		if (isMoon)
-		{
-			[OOPlanetTextureGenerator generatePlanetTexture:&diffuseMap
-										   secondaryTexture:(detailLevel >= DETAIL_LEVEL_EXTRAS) ? &normalMap : NULL
-												   withInfo:_materialParameters];
-		}
-		else
-		{
-			OOTexture *atmosphere = nil;
-			[OOPlanetTextureGenerator generatePlanetTexture:&diffuseMap
-										   secondaryTexture:(detailLevel >= DETAIL_LEVEL_EXTRAS) ? &normalMap : NULL
-											  andAtmosphere:&atmosphere
-												   withInfo:_materialParameters];
-			
-			OOSingleTextureMaterial *dynamicMaterial = [[OOSingleTextureMaterial alloc] initWithName:@"dynamic" texture:atmosphere configuration:nil];
-			[_atmosphereDrawable setMaterial:dynamicMaterial];
-			[dynamicMaterial release];
-		}
+		[OOPlanetTextureGenerator generatePlanetTexture:&diffuseMap
+									   secondaryTexture:(detailLevel >= DETAIL_LEVEL_EXTRAS) ? &normalMap : NULL
+											   withInfo:_materialParameters];
+
 		if (shadersOn)
 		{
 			macros = [materialDefaults oo_dictionaryForKey:isMoon ? @"moon-dynamic-macros" : @"planet-dynamic-macros"];
 		}
 		textureName = @"dynamic";
 	}
+
+	/* Generate atmosphere texture */
+	if (!isMoon)
+	{
+		OOLog(@"texture.planet.generate",@"Preparing atmosphere for planet %@",self);
+		/* Generate a standalone atmosphere texture */
+		OOTexture *atmosphere = nil;
+		[OOStandaloneAtmosphereGenerator generateAtmosphereTexture:&atmosphere
+														  withInfo:_materialParameters];
+		
+		OOLog(@"texture.planet.generate",@"Planet %@ has atmosphere %@",self,atmosphere);
+		
+		OOSingleTextureMaterial *dynamicMaterial = [[OOSingleTextureMaterial alloc] initWithName:@"dynamic" texture:atmosphere configuration:nil];
+		[_atmosphereDrawable setMaterial:dynamicMaterial];
+		[dynamicMaterial release];
+	}
+
 	OOMaterial *material = nil;
 	
 #if OO_SHADERS
@@ -750,6 +775,19 @@ static OOColor *ColorWithHSBColor(Vector c)
 - (OOMaterial *) atmosphereMaterial
 {
 	return [_atmosphereDrawable material];
+}
+
+
+- (NSString *) name
+{
+	return _name;
+}
+
+
+- (void) setName:(NSString *)name
+{
+	[_name release];
+	_name = [name retain];
 }
 
 @end

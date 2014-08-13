@@ -91,6 +91,7 @@ static GameController *sSharedController = nil;
 	{
 		last_timeInterval = [NSDate timeIntervalSinceReferenceDate];
 		delta_t = 0.01; // one hundredth of a second 
+		_animationTimerInterval = [[NSUserDefaults standardUserDefaults] oo_doubleForKey:@"animation_timer_interval" defaultValue:0.005];
 		
 		// rather than seeding this with the date repeatedly, seed it
 		// once here at startup
@@ -348,9 +349,9 @@ static GameController *sSharedController = nil;
 		{
 			[UNIVERSE reinitAndShowDemo:YES];
 		}
+		[OOSound update];
 		if (!gameIsPaused)
 		{
-			[OOSound update];
 			OOJSFrameCallbacksInvoke(delta_t);
 		}
 	}
@@ -371,7 +372,8 @@ static GameController *sSharedController = nil;
 {
 	if (timer == nil)
 	{   
-		NSTimeInterval ti = 0.005; // one two-hundredth of a second (should be a fair bit faster than expected frame rate ~60Hz to avoid problems with phase differences)
+		NSTimeInterval ti = _animationTimerInterval; // default one two-hundredth of a second (should be a fair bit faster than expected frame rate ~60Hz to avoid problems with phase differences)
+		
 		timer = [[NSTimer timerWithTimeInterval:ti target:self selector:@selector(performGameTick:) userInfo:nil repeats:YES] retain];
 		
 		[[NSRunLoop currentRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
@@ -524,38 +526,58 @@ static void RemovePreference(NSString *key)
 
 - (IBAction) showAddOnsAction:sender
 {
-	if (ResourceManager.paths.count > 1)
-	{
-		// Show the first populated AddOns folder (paths are in order of preference, path[0] is always Resources).
-		[NSWorkspace.sharedWorkspace openURL:[NSURL fileURLWithPath:ResourceManager.paths[1]]];
-	}
-	else
-	{
-		// No AddOns at all. Show the first existing AddOns folder (paths are in order of preference, etc...).
-        NSArray *addonPaths = [ResourceManager.rootPaths subarrayWithRange:(NSRange){ 1, ResourceManager.rootPaths.count - 1 }];
-        NSString *path = nil;
-        for (NSString *candidate in addonPaths)
-		{
-            BOOL pathIsDirectory;
-			if ([NSFileManager.defaultManager fileExistsAtPath:candidate isDirectory:&pathIsDirectory] && pathIsDirectory)
-            {
-                path = candidate;
-                break;
-            }
+	NSArray *paths = ResourceManager.userRootPaths;
+	
+	// Look for an AddOns directory that actually contains some AddOns.
+	for (NSString *path in paths) {
+		if ([self addOnsExistAtPath:path]) {
+			[self openPath:path];
+			return;
 		}
-
-        // If none found, use first addon path.
-        if (path == nil)
-        {
-            path = addonPaths[0];
-            [NSFileManager.defaultManager createDirectoryAtPath:path
-                                    withIntermediateDirectories:YES
-                                                     attributes:nil
-                                                          error:NULL];
-        }
-
-        [NSWorkspace.sharedWorkspace openURL:[NSURL fileURLWithPath:path]];
 	}
+	
+	// If that failed, look for an AddOns directory that actually exists.
+	for (NSString *path in paths) {
+		if ([self isDirectoryAtPath:path]) {
+			[self openPath:path];
+			return;
+		}
+	}
+	
+	// None found, create the default path.
+	[NSFileManager.defaultManager createDirectoryAtPath:paths[0]
+							withIntermediateDirectories:YES
+											 attributes:nil
+												  error:NULL];
+	[self openPath:paths[0]];
+}
+
+
+- (BOOL) isDirectoryAtPath:(NSString *)path
+{
+	BOOL isDirectory;
+	return [NSFileManager.defaultManager fileExistsAtPath:path isDirectory:&isDirectory] && isDirectory;
+}
+
+
+- (BOOL) addOnsExistAtPath:(NSString *)path
+{
+	if (![self isDirectoryAtPath:path])  return NO;
+	
+	NSWorkspace *workspace = NSWorkspace.sharedWorkspace;
+	for (NSString *subPath in [NSFileManager.defaultManager enumeratorAtPath:path]) {
+		subPath = [path stringByAppendingPathComponent:subPath];
+		NSString *type = [workspace typeOfFile:subPath error:NULL];
+		if ([workspace type:type conformsToType:@"org.aegidian.oolite.expansion"])  return YES;
+	}
+	
+	return NO;
+}
+
+
+- (void) openPath:(NSString *)path
+{
+	[NSWorkspace.sharedWorkspace openURL:[NSURL fileURLWithPath:path]];
 }
 
 
@@ -908,7 +930,7 @@ static NSMutableArray *sMessageStack;
 	OOGL(glClearColor(0.0, 0.0, 0.0, 0.0));
 	OOGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 	
-	OOGL(glClearDepth(MAX_CLEAR_DEPTH));
+	OOGL(glClearDepth(1.0));
 	OOGL(glViewport(0, 0, viewSize.width, viewSize.height));
 	
 	OOGL(glMatrixMode(GL_PROJECTION));
@@ -917,7 +939,7 @@ static NSMutableArray *sMessageStack;
 	
 	OOGL(glMatrixMode(GL_MODELVIEW));
 	
-	OOGL(glDepthFunc(GL_LESS));			// depth buffer
+	OOGL(glDepthFunc(GL_LEQUAL));			// depth buffer
 	
 	if (UNIVERSE)
 	{

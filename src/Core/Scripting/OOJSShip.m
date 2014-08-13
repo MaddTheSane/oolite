@@ -144,7 +144,7 @@ static JSBool ShipStaticKeysForRole(JSContext *context, uintN argc, jsval *vp);
 static JSBool ShipStaticKeys(JSContext *context, uintN argc, jsval *vp);
 static JSBool ShipStaticRoles(JSContext *context, uintN argc, jsval *vp);
 static JSBool ShipStaticRoleIsInCategory(JSContext *context, uintN argc, jsval *vp);
-
+static JSBool ShipStaticShipDataForKey(JSContext *context, uintN argc, jsval *vp);
 
 static JSClass sShipClass =
 {
@@ -236,6 +236,7 @@ enum
 	kShip_isFrangible,			// frangible, boolean, read-only
 	kShip_isFleeing,			// is fleeing, boolean, read-only
 	kShip_isJamming,			// jamming scanners, boolean, read/write (if jammer installed)
+	kShip_isMinable,			// is a sensible target for mining, boolean, read-only
 	kShip_isMine,				// is mine, boolean, read-only
 	kShip_isMissile,			// is missile, boolean, read-only
 	kShip_isPiloted,			// is piloted, boolean, read-only (includes stations)
@@ -291,6 +292,7 @@ enum
 	kShip_starboardWeapon,		// the ship's starboard weapon, equipmentType, read/write
 	kShip_subEntities,			// subentities, array of Ship, read-only
 	kShip_subEntityCapacity,	// max subentities for this ship, int, read-only
+	kShip_sunGlareFilter,		// sun glare filter multiplier, float, read/write
 	kShip_target,				// target, Ship, read/write
 	kShip_temperature,			// hull temperature, double, read/write
 	kShip_thrust,				// the ship's thrust, double, read/write
@@ -375,6 +377,7 @@ static JSPropertySpec sShipProperties[] =
 	{ "isFrangible",			kShip_isFrangible,			OOJS_PROP_READONLY_CB },
 	{ "isFleeing",				kShip_isFleeing,			OOJS_PROP_READONLY_CB },
 	{ "isJamming",				kShip_isJamming,			OOJS_PROP_READONLY_CB },
+	{ "isMinable",				kShip_isMinable,			OOJS_PROP_READONLY_CB },
 	{ "isMine",					kShip_isMine,				OOJS_PROP_READONLY_CB },
 	{ "isMissile",				kShip_isMissile,			OOJS_PROP_READONLY_CB },
 	{ "isPiloted",				kShip_isPiloted,			OOJS_PROP_READONLY_CB },
@@ -431,6 +434,7 @@ static JSPropertySpec sShipProperties[] =
 	{ "starboardWeapon",		kShip_starboardWeapon,		OOJS_PROP_READWRITE_CB },
 	{ "subEntities",			kShip_subEntities,			OOJS_PROP_READONLY_CB },
 	{ "subEntityCapacity",		kShip_subEntityCapacity,	OOJS_PROP_READONLY_CB },
+	{ "sunGlareFilter",			kShip_sunGlareFilter,		OOJS_PROP_READWRITE_CB },
 	{ "target",					kShip_target,				OOJS_PROP_READWRITE_CB },
 	{ "temperature",			kShip_temperature,			OOJS_PROP_READWRITE_CB },
 	{ "thrust",					kShip_thrust,				OOJS_PROP_READWRITE_CB },
@@ -540,6 +544,7 @@ static JSFunctionSpec sShipStaticMethods[] =
 	{ "keysForRole",		ShipStaticKeysForRole,			1 },
 	{ "roleIsInCategory",	ShipStaticRoleIsInCategory,		2 },
 	{ "roles",				ShipStaticRoles,				0 },
+	{ "shipDataForKey",		ShipStaticShipDataForKey,		1 },
 	{ 0 }
 };
 
@@ -920,6 +925,10 @@ static JSBool ShipGetProperty(JSContext *context, JSObject *this, jsid propID, j
 		case kShip_isRock:
 			*value = OOJSValueFromBOOL([entity scanClass] == CLASS_ROCK);	// hermits and asteroids!
 			return YES;
+
+		case kShip_isMinable:
+			*value = OOJSValueFromBOOL([entity isMinable]);
+			return YES;
 			
 		case kShip_isBoulder:
 			*value = OOJSValueFromBOOL([entity isBoulder]);
@@ -959,6 +968,9 @@ static JSBool ShipGetProperty(JSContext *context, JSObject *this, jsid propID, j
 			result = [entity scriptInfo];
 			if (result == nil)  result = @{};	// empty rather than null
 			break;
+			
+		case kShip_sunGlareFilter:
+			return JS_NewNumberValue(context, [entity sunGlareFilter], value);
 			
 		case kShip_trackCloseContacts:
 			*value = OOJSValueFromBOOL([entity trackCloseContacts]);
@@ -1510,7 +1522,22 @@ static JSBool ShipSetProperty(JSContext *context, JSObject *this, jsid propID, J
 				}
 			}
 			break;
-
+			
+		case kShip_sunGlareFilter:
+			if (JS_ValueToNumber(context, *value, &fValue))
+			{
+				if (fValue >= 0.0f && fValue <= 1.0f)
+				{
+					[entity setSunGlareFilter:fValue];
+					return YES;
+				}
+				else
+				{
+					OOJSReportError(context, @"ship.%@ must be > 0.0 and < 1.0.", OOStringFromJSPropertyIDAndSpec(context, propID, sShipProperties));
+					return NO;
+				}
+			}
+			break;
 			
 		case kShip_thrust:
 			if (EXPECT_NOT([entity isPlayer]))  goto playerReadOnly;
@@ -3836,5 +3863,25 @@ static JSBool ShipStaticRoles(JSContext *context, uintN argc, jsval *vp)
 	NSArray *keys = [registry shipRoles];
 	OOJS_RETURN_OBJECT(keys);		
 
+	OOJS_NATIVE_EXIT
+}
+
+
+static JSBool ShipStaticShipDataForKey(JSContext *context, uintN argc, jsval *vp)
+{
+	OOJS_NATIVE_ENTER(context);
+	OOShipRegistry			*registry = [OOShipRegistry sharedRegistry];
+
+	if (argc > 0)
+	{
+		NSString *key = OOStringFromJSValue(context, OOJS_ARGV[0]);
+		NSDictionary *keys = [registry shipInfoForKey:key];
+		OOJS_RETURN_OBJECT(keys);		
+	}
+	else
+	{
+		OOJSReportBadArguments(context, @"Ship", @"shipDataForKey", MIN(argc, 1U), OOJS_ARGV, nil, @"ship role");
+		return NO;
+	}
 	OOJS_NATIVE_EXIT
 }

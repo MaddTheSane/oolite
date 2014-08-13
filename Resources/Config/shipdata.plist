@@ -147,7 +147,7 @@
 		missiles = 1;
 		model = "oolite_adder.dat";
 		name = "Adder";
-		roles = "trader(0.25) trader-courier(0.5) trader-smuggler pirate-light-fighter(0.25) pirate-independent(0.2) scavenger shuttle hermit-ship";
+		roles = "trader(0.25) trader-courier(0.5) trader-smuggler pirate-light-fighter(0.25) pirate(0.2) scavenger shuttle hermit-ship";
 		scoop_position = "0.0 -5.1 22.724";
 		thrust = 30;
 		view_position_aft = "0.0 5.0 -22.5";
@@ -2084,7 +2084,7 @@
 		missiles = 2;
 		model = "oolite_ferdelance.dat";
 		name = "Fer-de-Lance";
-		roles = "trader-freighter(0.25) trader-courier trader-smuggler(0.5) pirate-medium-fighter(0.75) pirate-heavy-fighter(0.75) pirate-interceptor pirate-aegis-raider(0.75) pirate(0.25) hunter-medium(0.75) hunter-heavy assassin-medium";
+		roles = "trader(0.25) trader-courier trader-smuggler(0.5) pirate-medium-fighter(0.75) pirate-heavy-fighter(0.75) pirate-interceptor pirate-aegis-raider(0.75) pirate(0.25) hunter-medium(0.75) hunter-heavy assassin-medium";
 		scoop_position = "0.0 -10.0322 21.6829";
 		thrust = 36;
 		view_position_aft = "0.0 12.0 -32.5";
@@ -2389,6 +2389,11 @@
 		name = "Training Fighter";
 		roles = "oolite-tutorial-fighter";
 		script = "oolite-tutorial-fighter.js";
+	};
+	"oolite_template_tutorial-krait-wave1" = {
+		like_ship = "oolite_template_tutorial-krait";
+	    energy_recharge_rate = 0.25; /* significant reduction */
+		roles = "oolite-tutorial-fighter-wave1";
 	};
 	"oolite_template_mamba" = {
 		aft_eject_position = "0.0 -9.26 -35.1";
@@ -3768,7 +3773,7 @@
 		cargo_type = "CARGO_NOT_CARGO";
 		energy_recharge_rate = 0;
 		forward_weapon_type = "WEAPON_NONE";
-		fragment_chance = 0.2;
+		fragment_chance = 0.0;
 		is_template = 1;
 		max_energy = 2000;
 		max_flight_pitch = 2;
@@ -4114,6 +4119,10 @@
 	"oolite-tutorial-krait" = 
 	{
 		"like_ship" = "oolite_template_tutorial-krait";
+	};
+	"oolite-tutorial-krait-wave1" = 
+	{
+		"like_ship" = "oolite_template_tutorial-krait-wave1";
 	};
 	"oolite-tutorial-station" = 
 	{

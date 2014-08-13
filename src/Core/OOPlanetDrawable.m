@@ -51,6 +51,8 @@
 
 - (void) debugDrawNormals;
 
+- (void) renderCommonParts;
+
 @end
 
 
@@ -177,11 +179,12 @@
 
 - (void) calculateLevelOfDetailForViewDistance:(float)distance
 {
-	float	drawFactor = [[UNIVERSE gameView] viewSize].width / 100.0f;
+	BOOL simple = [UNIVERSE reducedDetail];
+	float	drawFactor = [[UNIVERSE gameView] viewSize].width / (simple ? 100.0f : 40.0f);
 	float	drawRatio2 = drawFactor * _radius / sqrt(distance); // proportional to size on screen in pixels
 	
 	float lod = sqrt(drawRatio2 * LOD_FACTOR);
-	if ([UNIVERSE reducedDetail])
+	if (simple)
 	{
 		lod -= 0.5f / LOD_GRANULARITY;	// Make LOD transitions earlier.
 		lod = OOClamp_0_max_f(lod, (LOD_GRANULARITY - 1) / LOD_GRANULARITY);	// Don't use highest LOD.
@@ -193,12 +196,53 @@
 - (void) renderOpaqueParts
 {
 	assert(_lod < kOOPlanetDataLevels);
+
+	OOSetOpenGLState(OPENGL_STATE_OPAQUE);
 	
-	const OOPlanetDataLevel *data = &kPlanetData[_lod];
+	[self renderCommonParts];
+
+	OOVerifyOpenGLState();
+
+}
+
+
+- (void) renderTranslucentParts
+{
+	assert(_lod < kOOPlanetDataLevels);
+
+	// yes, opaque - necessary changes made later
+	OOSetOpenGLState(OPENGL_STATE_OPAQUE);
+	
+	[self renderCommonParts];
+
+	OOVerifyOpenGLState();
+
+}
+
+
+- (void) renderTranslucentPartsOnOpaquePass
+{
+	assert(_lod < kOOPlanetDataLevels);
 	
 	OO_ENTER_OPENGL();
 
+	// yes, opaque - necessary changes made later
 	OOSetOpenGLState(OPENGL_STATE_OPAQUE);
+	
+	OOGL(glDisable(GL_DEPTH_TEST));
+	[self renderCommonParts];
+	OOGL(glEnable(GL_DEPTH_TEST));
+
+	OOVerifyOpenGLState();
+
+}
+
+
+- (void) renderCommonParts
+{
+	const OOPlanetDataLevel *data = &kPlanetData[_lod];
+	
+	OO_ENTER_OPENGL();
 	
 	OOGL(glPushAttrib(GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT));
 	OOGL(glShadeModel(GL_SMOOTH));
@@ -206,7 +250,6 @@
 	if (_isAtmosphere)
 	{
 		OOGL(glEnable(GL_BLEND));
-		OOGL(glDisable(GL_DEPTH_TEST));
 		OOGL(glDepthMask(GL_FALSE));
 	}
 	else
@@ -277,13 +320,6 @@
 	
 	OOGL(glDisableClientState(GL_TEXTURE_COORD_ARRAY));
 	
-	OOVerifyOpenGLState();
-}
-
-
-- (void) renderTranslucentParts
-{
-	[self renderOpaqueParts];
 }
 
 

@@ -107,6 +107,8 @@ enum
 #define KEY_INHABITANTS						@"inhabitants"
 #define KEY_DESCRIPTION						@"description"
 #define KEY_SHORT_DESCRIPTION				@"short_description"
+#define KEY_PLANETNAME						@"planet_name"
+#define KEY_SUNNAME							@"sun_name"
 
 #define KEY_CHANCE							@"chance"
 #define KEY_PRICE							@"price"
@@ -136,7 +138,9 @@ enum
 #define OOLITE_EXCEPTION_DATA_NOT_FOUND		@"OoliteDataNotFoundException"
 #define OOLITE_EXCEPTION_FATAL				@"OoliteFatalException"
 
-#define BILLBOARD_DEPTH						50000.0
+// the distance the sky backdrop is from the camera
+// though it appears at infinity
+#define BILLBOARD_DEPTH						75000.0
 
 #define TIME_ACCELERATION_FACTOR_MIN		0.0625f
 #define TIME_ACCELERATION_FACTOR_DEFAULT	1.0f
@@ -279,7 +283,7 @@ enum
 
 	NSArray					*closeSystems;
 	
-	BOOL					strict;
+	NSString				*useAddOns;
 	
 	BOOL					no_update;
 	
@@ -336,13 +340,10 @@ enum
 - (BOOL) doProcedurallyTexturedPlanets;
 - (void) setDoProcedurallyTexturedPlanets:(BOOL) value;
 
-- (BOOL) strict;
-- (BOOL) setStrict:(BOOL) value;
-- (BOOL) setStrict:(BOOL)value fromSaveGame: (BOOL)saveGame;
+- (NSString *) useAddOns;
+- (BOOL) setUseAddOns:(NSString *)newUse fromSaveGame: (BOOL)saveGame;
 
-- (void) reinitAndShowDemo:(BOOL)showDemo;
-// called from OXZ manager
-- (BOOL) reinitAndShowDemo:(BOOL) showDemo strictChanged:(BOOL) strictChanged;
+- (BOOL) reinitAndShowDemo:(BOOL)showDemo;
 
 - (BOOL) doingStartUp;	// True during initial game startup (not reset).
 
@@ -660,6 +661,7 @@ enum
 - (void) setLocalPlanetInfoOverrides:(NSDictionary*) dict;
 
 - (void) preloadPlanetTexturesForSystem:(Random_Seed)seed;
+- (void) preloadSounds;
 
 - (NSDictionary *) planetInfo;
 

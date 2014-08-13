@@ -177,7 +177,6 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void * context);
 @interface Universe (OOPrivate)
 
 - (BOOL) doRemoveEntity:(Entity *)entity;
-- (void) preloadSounds;
 - (void) setUpSettings;
 - (void) setUpCargoPods;
 - (void) setUpInitialUniverse;
@@ -267,7 +266,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	
 	// prefs value no longer used - per save game but startup needs to
 	// be non-strict
-	strict = NO;
+	useAddOns = [[NSString alloc] initWithString:SCENARIO_OXP_DEFINITION_ALL];
 	
 	[self setGameView:inGameView];
 	gSharedUniverse = self;
@@ -293,8 +292,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 #endif
 	
 	// init the Resource Manager
-	[ResourceManager setUseAddOns:!strict];	// also logs the paths if changed
-	//[ResourceManager paths];	// called inside setUseAddOns...
+	[ResourceManager setUseAddOns:useAddOns];	// also logs the paths if changed
 	
 	// Set up the internal game strings
 	[self loadDescriptions];
@@ -361,7 +359,8 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	
 	[self setUpSettings];
 	
-	[self preloadSounds];	// Must be after setUpSettings.
+	// can't do this here as it might lock an OXZ open
+	// [self preloadSounds];	// Must be after setUpSettings.
 	
 	// Preload particle effect textures:
 	[OOLightParticleEntity setUpTexture];
@@ -498,41 +497,24 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 }
 
 
-/* From 1.79, "strict mode" is "no OXPs mode" as a useful debug tool,
- * nothing else */
-- (BOOL) strict
+- (NSString *) useAddOns
 {
-	return strict;
+	return useAddOns;
 }
 
 
-- (BOOL) setStrict:(BOOL)value
+- (BOOL) setUseAddOns:(NSString *) newUse fromSaveGame:(BOOL) saveGame
 {
-	return [self setStrict:value fromSaveGame:NO];
-}
-
-
-- (BOOL) setStrict:(BOOL) value fromSaveGame:(BOOL) saveGame
-{
-	if (strict == value)  return YES;
-	
-	strict = !!value;
-	return [self reinitAndShowDemo:!saveGame strictChanged:YES];
-}
-
-
-- (void) reinitAndShowDemo:(BOOL) showDemo
-{
-	if (strict && showDemo)
+	if ([newUse isEqualToString:useAddOns])
 	{
-		[self setStrict:NO];
-		[self reinitAndShowDemo:showDemo strictChanged:YES];
+		return YES;
 	}
-	else
-	{
-		[self reinitAndShowDemo:showDemo strictChanged:NO];
-	}
+	DESTROY(useAddOns);
+	useAddOns = [newUse retain];
+
+	return [self reinitAndShowDemo:!saveGame];
 }
+
 
 
 - (NSUInteger) entityCount
@@ -1073,11 +1055,11 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 		OOLogWARN(@"universe.setup.badSun",@"Sun positioning: max iterations exceeded for '%@'. Adjust radius, sun_radius or sun_distance_modifier.",systeminfo[@"name"]);
 	}
 	
-	NSMutableDictionary *sun_dict = [NSMutableDictionary dictionaryWithCapacity:4];
-	sun_dict[@"sun_radius"] = @(sun_radius);
-	dict_object=systeminfo[@"corona_shimmer"];
-	if (dict_object!=nil) sun_dict[@"corona_shimmer"] = dict_object;
-	dict_object=systeminfo[@"corona_hues"];
+	NSMutableDictionary *sun_dict = [NSMutableDictionary dictionaryWithCapacity:5];
+	[sun_dict setObject:[NSNumber numberWithDouble:sun_radius] forKey:@"sun_radius"];
+	dict_object=[systeminfo objectForKey: @"corona_shimmer"];
+	if (dict_object!=nil) [sun_dict setObject:dict_object forKey:@"corona_shimmer"];
+	dict_object=[systeminfo objectForKey: @"corona_hues"];
 	if (dict_object!=nil)
 	{
 		sun_dict[@"corona_hues"] = dict_object;
@@ -1094,6 +1076,11 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	else
 	{
 		sun_dict[@"corona_flare"] = @(defaultSunFlare);
+	}
+	dict_object=[systeminfo objectForKey:KEY_SUNNAME];
+	if (dict_object!=nil) 
+	{
+		[sun_dict setObject:dict_object forKey:KEY_SUNNAME];
 	}
 	
 	a_sun = [[OOSunEntity alloc] initSunWithColor:bgcolor andDictionary:sun_dict];	// alloc retains!
@@ -1256,15 +1243,18 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	OO_DEBUG_PUSH_PROGRESS(@"setUpSpace - populate from hyperpoint");
 //	[self populateSpaceFromHyperPoint:witchPos toPlanetPosition: a_planet->position andSunPosition: a_sun->position];
 	[self clearSystemPopulator];
-	
-	NSString *populator = [systeminfo oo_stringForKey:@"populator" defaultValue:(sunGoneNova)?@"novaSystemWillPopulate":@"systemWillPopulate"];
-	[system_repopulator release];
-	system_repopulator = [[systeminfo oo_stringForKey:@"repopulator" defaultValue:(sunGoneNova)?@"novaSystemWillRepopulate":@"systemWillRepopulate"] retain];
 
-	JSContext *context = OOJSAcquireContext();
-	[PLAYER doWorldScriptEvent:OOJSIDFromString(populator) inContext:context withArguments:NULL count:0 timeLimit:kOOJSLongTimeLimit];
-	OOJSRelinquishContext(context);
-	[self populateSystemFromDictionariesWithSun:cachedSun andPlanet:cachedPlanet];
+	if ([PLAYER status] != STATUS_START_GAME)
+	{
+		NSString *populator = [systeminfo oo_stringForKey:@"populator" defaultValue:(sunGoneNova)?@"novaSystemWillPopulate":@"systemWillPopulate"];
+		[system_repopulator release];
+		system_repopulator = [[systeminfo oo_stringForKey:@"repopulator" defaultValue:(sunGoneNova)?@"novaSystemWillRepopulate":@"systemWillRepopulate"] retain];
+
+		JSContext *context = OOJSAcquireContext();
+		[PLAYER doWorldScriptEvent:OOJSIDFromString(populator) inContext:context withArguments:NULL count:0 timeLimit:kOOJSLongTimeLimit];
+		OOJSRelinquishContext(context);
+		[self populateSystemFromDictionariesWithSun:cachedSun andPlanet:cachedPlanet];
+	}
 
 	OO_DEBUG_POP_PROGRESS();
 
@@ -2750,6 +2740,9 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 
 
 		if (!demo_ship) ship = [self newShipWithName:[[[demo_ships oo_arrayAtIndex:demo_ship_index] oo_dictionaryAtIndex:demo_ship_subindex] oo_stringForKey:kOODemoShipKey] usePlayerProxy:NO];
+		// stop consistency problems on the ship library screen
+		[ship removeEquipmentItem:@"EQ_SHIELD_BOOSTER"];
+		[ship removeEquipmentItem:@"EQ_SHIELD_ENHANCER"];
 	}
 	
 	if (ship)
@@ -3394,12 +3387,10 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 			jsval result;
 			jsval args[] = { OOJSValueFromNativeObject(context, shipKey) };
 			
-			OOJSStartTimeLimiter();
 			OK = [condScript callMethod:OOJSID("allowSpawnShip")
 						  inContext:context
 					  withArguments:args count:sizeof args / sizeof *args
 							 result:&result];
-			OOJSStopTimeLimiter();
 
 			if (OK) OK = JS_ValueToBoolean(context, result, &allow_instantiation);
 			
@@ -3902,14 +3893,11 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 	{
 		case 0 :	// TONNES
 			return 1;
-			break;
 		case 1 :	// KILOGRAMS
 			return 1 + (Ranrot() % 6) + (Ranrot() % 6) + (Ranrot() % 6);
-			break;
 		case 2 :	// GRAMS
 			//return 4 + 3 * (Ranrot() % 6) + 2 * (Ranrot() % 6) + (Ranrot() % 6);
 			return 4 + (Ranrot() % 16) + (Ranrot() % 11) + (Ranrot() % 6);
-			break;
 	}
 	return 1;
 }
@@ -4385,7 +4373,7 @@ static const OOMatrix	starboard_matrix =
 		{
 			no_update = YES;	// block other attempts to draw
 			
-			int				i, v_status;
+			int				i, v_status, vdist;
 			Vector			view_dir, view_up;
 			OOMatrix		view_matrix;
 			int				ent_count =	n_entities;
@@ -4394,7 +4382,9 @@ static const OOMatrix	starboard_matrix =
 			PlayerEntity	*player = PLAYER;
 			Entity			*drawthing = nil;
 			BOOL			demoShipMode = [player showDemoShips];
-			
+			NSSize  viewSize = [gameView viewSize];
+			float   aspect = viewSize.height/viewSize.width;
+
 			if (!displayGUI && wasDisplayGUI)
 			{
 				// reset light1 position for the shaders
@@ -4406,6 +4396,11 @@ static const OOMatrix	starboard_matrix =
 			// use a non-mutable copy so this can't be changed under us.
 			for (i = 0; i < ent_count; i++)
 			{
+				/* BUG: this list is ordered nearest to furthest from
+				 * the player, and we just assume that the camera is
+				 * on/near the player. So long as everything uses
+				 * depth tests, we'll get away with it; it'll just
+				 * occasionally be inefficient. - CIM */
 				Entity *e = sortedEntities[i]; // ordered NEAREST -> FURTHEST AWAY
 				if ([e isVisible])
 				{
@@ -4414,8 +4409,6 @@ static const OOMatrix	starboard_matrix =
 			}
 			
 			v_status = [player status];
-			
-			[self getActiveViewMatrix:&view_matrix forwardVector:&view_dir upVector:&view_up];
 			
 			OOCheckOpenGLErrors(@"Universe before doing anything");
 			
@@ -4429,234 +4422,272 @@ static const OOMatrix	starboard_matrix =
 			{
 				OOGL(glClearColor(0.0, 0.0, 0.0, 0.0));
 			}
-			
-			OOGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-			OOGL(glLoadIdentity());	// reset matrix
-			
-			OOGL(gluLookAt(0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0));
-			
-			// HACK BUSTED
-			OOGL(glScalef(-1.0, 1.0, 1.0));   // flip left and right
-			OOGL(glPushMatrix()); // save this flat viewpoint
-			
-			/* OpenGL viewpoints: 
-			 *
-			 * Oolite used to transform the viewpoint by the inverse of the
-			 * view position, and then transform the objects by the inverse
-			 * of their position, to get the correct view. However, as
-			 * OpenGL only uses single-precision floats, this causes
-			 * noticeable display inaccuracies relatively close to the
-			 * origin.
-			 *
-			 * Instead, we now calculate the difference between the view
-			 * position and the object using high-precision vectors, convert
-			 * the difference to a low-precision vector (since if you can
-			 * see it, it's close enough for the loss of precision not to
-			 * matter) and use that relative vector for the OpenGL transform
-			 *
-			 * Objects which reset the view matrix in their display need to be
-			 * handled a little more carefully than before.
-			 */
 
-			// If set, display background GUI image. Must be done before enabling lights to avoid dim backgrounds
-			if (displayGUI)  [gui drawGUIBackground];
+			BOOL		fogging, bpHide = [self breakPatternHide];
 			
-			OOSetOpenGLState(OPENGL_STATE_OPAQUE);  // FIXME: should be redundant.
-			
-			// Set up view transformation matrix
-			OOMatrix flipMatrix = kIdentityMatrix;
-			flipMatrix.m[2][2] = -1;
-			view_matrix = OOMatrixMultiply(view_matrix, flipMatrix);
-			Vector viewOffset = [player viewpointOffset];
-			
-			OOGL(gluLookAt(view_dir.x, view_dir.y, view_dir.z, 0.0, 0.0, 0.0, view_up.x, view_up.y, view_up.z));
-			
-			if (EXPECT(!displayGUI || demoShipMode))
+			OOGL(glClear(GL_COLOR_BUFFER_BIT));
+
+			for (vdist=0;vdist<=1;vdist++)
 			{
-				if (EXPECT(!demoShipMode))	// we're in flight
+				float   nearPlane = vdist ? 1.0 : INTERMEDIATE_CLEAR_DEPTH;
+				float   farPlane = vdist ? INTERMEDIATE_CLEAR_DEPTH : MAX_CLEAR_DEPTH;
+				float   ratio = 0.5 * nearPlane;
+				
+				OOGL(glMatrixMode(GL_PROJECTION));
+				OOGL(glLoadIdentity());	// reset matrix
+				OOGL(glFrustum(-ratio, ratio, -aspect*ratio, aspect*ratio, nearPlane, farPlane));
+				OOGL(glMatrixMode(GL_MODELVIEW));
+
+				[self getActiveViewMatrix:&view_matrix forwardVector:&view_dir upVector:&view_up];
+
+				OOGL(glLoadIdentity());	// reset matrix
+			
+				OOGL(gluLookAt(0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0));
+			
+				// HACK BUSTED
+				OOGL(glScalef(-1.0, 1.0, 1.0));   // flip left and right
+				OOGL(glPushMatrix()); // save this flat viewpoint
+
+				/* OpenGL viewpoints: 
+				 *
+				 * Oolite used to transform the viewpoint by the inverse of the
+				 * view position, and then transform the objects by the inverse
+				 * of their position, to get the correct view. However, as
+				 * OpenGL only uses single-precision floats, this causes
+				 * noticeable display inaccuracies relatively close to the
+				 * origin.
+				 *
+				 * Instead, we now calculate the difference between the view
+				 * position and the object using high-precision vectors, convert
+				 * the difference to a low-precision vector (since if you can
+				 * see it, it's close enough for the loss of precision not to
+				 * matter) and use that relative vector for the OpenGL transform
+				 *
+				 * Objects which reset the view matrix in their display need to be
+				 * handled a little more carefully than before.
+				 */
+
+				// If set, display background GUI image. Must be done before enabling lights to avoid dim backgrounds
+				if (displayGUI)  [gui drawGUIBackground];
+			
+				OOSetOpenGLState(OPENGL_STATE_OPAQUE); 
+				// clearing the depth buffer waits until we've set
+				// STATE_OPAQUE so that depth writes are definitely
+				// available.
+				OOGL(glClear(GL_DEPTH_BUFFER_BIT));
+		
+
+				// Set up view transformation matrix
+				OOMatrix flipMatrix = kIdentityMatrix;
+				flipMatrix.m[2][2] = -1;
+				view_matrix = OOMatrixMultiply(view_matrix, flipMatrix);
+				Vector viewOffset = [player viewpointOffset];
+			
+				OOGL(gluLookAt(view_dir.x, view_dir.y, view_dir.z, 0.0, 0.0, 0.0, view_up.x, view_up.y, view_up.z));
+
+				if (EXPECT(!displayGUI || demoShipMode))
 				{
-					// rotate the view
-					OOGL(GLMultOOMatrix([player rotationMatrix]));
-					// translate the view
-					// HPVect: camera-relative position
-//					OOGL(GLTranslateOOVector(vector_flip(position)));
-					OOGL(glLightModelfv(GL_LIGHT_MODEL_AMBIENT, stars_ambient));
-					// main light position, no shaders, in-flight / shaders, in-flight and docked.
-					if (cachedSun)
+					if (EXPECT(!demoShipMode))	// we're in flight
 					{
-						[self setMainLightPosition:[cachedSun cameraRelativePosition]];
+						// rotate the view
+						OOGL(GLMultOOMatrix([player rotationMatrix]));
+						// translate the view
+						// HPVect: camera-relative position
+//					OOGL(GLTranslateOOVector(vector_flip(position)));
+						OOGL(glLightModelfv(GL_LIGHT_MODEL_AMBIENT, stars_ambient));
+						// main light position, no shaders, in-flight / shaders, in-flight and docked.
+						if (cachedSun)
+						{
+							[self setMainLightPosition:[cachedSun cameraRelativePosition]];
+						}
+						OOGL(glLightfv(GL_LIGHT1, GL_POSITION, main_light_position));					
 					}
-					OOGL(glLightfv(GL_LIGHT1, GL_POSITION, main_light_position));					
-				}
-				else
-				{
-					OOGL(glLightModelfv(GL_LIGHT_MODEL_AMBIENT, docked_light_ambient));
-					// main_light_position no shaders, docked/GUI.
-					OOGL(glLightfv(GL_LIGHT0, GL_POSITION, main_light_position));
-					// main light position, no shaders, in-flight / shaders, in-flight and docked.		
-					OOGL(glLightfv(GL_LIGHT1, GL_POSITION, main_light_position));
-				}
+					else
+					{
+						OOGL(glLightModelfv(GL_LIGHT_MODEL_AMBIENT, docked_light_ambient));
+						// main_light_position no shaders, docked/GUI.
+						OOGL(glLightfv(GL_LIGHT0, GL_POSITION, main_light_position));
+						// main light position, no shaders, in-flight / shaders, in-flight and docked.		
+						OOGL(glLightfv(GL_LIGHT1, GL_POSITION, main_light_position));
+					}
 				
 				
-				OOGL([self useGUILightSource:demoShipMode]);
+					OOGL([self useGUILightSource:demoShipMode]);
 				
-				// HACK: store view matrix for absolute drawing of active subentities (i.e., turrets).
-				OOGL(viewMatrix = OOMatrixLoadGLMatrix(GL_MODELVIEW_MATRIX));
+					// HACK: store view matrix for absolute drawing of active subentities (i.e., turrets).
+					OOGL(viewMatrix = OOMatrixLoadGLMatrix(GL_MODELVIEW_MATRIX));
 				
-				int			furthest = draw_count - 1;
-				int			nearest = 0;
-				BOOL		fogging, bpHide = [self breakPatternHide];
-				BOOL		inAtmosphere = airResistanceFactor > 0.01;
-				GLfloat		fogFactor = 0.5 / airResistanceFactor;
-				double 		fog_scale, half_scale;
-				GLfloat 	flat_ambdiff[4]	= {1.0, 1.0, 1.0, 1.0};   // for alpha
-				GLfloat 	mat_no[4]		= {0.0, 0.0, 0.0, 1.0};   // nothing			
+					int			furthest = draw_count - 1;
+					int			nearest = 0;
+					BOOL		inAtmosphere = airResistanceFactor > 0.01;
+					GLfloat		fogFactor = 0.5 / airResistanceFactor;
+					double 		fog_scale, half_scale;
+					GLfloat 	flat_ambdiff[4]	= {1.0, 1.0, 1.0, 1.0};   // for alpha
+					GLfloat 	mat_no[4]		= {0.0, 0.0, 0.0, 1.0};   // nothing			
 				
-				OOGL(glHint(GL_FOG_HINT, [self reducedDetail] ? GL_FASTEST : GL_NICEST));
+					OOGL(glHint(GL_FOG_HINT, [self reducedDetail] ? GL_FASTEST : GL_NICEST));
 				
-				[self defineFrustum]; // camera is set up for this frame
+					[self defineFrustum]; // camera is set up for this frame
 				
-				OOVerifyOpenGLState();
-				OOCheckOpenGLErrors(@"Universe after setting up for opaque pass");
-				OOLog(@"universe.profile.draw",@"Begin opaque pass");
+					OOVerifyOpenGLState();
+					OOCheckOpenGLErrors(@"Universe after setting up for opaque pass");
+					OOLog(@"universe.profile.draw",@"Begin opaque pass");
 
 				
-				//		DRAW ALL THE OPAQUE ENTITIES
-				for (i = furthest; i >= nearest; i--)
-				{
-					drawthing = my_entities[i];
-					OOEntityStatus d_status = [drawthing status];
-					
-					if (bpHide && !drawthing->isImmuneToBreakPatternHide)  continue;
-					
-					if (!((d_status == STATUS_COCKPIT_DISPLAY) ^ demoShipMode)) // either demo ship mode or in flight
+					//		DRAW ALL THE OPAQUE ENTITIES
+					for (i = furthest; i >= nearest; i--)
 					{
-						// reset material properties
-						// FIXME: should be part of SetState
-						OOGL(glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, flat_ambdiff));
-						OOGL(glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_no));
-						
-						OOGL(glPushMatrix());
-						if (EXPECT(drawthing != player))
+						drawthing = my_entities[i];
+						OOEntityStatus d_status = [drawthing status];
+					
+						if (bpHide && !drawthing->isImmuneToBreakPatternHide)  continue;
+						if (vdist == 1 && [drawthing cameraRangeFront] > farPlane*1.5) continue;
+						if (vdist == 0 && [drawthing cameraRangeBack] < nearPlane) continue;
+//						if (vdist == 1 && [drawthing isPlanet]) continue;
+
+						if (!((d_status == STATUS_COCKPIT_DISPLAY) ^ demoShipMode)) // either demo ship mode or in flight
 						{
-							//translate the object
-							// HPVect: camera relative
-							GLTranslateOOVector([drawthing cameraRelativePosition]);
-							//rotate the object
-							GLMultOOMatrix([drawthing drawRotationMatrix]);
+							// reset material properties
+							// FIXME: should be part of SetState
+							OOGL(glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, flat_ambdiff));
+							OOGL(glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_no));
+						
+							OOGL(glPushMatrix());
+							if (EXPECT(drawthing != player))
+							{
+								//translate the object
+								// HPVect: camera relative
+								[drawthing updateCameraRelativePosition];
+								GLTranslateOOVector([drawthing cameraRelativePosition]);
+								//rotate the object
+								GLMultOOMatrix([drawthing drawRotationMatrix]);
+							}
+							else
+							{
+								// Load transformation matrix
+								GLLoadOOMatrix(view_matrix);
+								//translate the object  from the viewpoint
+								GLTranslateOOVector(vector_flip(viewOffset));
+							}
+						
+							// atmospheric fog
+							fogging = (inAtmosphere && ![drawthing isStellarObject]);
+						
+							if (fogging)
+							{
+								fog_scale = BILLBOARD_DEPTH * fogFactor;
+								half_scale = fog_scale * 0.50;
+								OOGL(glEnable(GL_FOG));
+								OOGL(glFogi(GL_FOG_MODE, GL_LINEAR));
+								OOGL(glFogfv(GL_FOG_COLOR, skyClearColor));
+								OOGL(glFogf(GL_FOG_START, half_scale));
+								OOGL(glFogf(GL_FOG_END, fog_scale));
+							}
+						
+							[self lightForEntity:demoShipMode || drawthing->isSunlit];
+						
+							// draw the thing
+							[drawthing drawImmediate:false translucent:false];
+						
+							// atmospheric fog
+							if (fogging)
+							{
+								OOGL(glDisable(GL_FOG));
+							}
+						
+							OOGL(glPopMatrix());
 						}
-						else
+					}
+				
+					//		DRAW ALL THE TRANSLUCENT entsInDrawOrder
+				
+					OOSetOpenGLState(OPENGL_STATE_TRANSLUCENT_PASS);  // FIXME: should be redundant.
+				
+					OOCheckOpenGLErrors(@"Universe after setting up for translucent pass");
+					OOLog(@"universe.profile.draw",@"Begin translucent pass");
+					for (i = furthest; i >= nearest; i--)
+					{
+						drawthing = my_entities[i];
+						OOEntityStatus d_status = [drawthing status];
+					
+						if (bpHide && !drawthing->isImmuneToBreakPatternHide)  continue;
+						if (vdist == 1 && [drawthing cameraRangeFront] > farPlane*1.5) continue;
+						if (vdist == 0 && [drawthing cameraRangeBack] < nearPlane) continue;
+						// temporary fix for atmosphere bug
+//						if (vdist == 1 && [drawthing isPlanet]) continue;
+
+					
+						if (!((d_status == STATUS_COCKPIT_DISPLAY) ^ demoShipMode)) // either in flight or in demo ship mode
 						{
-							// Load transformation matrix
-							GLLoadOOMatrix(view_matrix);
-							//translate the object  from the viewpoint
-							GLTranslateOOVector(vector_flip(viewOffset));
+						
+							OOGL(glPushMatrix());
+							if (EXPECT(drawthing != player))
+							{
+								//translate the object
+								// HPVect: camera relative positions
+								[drawthing updateCameraRelativePosition];
+								GLTranslateOOVector([drawthing cameraRelativePosition]);
+								//rotate the object
+								GLMultOOMatrix([drawthing drawRotationMatrix]);
+							}
+							else
+							{
+								// Load transformation matrix
+								GLLoadOOMatrix(view_matrix);
+								//translate the object  from the viewpoint
+								GLTranslateOOVector(vector_flip(viewOffset));
+							}
+						
+							// experimental - atmospheric fog
+							fogging = (inAtmosphere && ![drawthing isStellarObject]);
+						
+							if (fogging)
+							{
+								fog_scale = BILLBOARD_DEPTH * fogFactor;
+								half_scale = fog_scale * 0.50;
+								OOGL(glEnable(GL_FOG));
+								OOGL(glFogi(GL_FOG_MODE, GL_LINEAR));
+								OOGL(glFogfv(GL_FOG_COLOR, skyClearColor));
+								OOGL(glFogf(GL_FOG_START, half_scale));
+								OOGL(glFogf(GL_FOG_END, fog_scale));
+							}
+						
+							// draw the thing
+							[drawthing drawImmediate:false translucent:true];
+						
+							// atmospheric fog
+							if (fogging)
+							{
+								OOGL(glDisable(GL_FOG));
+							}
+						
+							OOGL(glPopMatrix());
 						}
-						
-						// atmospheric fog
-						fogging = (inAtmosphere && ![drawthing isStellarObject]);
-						
-						if (fogging)
-						{
-							fog_scale = BILLBOARD_DEPTH * fogFactor;
-							half_scale = fog_scale * 0.50;
-							OOGL(glEnable(GL_FOG));
-							OOGL(glFogi(GL_FOG_MODE, GL_LINEAR));
-							OOGL(glFogfv(GL_FOG_COLOR, skyClearColor));
-							OOGL(glFogf(GL_FOG_START, half_scale));
-							OOGL(glFogf(GL_FOG_END, fog_scale));
-						}
-						
-						[self lightForEntity:demoShipMode || drawthing->isSunlit];
-						
-						// draw the thing
-						[drawthing drawImmediate:false translucent:false];
-						
-						// atmospheric fog
-						if (fogging)
-						{
-							OOGL(glDisable(GL_FOG));
-						}
-						
-						OOGL(glPopMatrix());
 					}
 				}
-				
-				//		DRAW ALL THE TRANSLUCENT entsInDrawOrder
-				
-				OOSetOpenGLState(OPENGL_STATE_TRANSLUCENT_PASS);  // FIXME: should be redundant.
-				
-				OOCheckOpenGLErrors(@"Universe after setting up for translucent pass");
-				OOLog(@"universe.profile.draw",@"Begin translucent pass");
-				for (i = furthest; i >= nearest; i--)
-				{
-					drawthing = my_entities[i];
-					OOEntityStatus d_status = [drawthing status];
-					
-					if (bpHide && !drawthing->isImmuneToBreakPatternHide)  continue;
-					
-					if (!((d_status == STATUS_COCKPIT_DISPLAY) ^ demoShipMode)) // either in flight or in demo ship mode
-					{
-						
-						OOGL(glPushMatrix());
-						if (EXPECT(drawthing != player))
-						{
-							//translate the object
-							// HPVect: camera relative positions
-							GLTranslateOOVector([drawthing cameraRelativePosition]);
-							//rotate the object
-							GLMultOOMatrix([drawthing drawRotationMatrix]);
-						}
-						else
-						{
-							// Load transformation matrix
-							GLLoadOOMatrix(view_matrix);
-							//translate the object  from the viewpoint
-							GLTranslateOOVector(vector_flip(viewOffset));
-						}
-						
-						// experimental - atmospheric fog
-						fogging = (inAtmosphere && ![drawthing isStellarObject]);
-						
-						if (fogging)
-						{
-							fog_scale = BILLBOARD_DEPTH * fogFactor;
-							half_scale = fog_scale * 0.50;
-							OOGL(glEnable(GL_FOG));
-							OOGL(glFogi(GL_FOG_MODE, GL_LINEAR));
-							OOGL(glFogfv(GL_FOG_COLOR, skyClearColor));
-							OOGL(glFogf(GL_FOG_START, half_scale));
-							OOGL(glFogf(GL_FOG_END, fog_scale));
-						}
-						
-						// draw the thing
-						[drawthing drawImmediate:false translucent:true];
-						
-						// atmospheric fog
-						if (fogging)
-						{
-							OOGL(glDisable(GL_FOG));
-						}
-						
-						OOGL(glPopMatrix());
-					}
-				}
+
+				OOGL(glPopMatrix()); //restore saved flat viewpoint
+
 			}
 			
-			OOGL(glPopMatrix()); //restore saved flat viewpoint
 
+			/* Reset for HUD drawing */
+			OOGL(glMatrixMode(GL_PROJECTION));
+			OOGL(glLoadIdentity());	// reset matrix
+			OOGL(glFrustum(-0.5, 0.5, -aspect*0.5, aspect*0.5, 1.0, MAX_CLEAR_DEPTH));
+			OOGL(glMatrixMode(GL_MODELVIEW));
+
+			OOCheckOpenGLErrors(@"Universe after drawing entities");
+			OOLog(@"universe.profile.draw",@"Begin HUD");
+			OOSetOpenGLState(OPENGL_STATE_OVERLAY);  // FIXME: should be redundant.
 			if (EXPECT(!displayGUI || demoShipMode))
 			{
-				if (cachedSun)
+				if (!bpHide && cachedSun)
 				{
 					[cachedSun drawDirectVisionSunGlare];
 					[cachedSun drawStarGlare];
 				}
 			}
-
-			OOCheckOpenGLErrors(@"Universe after drawing entities");
-			OOLog(@"universe.profile.draw",@"Begin HUD");
-			OOSetOpenGLState(OPENGL_STATE_OVERLAY);  // FIXME: should be redundant.
 
 			GLfloat	lineWidth = [gameView viewSize].width / 1024.0; // restore line size
 			if (lineWidth < 1.0)  lineWidth = 1.0;
@@ -5250,6 +5281,10 @@ static BOOL MaintainLinkedLists(Universe *uni)
 			[ship setPitch:M_PI/10.0];
 		}
 		[ship setStatus:STATUS_COCKPIT_DISPLAY];
+		// stop problems on the ship library screen
+		// demo ships shouldn't have this equipment
+		[ship removeEquipmentItem:@"EQ_SHIELD_BOOSTER"];
+		[ship removeEquipmentItem:@"EQ_SHIELD_ENHANCER"];
 	}
 	
 	return [ship autorelease];
@@ -6513,6 +6548,9 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 								
 								if (demo_ship != nil)
 								{
+									[demo_ship removeEquipmentItem:@"EQ_SHIELD_BOOSTER"];
+									[demo_ship removeEquipmentItem:@"EQ_SHIELD_ENHANCER"];
+
 									[demo_ship switchAITo:@"nullAI.plist"];
 									[demo_ship setOrientation:q2];
 									[demo_ship setScanClass: CLASS_NO_DRAW];
@@ -8824,12 +8862,10 @@ static NSMutableDictionary	*sCachedSystemData = nil;
 					jsval result;
 					jsval args[] = { OOJSValueFromNativeObject(context, key) };
 			
-					OOJSStartTimeLimiter();
 					OK = [condScript callMethod:OOJSID("allowOfferShip")
 												inContext:context
 										withArguments:args count:sizeof args / sizeof *args
 													 result:&result];
-					OOJSStopTimeLimiter();
 
 					if (OK) OK = JS_ValueToBoolean(context, result, &allow_purchase);
 			
@@ -8986,12 +9022,10 @@ static NSMutableDictionary	*sCachedSystemData = nil;
 							jsval result;
 							jsval args[] = { OOJSValueFromNativeObject(JScontext, equipmentKey) , OOJSValueFromNativeObject(JScontext, testship) , OOJSValueFromNativeObject(JScontext, @"newShip")};
 				
-							OOJSStartTimeLimiter();
 							OK = [condScript callMethod:OOJSID("allowAwardEquipment")
 																inContext:JScontext
 														withArguments:args count:sizeof args / sizeof *args
 																	 result:&result];
-							OOJSStopTimeLimiter();
 
 							if (OK) OK = JS_ValueToBoolean(JScontext, result, &allow_addition);
 				
@@ -10141,7 +10175,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 
 
 // FIXME: needs less redundancy?
-- (BOOL) reinitAndShowDemo:(BOOL) showDemo strictChanged:(BOOL) strictChanged
+- (BOOL) reinitAndShowDemo:(BOOL) showDemo
 {
 	no_update = YES;
 	PlayerEntity* player = PLAYER;
@@ -10150,11 +10184,10 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 	if (JSResetFlags != 0)	// JS reset failed, remember previous settings 
 	{
 		showDemo = (JSResetFlags & 2) > 0;	// binary 10, a.k.a. 1 << 1
-		strictChanged = (JSResetFlags & 1) > 0;	// binary 01
 	}
 	else
 	{
-		JSResetFlags = (showDemo << 1) | strictChanged;
+		JSResetFlags = (showDemo << 1);
 	}
 	
 	[self removeAllEntitiesExceptPlayer];
@@ -10163,7 +10196,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 	
 	_sessionID++;	// Must be after removing old entities and before adding new ones.
 	
-	[ResourceManager setUseAddOns:!strict];	// also logs the paths
+	[ResourceManager setUseAddOns:useAddOns];	// also logs the paths
 	//[ResourceManager loadScripts]; // initialised inside [player setUp]!
 	
 	// NOTE: Anything in the sharedCache is now trashed and must be
@@ -10175,14 +10208,12 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 	[[self gameController] setMouseInteractionModeForUIWithMouseInteraction:NO];
 	[PLAYER setSpeed:0.0];
 	
-	if (strictChanged)
-	{
-		[self loadDescriptions];
-		[self loadScenarios];
-		
-		[missiontext autorelease];
-		missiontext = [[ResourceManager dictionaryFromFilesNamed:@"missiontext.plist" inFolder:@"Config" andMerge:YES] retain];
-	}
+	[self loadDescriptions];
+	[self loadScenarios];
+	
+	[missiontext autorelease];
+	missiontext = [[ResourceManager dictionaryFromFilesNamed:@"missiontext.plist" inFolder:@"Config" andMerge:YES] retain];
+	
 	
 	if(showDemo)
 	{

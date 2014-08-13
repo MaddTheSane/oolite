@@ -33,11 +33,15 @@ MA 02110-1301, USA.
 #define MOUSEX_MAXIMUM 0.6
 #define MOUSEY_MAXIMUM 0.6
 
-#define MAX_CLEAR_DEPTH		100000000.0
-// 100 000 km.
+#define MAX_CLEAR_DEPTH		10000000000.0
+// 10 000 000 km.
+#define INTERMEDIATE_CLEAR_DEPTH		100.0
+// 100 m.
+
 
 #define NUM_KEYS			320
 #define MOUSE_DOUBLE_CLICK_INTERVAL	0.40
+#define OOMOUSEWHEEL_EVENTS_DELAY_INTERVAL	0.05
 
 #define SNAPSHOTS_PNG_FORMAT		1
 
@@ -90,11 +94,19 @@ enum GameViewKeys
 	gvNumberPadKey9 //319
 };
 
+enum MouseWheelStatus
+{
+	gvMouseWheelDown = -1,
+	gvMouseWheelNeutral,
+	gvMouseWheelUp
+};
+
 enum StringInput
 {
 	gvStringInputNo = 0,
 	gvStringInputAlpha = 1,
-	gvStringInputAll = 2
+	gvStringInputLoadSave = 2,	
+	gvStringInputAll = 3
 };
 
 enum KeyboardType
@@ -124,6 +136,7 @@ extern int debug;
 	BOOL				mouseWarped;
 
 	NSTimeInterval		timeIntervalAtLastClick;
+	NSTimeInterval		timeSinceLastMouseWheel;
 	BOOL				doubleClick;
 
 	NSMutableString		*typedString;
@@ -163,7 +176,9 @@ extern int debug;
 	NSSize				firstScreen;
 
    // Mouse mode indicator (for mouse movement model)
-   BOOL  mouseInDeltaMode;
+   BOOL					mouseInDeltaMode;
+   
+   int					_mouseWheelState;
 }
 
 - (void) initSplashScreen;
@@ -237,6 +252,7 @@ extern int debug;
 - (BOOL) isCommandDown;
 - (BOOL) isShiftDown;
 - (int) numKeys;
+- (int) mouseWheelState;
 
 // Command-key combinations need special handling. SDL stubs for these mac functions.
 - (BOOL) isCommandQDown;

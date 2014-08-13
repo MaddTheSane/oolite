@@ -126,6 +126,10 @@ static GLfloat		sBaseMass = 0.0;
 - (void) showGameOver;
 - (void) updateWormholes;
 
+- (void) updateAlertConditionForNearbyEntities;
+- (BOOL) checkEntityForMassLock:(Entity *)ent withScanClass:(int)scanClass;
+
+
 // Shopping
 - (BOOL) tryBuyingItem:(NSString *)eqKey;
 
@@ -143,6 +147,8 @@ static GLfloat		sBaseMass = 0.0;
 - (OOFuelQuantity) fuelRequiredForJump;
 
 - (void) noteCompassLostTarget;
+
+
 
 @end
 
@@ -498,7 +504,7 @@ static GLfloat		sBaseMass = 0.0;
 }
 
 
-- (NSMutableArray *) shipCommodityData
+- (NSArray *) shipCommodityData
 {
 	return shipCommodityData;
 }
@@ -553,6 +559,94 @@ static GLfloat		sBaseMass = 0.0;
 }
 
 
+- (NSPoint) chart_centre_coordinates
+{
+	return chart_centre_coordinates;
+}
+
+
+- (OOScalar) chart_zoom
+{
+	return chart_zoom;
+}
+
+
+- (NSPoint) adjusted_chart_centre
+{
+	NSPoint acc;		// adjusted chart centre
+	double scroll_pos;	// cursor coordinate at which we'd want to scoll chart in the direction we're currently considering
+	double ecc;		// chart centre coordinate we'd want if the cursor was on the edge of the galaxy in the current direction
+
+	// When fully zoomed in we want to centre chart on chart_centre_coordinates.  When zoomed out we want the chart centred on
+	// (128.0, 128.0) so the galaxy fits the screen width.  For intermediate zoom we interpolate.
+	acc.x = chart_centre_coordinates.x + (128.0 - chart_centre_coordinates.x) * (chart_zoom - 1.0) / (CHART_MAX_ZOOM - 1.0);
+	acc.y = chart_centre_coordinates.y + (128.0 - chart_centre_coordinates.y) * (chart_zoom - 1.0) / (CHART_MAX_ZOOM - 1.0);
+
+	// If the cursor is out of the centre non-scrolling part of the screen adjust the chart centre.  If the cursor is just at scroll_pos
+	// we want to return the chart centre as it is, but if it's at the edge of the galaxy we want the centre positioned so the cursor is
+	// at the edge of the screen
+	if (chart_focus_coordinates.x - acc.x <= -CHART_SCROLL_AT_X*chart_zoom)
+	{
+		scroll_pos = acc.x - CHART_SCROLL_AT_X*chart_zoom;
+		ecc = CHART_WIDTH_AT_MAX_ZOOM*chart_zoom / 2.0;
+		if (scroll_pos <= 0)
+		{
+			acc.x = ecc;
+		}
+		else
+		{
+			acc.x = ((scroll_pos-chart_focus_coordinates.x)*ecc + chart_focus_coordinates.x*acc.x)/scroll_pos;
+		}
+	}
+	else if (chart_focus_coordinates.x - acc.x >= CHART_SCROLL_AT_X*chart_zoom)
+	{
+		scroll_pos = acc.x + CHART_SCROLL_AT_X*chart_zoom;
+		ecc = 256.0 - CHART_WIDTH_AT_MAX_ZOOM*chart_zoom / 2.0;
+		if (scroll_pos >= 256.0)
+		{
+			acc.x = ecc;
+		}
+		else
+		{
+			acc.x = ((chart_focus_coordinates.x-scroll_pos)*ecc + (256.0 - chart_focus_coordinates.x)*acc.x)/(256.0 - scroll_pos);
+		}
+	}
+	if (chart_focus_coordinates.y - acc.y <= -CHART_SCROLL_AT_Y*chart_zoom)
+	{
+		scroll_pos = acc.y - CHART_SCROLL_AT_Y*chart_zoom;
+		ecc = CHART_HEIGHT_AT_MAX_ZOOM*chart_zoom / 2.0;
+		if (scroll_pos <= 0)
+		{
+			acc.y = ecc;
+		}
+		else
+		{
+			acc.y = ((scroll_pos-chart_focus_coordinates.y)*ecc + chart_focus_coordinates.y*acc.y)/scroll_pos;
+		}
+	}
+	else if (chart_focus_coordinates.y - acc.y >= CHART_SCROLL_AT_Y*chart_zoom)
+	{
+		scroll_pos = acc.y + CHART_SCROLL_AT_Y*chart_zoom;
+		ecc = 256.0 - CHART_HEIGHT_AT_MAX_ZOOM*chart_zoom / 2.0;
+		if (scroll_pos >= 256.0)
+		{
+			acc.y = ecc;
+		}
+		else
+		{
+			acc.y = ((chart_focus_coordinates.y-scroll_pos)*ecc + (256.0 - chart_focus_coordinates.y)*acc.y)/(256.0 - scroll_pos);
+		}
+	}
+	return acc;
+}
+
+
+- (OORouteType) ANAMode
+{
+	return ANA_mode;
+}
+
+
 - (Random_Seed) system_seed
 {
 	return system_seed;
@@ -563,6 +657,8 @@ static GLfloat		sBaseMass = 0.0;
 {
 	system_seed = s_seed;
 	galaxy_coordinates = NSMakePoint(s_seed.d, s_seed.b);
+	chart_centre_coordinates = galaxy_coordinates;
+	target_chart_centre = chart_centre_coordinates;
 }
 
 
@@ -652,7 +748,11 @@ static GLfloat		sBaseMass = 0.0;
 	[result oo_setInteger:aft_weapon_type		forKey:@"aft_weapon"];
 	[result oo_setInteger:port_weapon_type		forKey:@"port_weapon"];
 	[result oo_setInteger:starboard_weapon_type	forKey:@"starboard_weapon"];
-	result[@"subentities_status"] = [self serializeShipSubEntities];
+	[result setObject:[self serializeShipSubEntities] forKey:@"subentities_status"];
+	if (hud != nil && [hud nonlinearScanner])
+	{
+		[result oo_setFloat: [hud scannerZoom] forKey:@"ship_scanner_zoom"];
+	}
 	
 	[result oo_setInteger:max_cargo + PASSENGER_BERTH_SPACE * max_passengers	forKey:@"max_cargo"];
 	
@@ -814,11 +914,8 @@ static GLfloat		sBaseMass = 0.0;
 	//local market for main station
 	if ([[UNIVERSE station] localMarket])  result[@"localMarket"] = [[UNIVERSE station] localMarket];
 
-	// strict UNIVERSE?
-	if ([UNIVERSE strict])
-	{
-		result[@"strict"] = @YES;
-	}
+	// Scenario restriction on OXZs
+	[result setObject:[UNIVERSE useAddOns] forKey:@"scenario_restriction"];
 
 	// persistant UNIVERSE information
 	if ([UNIVERSE localPlanetInfoOverrides])
@@ -900,8 +997,26 @@ static GLfloat		sBaseMass = 0.0;
 	if ([dict oo_stringForKey:@"galaxy_seed"] == nil)  return NO;
 	if ([dict oo_stringForKey:@"galaxy_coordinates"] == nil)  return NO;
 	
-	BOOL strict = [dict oo_boolForKey:@"strict" defaultValue:NO];
-	if (![UNIVERSE setStrict:strict fromSaveGame:YES]) return NO;
+	NSString *scenarioRestrict = [dict oo_stringForKey:@"scenario_restriction" defaultValue:nil];
+	if (scenarioRestrict == nil)
+	{
+		// older save game - use the 'strict' key instead
+		BOOL strict = [dict oo_boolForKey:@"strict" defaultValue:NO];
+		if (strict)
+		{
+			scenarioRestrict = SCENARIO_OXP_DEFINITION_NONE;
+		}
+		else
+		{
+			scenarioRestrict = SCENARIO_OXP_DEFINITION_ALL;
+		}
+	}
+
+	if (![UNIVERSE setUseAddOns:scenarioRestrict fromSaveGame:YES]) 
+	{
+		return NO;
+	} 
+
 	
 	//base ship description
 	[self setShipDataKey:[dict oo_stringForKey:@"ship_desc"]];
@@ -921,7 +1036,13 @@ static GLfloat		sBaseMass = 0.0;
 	NSArray *coord_vals = ScanTokensFromString([dict oo_stringForKey:@"galaxy_coordinates"]);
 	galaxy_coordinates.x = [coord_vals oo_unsignedCharAtIndex:0];
 	galaxy_coordinates.y = [coord_vals oo_unsignedCharAtIndex:1];
+	chart_centre_coordinates = galaxy_coordinates;
+	target_chart_centre = chart_centre_coordinates;
 	cursor_coordinates = galaxy_coordinates;
+	chart_zoom = 1.0;
+	target_chart_zoom = 1.0;
+	saved_chart_zoom = 1.0;
+	ANA_mode = OPTIMIZED_BY_NONE;
 	
 	NSString *keyStringValue = [dict oo_stringForKey:@"target_coordinates"];
 	if (keyStringValue != nil)
@@ -930,6 +1051,8 @@ static GLfloat		sBaseMass = 0.0;
 		cursor_coordinates.x = [coord_vals oo_unsignedCharAtIndex:0];
 		cursor_coordinates.y = [coord_vals oo_unsignedCharAtIndex:1];
 	}
+	chart_cursor_coordinates = cursor_coordinates;
+	chart_focus_coordinates = cursor_coordinates;
 	
 	keyStringValue = [dict oo_stringForKey:@"found_system_seed"];
 	found_system_seed = (keyStringValue != nil) ? RandomSeedFromString(keyStringValue) : kNilRandomSeed;
@@ -1162,6 +1285,10 @@ static GLfloat		sBaseMass = 0.0;
 		starboard_weapon_type = [dict oo_intForKey:@"starboard_weapon"];
 	else
 		starboard_weapon_type = WEAPON_NONE;
+	if (hud != nil && [hud nonlinearScanner])
+	{
+		[hud setScannerZoom: [dict oo_floatForKey:@"ship_scanner_zoom" defaultValue: 1.0]];
+	}
 	
 	weapons_online = [dict oo_boolForKey:@"weapons_online" defaultValue:YES];
 	
@@ -1397,6 +1524,8 @@ static GLfloat		sBaseMass = 0.0;
 	
 	isPlayer = YES;
 	
+	[self setStatus:STATUS_START_GAME];
+
 	int i;
 	for (i = 0; i < PLAYER_MAX_MISSILES; i++)
 	{
@@ -1405,8 +1534,6 @@ static GLfloat		sBaseMass = 0.0;
 	[self setUpAndConfirmOK:NO];
 	
 	save_path = nil;
-	
-	[self setUpSound];
 	
 	scoopsActive = NO;
 	
@@ -1484,9 +1611,27 @@ static GLfloat		sBaseMass = 0.0;
 	[UNIVERSE setBlockJSPlayerShipProps:NO];	// full access to player.ship properties!
 	DESTROY(worldScripts);
 	DESTROY(worldScriptsRequiringTickle);
-	worldScripts = [[ResourceManager loadScripts] retain];
-	[UNIVERSE loadConditionScripts];
-	
+
+#if OOLITE_WINDOWS
+	if (saveGame)
+	{
+		[UNIVERSE preloadSounds];
+		[self setUpSound];
+		worldScripts = [[ResourceManager loadScripts] retain];
+		[UNIVERSE loadConditionScripts];
+	}
+#else
+	/* on OSes that allow safe deletion of open files, can use sounds
+	 * on the OXZ screen and other start screens */
+	[UNIVERSE preloadSounds];
+	[self setUpSound];
+	if (saveGame)
+	{
+		worldScripts = [[ResourceManager loadScripts] retain];
+		[UNIVERSE loadConditionScripts];
+	}
+#endif
+
 	[[GameController sharedController] logProgress:OOExpandKeyRandomized(@"loading-miscellany")];
 	
 	// if there is cargo remaining from previously (e.g. a game restart), remove it
@@ -1674,7 +1819,16 @@ static GLfloat		sBaseMass = 0.0;
 	
 	market_rnd				= 0;
 	ship_kills				= 0;
+	chart_centre_coordinates	= galaxy_coordinates;
+	target_chart_centre		= chart_centre_coordinates;
 	cursor_coordinates		= galaxy_coordinates;
+	chart_cursor_coordinates	= cursor_coordinates;
+	chart_focus_coordinates		= cursor_coordinates;
+	chart_zoom			= 1.0;
+	target_chart_zoom		= 1.0;
+	saved_chart_zoom		= 1.0;
+	ANA_mode			= OPTIMIZED_BY_NONE;
+
 	
 	scripted_misjump		= NO;
 	_scriptedMisjumpRange	= 0.5;
@@ -1978,6 +2132,7 @@ static GLfloat		sBaseMass = 0.0;
 	if (EXPECT_NOT(!sun))  return 0.0f;
 	
 	// check if camera position is shadowed
+	OOViewID vdir = [UNIVERSE viewDirection];
 	unsigned i;
 	unsigned	ent_count =	UNIVERSE->n_entities;
 	Entity		**uni_entities = UNIVERSE->sortedEntities;	// grab the public sorted list
@@ -1989,11 +2144,15 @@ static GLfloat		sBaseMass = 0.0;
 				([uni_entities[i] isShip] &&
 				 [uni_entities[i] isVisible]))
 			{
-				float shadow = 1.5f;
-				shadowAtPointOcclusionToValue([self viewpointPosition],1.0f,uni_entities[i],sun,&shadow);
-				if (shadow < 1) {
+				// the player ship can't shadow internal views
+				if (EXPECT(vdir > VIEW_STARBOARD || ![uni_entities[i] isPlayer]))
+				{
+					float shadow = 1.5f;
+					shadowAtPointOcclusionToValue([self viewpointPosition],1.0f,uni_entities[i],sun,&shadow);
 					/* BUG: if the shadowing entity is not spherical, this gives over-shadowing. True elsewhere as well, but not so obvious there. */
-					return 0.0f;
+					if (shadow < 1) {
+						return 0.0f;
+					}
 				}
 			}
 		}
@@ -2002,7 +2161,7 @@ static GLfloat		sBaseMass = 0.0;
 
 	relativePosition = HPVectorToVector(HPvector_subtract([self viewpointPosition], [sun position]));
 	unitRelativePosition = vector_normal_or_zbasis(relativePosition);
-	switch ([UNIVERSE viewDirection])
+	switch (vdir)
 	{
 		case VIEW_FORWARD:
 			measuredCos = -dot_product(unitRelativePosition, v_forward);
@@ -2028,11 +2187,20 @@ static GLfloat		sBaseMass = 0.0;
 			break;
 	}
 	measuredCosAbs = fabs(measuredCos);
-	if (thresholdAngleCos <= measuredCosAbs && measuredCosAbs <= 1.0f)	// angle from viewpoint to sun <= desired threshold
+	/*
+	  Bugfix: 1.1f - floating point errors can mean the dot product of two
+	  normalised vectors can be very slightly more than 1, which can
+	  cause extreme flickering of the glare at certain ranges to the
+	  sun. The real test is just that it's not still 999 - CIM
+	 */
+	if (thresholdAngleCos <= measuredCosAbs && measuredCosAbs <= 1.1f)	// angle from viewpoint to sun <= desired threshold
 	{
 		sunBrightness =  (measuredCos - thresholdAngleCos) / (1.0f - thresholdAngleCos);
+//		OOLog(@"glare.debug",@"raw brightness = %f",sunBrightness);
 		if (sunBrightness < 0.0f)  sunBrightness = 0.0f;
+		else if (sunBrightness > 1.0f)  sunBrightness = 1.0f;
 	}
+//	OOLog(@"glare.debug",@"cos=%f, threshold = %f, brightness = %f",measuredCosAbs,thresholdAngleCos,sunBrightness);
 	return sunBrightness * sunBrightness * sunBrightness;
 }
 
@@ -2565,7 +2733,8 @@ static GLfloat		sBaseMass = 0.0;
 }
 
 
-- (void) updateMovementFlags{
+- (void) updateMovementFlags
+{
 	hasMoved = !HPvector_equal(position, lastPosition);
 	hasRotated = !quaternion_equal(orientation, lastOrientation);
 	lastPosition = position;
@@ -2573,8 +2742,140 @@ static GLfloat		sBaseMass = 0.0;
 }
 
 
+- (void) updateAlertConditionForNearbyEntities
+{
+	if (![self isInSpace] || [self status] == STATUS_DOCKING)
+	{
+		[self clearAlertFlags];
+		// not needed while docked
+		return;
+	}
+
+	int				i, ent_count		= UNIVERSE->n_entities;
+	Entity			**uni_entities	= UNIVERSE->sortedEntities;	// grab the public sorted list
+	Entity			*my_entities[ent_count];
+	Entity			*scannedEntity = nil;
+	for (i = 0; i < ent_count; i++)
+	{
+		my_entities[i] = [uni_entities[i] retain];	// retained
+	}
+	BOOL massLocked = NO;
+	BOOL foundHostiles = NO;
+	for (i = 0; i < ent_count; i++)  // scanner lollypops
+	{
+		scannedEntity = my_entities[i];
+
+		/* if (scannedEntity->zero_distance > SCANNER_MAX_RANGE2)
+		{
+			// list is sorted, and ships outside scanner range can't
+			// affect alert status
+			break;
+			}*/
+		/* Oh, wait, but *planets* outside scanner range can. Skip
+		 * this optimisation for now, though it could be done another
+		 * way - CIM */
+		if (scannedEntity->zero_distance < SCANNER_MAX_RANGE2 || !scannedEntity->isShip)
+		{
+			int theirClass = [scannedEntity scanClass];
+			massLocked |= [self checkEntityForMassLock:scannedEntity withScanClass:theirClass];	// we just need one masslocker..
+			if (theirClass != CLASS_NO_DRAW)
+			{
+				if (theirClass == CLASS_THARGOID || [scannedEntity isCascadeWeapon])
+				{
+					foundHostiles = YES;
+				}
+				else if ([scannedEntity isShip])
+				{
+					ShipEntity *ship = (ShipEntity *)scannedEntity;
+					foundHostiles |= (([ship hasHostileTarget])&&([ship primaryTarget] == self));
+				}
+			}
+		}
+	}
+	[self setAlertFlag:ALERT_FLAG_MASS_LOCK to:massLocked];
+		
+	[self setAlertFlag:ALERT_FLAG_HOSTILES to:foundHostiles];
+
+	for (i = 0; i < ent_count; i++)
+	{
+		[my_entities[i] release];	//	released
+	}
+	
+	BOOL energyCritical = NO;
+	if (energy < 64 && energy < maxEnergy * 0.8)
+	{
+		energyCritical = YES;
+	}
+	[self setAlertFlag:ALERT_FLAG_ENERGY to:energyCritical];
+
+	[self setAlertFlag:ALERT_FLAG_TEMP to:([self hullHeatLevel] > .90)];
+
+	[self setAlertFlag:ALERT_FLAG_ALT to:([self dialAltitude] < .10)];
+
+}
+
+
+- (BOOL) checkEntityForMassLock:(Entity *)ent withScanClass:(int)theirClass
+{
+	BOOL massLocked = NO;
+	
+	if (EXPECT_NOT([ent isStellarObject]))
+	{
+		Entity<OOStellarBody> *stellar = (Entity<OOStellarBody> *)ent;
+		if (EXPECT([stellar planetType] != STELLAR_TYPE_MINIATURE))
+		{
+			double dist = stellar->zero_distance;
+			double rad = stellar->collision_radius;
+			double factor = ([stellar isSun]) ? 2.0 : 4.0;
+			// plus ensure mass lock when 25 km or less from the surface of small stellar bodies
+			// dist is a square distance so it needs to be compared to (rad+25000) * (rad+25000)!
+			if (dist < rad*rad*factor || dist < rad*rad + 50000*rad + 625000000 ) 
+			{
+				massLocked = YES;
+			}
+		}
+	}
+	else if (theirClass != CLASS_NO_DRAW)
+	{
+		// cloaked ships do not mass lock!
+		if (EXPECT_NOT ([ent isShip] && [(ShipEntity *)ent isCloaked]))
+		{
+			theirClass = CLASS_NO_DRAW;
+		}
+	}
+
+	if (!massLocked && ent->zero_distance <= SCANNER_MAX_RANGE2)
+	{
+		switch (theirClass)
+		{
+			case CLASS_NO_DRAW:
+			case CLASS_PLAYER:
+			case CLASS_BUOY:
+			case CLASS_ROCK:
+			case CLASS_CARGO:
+			case CLASS_MINE:
+			case CLASS_VISUAL_EFFECT:
+				break;
+				
+			case CLASS_THARGOID:
+			case CLASS_MISSILE:
+			case CLASS_STATION:
+			case CLASS_POLICE:
+			case CLASS_MILITARY:
+			case CLASS_WORMHOLE:
+			default:
+				massLocked = YES;
+				break;
+		}
+	}
+	
+	return massLocked;
+}
+
+
 - (void) updateAlertCondition
 {
+	[self updateAlertConditionForNearbyEntities];
 	/*	TODO: update alert condition once per frame. Tried this before, but
 		there turned out to be complications. See mailing list archive.
 		-- Ahruman 20070802
@@ -2718,15 +3019,14 @@ static GLfloat		sBaseMass = 0.0;
 			case GUI_SCREEN_MISSION:
 			case GUI_SCREEN_REPORT:
 				return;
-				break;
 			
 			// Screens from which it's safe to jump to the mission screen
 //			case GUI_SCREEN_CONTRACTS:
 			case GUI_SCREEN_EQUIP_SHIP:
 			case GUI_SCREEN_INTERFACES:
-			case GUI_SCREEN_LONG_RANGE_CHART:
 			case GUI_SCREEN_MANIFEST:
 			case GUI_SCREEN_SHIPYARD:
+			case GUI_SCREEN_LONG_RANGE_CHART:
 			case GUI_SCREEN_SHORT_RANGE_CHART:
 			case GUI_SCREEN_STATUS:
 			case GUI_SCREEN_SYSTEM_DATA:
@@ -3395,7 +3695,7 @@ static GLfloat		sBaseMass = 0.0;
 - (void) moveForward:(double) amount
 {
 	distanceTravelled += (float)amount;
-	position = HPvector_add(position, vectorToHPVector(vector_multiply_scalar(v_forward, (float)amount)));
+	[self setPosition:HPvector_add(position, vectorToHPVector(vector_multiply_scalar(v_forward, (float)amount)))];
 }
 
 
@@ -3572,7 +3872,7 @@ static GLfloat		sBaseMass = 0.0;
 	BOOL 			wasHidden = NO;
 	BOOL 			wasCompassActive = YES;
 	double			scannerZoom = 1.0;
-	NSInteger		i;
+	NSUInteger		i;
 
 	if (!hudFileName)  return NO;
 	
@@ -3611,10 +3911,18 @@ static GLfloat		sBaseMass = 0.0;
 		[hud setCompassActive:wasCompassActive];
 		[hud setHidden:wasHidden];
 		activeMFD = 0;
+		NSArray *savedMFDs = [NSArray arrayWithArray:multiFunctionDisplaySettings];
 		[multiFunctionDisplaySettings removeAllObjects];
-		for (i = [hud mfdCount]-1 ; i >= 0 ; i--)
+		for (i = 0; i < [hud mfdCount] ; i++)
 		{
-			[multiFunctionDisplaySettings addObject:[NSNull null]];
+			if ([savedMFDs count] > i)
+			{
+				[multiFunctionDisplaySettings addObject:[savedMFDs objectAtIndex:i]];
+			}
+			else
+			{
+				[multiFunctionDisplaySettings addObject:[NSNull null]];
+			}
 		}
 	}
 	
@@ -3757,13 +4065,6 @@ static GLfloat		sBaseMass = 0.0;
 {
 	if (equal_seeds(target_system_seed, system_seed) && ![UNIVERSE inInterstellarSpace])  return 0.0f;
 	return [self fuelRequiredForJump] / (GLfloat)PLAYER_MAX_FUEL;
-}
-
-
-- (GLfloat) hullHeatLevel
-{
-	GLfloat result = (GLfloat)ship_temperature / (GLfloat)SHIP_MAX_CABIN_TEMP;
-	return OOClamp_0_1_f(result);
 }
 
 
@@ -4206,14 +4507,29 @@ static GLfloat		sBaseMass = 0.0;
 
 - (NSString *) compassTargetLabel
 {
-	if (compassMode != COMPASS_MODE_BEACONS)
+	switch (compassMode)
 	{
+	case COMPASS_MODE_INACTIVE:
+		return @"";
+	case COMPASS_MODE_BASIC:
+		return @"";
+	case COMPASS_MODE_BEACONS:
+	{
+		Entity *target = [self compassTarget];
+		if (target)
+		{
+			return [(Entity <OOBeaconEntity> *)target beaconLabel];
+		}
 		return @"";
 	}
-	Entity *target = [self compassTarget];
-	if (target)
-	{
-		return [(Entity <OOBeaconEntity> *)target beaconLabel];
+	case COMPASS_MODE_PLANET:
+		return [[UNIVERSE planet] name];
+	case COMPASS_MODE_SUN:
+		return [[UNIVERSE sun] name];
+	case COMPASS_MODE_STATION:
+		return [[UNIVERSE station] displayName];
+	case COMPASS_MODE_TARGET:
+		return DESC(@"oolite-beacon-label-target");
 	}
 	return @"";
 }
@@ -4668,9 +4984,13 @@ static GLfloat		sBaseMass = 0.0;
 	else
 	{
 		if (alertFlags != 0)
+		{
 			alertCondition = ALERT_CONDITION_YELLOW;
+		}
 		if (alertFlags > ALERT_FLAG_YELLOW_LIMIT)
+		{
 			alertCondition = ALERT_CONDITION_RED;
+		}
 	}
 	if ((alertCondition == ALERT_CONDITION_RED)&&(old_alert_condition < ALERT_CONDITION_RED))
 	{
@@ -4918,6 +5238,29 @@ static GLfloat		sBaseMass = 0.0;
 	[super deactivateCloakingDevice];
 	[UNIVERSE addMessage:DESC(@"cloak-off") forCount:2];
 	[self playCloakingDeviceOff];
+}
+
+
+/* Scanner fuzziness is entirely cosmetic - it doesn't affect the
+ * player's actual target locks */
+- (double) scannerFuzziness
+{
+	double fuzz = 0.0;
+	/* Fuzziness from ECM bursts */
+	double since = [UNIVERSE getTime] - last_ecm_time;
+	if (since < SCANNER_ECM_FUZZINESS)
+	{
+		fuzz += (SCANNER_ECM_FUZZINESS - since) * (SCANNER_ECM_FUZZINESS - since) * 1000.0;
+	}
+	/* Other causes could go here */
+	
+	return fuzz;
+}
+
+
+- (void) noticeECM
+{
+	last_ecm_time = [UNIVERSE getTime];
 }
 
 
@@ -5273,10 +5616,19 @@ static GLfloat		sBaseMass = 0.0;
 	
 	if (amount > 0.0)
 	{
-		internal_damage = ((ranrot_rand() & PLAYER_INTERNAL_DAMAGE_FACTOR) < amount);	// base chance of damage to systems
 		energy -= amount;
 		[self playDirectHit:relative];
-		ship_temperature += (amount / [self heatInsulation]);
+		if (ship_temperature < SHIP_MAX_CABIN_TEMP)
+		{
+			/* Heat increase from energy impacts will never directly cause
+			 * overheating - too easy for missile hits to cause an uncredited
+			 * death by overheating against NPCs, so same rules for player */
+			ship_temperature += amount * SHIP_ENERGY_DAMAGE_TO_HEAT_FACTOR / [self heatInsulation];
+			if (ship_temperature > SHIP_MAX_CABIN_TEMP)
+			{
+				ship_temperature = SHIP_MAX_CABIN_TEMP;
+			}
+		}
 	}
 	[self noteTakingDamage:amount from:other type:damageType];
 	if (cascading) energy = 0.0; // explicitly set energy to zero when cascading, in case an oxp raised the energy in noteTakingDamage.
@@ -5292,7 +5644,15 @@ static GLfloat		sBaseMass = 0.0;
 	}
 	else
 	{
-		if (internal_damage)  [self takeInternalDamage];
+		while (amount > 0.0)
+		{
+			internal_damage = ((ranrot_rand() & PLAYER_INTERNAL_DAMAGE_FACTOR) < amount);	// base chance of damage to systems
+			if (internal_damage)
+			{
+				[self takeInternalDamage];
+			}
+			amount -= (PLAYER_INTERNAL_DAMAGE_FACTOR + 1);
+		}
 	}
 }
 
@@ -5349,16 +5709,16 @@ static GLfloat		sBaseMass = 0.0;
 		}
 	}
 	
-	if (amount)
+	[super takeScrapeDamage:amount from:ent];
+	
+	while (amount > 0.0)
 	{
 		internal_damage = ((ranrot_rand() & PLAYER_INTERNAL_DAMAGE_FACTOR) < amount);	// base chance of damage to systems
-	}
-	
-	[super takeScrapeDamage:amount from:ent];
-
-	if (internal_damage)
-	{
-		[self takeInternalDamage];
+		if (internal_damage)
+		{
+			[self takeInternalDamage];
+		}
+		amount -= (PLAYER_INTERNAL_DAMAGE_FACTOR + 1);
 	}
 }
 
@@ -5933,7 +6293,11 @@ static GLfloat		sBaseMass = 0.0;
 	[self setStatus:STATUS_DOCKING];
 	[self setDockedStation:station];
 	[self doScriptEvent:OOJSID("shipWillDockWithStation") withArgument:station];
-	
+
+	if (![hud nonlinearScanner])
+	{
+		[hud setScannerZoom: 1.0];
+	}
 	ident_engaged = NO;
 	afterburner_engaged = NO;
 	autopilot_engaged = NO;
@@ -5946,7 +6310,6 @@ static GLfloat		sBaseMass = 0.0;
 	DESTROY(_primaryTarget); // must happen before showing break_pattern to supress active reticule.
 	[self clearTargetMemory];
 	
-	[hud setScannerZoom:1.0];
 	scanner_zoom_rate = 0.0f;
 	[UNIVERSE setDisplayText:NO];
 	[[UNIVERSE gameController] setMouseInteractionModeForFlight];
@@ -6089,6 +6452,10 @@ static GLfloat		sBaseMass = 0.0;
 	gui_screen = GUI_SCREEN_MAIN;
 	[self noteGUIDidChangeFrom:oldScreen to:gui_screen];
 
+	if (![hud nonlinearScanner])
+	{
+		[hud setScannerZoom: 1.0];
+	}
 	[self loadCargoPods];
 	// do not do anything that calls JS handlers between now and calling
 	// [station launchShip] below, or the cargo returned by JS may be off
@@ -6102,7 +6469,6 @@ static GLfloat		sBaseMass = 0.0;
 	[self clearAlertFlags];
 	[self setDockingClearanceStatus:DOCKING_CLEARANCE_STATUS_NONE];
 	
-	[hud setScannerZoom:1.0];
 	scanner_zoom_rate = 0.0f;
 	currentWeaponFacing = WEAPON_FACING_FORWARD;
 	
@@ -6151,6 +6517,10 @@ static GLfloat		sBaseMass = 0.0;
 	// so in such cases we need to ensure that at least the docking music stops playing
 	if (autopilot_engaged)  [self disengageAutopilot];
 	
+	if (![hud nonlinearScanner])
+	{
+		[hud setScannerZoom: 1.0];
+	}
 	[self safeAllMissiles];
 	[UNIVERSE setViewDirection:VIEW_FORWARD];
 	currentWeaponFacing = WEAPON_FACING_FORWARD;
@@ -6165,7 +6535,6 @@ static GLfloat		sBaseMass = 0.0;
 		DESTROY(_primaryTarget);
 	}
 	
-	[hud setScannerZoom:1.0];
 	scanner_zoom_rate = 0.0f;
 	[UNIVERSE setDisplayText:NO];
 	
@@ -6191,6 +6560,8 @@ static GLfloat		sBaseMass = 0.0;
 	[[UNIVERSE planet] update: 2.34375 * market_rnd];	// from 0..10 minutes
 	[[UNIVERSE station] update: 2.34375 * market_rnd];	// from 0..10 minutes
 	
+	chart_centre_coordinates = galaxy_coordinates;
+	target_chart_centre = chart_centre_coordinates;
 	OOProfilerEndMarker(@"witchspace");
 }
 
@@ -6800,7 +7171,8 @@ static GLfloat		sBaseMass = 0.0;
 
 - (NSArray *) equipmentList
 {
-	NSMutableArray		*quip = [NSMutableArray array];
+	NSMutableArray		*quip1 = [NSMutableArray array]; // damaged
+	NSMutableArray		*quip2 = [NSMutableArray array]; // working
 	NSEnumerator		*eqTypeEnum = nil;
 	OOEquipmentType		*eqType = nil;
 	NSString			*desc = nil;
@@ -6811,7 +7183,7 @@ static GLfloat		sBaseMass = 0.0;
 		{
 			if ([self hasEquipmentItem:[eqType identifier]])
 			{
-				[quip addObject:@[[eqType name], @YES]];
+				[quip2 addObject:@[[eqType name], @YES]];
 			}
 			else 
 			{
@@ -6819,7 +7191,7 @@ static GLfloat		sBaseMass = 0.0;
 				if ([self hasEquipmentItem:[[eqType identifier] stringByAppendingString:@"_DAMAGED"]])
 				{
 					desc = [NSString stringWithFormat:DESC(@"equipment-@-not-available"), [eqType name]];
-					[quip addObject:@[desc, @NO]];
+					[quip1 addObject:@[desc, @NO]];
 				}
 			}
 		}
@@ -6828,31 +7200,33 @@ static GLfloat		sBaseMass = 0.0;
 	if (max_passengers > 0)
 	{
 		desc = [NSString stringWithFormat:DESC_PLURAL(@"equipment-pass-berth-@", max_passengers), max_passengers];
-		[quip addObject:@[desc, @YES]];
+		[quip2 addObject:@[desc, @YES]];
 	}
 	
 	if (forward_weapon_type > WEAPON_NONE)
 	{
 		desc = [NSString stringWithFormat:DESC(@"equipment-fwd-weapon-@"),[[OOEquipmentType equipmentTypeWithIdentifier:OOEquipmentIdentifierFromWeaponType(forward_weapon_type)] name]];
-		[quip addObject:@[desc, @YES]];
+		[quip2 addObject:@[desc, @YES]];
 	}
 	if (aft_weapon_type > WEAPON_NONE)
 	{
 		desc = [NSString stringWithFormat:DESC(@"equipment-aft-weapon-@"),[[OOEquipmentType equipmentTypeWithIdentifier:OOEquipmentIdentifierFromWeaponType(aft_weapon_type)] name]];
-		[quip addObject:@[desc, @YES]];
+		[quip2 addObject:@[desc, @YES]];
 	}
 	if (port_weapon_type > WEAPON_NONE)
 	{
 		desc = [NSString stringWithFormat:DESC(@"equipment-port-weapon-@"),[[OOEquipmentType equipmentTypeWithIdentifier:OOEquipmentIdentifierFromWeaponType(port_weapon_type)] name]];
-		[quip addObject:@[desc, @YES]];
+		[quip2 addObject:@[desc, @YES]];
 	}
 	if (starboard_weapon_type > WEAPON_NONE)
 	{
 		desc = [NSString stringWithFormat:DESC(@"equipment-stb-weapon-@"),[[OOEquipmentType equipmentTypeWithIdentifier:OOEquipmentIdentifierFromWeaponType(starboard_weapon_type)] name]];
-		[quip addObject:@[desc, @YES]];
+		[quip2 addObject:@[desc, @YES]];
 	}
 	
-	return quip;
+	// list damaged first, then working
+	[quip1 addObjectsFromArray:quip2];
+	return quip1;
 }
 
 
@@ -6977,8 +7351,18 @@ static GLfloat		sBaseMass = 0.0;
 	{
 		NSString *desc = [commodity oo_stringForKey:@"displayName"];
 		NSString *units = [commodity oo_stringForKey:@"unit"];
-		[manifest addObject:[NSString stringWithFormat:DESC(@"manifest-cargo-quantity-format"),
-							[commodity oo_intForKey:@"quantity"], units, desc]];
+		if (EXPECT([units isEqualToString:DESC(@"cargo-tons-symbol")] || [commodity oo_intForKey:@"containers"] == 0))
+		{
+			// normal display
+			[manifest addObject:[NSString stringWithFormat:DESC(@"manifest-cargo-quantity-format"),
+								   [commodity oo_intForKey:@"quantity"], units, desc]];
+		}
+		else
+		{
+			// if low-mass cargo is occupying containers, show how many
+			[manifest addObject:[NSString stringWithFormat:DESC(@"oolite-manifest-cargo-quantity-format2"),
+								   [commodity oo_intForKey:@"quantity"], units, desc, [commodity oo_intForKey:@"containers"]]];
+		}
 	}
 	
 	return manifest;
@@ -6991,16 +7375,19 @@ static GLfloat		sBaseMass = 0.0;
 	
 	NSUInteger			i, commodityCount = [shipCommodityData count];
 	OOCargoQuantity		quantityInHold[commodityCount];
+	OOCargoQuantity		containersInHold[commodityCount];
 	
 	// following changed to work whether docked or not
 	for (i = 0; i < commodityCount; i++)
 	{
 		quantityInHold[i] = [[shipCommodityData oo_arrayAtIndex:i] oo_unsignedIntAtIndex:MARKET_QUANTITY];
+		containersInHold[i] = 0;
 	}
 	for (i = 0; i < [cargo count]; i++)
 	{
 		ShipEntity *container = cargo[i];
 		quantityInHold[[container commodityType]] += [container commodityAmount];
+		++containersInHold[[container commodityType]];
 	}
 	
 	for (i = 0; i < commodityCount; i++)
@@ -7012,7 +7399,8 @@ static GLfloat		sBaseMass = 0.0;
 			// commodity, quantity - keep consistency between .manifest and .contracts
 			commodity[@"commodity"] = CommodityTypeToString(i);
 			commodity[@"quantity"] = @(quantityInHold[i]);
-			commodity[@"displayName"] = CommodityDisplayNameForSymbolicName(symName); 
+			[commodity setObject:[NSNumber numberWithUnsignedInt:containersInHold[i]] forKey:@"containers"];
+			commodity[@"displayName"] = CommodityDisplayNameForSymbolicName(symName);
 			commodity[@"unit"] = DisplayStringForMassUnitForCommodity(i); 
 			[list addObject:commodity];
 		}
@@ -7267,110 +7655,66 @@ static GLfloat		sBaseMass = 0.0;
 	return destinations;
 }
 
-
 - (void) setGuiToLongRangeChartScreen
 {
-	GuiDisplayGen	*gui = [UNIVERSE gui];
 	OOGUIScreenID	oldScreen = gui_screen;
-	
+	GuiDisplayGen	*gui = [UNIVERSE gui];
+	[gui clearAndKeepBackground:NO];
+	[gui setBackgroundTextureKey:@"short_range_chart"];
 	gui_screen = GUI_SCREEN_LONG_RANGE_CHART;
-	BOOL			guiChanged = (oldScreen != gui_screen);
-	
-	[[UNIVERSE gameController] setMouseInteractionModeForUIWithMouseInteraction:YES];
-	
-	if ((target_system_seed.d != cursor_coordinates.x)||(target_system_seed.b != cursor_coordinates.y))
-			target_system_seed = [UNIVERSE findSystemAtCoords:cursor_coordinates withGalaxySeed:galaxy_seed];
-	
-	NSString *targetSystemName = [[UNIVERSE getSystemName:target_system_seed] retain];  // retained
-	
-	[UNIVERSE preloadPlanetTexturesForSystem:target_system_seed];
-	
-	// GUI stuff
-	{
-		[gui clearAndKeepBackground:!guiChanged];
-		NSString *gal_key = [NSString stringWithFormat:@"long-range-chart-title-%d", galaxy_number];
-		if ([[UNIVERSE descriptions] valueForKey:gal_key] == nil)
-		{
-			[gui setTitle:[NSString stringWithFormat:DESC(@"long-range-chart-title-d"), galaxy_number+1]];
-		}
-		else
-		{
-			[gui setTitle:[UNIVERSE descriptionForKey:gal_key]];
-		}
-		
-		NSString *displaySearchString = planetSearchString ? [planetSearchString capitalizedString] : (NSString *)@"";
-		[gui setText:[NSString stringWithFormat:DESC(@"long-range-chart-find-planet-@"), displaySearchString] forRow:17];
-		[gui setColor:[OOColor cyanColor] forRow:17];
-		
-		[gui setShowTextCursor:YES];
-		[gui setCurrentRow:17];
-	}
-	/* ends */
-	
-	[[UNIVERSE gameView] clearMouse];
-	
-	[targetSystemName release];
-	
-	[self setShowDemoShips:NO];
-	[UNIVERSE enterGUIViewModeWithMouseInteraction:YES];
-	
-	if (guiChanged)
-	{
-		NSDictionary *bgDescriptor = [UNIVERSE screenTextureDescriptorForKey:[NSString stringWithFormat:@"long_range_chart%d", galaxy_number+1]];
-		if (bgDescriptor == nil)  bgDescriptor = [UNIVERSE screenTextureDescriptorForKey:@"long_range_chart"];
-		[gui setBackgroundTextureDescriptor:bgDescriptor];
-		
-		[gui setForegroundTextureKey:[self status] == STATUS_DOCKED ? @"docked_overlay" : @"overlay"];
-		
-		[UNIVERSE findSystemCoordinatesWithPrefix:[[UNIVERSE getSystemName:found_system_seed] lowercaseString] exactMatch:YES];
-		[self noteGUIDidChangeFrom:oldScreen to:gui_screen];
-	}
+	target_chart_zoom = CHART_MAX_ZOOM;
+	[self setGuiToChartScreenFrom: oldScreen];
 }
-
-
+	
 - (void) setGuiToShortRangeChartScreen
 {
-	GuiDisplayGen	*gui = [UNIVERSE gui];
 	OOGUIScreenID	oldScreen = gui_screen;
-	
+	GuiDisplayGen	*gui = [UNIVERSE gui];
+	[gui clearAndKeepBackground:NO];
+	[gui setBackgroundTextureKey:@"short_range_chart"];
 	gui_screen = GUI_SCREEN_SHORT_RANGE_CHART;
+	[self setGuiToChartScreenFrom: oldScreen];
+}
+
+- (void) setGuiToChartScreenFrom: (OOGUIScreenID) oldScreen
+{
+	GuiDisplayGen	*gui = [UNIVERSE gui];
+	
 	BOOL			guiChanged = (oldScreen != gui_screen);
 	
 	[[UNIVERSE gameController] setMouseInteractionModeForUIWithMouseInteraction:YES];
-	
-	// don't target planets outside the immediate vicinity.
-	if ((abs(cursor_coordinates.x-galaxy_coordinates.x)>=20)||(abs(cursor_coordinates.y-galaxy_coordinates.y)>=38))
-			cursor_coordinates = galaxy_coordinates;	// home
 	
 	if ((target_system_seed.d != cursor_coordinates.x)||(target_system_seed.b != cursor_coordinates.y))
 	{
 		target_system_seed = [UNIVERSE findSystemAtCoords:cursor_coordinates withGalaxySeed:galaxy_seed];
 	}
 	
-	// now calculate the distance.
-	double			distance = [self hyperspaceJumpDistance];
-	double			estimatedTravelTime = distance * distance;
-	
-	NSString		*targetSystemName = [[UNIVERSE getSystemName:target_system_seed] retain];  // retained
 	[UNIVERSE preloadPlanetTexturesForSystem:target_system_seed];
 	
 	// GUI stuff
 	{
-		[gui clearAndKeepBackground:!guiChanged];
-		[gui setTitle:DESC(@"short-range-chart-title")];
+		//[gui clearAndKeepBackground:!guiChanged];
+		[gui setStarChartTitle];
 		// refresh the short range chart cache, in case we've just loaded a save game with different local overrides, etc.
 		[gui refreshStarChart];
-		[gui setText:targetSystemName forRow:19];
+		//[gui setText:targetSystemName forRow:19];
 		// distance-f & est-travel-time-f are identical between short & long range charts in standard Oolite, however can be alterered separately via OXPs
-		[gui setText:[NSString stringWithFormat:OOExpandKey(@"short-range-chart-distance-f"), distance] forRow:20];
-		if ([self hasHyperspaceMotor]) [gui setText:(NSString *)((distance > 0.0 && distance <= (double)fuel/10.0) ? (NSString *)[NSString stringWithFormat:OOExpandKey(@"short-range-chart-est-travel-time-f"), estimatedTravelTime] : (NSString *)@"") forRow:21];
-		[gui setShowTextCursor:NO];
+		//[gui setText:[NSString stringWithFormat:OOExpandKey(@"short-range-chart-distance-f"), distance] forRow:20];
+		//if ([self hasHyperspaceMotor]) [gui setText:(NSString *)((distance > 0.0 && distance <= (double)fuel/10.0) ? (NSString *)[NSString stringWithFormat:OOExpandKey(@"short-range-chart-est-travel-time-f"), estimatedTravelTime] : (NSString *)@"") forRow:21];
+		if (gui_screen == GUI_SCREEN_LONG_RANGE_CHART)
+		{
+			NSString *displaySearchString = planetSearchString ? [planetSearchString capitalizedString] : (NSString *)@"";
+			[gui setText:[NSString stringWithFormat:DESC(@"long-range-chart-find-planet-@"), displaySearchString] forRow:GUI_ROW_PLANET_FINDER];
+			[gui setColor:[OOColor cyanColor] forRow:GUI_ROW_PLANET_FINDER];
+			[gui setShowTextCursor:YES];
+			[gui setCurrentRow:GUI_ROW_PLANET_FINDER];
+		}
+		else
+		{
+			[gui setShowTextCursor:NO];
+		}
 	}
 	/* ends */
-	
-	[[UNIVERSE gameView] clearMouse];
-	
-	[targetSystemName release]; // released
 	
 	[self setShowDemoShips:NO];
 	[UNIVERSE enterGUIViewModeWithMouseInteraction:YES];
@@ -7380,6 +7724,7 @@ static GLfloat		sBaseMass = 0.0;
 		[gui setForegroundTextureKey:[self status] == STATUS_DOCKED ? @"docked_overlay" : @"overlay"];
 		
 		[gui setBackgroundTextureKey:@"short_range_chart"];
+		[UNIVERSE findSystemCoordinatesWithPrefix:[[UNIVERSE getSystemName:found_system_seed] lowercaseString] exactMatch:YES];
 		[self noteGUIDidChangeFrom:oldScreen to:gui_screen];
 	}
 }
@@ -7869,7 +8214,8 @@ static NSString *last_outfitting_key=nil;
 		
 		OOGUITabSettings tab_stops;
 		tab_stops[0] = 0;
-		tab_stops[1] = -380;
+		tab_stops[1] = -360;
+		tab_stops[2] = -480;
 		[gui setTabStops:tab_stops];
 		
 		unsigned n_rows = GUI_MAX_ROWS_EQUIPMENT;
@@ -7901,7 +8247,7 @@ static NSString *last_outfitting_key=nil;
 					[gui setKey:[NSString stringWithFormat:@"More:%d", previous] forRow:row];
 				}
 				[gui setColor:[OOColor greenColor] forRow:row];
-				[gui setArray:@[DESC(@"gui-back"), @" <-- "] forRow:row];
+				[gui setArray:@[DESC(@"gui-back"), @"", @" <-- "] forRow:row];
 				row++;
 			}
 			
@@ -7927,15 +8273,28 @@ static NSString *last_outfitting_key=nil;
 				
 				price *= priceFactor;  // increased prices at some stations
 				
+				NSUInteger installTime = [eqInfo installTime];
+				if (installTime == 0)
+				{
+					installTime = 600 + price;
+				}
 				// is this item damaged?
 				if ([self hasEquipmentItem:eq_key_damaged])
 				{
 					desc = [NSString stringWithFormat:DESC(@"equip-repair-@"), desc];
 					price /= 2.0;
+					installTime = [eqInfo repairTime];
+					if (installTime == 0)
+					{
+						installTime = 600 + price;
+					}
+
 					[gui setColor:[OOColor orangeColor] forRow:row];	// color repair items in orange
 				}
 				
 				NSString *priceString = [NSString stringWithFormat:@" %@ ", OOCredits(price)];
+
+				NSString *timeString = [UNIVERSE shortTimeDescription:installTime];
 				
 				if ([eqKeyForSelectFacing isEqualToString:eqKey])
 				{
@@ -7983,7 +8342,7 @@ static NSString *last_outfitting_key=nil;
 						if (displayRow)	// Always true for the first pass. The first pass is used to display the name of the weapon being purchased.
 						{
 							[gui setKey:eqKey forRow:row];
-							[gui setArray:@[desc, (facing_count > 0 ? priceString : (NSString *)@"")] forRow:row];
+							[gui setArray:[NSArray arrayWithObjects:desc, (facing_count > 0 ? priceString : (NSString *)@""), timeString, nil] forRow:row];
 							row++;
 						}
 						facing_count++;
@@ -7993,7 +8352,7 @@ static NSString *last_outfitting_key=nil;
 				{
 					// Normal equipment list.
 					[gui setKey:eqKey forRow:row];
-					[gui setArray:@[desc, priceString] forRow:row];
+					[gui setArray:[NSArray arrayWithObjects:desc, priceString, timeString, nil] forRow:row];
 					row++;
 				}
 			}
@@ -8002,7 +8361,7 @@ static NSString *last_outfitting_key=nil;
 			{
 				// just overwrite the last item :-)
 				[gui setColor:[OOColor greenColor] forRow:row - 1];
-				[gui setArray:@[DESC(@"gui-more"), @" --> "] forRow:row - 1];
+				[gui setArray:[NSArray arrayWithObjects:DESC(@"gui-more"), @"", @" --> ", nil] forRow:row - 1];
 				[gui setKey:[NSString stringWithFormat:@"More:%d", i - 1] forRow:row - 1];
 			}
 			
@@ -8680,6 +9039,8 @@ static NSString *last_outfitting_key=nil;
 		chosen_weapon_facing = WEAPON_FACING_STARBOARD;
 	
 	OOCreditsQuantity old_credits = credits;
+	OOEquipmentType *eqInfo = [OOEquipmentType equipmentTypeWithIdentifier:key];
+	BOOL isRepair = [self hasEquipmentItem:[eqInfo damagedIdentifier]];
 	if ([self tryBuyingItem:key])
 	{
 		if (credits == old_credits)
@@ -8696,9 +9057,25 @@ static NSString *last_outfitting_key=nil;
 		{
 			// adjust time before playerBoughtEquipment gets to change credits dynamically
 			// wind the clock forward by 10 minutes plus 10 minutes for every 60 credits spent
+			NSUInteger adjust = 0;
+			if (isRepair)
+			{
+				adjust = [eqInfo repairTime];
+			}
+			else
+			{
+				adjust = [eqInfo installTime];
+			}
 			double time_adjust = (old_credits > credits) ? (old_credits - credits) : 0.0;
 			[UNIVERSE forceWitchspaceEntries];
-			ship_clock_adjust += time_adjust + 600.0;
+			if (adjust == 0)
+			{
+				ship_clock_adjust += time_adjust + 600.0;
+			}
+			else
+			{
+				ship_clock_adjust += (double)adjust;
+			}
 			
 			[self doScriptEvent:OOJSID("playerBoughtEquipment") withArgument:key];
 			if (gui_screen == GUI_SCREEN_EQUIP_SHIP) //if we haven't changed gui screen inside playerBoughtEquipment
@@ -9243,8 +9620,8 @@ static NSString *last_outfitting_key=nil;
 		[gui setTabStops:tab_stops];
 		
 		[gui setColor:[OOColor greenColor] forRow:GUI_ROW_MARKET_KEY];
-		[gui setArray:@[DESC(@"commodity-column-title"), OOPadStringTo(DESC(@"price-column-title"),7.0),
-							 OOPadStringTo(DESC(@"for-sale-column-title"),11.0), OOPadStringTo(DESC(@"in-hold-column-title"),15.0)] forRow:GUI_ROW_MARKET_KEY];
+		[gui setArray:[NSArray arrayWithObjects: DESC(@"commodity-column-title"), OOPadStringToEms(DESC(@"price-column-title"),2.5),
+							 OOPadStringToEms(DESC(@"for-sale-column-title"),3.75), OOPadStringToEms(DESC(@"in-hold-column-title"),5.75), nil] forRow:GUI_ROW_MARKET_KEY];
 		
 		for (i = 0; i < commodityCount; i++)
 		{
@@ -9256,12 +9633,14 @@ static NSString *last_outfitting_key=nil;
 			OOCreditsQuantity pricePerUnit = [marketDef oo_unsignedIntAtIndex:MARKET_PRICE];
 			OOMassUnit unit = [UNIVERSE unitsForCommodity:i];
 			
-			NSString *available = OOPadStringTo(((available_units > 0) ? (NSString *)[NSString stringWithFormat:@"%d",available_units] : DESC(@"commodity-quantity-none")), 6.0);
-			NSString *price = OOPadStringTo([NSString stringWithFormat:@" %.1f ",0.1 * pricePerUnit],7.0);
+			NSString *available = OOPadStringToEms(((available_units > 0) ? (NSString *)[NSString stringWithFormat:@"%d",available_units] : DESC(@"commodity-quantity-none")), 2.5);
+
+			NSUInteger priceDecimal = pricePerUnit % 10;
+			NSString *price = [NSString stringWithFormat:@" %@.%lu ",OOPadStringToEms([NSString stringWithFormat:@"%lu",(unsigned long)(pricePerUnit/10)],1.5),priceDecimal];
 			
 			// this works with up to 9999 tons of gemstones. Any more than that, they deserve the formatting they get! :)
 			
-			NSString *owned = OOPadStringTo((units_in_hold > 0) ? (NSString *)[NSString stringWithFormat:@"%d",units_in_hold] : DESC(@"commodity-quantity-none"), 10.0);
+			NSString *owned = OOPadStringToEms((units_in_hold > 0) ? (NSString *)[NSString stringWithFormat:@"%d",units_in_hold] : DESC(@"commodity-quantity-none"), 4.5);
 			NSString *units = DisplayStringForMassUnit(unit);
 			NSString *units_available = [NSString stringWithFormat:@" %@ %@ ",available, units];
 			NSString *units_owned = [NSString stringWithFormat:@" %@ %@ ",owned, units];
@@ -10495,6 +10874,12 @@ static NSString *last_outfitting_key=nil;
 		[_equipScreenBackgroundDescriptor autorelease];
 		_equipScreenBackgroundDescriptor = [descriptor copy];
 	}
+}
+
+
+- (BOOL) scriptsLoaded
+{
+	return worldScripts != nil && [worldScripts count] > 0;
 }
 
 

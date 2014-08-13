@@ -710,20 +710,50 @@ static BOOL sRunningScript = NO;
 	NSEnumerator			*scriptEnum = nil;
 	NSString				*scriptName = nil;
 	NSString				*vars = nil;
-	NSMutableArray			*result = nil;
+	NSMutableArray			*result1 = nil;
+	NSMutableArray			*result2 = nil;
 	
-	result = [NSMutableArray array];
-	
+	result1 = [NSMutableArray array];
+	result2 = [NSMutableArray array];
+
+	/* For proper display, array entries need to all be after string
+	 * entries, so sort them now */	
 	for (scriptEnum = [worldScripts keyEnumerator]; (scriptName = [scriptEnum nextObject]); )
 	{
 		vars = mission_variables[scriptName];
 		
 		if (vars != nil)
 		{
-			[result addObject:[NSString stringWithFormat:@"\t%@", vars]];
+			if ([vars isKindOfClass:[NSString class]])
+			{
+				[result1 addObject:vars];
+			}
+			else if ([vars isKindOfClass:[NSArray class]])
+			{
+				BOOL found = NO;
+				NSArray *element = nil;
+				foreach (element, result2)
+				{
+					if ([[element oo_stringAtIndex:0] isEqualToString:[(NSArray*)vars oo_stringAtIndex:0]])
+					{
+
+						[result2 removeObject:element];
+						NSRange notTheHeader;
+						notTheHeader.location = 1;
+						notTheHeader.length = [(NSArray*)vars count]-1;
+						[result2 addObject:[element arrayByAddingObjectsFromArray:[(NSArray*)vars subarrayWithRange:notTheHeader]]];
+						found = YES;
+						break;
+					}
+				}
+				if (!found)
+				{
+					[result2 addObject:vars];
+				}
+			}
 		}
 	}
-	return result;
+	return [result1 arrayByAddingObjectsFromArray:result2];
 }
 
 
@@ -803,6 +833,32 @@ static BOOL sRunningScript = NO;
 	text = [self replaceVariablesInString: text];
 
 	mission_variables[key] = text;
+}
+
+
+- (void) setMissionInstructionsList:(NSArray *)list forMission:(NSString *)key
+{
+	if (!key)
+	{
+		OOLogERR(kOOLogScriptMissionDescNoKey, @"in %@, mission key not set", CurrentScriptDesc());
+		return;
+	}
+
+	NSString *text = nil;
+	NSUInteger i,ct = [list count];
+	NSMutableArray *expandedList = [NSMutableArray arrayWithCapacity:ct];
+	for (i=0 ; i<ct ; i++)
+	{
+		text = [list oo_stringAtIndex:i defaultValue:nil];
+		if (text != nil)
+		{
+			text = OOExpand(text);
+			text = [self replaceVariablesInString: text];
+			[expandedList addObject:text];
+		}
+	}
+
+	[mission_variables setObject:expandedList forKey:key];
 }
 
 

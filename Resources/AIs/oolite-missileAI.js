@@ -38,6 +38,13 @@ this.aiStarted = function() {
 	 * destroy the remainder. */
 	// ai.setParameter("oolite_flag_autoSpreadMissiles",true);
 
+	/* Launch correction when fired at target in aft arc */ 
+	if (this.ship.target && this.ship.target.position.subtract(this.ship.position).direction().dot(this.ship.vectorForward) < -0.8)
+	{
+		this.oolite_priorityai.setParameter("oolite_flag_launchAdjustMissile",true);
+	}
+
+
 	ai.setPriorities([
 		{
 			condition: ai.conditionMissileOutOfFuel,
@@ -47,6 +54,12 @@ this.aiStarted = function() {
 			preconfiguration: ai.configurationCheckScanner,
 			condition: ai.conditionScannerContainsUnspreadMissile,
 			configuration: ai.configurationMissileAdjustSpread,
+			behaviour: ai.behaviourApproachDestination,
+			reconsider: 2
+		},
+		{
+			condition: ai.conditionMissileNeedsLaunchEvasion,
+			configuration: ai.configurationMissileAdjustLaunch,
 			behaviour: ai.behaviourApproachDestination,
 			reconsider: 2
 		},
@@ -68,6 +81,7 @@ this.aiStarted = function() {
 	]);
 }
 
+
 /* ECM response function */
 this._ecmProofMissileResponse = function()
 {
@@ -87,3 +101,4 @@ this._ecmProofMissileResponse = function()
 	}	
 	this.ship.explode();
 }
+

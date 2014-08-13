@@ -29,8 +29,9 @@ MA 02110-1301, USA.
 #import "OOFunctionAttributes.h"
 #import "OOOpenGLExtensionManager.h"
 
-
+#ifndef NDEBUG
 static NSString * const kOOLogOpenGLStateDump				= @"rendering.opengl.stateDump";
+#endif
 
 static GLfloat sDisplayScaleFactor = 1.0f;
 
@@ -131,8 +132,6 @@ void GLDrawBallBillboard(GLfloat radius, GLfloat step, GLfloat z_distance)
 	glVertex3f(0.0, r, 0.0);	//repeat the zero value to close
 }
 
-
-static void GLDrawOvalPoints(GLfloat x, GLfloat y, GLfloat z, NSSize siz, GLfloat step);
 
 static void GLDrawOvalPoints(GLfloat x, GLfloat y, GLfloat z, NSSize siz, GLfloat step)
 {

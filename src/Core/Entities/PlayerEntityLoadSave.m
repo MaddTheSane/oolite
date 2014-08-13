@@ -622,22 +622,31 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 			loadedOK = NO;
 		}
 	}
-	
+
 	if (loadedOK)
 	{
-		NSString		*shipKey = nil;
-		NSDictionary	*shipDict = nil;
-		
-		shipKey = [fileDic oo_stringForKey:@"ship_desc"];
-		shipDict = [[OOShipRegistry sharedRegistry] shipInfoForKey:shipKey];
-		
-		if (shipDict == nil && [UNIVERSE strict] && shipKey != nil)
+		NSString *scenarioRestrict = [fileDic oo_stringForKey:@"scenario_restriction" defaultValue:nil];
+		if (scenarioRestrict == nil)
 		{
-			fail_reason = [NSString stringWithFormat:DESC(@"loadfailed-could-not-use-ship-type-@-please-switch-to-unrestricted"), shipKey];
-			loadedOK = NO;
+			// older save game - use the 'strict' key instead
+			BOOL strict = [fileDic oo_boolForKey:@"strict" defaultValue:NO];
+			if (strict)
+			{
+				scenarioRestrict = SCENARIO_OXP_DEFINITION_NONE;
+			}
+			else
+			{
+				scenarioRestrict = SCENARIO_OXP_DEFINITION_ALL;
+			}
 		}
-	}	
-		
+
+		if (![UNIVERSE setUseAddOns:scenarioRestrict fromSaveGame:YES]) 
+		{
+			fail_reason = DESC(@"loadfailed-saved-game-failed-to-load");
+			loadedOK = NO;
+		} 
+	}
+	
 	
 	if (loadedOK)
 	{
@@ -1096,7 +1105,7 @@ NSComparisonResult sortCommanders(id cdr1, id cdr2, void *context)
 	if (firstIndex + NUMROWS >= [cdrDetailArray count])
 	{
 		lastIndex=[cdrDetailArray count];
-		[gui setSelectableRange: NSMakeRange(rangeStart, rangeStart + NUMROWS)];
+		[gui setSelectableRange: NSMakeRange(rangeStart, rangeStart + NUMROWS + 2)];
 	}
 	else
 	{
@@ -1223,9 +1232,9 @@ NSComparisonResult sortCommanders(id cdr1, id cdr2, void *context)
 	{
 		[self showShipyardModel:@"oolite-unknown-ship" shipData:nil personality:personality];
 		shipName = [cdr oo_stringForKey:@"ship_name" defaultValue:@"unknown"];
-		if ([UNIVERSE strict])
+		if (![[UNIVERSE useAddOns] isEqualToString:SCENARIO_OXP_DEFINITION_ALL])
 		{
-			shipName = [shipName stringByAppendingString:@" - OXPs disabled"];
+			shipName = [shipName stringByAppendingString:@" - OXPs disabled or not installed"];
 		}
 		else
 		{

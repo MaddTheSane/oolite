@@ -1336,6 +1336,7 @@ this._addFreighter = function(pos)
 			t[0].homeSystem = system.ID;
 			t[0].destinationSystem = this._weightedNearbyTradeSystem();
 			goods = "PLENTIFUL_GOODS";
+			t[0].fuel = 7;
 		}
 		else
 		{
@@ -1541,13 +1542,13 @@ this._addMediumHunterRemote = function(pos)
 
 this._addMediumHunterReturn = function(pos)
 {
-	this._addHunterPack(pos,system.ID,this._nearbyDangerousSystem(1),"hunter-medium",true);
+	this._addHunterPack(pos,system.ID,this._nearbyDangerousSystem(4),"hunter-medium",true);
 }
 
 
 this._addMediumHunterOutbound = function(pos)
 {
-	this._addHunterPack(pos,system.ID,this._nearbyDangerousSystem(1),"hunter-medium",false);
+	this._addHunterPack(pos,system.ID,this._nearbyDangerousSystem(4),"hunter-medium",false);
 }
 
 
@@ -1583,6 +1584,8 @@ this._addHunterPack = function(pos,home,dest,role,returning)
 	{
 		t[0].bounty = 0;
 		t[0].homeSystem = home;
+		t[0].destinationSystem = dest;
+		
 		if (returning)
 		{
 			this._setMissiles(t[0],-1);
@@ -1593,8 +1596,6 @@ this._addHunterPack = function(pos,home,dest,role,returning)
 			this._setFuel(t[0]);
 		}
 
-		t[0].destinationSystem = dest;
-		
 		var group = new ShipGroup("hunter group",t[0]);
 		t[0].group = group;
 
@@ -1948,6 +1949,9 @@ this._addAssassin = function(pos)
 		{
 			main.awardEquipment("EQ_SHIELD_BOOSTER"); 
 		}
+		// assassins don't respect escape pods and won't expect anyone
+		// else to either.
+		main.removeEquipment("EQ_ESCAPE_POD");
 		main.fuel = 7;
 		this._setWeapons(main,ws);
 		this._setSkill(main,extra);
@@ -1958,21 +1962,23 @@ this._addAssassin = function(pos)
 	{
 		var g = new ShipGroup("assassin group",main);
 		main.group = g;
+		var numext = Math.floor(Math.random()*3)+1;
 		if (role == "assassin-heavy")
 		{
-			var extras = this._addShips("assassin-medium",2,pos,3E3);
+			var extras = this._addShips("assassin-medium",numext,pos,3E3);
 		}
 		else
 		{
-			var extras = this._addShips("assassin-light",2,pos,3E3);
+			var extras = this._addShips("assassin-light",numext,pos,3E3);
 		}
-		for (var i=0;i<2;i++)
+		for (var i=0;i<numext;i++)
 		{
 			extras[i].group = g;
 			g.addShip(extras[i]);
 			if (extras[i].autoWeapons)
 			{
 				extras[i].awardEquipment("EQ_FUEL_INJECTION");
+				extras[i].removeEquipment("EQ_ESCAPE_POD");
 				extras[i].fuel = 7;
 				this._setWeapons(extras[i],1.8);
 			}
@@ -2276,7 +2282,7 @@ this._setReturnFuel = function(ship)
 this._wormholePos = function()
 {
 	var v = Vector3D.randomDirection().multiply(2000+Math.random()*3000);
-	if (v.z < 0 && v.x+v.y < 500)
+	if (v.z < 0 && Math.abs(v.x)+Math.abs(v.y) < 1000)
 	{
 		v.z = -v.z; // avoid collision risk with witchbuoy
 	}
@@ -2541,6 +2547,10 @@ this._weightedNearbyTradeSystem = function()
 		}
 	}
 	// fallback
+	if (locals.length > 0)
+	{
+		return locals[0].systemID;
+	}
 	return system.ID;
 }
 

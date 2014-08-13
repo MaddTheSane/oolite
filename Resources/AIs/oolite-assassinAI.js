@@ -42,6 +42,7 @@ this.aiStarted = function() {
 		ai.setWaypointGenerator(ai.waypointsWitchpointPatrol);
 	}
 
+	ai.setParameter("oolite_personalityMatchesLeader",0.9);
 	ai.setCommunicationsRole("assassin");
 
 	ai.setParameter("oolite_flag_witchspacePursuit",true);
@@ -66,11 +67,6 @@ this.aiStarted = function() {
 			behaviour: ai.behaviourEnterWitchspace,
 			reconsider: 15
 		},
-		{
-			condition: ai.conditionHasRememberedTarget,
-			behaviour: ai.behaviourFollowCurrentTarget,
-			reconsider: 15
-		},
 		/* Check for couriers */
 		{
 			preconfiguration: ai.configurationCheckScanner,
@@ -89,8 +85,8 @@ this.aiStarted = function() {
 						{
 							preconfiguration: ai.configurationAcquireScannedTarget,
 							condition: ai.conditionCombatOddsGood,
-							behaviour: ai.behaviourDestroyCurrentTarget,
-							reconsider: 1
+							behaviour: ai.behaviourAssassinateCurrentTarget,
+							reconsider: 10
 						}
 					]
 				}
@@ -102,6 +98,11 @@ this.aiStarted = function() {
 			configuration: ai.configurationAcquireScannedTarget,
 			behaviour: ai.behaviourDestroyCurrentTarget,
 			reconsider: 20
+		},
+		{
+			condition: ai.conditionHasRememberedTarget,
+			behaviour: ai.behaviourFollowCurrentTarget,
+			reconsider: 15
 		},
 		{
 			preconfiguration: ai.configurationAppointGroupLeader,

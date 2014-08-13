@@ -1,3 +1,70 @@
+Changes between Oolite 1.80.1 and Oolite 1.82:
+
+General:
+========
+* More AI improvements
+* Heat cooldown slower
+* Installation time now on equipment purchase screen
+* OXZ installer now updates dependency check after each install
+* Added zooming, scrolling galaxy chart
+* Internal damage from missiles now more serious
+* Damaged equipment now sorts to the top of the status screen
+
+Graphics:
+=========
+* ECM bursts now have an effect on the scanner
+* Spacedust fades out when entering atmosphere
+
+Expansion pack manager:
+=======================
+* Installation status now updated without having to restart manager
+* Missing requirements will be installed automatically if possible
+
+Expansion pack development:
+===========================
+
+General:
+--------
+
+* mission.setInstructions() can now take an array as its first
+  parameter. The first element will be a heading on the manifest
+  screen, with the remaining elements being mission entries.
+  If multiple entries have the same heading, they are grouped.
+* Subentities now inherit their parent's entity personality - useful
+  for shader randomisation.
+
+Plists:
+-------
+* oolite-font.plist: new f6KernGovernment and f6KernTechLevel options
+* equipment.plist: installation_time, repair_time
+* descriptions.plist: long-range-chart-title-G-S now allows chart title
+  to vary from system to system
+
+
+
+Bug fixes:
+==========
+* Restore something like the 1.76 behaviour in terms of alloy plates in debris
+* Speech synthesis slightly more conservative in detecting 'credits' 
+  abbreviation
+
+-------------------------------------------------------------------------------
+
+Changes between Oolite 1.80 and Oolite 1.80.1:
+
+* Fix non-alphanumeric characters not being available on mission screen
+* Fix problem with large OXZ downloads on Windows
+* Fix some problems with docking of fast and fast-turning ships
+* Fix display problem with sun corona in rare cases
+* Fixed key 5 switching to status screen when used during save game
+  filename entry.
+* Fix Linux uninstall script error handling
+* Fix errors with escape pod launch from subentities
+* Fix consistency errors on ship library screen
+* Ship registration forms now return to interfaces page
+
+-------------------------------------------------------------------------------
+
 Changes between Oolite 1.78 and Oolite 1.80:
 
 General:
@@ -5,8 +72,6 @@ General:
 * Automatic expansion pack installer now available (not all existing
   expansion packs are available for automatic installation; manual
   installation still possible as before)
-* Strict mode now only disables OXPs rather than making other gameplay
-  changes
 * New game start screen, including access to a keyboard control
   summary and a ship specification library
 * New Tutorial option for starting a game, for a basic flight training
@@ -16,6 +81,8 @@ Gameplay:
 =========
 * Coordinate precision increased, allowing ships to travel much
   further from the witchpoint without problems
+* Strict mode now only disables OXPs rather than making other gameplay
+  changes
 * Ship hostility indicator no longer depends on weapon range
 * New equipment: Integrated Targeting System
 * Standard HUDs now include primable equipment dials, compass target
@@ -41,6 +108,8 @@ Gameplay:
 * Parcel and passenger contracts made much more varied. High-price
   high-risk contracts added. Reputation scale increased.
 * Station rotation slowed down
+* Number of cargo containers used by Gold, Platinum, Gems (e.g. after
+  scooping) now shown on the manifest screen.
 
 Graphics:
 =========
@@ -52,17 +121,23 @@ Graphics:
 * Core ship models and textures replaced with significantly improved
   ones by Griff/CaptSolo
 * New planet and atmosphere graphics (requires 'extra detail')
+* Default HUD adjusted a little to improve appearance of text
 
 Sound:
 ======
 * Now uses the OpenAL library to give fully positional sound. Supports
   stereo speakers up to 7.1 or binaural HRTF with headphones.
+* iTunes integration works again with iTunes 11 on the Mac.
 
 Controls:
 =========
+* Default key for dump cargo now "Shift-D", not "d", to reduce chance
+  of pressing accidentally
 * Number pad keys can now be bound independently of arrow keys
 * Number keys can now be bound independently of function keys
 * GUI direction keys now independent of flight direction keys
+* With an Advanced Navigation Array, the '?' key now cycles through
+  different colour highlights
 * New ';' and ':' keys for multi-function displays
 * 'tab' and '0' keys are now fast activation keys for primable
   equipment. Equipment previously using those keys has been rewritten
@@ -72,6 +147,14 @@ Controls:
 * New joystick axis configuration interface, allowing much more
   precise control
 
+Settings:
+=========
+
+* --noshaders command line option to temporarily start Oolite without
+  shader support, for debugging graphics card problems.
+* Windows and Linux ports: Default spoken messages voice changed to
+  female.
+
 Expansion pack development:
 ===========================
 
@@ -79,39 +162,40 @@ Packaging:
 ----------
 * New compressed OXZ format for easy - and automatic - expansion pack
   distribution.
+* Default Javascript properties set from manifest.plist
 
 General:
 --------
-* Wormholes have a read-only representation
 * The system populator is now run via Javascript and can be modified
   by expansion pack scripts. There is also a system repopulator to
   allow replacement of expected ship losses or departures.
 * shipdata.plist reorganised to make heavy use of templates. This
   allows shipset OXPs to be written to take advantage of future
   changes to core shipdata.
-* Primable equipment dial added to HUD
-* Sun colour and background star colour are now separated
-* Ship cargo is now defined when ships are created
-* Javascript may be used as a language for ship AIs
+* Javascript may be used as a language for ship AIs. Numerous extra JS
+  properties, methods and handlers have been added to allow this.
 * Priority-based AI library available for writing Javascript AIs in,
   with a wide range of predefined behaviours and easy addition of
   custom behaviours
+* Multi-function displays for arbitrary persistent in-flight text display
+* Primable equipment dial added to HUD
+* Sun colour and background star colour are now separated
+* Ship cargo is now defined when ships are created
 * Mission screens can now have an arbitrary text entry prompt
 * Waypoints can be added - like a compass target, but not attached to
   any other entity.
-* With an Advanced Navigation Array, the '?' key now cycles through
-  different colour highlights
 * [oolite_key_FOO] description expansion describes keyconfig entry key_FOO
 * Javascript representation for ship exhausts
+* Wormholes have a read-only Javascript representation
 * Javascript representation for flashers
 * Description and mission text expansions now use a much better random
   number generator
-* Default Javascript properties set from manifest.plist
 
 New properties:
 ---------------
 * entity.isWormhole
 * oolite.gameSettings.keyConfig
+* planet.name
 * player.cargoReputationPrecise
 * player.parcelReputationPrecise
 * player.passengerReputationPrecise
@@ -136,12 +220,16 @@ New properties:
 * ship.flashers
 * ship.homeSystem
 * ship.isFleeing
+* ship.isMinable
 * ship.isTurret
 * ship.markedForFines
 * ship.shipClassName
 * ship.shipUniqueName
+* ship.sunGlareFilter
 * station.allegiance
 * station.market[*].legalPenalty
+* sun.name
+* system.allDemoShips
 * system.populatorSettings
 * system.stations
 * system.waypoints
@@ -158,9 +246,11 @@ New methods:
 * Ship.keysForRole(role) (static method)
 * Ship.roleIsInCategory(role,category) (static method)
 * Ship.roles() (static method)
+* Ship.shipDataForKey(key) (static method)
 * dock.isQueued(ship)
 * player.endScenario(key)
 * player.ship.hideHUDSelector(selector)
+* player.ship.resetScannerZoom()
 * player.ship.setMultiFunctionDisplay(index,key)
 * player.ship.setMultiFunctionText(key, string)
 * player.ship.showHUDSelector(selector)
@@ -232,32 +322,41 @@ New plists:
 * role-categories.plist: supersedes and extends pirate-victim-roles.plist
 * scenarios.plist: allows alternative game starts to be added
 * shiplibrary.plist: adds ships to the start game ship database
+* The demoships.plist file no longer has any effect as there is no
+  longer a demo ships screen.
 
 New properties:
 * equipment.plist: fast_affinity_defensive
 * equipment.plist: fast_affinity_offensive
 * equipment.plist: sort_order
 * hud.plist: alert_conditions
+* hud.plist: align
 * hud.plist: color_critical
 * hud.plist: color_high
 * hud.plist: color_low
 * hud.plist: color_medium
 * hud.plist: color_surround
-* hud.plist: drawASCTarget
-* hud.plist: drawPrimedEquipment
-* hud.plist: drawWaypoints
+* hud.plist: drawASCTarget:
+* hud.plist: drawPrimedEquipment:
+* hud.plist: drawWaypoints:
+* hud.plist: drawWitchspaceDestination:
 * hud.plist: multi_function_displays
 * hud.plist: reticle_scale (scanner targeting enhancement)
 * hud.plist: scanner_non_linear
 * hud.plist: scanner_ultra_zoom
 * planetinfo.plist: nebula_color_1
 * planetinfo.plist: nebula_color_2
+* planetinfo.plist: planet_name
 * planetinfo.plist: populator
 * planetinfo.plist: repopulator
+* planetinfo.plist: sun_name
 * shipdata.plist: auto_weapons
 * shipdata.plist: escort_roles
 * shipdata.plist: exhaust_emissive_color
+* shipdata.plist: sun_glare_filter
 * shipyard.plist: renovation_multiplier
+* shipyard.plist: ship_name
+* shipyard.plist: ship_class_name
 
 Shaders:
 --------
@@ -284,9 +383,17 @@ Bug fixes:
 * Fix bug when pressing opposite movement direction keys together
 * Fix various random number generation bugs
 * Clean up momentum transfer in explosions
+* Fix error in manifest screen paging
+* Fix problem with duplicate passenger names in contract generation
+* Fix some issues moving in and out of strict mode
 
 System requirements:
 ====================
+
+General
+-------
+* Use of the "extra detail" graphics setting is likely to require a
+  dedicated graphics card for best performance.
 
 Mac-specific
 ------------

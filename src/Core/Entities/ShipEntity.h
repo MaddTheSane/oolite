@@ -58,7 +58,11 @@
 #define COMBAT_WEAPON_RANGE_FACTOR		1.200f
 #define COMBAT_JINK_OFFSET				500.0f
 
-#define SHIP_COOLING_FACTOR				1.0f
+#define SHIP_COOLING_FACTOR				0.1f
+// heat taken from energy damage depends on mass
+// but limit maximum rate since masses vary so much
+// Cobra III ~=215000
+#define SHIP_ENERGY_DAMAGE_TO_HEAT_FACTOR  (mass > 400000 ? 200000 / mass : 0.5)
 #define SHIP_INSULATION_FACTOR			0.00175f
 #define SHIP_MAX_CABIN_TEMP				256.0f
 #define SHIP_MIN_CABIN_TEMP				60.0f
@@ -259,10 +263,13 @@ typedef enum
 							// scripting
 							scripted_misjump: 1,
 							haveExecutedSpawnAction: 1,
+							haveStartedJSAI: 1,
 							noRocks: 1,
 							_lightsActive: 1;
 
 	GLfloat    _scriptedMisjumpRange; 
+	
+	GLfloat		sunGlareFilter;							// Range 0.0 - 1.0, where 0 means no sun glare filter, 1 means glare fully filtered
 	
 	OOFuelQuantity			fuel;						// witch-space fuel
 	GLfloat					fuel_accumulator;
@@ -515,6 +522,7 @@ typedef enum
 
 - (void) setIsBoulder:(BOOL)flag;
 - (BOOL) isBoulder;
+- (BOOL) isMinable;
 
 - (BOOL) countsAsKill;
 
@@ -1095,6 +1103,10 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 - (void) broadcastThargoidDestroyed;
 
 - (void) broadcastHitByLaserFrom:(ShipEntity*) aggressor_ship;
+
+// Sun glare filter - 0 for no filter, 1 for full filter
+- (GLfloat) sunGlareFilter;
+- (void) setSunGlareFilter:(GLfloat)newValue;
 
 // Unpiloted ships cannot broadcast messages, unless the unpilotedOverride is set to YES.
 - (void) sendExpandedMessage:(NSString *) message_text toShip:(ShipEntity*) other_ship;

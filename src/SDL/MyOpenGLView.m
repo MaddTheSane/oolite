@@ -132,6 +132,7 @@ MA 02110-1301, USA.
 		// mostly work on mine despite this function failing.
 		//	exit(1);
 	}
+	SDL_EnableUNICODE(1);
 }
 
 
@@ -310,7 +311,9 @@ MA 02110-1301, USA.
 	allowingStringInput = gvStringInputNo;
 	isAlphabetKeyDown = NO;
 
-	timeIntervalAtLastClick = [NSDate timeIntervalSinceReferenceDate];
+	timeIntervalAtLastClick = timeSinceLastMouseWheel = [NSDate timeIntervalSinceReferenceDate];
+	
+	_mouseWheelState = gvMouseWheelNeutral;
 
 	m_glContextInitialized = NO;
 
@@ -1237,6 +1240,12 @@ MA 02110-1301, USA.
 }
 
 
+- (int) mouseWheelState
+{
+	return _mouseWheelState;
+}
+
+
 - (BOOL) isCommandQDown
 {
 	return NO;
@@ -1280,6 +1289,7 @@ MA 02110-1301, USA.
 	int						mxdelta, mydelta;
 	float					mouseVirtualStickSensitivityX = viewSize.width * MOUSEVIRTUALSTICKSENSITIVITYFACTOR;
 	float					mouseVirtualStickSensitivityY = viewSize.height * MOUSEVIRTUALSTICKSENSITIVITYFACTOR;
+	NSTimeInterval			timeNow = [NSDate timeIntervalSinceReferenceDate];
 
 
 	while (SDL_PollEvent(&event))
@@ -1308,12 +1318,20 @@ MA 02110-1301, USA.
 						 so we use mouseWarped to simply ignore handling of motion events in this case. - Nikos 20110721
 						*/
 						[self resetMouse]; // Will set mouseWarped to YES
+						break;
+					// mousewheel stuff
+					case SDL_BUTTON_WHEELUP:
+						_mouseWheelState = gvMouseWheelUp;
+						break;
+					case SDL_BUTTON_WHEELDOWN:
+						_mouseWheelState = gvMouseWheelDown;
+						break;
 				}
 				break;
 
 			case SDL_MOUSEBUTTONUP:
 				mbtn_event = (SDL_MouseButtonEvent*)&event;
-				NSTimeInterval timeBetweenClicks = [NSDate timeIntervalSinceReferenceDate] - timeIntervalAtLastClick;
+				NSTimeInterval timeBetweenClicks = timeNow - timeIntervalAtLastClick;
 				timeIntervalAtLastClick += timeBetweenClicks;
 				if (mbtn_event->button == SDL_BUTTON_LEFT)
 				{
@@ -1323,6 +1341,17 @@ MA 02110-1301, USA.
 						keys[gvMouseDoubleClick] = doubleClick;
 					}
 					keys[gvMouseLeftButton] = NO;
+				}
+				/* 
+				   Mousewheel handling - just note time since last use here and mark as inactive,
+				   if needed, at the end of this method. Note that the mousewheel button up event is 
+				   kind of special, as in, it is sent at the same time as its corresponding mousewheel
+				   button down one - Nikos 20140809
+				*/
+				if (mbtn_event->button == SDL_BUTTON_WHEELUP || mbtn_event->button == SDL_BUTTON_WHEELDOWN)
+				{
+					NSTimeInterval timeBetweenMouseWheels = timeNow - timeSinceLastMouseWheel;
+					timeSinceLastMouseWheel += timeBetweenMouseWheels;
 				}
 				break;
 
@@ -1773,7 +1802,6 @@ keys[a] = NO; keys[b] = NO; \
 			{
 				SDL_ResizeEvent *rsevt=(SDL_ResizeEvent *)&event;
 				NSSize newSize=NSMakeSize(rsevt->w, rsevt->h);
-				[self initialiseGLWithSize: newSize];
 #if OOLITE_WINDOWS
 				if (!fullScreen && updateContext)
 				{
@@ -1785,10 +1813,12 @@ keys[a] = NO; keys[b] = NO; \
 					}
 					else
 					{
+						[self initialiseGLWithSize: newSize];
 						[self saveWindowSize: newSize];
 					}
 				}
 #else
+				[self initialiseGLWithSize: newSize];
 				[self saveWindowSize: newSize];
 #endif
 				// certain gui screens will require an immediate redraw after
@@ -1807,6 +1837,12 @@ keys[a] = NO; keys[b] = NO; \
 				[gameController exitAppWithContext:@"SDL_QUIT event received"];
 			}
 		}
+	}
+	// check if enough time has passed since last use of the mousewheel and act
+	// if needed
+	if (timeNow >= timeSinceLastMouseWheel + OOMOUSEWHEEL_EVENTS_DELAY_INTERVAL)
+	{
+		_mouseWheelState = gvMouseWheelNeutral;
 	}
 }
 
@@ -1830,28 +1866,28 @@ keys[a] = NO; keys[b] = NO; \
 	// TODO: a more flexible mechanism  for max. string length ?
 	if([typedString length] < 40)
 	{
-		// inputAlpha - limited input for planet find screen
-		// alpha keys - either inputAlpha  or inputAll...
-		if(key >= SDLK_a && key <= SDLK_z)
+		if (allowingStringInput == gvStringInputAlpha)
 		{
-			isAlphabetKeyDown=YES;
-			// if in inputAlpha, keep in lower case.
-			if(shift && allowingStringInput == gvStringInputAll)
+		// inputAlpha - limited input for planet find screen
+			if(key >= SDLK_a && key <= SDLK_z)
 			{
-				key=toupper(key);
+				isAlphabetKeyDown=YES;
+				[typedString appendFormat:@"%c", key];
+				// if in inputAlpha, keep in lower case.
 			}
 		}
-
-		// full input for load-save screen
-		// NB: left-shift could return 0
-		if (allowingStringInput == gvStringInputAll && ((key >= SDLK_0 && key <= SDLK_9) || key == SDLK_SPACE))
+		else
 		{
-			isAlphabetKeyDown=YES;
-		}
-
-		if(isAlphabetKeyDown)
-		{
-			[typedString appendFormat:@"%c", key];
+			Uint16 unicode = kbd_event->keysym.unicode;
+			// printable range
+			if (unicode >= 32 && unicode <= 126)
+			{
+				if ((char)unicode != '/' || allowingStringInput == gvStringInputAll)
+				{
+					isAlphabetKeyDown=YES;
+					[typedString appendFormat:@"%c", unicode];
+				}
+			}
 		}
 	}
 }
