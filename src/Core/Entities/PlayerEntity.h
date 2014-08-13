@@ -652,6 +652,8 @@ typedef enum
 	StickProfileScreen		*stickProfileScreen;
 }
 
+@property (readonly, copy) NSArray *shipCommodityData;
+
 + (PlayerEntity *) sharedPlayer;
 - (void) deferredInit;
 
@@ -676,7 +678,6 @@ typedef enum
 - (void) unloadCargoPodsForType:(OOCommodityType)type amount:(OOCargoQuantity) quantity;
 - (void) loadCargoPodsForType:(OOCommodityType)type fromArray:(NSMutableArray *) manifest;
 - (void) loadCargoPodsForType:(OOCommodityType)type amount:(OOCargoQuantity) quantity;
-- (NSArray *) shipCommodityData;
 
 - (OOCreditsQuantity) deciCredits;
 

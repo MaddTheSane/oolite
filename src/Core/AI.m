@@ -400,6 +400,10 @@ struct AIStackElement
 static AIStackElement *sStack = NULL;
 #endif
 
+- (void) reactToMessage:(NSString *) message
+{
+	[self reactToMessage:message context:nil];
+}
 
 - (void) reactToMessage:(NSString *) message context:(NSString *)debugContext
 {

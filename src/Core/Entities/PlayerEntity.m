@@ -150,6 +150,7 @@ static GLfloat		sBaseMass = 0.0;
 
 
 
+@property (readwrite, copy) NSArray *shipCommodityData;
 @end
 
 
@@ -161,6 +162,7 @@ static GLfloat		sBaseMass = 0.0;
 
 
 @implementation PlayerEntity
+@synthesize shipCommodityData;
 
 + (PlayerEntity *) sharedPlayer
 {
@@ -280,8 +282,8 @@ static GLfloat		sBaseMass = 0.0;
 		commodityInfo[MARKET_QUANTITY] = @(amount); // enter the adjusted amount
 		manifest[type] = commodityInfo;
 		
-		[shipCommodityData release];
-		shipCommodityData = manifest;
+		self.shipCommodityData = manifest;
+		[manifest release];
 	}
 }
 
@@ -309,8 +311,8 @@ static GLfloat		sBaseMass = 0.0;
 		[self unloadAllCargoPodsForType:i fromArray:manifest];
 	}
 	
-	[shipCommodityData release];
-	shipCommodityData = manifest;
+	self.shipCommodityData = manifest;
+	[manifest release];
 	
 	[self calculateCurrentCargo];	// work out the correct value for current_cargo
 }
@@ -454,8 +456,8 @@ static GLfloat		sBaseMass = 0.0;
 					commodityInfo[MARKET_QUANTITY] = @(amount); // enter the adjusted amount
 					manifest[type] = commodityInfo;
 					
-					[shipCommodityData release];
-					shipCommodityData = manifest;
+					self.shipCommodityData = manifest;
+					[manifest release];
 				}
 				quantity -= smaller_quantity;
 			}
@@ -498,15 +500,8 @@ static GLfloat		sBaseMass = 0.0;
 	{
 		[self loadCargoPodsForType:i fromArray: manifest];
 	}
-	[shipCommodityData release];
-	shipCommodityData = [[NSMutableArray arrayWithArray:manifest] retain];
+	self.shipCommodityData = [NSArray arrayWithArray:manifest];
 	[manifest release]; // release, done
-}
-
-
-- (NSArray *) shipCommodityData
-{
-	return shipCommodityData;
 }
 
 
@@ -769,8 +764,7 @@ static GLfloat		sBaseMass = 0.0;
 		manifest[i] = [NSArray arrayWithArray:commodityInfo];
 
 	}
-	[shipCommodityData release];
-	shipCommodityData = [[NSMutableArray arrayWithArray:manifest] retain];
+	self.shipCommodityData = [NSArray arrayWithArray:manifest];
 	
 	// Deprecated equipment flags. New equipment shouldn't be added here (it'll be handled by the extra_equipment dictionary).
 	[result oo_setBool:[self hasDockingComputer]		forKey:@"has_docking_computer"];
@@ -1064,8 +1058,7 @@ static GLfloat		sBaseMass = 0.0;
 	[self setShipUniqueName:[dict oo_stringForKey:@"ship_unique_name" defaultValue:@""]];
 	[self setShipClassName:[dict oo_stringForKey:@"ship_class_name" defaultValue:[shipDict oo_stringForKey:@"name"]]];
 	
-	[shipCommodityData autorelease];
-	shipCommodityData = [[dict oo_arrayForKey:@"shipCommodityData" defaultValue:shipCommodityData] copy];
+	self.shipCommodityData = [[[dict oo_arrayForKey:@"shipCommodityData" defaultValue:shipCommodityData] copy] autorelease];
 	
 	// extra equipment flags
 	[self removeAllEquipment];
@@ -1254,8 +1247,7 @@ static GLfloat		sBaseMass = 0.0;
 				manifest[type] = [NSArray arrayWithArray:manifest_commodity];
 			}
 		}
-		[shipCommodityData release];
-		shipCommodityData = [[NSMutableArray arrayWithArray:manifest] retain];
+		self.shipCommodityData = [NSArray arrayWithArray:manifest];
 	}
 	
 	credits = OODeciCreditsFromObject(dict[@"credits"]);
@@ -1793,7 +1785,7 @@ static GLfloat		sBaseMass = 0.0;
 	
 	max_cargo				= 20; // will be reset later
 	
-	shipCommodityData = [[ResourceManager dictionaryFromFilesNamed:@"commodities.plist" inFolder:@"Config" andMerge:YES][@"default"] retain];
+	self.shipCommodityData = [ResourceManager dictionaryFromFilesNamed:@"commodities.plist" inFolder:@"Config" andMerge:YES][@"default"];
 	
 	// set up missiles
 	missiles				= PLAYER_STARTING_MISSILES;
@@ -9483,8 +9475,7 @@ static NSString *last_outfitting_key=nil;
 		NSMutableArray* manifest_commodity = [NSMutableArray arrayWithArray:[manifest oo_arrayAtIndex:type]];
 		manifest_commodity[MARKET_QUANTITY] = @(amount);
 		manifest[type] = [NSArray arrayWithArray:manifest_commodity];
-		[shipCommodityData release];
-		shipCommodityData = [[NSMutableArray arrayWithArray:manifest] retain];
+		self.shipCommodityData = [NSArray arrayWithArray:manifest];
 		[manifest release];
 	}
 
@@ -9769,8 +9760,7 @@ static NSString *last_outfitting_key=nil;
 	manifest[index] = [NSArray arrayWithArray:manifest_commodity];
 	localMarket[index] = [NSArray arrayWithArray:market_commodity];
 	
-	[shipCommodityData release];
-	shipCommodityData = [[NSMutableArray arrayWithArray:manifest] retain];
+	self.shipCommodityData = [NSArray arrayWithArray:manifest];
 	
 	[self calculateCurrentCargo];
 	
@@ -9824,8 +9814,7 @@ static NSString *last_outfitting_key=nil;
 	manifest[index] = [NSArray arrayWithArray:manifest_commodity];
 	localMarket[index] = [NSArray arrayWithArray:market_commodity];
 	
-	[shipCommodityData release];
-	shipCommodityData = [[NSMutableArray arrayWithArray:manifest] retain];
+	self.shipCommodityData = [NSArray arrayWithArray:manifest];
 	
 	if ([UNIVERSE autoSave]) [UNIVERSE setAutoSaveNow:YES];
 	
