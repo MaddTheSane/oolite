@@ -9,7 +9,7 @@ OO_ARCH_WARNING_FLAGS[arch=i386]		= -Wno-format
 OO_LOTS_OF_WARNINGS						= -Weverything
 
 // Trim off stylistic warnings from -Wall or -Wextra that we don't want.
-OO_WARNING_EXCEPTIONS					= -Wno-unused-parameter -Wno-missing-field-initializers
+OO_WARNING_EXCEPTIONS					= -Wno-unused-parameter -Wno-missing-field-initializers -Wno-auto-import
 
 // Disable stuff from -Weverything that we don't want.
 // -Wpedantic: Even I can't be bothered to conform to -Wpedantic. Yet.

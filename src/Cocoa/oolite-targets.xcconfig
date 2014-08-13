@@ -1,16 +1,16 @@
 #include "oolite-warnings.xcconfig"
 
-ARCHS									= x86_64
-SDKROOT									= macosx10.8
+ARCHS									= $(ARCHS_STANDARD)
+SDKROOT									= macosx
 
-MACOSX_DEPLOYMENT_TARGET				= 10.6
+MACOSX_DEPLOYMENT_TARGET				= 10.7
 
 GCC_VERSION								= com.apple.compilers.llvm.clang.1_0
 
-//CLANG_ENABLE_MODULES					= YES //This causes a lot of warnings
+CLANG_ENABLE_MODULES					= YES //This causes a lot of warnings
 //LLVM_LTO								= YES //This causes the linker to take forever
 LLVM_LTO								= NO
-//CLANG_CXX_LIBRARY						= libc++
+CLANG_CXX_LIBRARY						= libc++
 DEBUG_INFORMATION_FORMAT				= dwarf
 GCC_GENERATE_DEBUGGING_SYMBOLS			= YES
 SKIP_INSTALL							= YES
