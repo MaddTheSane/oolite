@@ -52,7 +52,7 @@ SOFTWARE.
 
 // Note: -init is equivalent to -initWithComparator:@selector(compare:)
 + (instancetype) queueWithComparator:(SEL)comparator;
-- (id) initWithComparator:(SEL)comparator;
+- (instancetype) initWithComparator:(SEL)comparator;
 
 - (void) addObject:(id)object;			// May throw NSInvalidArgumentException or NSMallocException.
 - (void) removeObject:(id)object;		// Uses comparator (looking for NSOrderedEqual) to find object. Note: relatively expensive.

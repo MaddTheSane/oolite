@@ -341,10 +341,9 @@ enum
 - (id)initWithGameView:(MyOpenGLView *)gameView;
 
 // SessionID: a value that's incremented when the game is reset.
-- (NSUInteger) sessionID;
+@property (atomic, readonly) NSUInteger sessionID;
 
-- (BOOL) doProcedurallyTexturedPlanets;
-- (void) setDoProcedurallyTexturedPlanets:(BOOL) value;
+@property (nonatomic) BOOL doProcedurallyTexturedPlanets;
 
 - (NSString *) useAddOns;
 - (BOOL) setUseAddOns:(NSString *)newUse fromSaveGame: (BOOL)saveGame;
@@ -354,7 +353,8 @@ enum
 
 - (BOOL) reinitAndShowDemo:(BOOL)showDemo;
 
-- (BOOL) doingStartUp;	// True during initial game startup (not reset).
+/// True during initial game startup (not reset).
+@property (atomic, readonly) BOOL doingStartUp;
 
 - (NSUInteger) entityCount;
 #ifndef NDEBUG
@@ -413,11 +413,9 @@ enum
 - (GLfloat) safeWitchspaceExitDistance;
 
 - (void) setUpBreakPattern:(HPVector)pos orientation:(Quaternion)q forDocking:(BOOL)forDocking;
-- (BOOL) witchspaceBreakPattern;
-- (void) setWitchspaceBreakPattern:(BOOL)newValue;
+@property BOOL witchspaceBreakPattern;
 
-- (BOOL) dockingClearanceProtocolActive;
-- (void) setDockingClearanceProtocolActive:(BOOL)newValue;
+@property (nonatomic) BOOL dockingClearanceProtocolActive;
 
 - (void) handleGameOver;
 
@@ -441,8 +439,8 @@ enum
 - (StationEntity *) stationFriendlyTo:(ShipEntity *) ship;
 
 - (void) resetBeacons;
-- (Entity <OOBeaconEntity> *) firstBeacon;
-- (Entity <OOBeaconEntity> *) lastBeacon;
+@property (atomic, readonly, assign) Entity <OOBeaconEntity> *firstBeacon;
+@property (atomic, readonly, assign) Entity <OOBeaconEntity> *lastBeacon;
 - (void) setNextBeacon:(Entity <OOBeaconEntity> *) beaconShip;
 - (void) clearBeacon:(Entity <OOBeaconEntity> *) beaconShip;
 
@@ -453,8 +451,8 @@ enum
 // Note: the alpha value is also air resistance!
 - (void) setSkyColorRed:(GLfloat)red green:(GLfloat)green blue:(GLfloat)blue alpha:(GLfloat)alpha;
 
-- (BOOL) breakPatternOver;
-- (BOOL) breakPatternHide;
+@property (readonly, atomic) BOOL breakPatternOver;
+@property (readonly, atomic) BOOL breakPatternHide;
 
 - (NSString *) randomShipKeyForRoleRespectingConditions:(NSString *)role;
 - (ShipEntity *) newShipWithRole:(NSString *)role OO_RETURNS_RETAINED;		// Selects ship using role weights, applies auto_ai, respects conditions
@@ -489,8 +487,7 @@ enum
 - (NSString *) displayNameForCommodity:(OOCommodityType)co_type;
 - (NSString *) describeCommodity:(OOCommodityType)co_type amount:(OOCargoQuantity) co_amount;
 
-- (void) setGameView:(MyOpenGLView *)view;
-- (MyOpenGLView *) gameView;
+@property (retain) MyOpenGLView *gameView;
 - (GameController *) gameController;
 - (NSDictionary *) gameSettings;
 
@@ -629,7 +626,7 @@ enum
 - (NSDictionary *) generateSystemData:(OOSystemID) s useCache:(BOOL) useCache;
 - (NSDictionary *) currentSystemData;	// Same as generateSystemData:systemSeed unless in interstellar space.
 
-- (BOOL) inInterstellarSpace;
+@property (readonly, atomic) BOOL inInterstellarSpace;
 
 - (void) setSystemDataKey:(NSString*) key value:(NSObject*) object fromManifest:(NSString *)manifest;
 - (void) setSystemDataForGalaxy:(OOGalaxyID) gnum planet:(OOSystemID) pnum key:(NSString *)key value:(id)object fromManifest:(NSString *)manifest forLayer:(OOSystemLayer)layer;
@@ -680,8 +677,8 @@ enum
 
 - (NSString*) brochureDescriptionWithDictionary:(NSDictionary*) dict standardEquipment:(NSArray*) extras optionalEquipment:(NSArray*) options;
 
-- (HPVector) getWitchspaceExitPosition;
-- (Quaternion) getWitchspaceExitRotation;
+@property (readonly, atomic, getter=getWitchspaceExitPosition) HPVector witchspaceExitPosition;
+@property (readonly, atomic, getter=getWitchspaceExitRotation) Quaternion witchspaceExitRotation;
 
 - (HPVector) getSunSkimStartPositionForShip:(ShipEntity*) ship;
 - (HPVector) getSunSkimEndPositionForShip:(ShipEntity*) ship;
@@ -694,32 +691,29 @@ enum
 
 - (void) clearGUIs;
 
-- (GuiDisplayGen *) gui;
-- (GuiDisplayGen *) commLogGUI;
-- (GuiDisplayGen *) messageGUI;
+@property (readonly, retain) GuiDisplayGen *gui;
+@property (readonly, retain) GuiDisplayGen *commLogGUI;
+@property (readonly, retain) GuiDisplayGen *messageGUI;
 
 - (void) resetCommsLogColor;
 
 - (void) setDisplayText:(BOOL) value;
 - (BOOL) displayGUI;
 
-- (void) setDisplayFPS:(BOOL) value;
-- (BOOL) displayFPS;
+@property BOOL displayFPS;
 
-- (void) setAutoSave:(BOOL) value;
-- (BOOL) autoSave;
+@property (nonatomic) BOOL autoSave;
 
-- (void) setWireframeGraphics:(BOOL) value;
-- (BOOL) wireframeGraphics;
+@property (nonatomic) BOOL wireframeGraphics;
 
 - (BOOL) reducedDetail;
 - (void) setDetailLevel:(OOGraphicsDetail)value;
 - (OOGraphicsDetail) detailLevel;
-- (BOOL) useShaders;
+@property (readonly, atomic) BOOL useShaders;
 
 - (void) handleOoliteException:(NSException *)ooliteException;
 
-- (GLfloat)airResistanceFactor;
+@property (readonly) GLfloat airResistanceFactor;
 
 // speech routines
 //
@@ -727,7 +721,7 @@ enum
 //
 - (void) stopSpeaking;
 //
-- (BOOL) isSpeaking;
+@property (atomic, readonly, getter=isSpeaking) BOOL speaking;
 //
 #if OOLITE_ESPEAK
 - (NSString *) voiceName:(unsigned int) index;
@@ -739,25 +733,21 @@ enum
 //
 ////
 
-//autosave 
+//autosave
 - (void) setAutoSaveNow:(BOOL) value;
 - (BOOL) autoSaveNow;
 
-- (int) framesDoneThisUpdate;
+@property (readonly) int framesDoneThisUpdate;
 - (void) resetFramesDoneThisUpdate;
 
 // True if textual pause message (as opposed to overlay) is being shown.
-- (BOOL) pauseMessageVisible;
-- (void) setPauseMessageVisible:(BOOL)value;
+@property BOOL pauseMessageVisible;
 
-- (BOOL) permanentCommLog;
-- (void) setPermanentCommLog:(BOOL)value;
+@property BOOL permanentCommLog;
 - (void) setAutoCommLog:(BOOL)value;
-- (BOOL) permanentMessageLog;
-- (void) setPermanentMessageLog:(BOOL)value;
+@property BOOL permanentMessageLog;
 
-- (BOOL) blockJSPlayerShipProps;
-- (void) setBlockJSPlayerShipProps:(BOOL)value;
+@property (atomic) BOOL blockJSPlayerShipProps;
 
 - (void) loadConditionScripts;
 - (void) addConditionScripts:(NSEnumerator *)scripts;
@@ -794,16 +784,16 @@ NSString *OOLookUpPluralDescriptionPRIV(NSString *key, NSInteger count);
 
 @interface OOSound (OOCustomSounds)
 
-+ (id) soundWithCustomSoundKey:(NSString *)key;
-- (id) initWithCustomSoundKey:(NSString *)key;
++ (instancetype) soundWithCustomSoundKey:(NSString *)key;
+- (instancetype) initWithCustomSoundKey:(NSString *)key;
 
 @end
 
 
 @interface OOSoundSource (OOCustomSounds)
 
-+ (id) sourceWithCustomSoundKey:(NSString *)key;
-- (id) initWithCustomSoundKey:(NSString *)key;
++ (instancetype) sourceWithCustomSoundKey:(NSString *)key;
+- (instancetype) initWithCustomSoundKey:(NSString *)key;
 
 - (void) playCustomSoundWithKey:(NSString *)key;
 

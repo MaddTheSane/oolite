@@ -32,18 +32,16 @@ SOFTWARE.
 #import <Foundation/Foundation.h>
 
 
-enum
+typedef NS_OPTIONS(uint32_t, JAPersistentFileReferenceResolveFlags)
 {
 	kJAPersistentFileReferenceWithoutUI				= 0x00000001UL,	// Avoid user interaction.
 	kJAPersistentFileReferenceWithoutMounting		= 0x00000002UL,	// Avoid mounting volumes.
 	kJAPersistentFileReferenceReturnReferenceURL	= 0x00000004UL	// Return a file reference URL if possible.
 };
 
-typedef uint32_t JAPersistentFileReferenceResolveFlags;
 
+NSDictionary *__nullable JAPersistentFileReferenceFromURL(NSURL *__nonnull url);
+NSURL *__nullable JAURLFromPersistentFileReference(NSDictionary *__nonnull fileRef, JAPersistentFileReferenceResolveFlags flags, BOOL *__nullable isStale);
 
-NSDictionary *JAPersistentFileReferenceFromURL(NSURL *url);
-NSURL *JAURLFromPersistentFileReference(NSDictionary *fileRef, JAPersistentFileReferenceResolveFlags flags, BOOL *isStale);
-
-NSDictionary *JAPersistentFileReferenceFromPath(NSString *path);
-NSString *JAPathFromPersistentFileReference(NSDictionary *fileRef, JAPersistentFileReferenceResolveFlags flags, BOOL *isStale);
+NSDictionary *__nullable JAPersistentFileReferenceFromPath(NSString *__nonnull path);
+NSString *__nullable JAPathFromPersistentFileReference(NSDictionary *__nonnull fileRef, JAPersistentFileReferenceResolveFlags flags, BOOL *__nullable isStale);

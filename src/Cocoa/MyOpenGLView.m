@@ -189,7 +189,7 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 
 - (NSString *) typedString
 {
-	return typedString;
+	return [NSString stringWithString:typedString];
 }
 
 
@@ -205,40 +205,13 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 }
 
 
-- (NSSize) viewSize
-{
-	return viewSize;
-}
+@synthesize viewSize;
+@synthesize display_z;
+@synthesize x_offset;
+@synthesize y_offset;
 
 
-- (GLfloat) display_z
-{
-	return display_z;
-}
-
-
-- (GLfloat) x_offset
-{
-	return x_offset;
-}
-
-
-- (GLfloat) y_offset
-{
-	return y_offset;
-}
-
-
-- (GameController *) gameController
-{
-	return gameController;
-}
-
-
-- (void) setGameController:(GameController *) controller
-{
-	gameController = controller;
-}
+@synthesize gameController;
 
 
 - (void) noteMouseInteractionModeChangedFrom:(OOMouseInteractionMode)oldMode to:(OOMouseInteractionMode)newMode
@@ -876,10 +849,7 @@ FAIL:
 }
 
 
-- (NSPoint) virtualJoystickPosition
-{
-	return virtualJoystickPosition;
-}
+@synthesize virtualJoystickPosition;
 
 
 /////////////////////////////////////////////////////////////
@@ -974,7 +944,7 @@ FAIL:
 }
 
 
-- (int) mouseWheelState
+- (MouseWheelStatus) mouseWheelState
 {
 	// FIXME: Mousewheel in-game implementaiton for Macs needed
 	return gvMouseWheelNeutral;

@@ -35,12 +35,12 @@ SOFTWARE.
 @protocol OOAsyncWorkTask;
 
 
-typedef enum
+typedef NS_ENUM(int, OOAsyncWorkPriority)
 {
 	kOOAsyncPriorityLow,
 	kOOAsyncPriorityMedium,
 	kOOAsyncPriorityHigh
-} OOAsyncWorkPriority;
+};
 
 
 @interface OOAsyncWorkManager: NSObject

@@ -167,11 +167,7 @@ NSURL *JAURLFromPersistentFileReference(NSDictionary *fileRef, JAPersistentFileR
 				if (FSResolveAliasWithMountFlags(NULL, alias, &fsRef, &carbonStale, AliasMountFlagsFromFlags(flags)) == noErr)
 				{
 					stale = carbonStale;
-					result = (NSURL *)CFURLCreateFromFSRef(kCFAllocatorDefault, &fsRef);
-#if 1050 <= MAC_OS_X_VERSION_MAX_ALLOWED
-					CFMakeCollectable((CFURLRef)result);
-#endif
-					[result autorelease];
+					result = (NSURL *)CFBridgingRelease(CFURLCreateFromFSRef(kCFAllocatorDefault, &fsRef));
 				}
 				DisposeHandle((Handle)alias);
 			}

@@ -42,6 +42,6 @@ MA 02110-1301, USA.
 	NSString					*_exitContext;
 }
 
-- (void) setExitContext:(NSString *)exitContext;
+@property (copy) NSString *exitContext;
 
 @end

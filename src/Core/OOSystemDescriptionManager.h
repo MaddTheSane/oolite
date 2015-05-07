@@ -28,13 +28,13 @@ MA 02110-1301, USA.
 #import "OOTypes.h"
 #import "legacy_random.h"
 
-typedef enum
+typedef NS_ENUM(int, OOSystemLayer)
 {
 	OO_LAYER_CORE = 0,
 	OO_LAYER_OXP_STATIC = 1,
 	OO_LAYER_OXP_DYNAMIC = 2,
 	OO_LAYER_OXP_PRIORITY = 3
-} OOSystemLayer;
+};
 
 #define OO_SYSTEM_LAYERS        4
 #define OO_SYSTEMS_PER_GALAXY	(kOOMaximumSystemID+1)

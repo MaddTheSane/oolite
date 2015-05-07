@@ -136,7 +136,7 @@ OOINLINE void FreeElement(OOAsyncQueueElement *element)
 - (NSString *)description
 {
 	// Don't bother locking, the value would be out of date immediately anyway.
-	return [NSString stringWithFormat:@"<%@ %p>{%u elements}", [self class], self, _elemCount];
+	return [NSString stringWithFormat:@"<%@ %p>{%lu elements}", [self class], self, (unsigned long)_elemCount];
 }
 
 
@@ -228,7 +228,7 @@ FAIL:
 }
 
 
-- (unsigned)count
+- (NSUInteger)count
 {
 	return _elemCount;
 }

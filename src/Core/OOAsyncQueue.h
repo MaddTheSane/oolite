@@ -40,7 +40,7 @@ SOFTWARE.
 	struct OOAsyncQueueElement	*_head,
 								*_tail,
 								*_pool;
-	unsigned					_elemCount,
+	NSUInteger					_elemCount,
 								_poolCount;
 }
 
@@ -51,7 +51,7 @@ SOFTWARE.
 
 // Due to the asynchronous nature of the queue, these values are immediately out of date.
 - (BOOL)empty;
-- (unsigned)count;
+- (NSUInteger)count;
 
 - (void)emptyQueue;		// Releases all elements.
 

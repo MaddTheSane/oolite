@@ -144,11 +144,11 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void * context);
 }
 
 + (instancetype) elementWithLocation:(OOSystemID) location parent:(OOSystemID)parent cost:(double) cost distance:(double) distance time:(double) time;
-- (OOSystemID) parent;
-- (OOSystemID) location;
-- (double) cost;
-- (double) distance;
-- (double) time;
+@property (readonly) OOSystemID parent;
+@property (readonly) OOSystemID location;
+@property (readonly) double cost;
+@property (readonly) double distance;
+@property (readonly) double time;
 
 @end
 
@@ -167,16 +167,16 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void * context);
 	return [r autorelease];
 }
 
-- (OOSystemID) parent { return _parent; }
-- (OOSystemID) location { return _location; }
-- (double) cost { return _cost; }
-- (double) distance { return _distance; }
-- (double) time { return _time; }
+@synthesize parent = _parent;
+@synthesize location = _location;
+@synthesize cost = _cost;
+@synthesize distance = _distance;
+@synthesize time = _time;
 
 @end
 
 
-@interface Universe (OOPrivate)
+@interface Universe ()
 
 - (BOOL) doRemoveEntity:(Entity *)entity;
 - (void) setUpCargoPods;
@@ -199,9 +199,6 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void * context);
 #if NEW_PLANETS
 - (void) prunePreloadingPlanetMaterials;
 #endif
-
-// Set shader effects level without logging or triggering a reset -- should only be used directly during startup.
-- (void) setShaderEffectsLevelDirectly:(OOShaderSetting)value;
 
 - (void) setFirstBeacon:(Entity <OOBeaconEntity> *)beacon;
 - (void) setLastBeacon:(Entity <OOBeaconEntity> *)beacon;
@@ -483,10 +480,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 }
 
 
-- (BOOL) doProcedurallyTexturedPlanets
-{
-	return doProcedurallyTexturedPlanets;
-}
+@synthesize doProcedurallyTexturedPlanets;
 
 
 - (void) setDoProcedurallyTexturedPlanets:(BOOL) value
@@ -2683,22 +2677,10 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 }
 
 
-- (BOOL) witchspaceBreakPattern
-{
-	return _witchspaceBreakPattern;
-}
+@synthesize witchspaceBreakPattern = _witchspaceBreakPattern;
 
 
-- (void) setWitchspaceBreakPattern:(BOOL)newValue
-{
-	_witchspaceBreakPattern = !!newValue;
-}
-
-
-- (BOOL) dockingClearanceProtocolActive
-{
-	return _dockingClearanceProtocolActive;
-}
+@synthesize dockingClearanceProtocolActive = _dockingClearanceProtocolActive;
 
 
 - (void) setDockingClearanceProtocolActive:(BOOL)newValue
@@ -4012,17 +3994,8 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 
 ////////////////////////////////////////////////////
 
-- (void) setGameView:(MyOpenGLView *)view
-{
-	[gameView release];
-	gameView = [view retain];
-}
 
-
-- (MyOpenGLView *) gameView
-{
-	return gameView;
-}
+@synthesize gameView;
 
 
 - (GameController *) gameController
@@ -4725,10 +4698,7 @@ static const OOMatrix	starboard_matrix =
 }
 
 
-- (int) framesDoneThisUpdate
-{
-	return framesDoneThisUpdate;
-}
+@synthesize framesDoneThisUpdate;
 
 
 - (void) resetFramesDoneThisUpdate
@@ -9233,22 +9203,14 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 
 ///////////////////////////////////////
 
-- (GuiDisplayGen *) gui
-{
-	return gui;
-}
+
+@synthesize gui;
 
 
-- (GuiDisplayGen *) commLogGUI
-{
-	return comm_log_gui;
-}
+@synthesize commLogGUI = comm_log_gui;
 
 
-- (GuiDisplayGen *) messageGUI
-{
-	return message_gui;
-}
+@synthesize messageGUI = message_gui;
 
 
 - (void) clearGUIs
@@ -9279,16 +9241,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 }
 
 
-- (void) setDisplayFPS:(BOOL) value
-{
-	displayFPS = !!value;
-}
-
-
-- (BOOL) displayFPS
-{
-	return displayFPS;
-}
+@synthesize displayFPS;
 
 
 - (void) setAutoSave:(BOOL) value
@@ -9298,10 +9251,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 }
 
 
-- (BOOL) autoSave
-{
-	return autoSave;
-}
+@synthesize autoSave;
 
 
 - (void) setAutoSaveNow:(BOOL) value
@@ -9323,10 +9273,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 }
 
 
-- (BOOL) wireframeGraphics
-{
-	return wireframeGraphics;
-}
+@synthesize wireframeGraphics;
 
 
 - (BOOL) reducedDetail
@@ -9403,10 +9350,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 }
 
 
-- (GLfloat)airResistanceFactor
-{
-	return airResistanceFactor;
-}
+@synthesize airResistanceFactor;
 
 
 // speech routines
@@ -9529,40 +9473,13 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 #endif
 
 
-- (BOOL) pauseMessageVisible
-{
-	return _pauseMessage;
-}
+@synthesize pauseMessageVisible = _pauseMessage;
 
 
-- (void) setPauseMessageVisible:(BOOL)value
-{
-	_pauseMessage = value;
-}
+@synthesize permanentMessageLog = _permanentMessageLog;
 
 
-- (BOOL) permanentMessageLog
-{
-	return _permanentMessageLog;
-}
-
-
-- (void) setPermanentMessageLog:(BOOL)value
-{
-	_permanentMessageLog = value;
-}
-
-
-- (BOOL) permanentCommLog
-{
-	return _permanentCommLog;
-}
-
-
-- (void) setPermanentCommLog:(BOOL)value
-{
-	_permanentCommLog = value;
-}
+@synthesize permanentCommLog = _permanentCommLog;
 
 
 - (void) setAutoCommLog:(BOOL)value

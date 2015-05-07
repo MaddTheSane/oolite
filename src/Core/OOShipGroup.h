@@ -45,13 +45,12 @@ MA 02110-1301, USA.
 	struct JSObject			*_jsSelf;
 }
 
-- (id) init;
-- (id) initWithName:(NSString *)name;
+- (instancetype) init;
+- (instancetype) initWithName:(NSString *)name;
 + (instancetype) groupWithName:(NSString *)name;
 + (instancetype) groupWithName:(NSString *)name leader:(ShipEntity *)leader;
 
-- (NSString *) name;
-- (void) setName:(NSString *)name;
+@property (nonatomic, copy) NSString *name;
 
 - (ShipEntity *) leader;
 - (void) setLeader:(ShipEntity *)leader;
@@ -68,7 +67,7 @@ MA 02110-1301, USA.
 - (BOOL) addShip:(ShipEntity *)ship;
 - (BOOL) removeShip:(ShipEntity *)ship;
 
-- (NSUInteger) count;		// NOTE: this is O(n).
-- (BOOL) isEmpty;
+@property (atomic, readonly) NSUInteger count;		// NOTE: this is O(n).
+@property (atomic, readonly, getter=isEmpty) BOOL empty;
 
 @end

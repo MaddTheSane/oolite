@@ -37,7 +37,7 @@ MA 02110-1301, USA.
 @interface NSFileManager (OOExtensions)
 
 - (NSArray *) commanderContentsOfPath:(NSString*)savePath;
-- (NSString *) defaultCommanderPath;
+@property (atomic, readonly, copy) NSString *defaultCommanderPath;
 
 /*
 	Wrappers for methods that were deprecated in Leopard but whose replacements

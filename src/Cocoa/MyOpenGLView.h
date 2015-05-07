@@ -92,7 +92,7 @@ enum GameViewKeys
 	gvNumberPadKey9 //319
 };
 
-enum MouseWheelStatus
+typedef NS_ENUM(int, MouseWheelStatus) 
 {
 	gvMouseWheelDown = -1,
 	gvMouseWheelNeutral,
@@ -152,17 +152,15 @@ extern int debug;
 - (void) setStringInput: (enum StringInput) value;
 - (void) allowStringInput: (BOOL) value;
 - (enum StringInput) allowingStringInput;
-- (NSString *) typedString;
+@property (atomic, copy) NSString *typedString;
 - (void) resetTypedString;
-- (void) setTypedString:(NSString*) value;
 
-- (NSSize) viewSize;
-- (GLfloat) display_z;
-- (GLfloat) x_offset;
-- (GLfloat) y_offset;
+@property (readonly) NSSize viewSize;
+@property (readonly) GLfloat display_z;
+@property (readonly) GLfloat x_offset;
+@property (readonly) GLfloat y_offset;
 
-- (GameController *) gameController;
-- (void) setGameController:(GameController *) controller;
+@property (assign) GameController *gameController;
 
 - (void) noteMouseInteractionModeChangedFrom:(OOMouseInteractionMode)oldMode to:(OOMouseInteractionMode)newMode;
 
@@ -179,7 +177,7 @@ extern int debug;
 - (void)mouseUp:(NSEvent *)theEvent;
 
 - (void) setVirtualJoystick:(double) vmx :(double) vmy;
-- (NSPoint) virtualJoystickPosition;
+@property NSPoint virtualJoystickPosition;
 
 - (void) clearKeys;
 - (void) clearMouse;
@@ -187,16 +185,16 @@ extern int debug;
 - (BOOL) isAlphabetKeyDown;
 - (void) supressKeysUntilKeyUp; // DJS
 - (BOOL) isDown: (int) key;
-- (BOOL) isOptDown;
-- (BOOL) isCtrlDown;
-- (BOOL) isCommandDown;
-- (BOOL) isShiftDown;
+@property (atomic, readonly, getter=isOptDown) BOOL optDown;
+@property (atomic, readonly, getter=isCtrlDown) BOOL ctrlDown;
+@property (atomic, readonly, getter=isCommandDown) BOOL commandDown;
+@property (atomic, readonly, getter=isShiftDown) BOOL shiftDown;
 - (int) numKeys;
-- (int) mouseWheelState;
+- (MouseWheelStatus) mouseWheelState;
 
 // Command-key combinations need special handling.
-- (BOOL) isCommandQDown;
-- (BOOL) isCommandFDown;
+@property (atomic, readonly, getter=isCommandQDown) BOOL commandQDown;
+@property (atomic, readonly, getter=isCommandFDown) BOOL commandFDown;
 - (void) clearCommandF;
 
 // Check current state of shift key rather than relying on last event.
@@ -230,7 +228,7 @@ extern int debug;
 						   height:(NSUInteger)height
 						 rowBytes:(NSUInteger)rowBytes;
 
-// Split alpha into separate file.
+/// Split alpha into separate file.
 - (void) dumpRGBAToRGBFileNamed:(NSString *)rgbName
 			   andGrayFileNamed:(NSString *)grayName
 						  bytes:(uint8_t *)bytes
@@ -239,9 +237,8 @@ extern int debug;
 					   rowBytes:(NSUInteger)rowBytes;
 #endif
 
-// no-ops to allow gamma value to be easily saved/restored
-- (void) setGammaValue: (float) value;
-- (float) gammaValue;
+/// no-ops to allow gamma value to be easily saved/restored
+@property (atomic) float gammaValue;
 
 - (void) setFov:(float)value fromFraction:(BOOL)fromFraction;
 - (float) fov:(BOOL)inFraction;

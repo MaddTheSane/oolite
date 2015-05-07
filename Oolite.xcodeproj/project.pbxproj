@@ -72,7 +72,7 @@
 		1A1280F812ECA4ED00B65D9F /* OOJSFont.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A1280F612ECA4ED00B65D9F /* OOJSFont.h */; };
 		1A1280F912ECA4ED00B65D9F /* OOJSFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1280F712ECA4ED00B65D9F /* OOJSFont.m */; };
 		1A143A4811EF22C5001BAB8D /* JAPersistentFileReference.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A143A4611EF22C5001BAB8D /* JAPersistentFileReference.h */; };
-		1A143A4911EF22C5001BAB8D /* JAPersistentFileReference.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A143A4711EF22C5001BAB8D /* JAPersistentFileReference.m */; };
+		1A143A4911EF22C5001BAB8D /* JAPersistentFileReference.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A143A4711EF22C5001BAB8D /* JAPersistentFileReference.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		1A15049E0C12CA070032F3E8 /* OOProbabilisticTextureManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A15049C0C12CA070032F3E8 /* OOProbabilisticTextureManager.h */; };
 		1A15049F0C12CA070032F3E8 /* OOProbabilisticTextureManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A15049D0C12CA070032F3E8 /* OOProbabilisticTextureManager.m */; };
 		1A1616620D7DCFDC0094AE5B /* OOFilteringEnumerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A1616600D7DCFDC0094AE5B /* OOFilteringEnumerator.h */; };
@@ -443,7 +443,7 @@
 		1ABC47FF0F155F0500B977AD /* OOJSFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = 1ABC47FD0F155F0500B977AD /* OOJSFunction.m */; };
 		1ABDBA3B0EB365D90086BC3D /* OOIsNumberLiteral.m in Sources */ = {isa = PBXBuildFile; fileRef = 1ABDBA390EB365D90086BC3D /* OOIsNumberLiteral.m */; };
 		1ABDBA3C0EB365D90086BC3D /* OOIsNumberLiteral.h in Headers */ = {isa = PBXBuildFile; fileRef = 1ABDBA3A0EB365D90086BC3D /* OOIsNumberLiteral.h */; };
-		1ABF219B12D691B300075821 /* Oolite.docktileplugin in Copy Plug-ins */ = {isa = PBXBuildFile; fileRef = 1A01BCE711C569DF0011197F /* Oolite.docktileplugin */; };
+		1ABF219B12D691B300075821 /* Oolite.docktileplugin in Copy Plug-ins */ = {isa = PBXBuildFile; fileRef = 1A01BCE711C569DF0011197F /* Oolite.docktileplugin */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		1AC0F29E12E1DADC00ECBBB0 /* OOJSEngineDebuggerHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AC0F29D12E1DADC00ECBBB0 /* OOJSEngineDebuggerHelpers.m */; };
 		1AC27A0F0EA7E9940054E5F0 /* OOJSEquipmentInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AC27A0D0EA7E9940054E5F0 /* OOJSEquipmentInfo.h */; };
 		1AC27A100EA7E9940054E5F0 /* OOJSEquipmentInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AC27A0E0EA7E9940054E5F0 /* OOJSEquipmentInfo.m */; };
@@ -539,9 +539,7 @@
 		55F16D16186F7B6800E75C3E /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 55F16D15186F7B6800E75C3E /* Images.xcassets */; };
 		B33A44F1199E6745000B45AE /* OOOpenGLMatrixManager.h in Headers */ = {isa = PBXBuildFile; fileRef = B33A44EF199E6745000B45AE /* OOOpenGLMatrixManager.h */; };
 		B33A44F2199E6745000B45AE /* OOOpenGLMatrixManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B33A44F0199E6745000B45AE /* OOOpenGLMatrixManager.m */; };
-		B3B46C871A0D053D00D6C39B /* OOSystemDescriptionManager.h in Copy Plug-ins */ = {isa = PBXBuildFile; fileRef = B3B46C851A0D053D00D6C39B /* OOSystemDescriptionManager.h */; };
 		B3B46C881A0D053D00D6C39B /* OOSystemDescriptionManager.h in Headers */ = {isa = PBXBuildFile; fileRef = B3B46C851A0D053D00D6C39B /* OOSystemDescriptionManager.h */; };
-		B3B46C891A0D053D00D6C39B /* OOSystemDescriptionManager.m in Copy Plug-ins */ = {isa = PBXBuildFile; fileRef = B3B46C861A0D053D00D6C39B /* OOSystemDescriptionManager.m */; };
 		B3B46C8A1A0D053D00D6C39B /* OOSystemDescriptionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B3B46C861A0D053D00D6C39B /* OOSystemDescriptionManager.m */; };
 /* End PBXBuildFile section */
 
@@ -688,8 +686,6 @@
 			dstPath = Oolite.app/Contents/PlugIns;
 			dstSubfolderSpec = 16;
 			files = (
-				B3B46C871A0D053D00D6C39B /* OOSystemDescriptionManager.h in Copy Plug-ins */,
-				B3B46C891A0D053D00D6C39B /* OOSystemDescriptionManager.m in Copy Plug-ins */,
 				1ABF219B12D691B300075821 /* Oolite.docktileplugin in Copy Plug-ins */,
 			);
 			name = "Copy Plug-ins";

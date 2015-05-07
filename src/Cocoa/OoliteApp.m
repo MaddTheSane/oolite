@@ -55,11 +55,7 @@ MA 02110-1301, USA.
 }
 
 
-- (void) setExitContext:(NSString *)exitContext
-{
-	[_exitContext release];
-	_exitContext = [exitContext copy];
-}
+@synthesize exitContext = _exitContext;
 
 
 - (void) terminate:(id)sender

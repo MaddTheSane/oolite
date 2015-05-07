@@ -32,13 +32,13 @@ This code is hereby placed in the public domain.
 	NSMutableSet			*_objects;
 }
 
-- (id) init;
-- (id) initWithCapacity:(NSUInteger)capacity;				// As with Foundation collections, capacity is only a hint.
+- (instancetype) init;
+- (instancetype) initWithCapacity:(NSUInteger)capacity;				// As with Foundation collections, capacity is only a hint.
 
 + (instancetype) set;
 + (instancetype) setWithCapacity:(NSUInteger)capacity;
 
-- (NSUInteger) count;
+@property (atomic, readonly) NSUInteger count;
 - (BOOL) containsObject:(id<OOWeakReferenceSupport>)object;
 - (NSEnumerator *) objectEnumerator;
 

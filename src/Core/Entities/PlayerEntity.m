@@ -162,7 +162,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 
 
 
-@property (readwrite, copy) OOCommodityMarket *shipCommodityData;
+@property (readwrite, retain) OOCommodityMarket *shipCommodityData;
 @end
 
 
@@ -487,53 +487,22 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (int) random_factor
-{
-	return market_rnd;
-}
+@synthesize random_factor = market_rnd;
 
 
-- (void) setRandom_factor:(int)rf
-{
-	market_rnd = rf;
-}
+@synthesize galaxyNumber = galaxy_number;
 
 
-- (OOGalaxyID) galaxyNumber
-{
-	return galaxy_number;
-}
+@synthesize galaxy_coordinates;
 
 
-- (NSPoint) galaxy_coordinates
-{
-	return galaxy_coordinates;
-}
+@synthesize cursor_coordinates;
 
 
-- (void) setGalaxyCoordinates:(NSPoint)newPosition
-{
-	galaxy_coordinates.x = newPosition.x;
-	galaxy_coordinates.y = newPosition.y;
-}
+@synthesize chart_centre_coordinates;
 
 
-- (NSPoint) cursor_coordinates
-{
-	return cursor_coordinates;
-}
-
-
-- (NSPoint) chart_centre_coordinates
-{
-	return chart_centre_coordinates;
-}
-
-
-- (OOScalar) chart_zoom
-{
-	return chart_zoom;
-}
+@synthesize chart_zoom;
 
 
 - (NSPoint) adjusted_chart_centre
@@ -606,16 +575,10 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (OORouteType) ANAMode
-{
-	return ANA_mode;
-}
+@synthesize ANAMode = ANA_mode;
 
 
-- (OOSystemID) systemID
-{
-	return system_id;
-}
+@synthesize systemID = system_id;
 
 
 - (void) setSystemID:(OOSystemID) sid
@@ -627,10 +590,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (OOSystemID) targetSystemID
-{
-	return target_system_id;
-}
+@synthesize targetSystemID = target_system_id;
 
 
 - (void) setTargetSystemID:(OOSystemID) sid
@@ -669,24 +629,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (WormholeEntity *) wormhole
-{
-	return wormhole;
-}
-
-
-- (void) setWormhole:(WormholeEntity*)newWormhole
-{
-	[wormhole release];
-	if (newWormhole != nil)
-	{
-		wormhole = [newWormhole retain];
-	}
-	else
-	{
-		wormhole = nil;
-	}
-}
+@synthesize wormhole;
 
 
 - (NSDictionary *) commanderDataDictionary
@@ -11668,10 +11611,7 @@ static NSString *last_outfitting_key=nil;
 }
 
 
-- (NSDictionary *) missionOverlayDescriptor
-{
-	return _missionOverlayDescriptor;
-}
+@synthesize missionOverlayDescriptor = _missionOverlayDescriptor;
 
 
 - (NSDictionary *) missionOverlayDescriptorOrDefault
@@ -11693,20 +11633,7 @@ static NSString *last_outfitting_key=nil;
 }
 
 
-- (void) setMissionOverlayDescriptor:(NSDictionary *)descriptor
-{
-	if (descriptor != _missionOverlayDescriptor)
-	{
-		[_missionOverlayDescriptor autorelease];
-		_missionOverlayDescriptor = [descriptor copy];
-	}
-}
-
-
-- (NSDictionary *) missionBackgroundDescriptor
-{
-	return _missionBackgroundDescriptor;
-}
+@synthesize missionBackgroundDescriptor = _missionBackgroundDescriptor;
 
 
 - (NSDictionary *) missionBackgroundDescriptorOrDefault
@@ -11718,16 +11645,6 @@ static NSString *last_outfitting_key=nil;
 	}
 	
 	return result;
-}
-
-
-- (void) setMissionBackgroundDescriptor:(NSDictionary *)descriptor
-{
-	if (descriptor != _missionBackgroundDescriptor)
-	{
-		[_missionBackgroundDescriptor autorelease];
-		_missionBackgroundDescriptor = [descriptor copy];
-	}
 }
 
 
@@ -11779,32 +11696,10 @@ static NSString *last_outfitting_key=nil;
 }
 
 
-- (void) setMissionExitScreen:(OOGUIScreenID)screen
-{
-	_missionExitScreen = screen;
-}
+@synthesize missionExitScreen = _missionExitScreen;
 
 
-- (OOGUIScreenID) missionExitScreen
-{
-	return _missionExitScreen;
-}
-
-
-- (NSDictionary *) equipScreenBackgroundDescriptor
-{
-	return _equipScreenBackgroundDescriptor;
-}
-
-
-- (void) setEquipScreenBackgroundDescriptor:(NSDictionary *)descriptor
-{
-	if (descriptor != _equipScreenBackgroundDescriptor)
-	{
-		[_equipScreenBackgroundDescriptor autorelease];
-		_equipScreenBackgroundDescriptor = [descriptor copy];
-	}
-}
+@synthesize equipScreenBackgroundDescriptor = _equipScreenBackgroundDescriptor;
 
 
 - (BOOL) scriptsLoaded
@@ -11932,22 +11827,10 @@ static NSString *last_outfitting_key=nil;
 }
 
 
-- (NSPoint) galacticHyperspaceFixedCoords
-{
-	return galacticHyperspaceFixedCoords;
-}
+@synthesize galacticHyperspaceFixedCoords;
 
 
-- (OOLongRangeChartMode) longRangeChartMode
-{
-	return longRangeChartMode;
-}
-
-
-- (void) setLongRangeChartMode:(OOLongRangeChartMode) mode
-{
-	longRangeChartMode = mode;
-}
+@synthesize longRangeChartMode;
 
 
 - (BOOL) scoopOverride
@@ -11990,32 +11873,10 @@ else _dockTarget = NO_TARGET;
 }
 
 
-- (NSString *) commanderName
-{
-	return _commanderName;
-}
+@synthesize commanderName = _commanderName;
 
 
-- (NSString *) lastsaveName
-{
-	return _lastsaveName;
-}
-
-
-- (void) setCommanderName:(NSString *)value
-{
-	NSParameterAssert(value != nil);
-	[_commanderName autorelease];
-	_commanderName = [value copy];
-}
-
-
-- (void) setLastsaveName:(NSString *)value
-{
-	NSParameterAssert(value != nil);
-	[_lastsaveName autorelease];
-	_lastsaveName = [value copy];
-}
+@synthesize lastsaveName = _lastsaveName;
 
 
 - (BOOL) isDocked

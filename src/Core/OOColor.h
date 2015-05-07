@@ -47,56 +47,56 @@ typedef struct
 	float			rgba[4];
 }
 
-+ (OOColor *) colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness alpha:(float)alpha;	// Note: hue in 0..1
-+ (OOColor *) colorWithRed:(float)red green:(float)green blue:(float)blue alpha:(float)alpha;
-+ (OOColor *) colorWithWhite:(float)white alpha:(float)alpha;
-+ (OOColor *) colorWithRGBAComponents:(OORGBAComponents)components;
-+ (OOColor *) colorWithHSBAComponents:(OOHSBAComponents)components;	// Note: hue in 0..360
++ (nonnull OOColor *) colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness alpha:(float)alpha;	// Note: hue in 0..1
++ (nonnull OOColor *) colorWithRed:(float)red green:(float)green blue:(float)blue alpha:(float)alpha;
++ (nonnull OOColor *) colorWithWhite:(float)white alpha:(float)alpha;
++ (nonnull OOColor *) colorWithRGBAComponents:(OORGBAComponents)components;
++ (nonnull OOColor *) colorWithHSBAComponents:(OOHSBAComponents)components;	// Note: hue in 0..360
 
 // Flexible color creator; takes a selector name, a string with components, or an array.
-+ (OOColor *) colorWithDescription:(id)description;
++ (nullable OOColor *) colorWithDescription:(nonnull id)description;
 
 // Like +colorWithDescription:, but forces brightness of at least 0.5.
-+ (OOColor *) brightColorWithDescription:(id)description;
++ (nullable OOColor *) brightColorWithDescription:(nonnull id)description;
 
 /*	Like +colorWithDescription:, but multiplies saturation by provided factor.
 	If the colour is an HSV dictionary, it may specify a saturation greater
 	than 1.0 to override the scaling.
 */
-+ (OOColor *) colorWithDescription:(id)description saturationFactor:(float)factor;
++ (nullable OOColor *) colorWithDescription:(nonnull id)description saturationFactor:(float)factor;
 
 // Creates a colour given a string with components.
-+ (OOColor *) colorFromString:(NSString*) colorFloatString;
++ (nullable OOColor *) colorFromString:(nonnull NSString*) colorFloatString;
 
-+ (OOColor *) blackColor;		// 0.0 white
-+ (OOColor *) darkGrayColor;	// 0.333 white
-+ (OOColor *) lightGrayColor;	// 0.667 white
-+ (OOColor *) whiteColor;		// 1.0 white
-+ (OOColor *) grayColor;		// 0.5 white
-+ (OOColor *) redColor;			// 1.0, 0.0, 0.0 RGB
-+ (OOColor *) greenColor;		// 0.0, 1.0, 0.0 RGB
-+ (OOColor *) blueColor;		// 0.0, 0.0, 1.0 RGB
-+ (OOColor *) cyanColor;		// 0.0, 1.0, 1.0 RGB
-+ (OOColor *) yellowColor;		// 1.0, 1.0, 0.0 RGB
-+ (OOColor *) magentaColor;		// 1.0, 0.0, 1.0 RGB
-+ (OOColor *) orangeColor;		// 1.0, 0.5, 0.0 RGB
-+ (OOColor *) purpleColor;		// 0.5, 0.0, 0.5 RGB
-+ (OOColor *) brownColor;		// 0.6, 0.4, 0.2 RGB
-+ (OOColor *) clearColor;		// 0.0 white, 0.0 alpha
++ (nonnull OOColor *) blackColor;		// 0.0 white
++ (nonnull OOColor *) darkGrayColor;	// 0.333 white
++ (nonnull OOColor *) lightGrayColor;	// 0.667 white
++ (nonnull OOColor *) whiteColor;		// 1.0 white
++ (nonnull OOColor *) grayColor;		// 0.5 white
++ (nonnull OOColor *) redColor;			// 1.0, 0.0, 0.0 RGB
++ (nonnull OOColor *) greenColor;		// 0.0, 1.0, 0.0 RGB
++ (nonnull OOColor *) blueColor;		// 0.0, 0.0, 1.0 RGB
++ (nonnull OOColor *) cyanColor;		// 0.0, 1.0, 1.0 RGB
++ (nonnull OOColor *) yellowColor;		// 1.0, 1.0, 0.0 RGB
++ (nonnull OOColor *) magentaColor;		// 1.0, 0.0, 1.0 RGB
++ (nonnull OOColor *) orangeColor;		// 1.0, 0.5, 0.0 RGB
++ (nonnull OOColor *) purpleColor;		// 0.5, 0.0, 0.5 RGB
++ (nonnull OOColor *) brownColor;		// 0.6, 0.4, 0.2 RGB
++ (nonnull OOColor *) clearColor;		// 0.0 white, 0.0 alpha
 
 //	Linear blend in working colour space (no attempt at gamma correction).
-- (OOColor *) blendedColorWithFraction:(float)fraction ofColor:(OOColor *)color;
+- (nonnull OOColor *) blendedColorWithFraction:(float)fraction ofColor:(nonnull OOColor *)color;
 
 //	Get the red, green, or blue components.
-- (float) redComponent;
-- (float) greenComponent;
-- (float) blueComponent;
-- (void) getRed:(float *)red green:(float *)green blue:(float *)blue alpha:(float *)alpha;
+@property (atomic, readonly) float redComponent;
+@property (atomic, readonly) float greenComponent;
+@property (atomic, readonly) float blueComponent;
+- (void) getRed:(nonnull float *)red green:(nonnull float *)green blue:(nonnull float *)blue alpha:(nonnull float *)alpha;
 
-- (OORGBAComponents) rgbaComponents;
+@property (atomic, readonly) OORGBAComponents rgbaComponents;
 
-- (BOOL) isBlack;
-- (BOOL) isWhite;
+@property (atomic, readonly, getter=isBlack) BOOL black;
+@property (atomic, readonly, getter=isWhite) BOOL white;
 
 /*	Get the components as hue, saturation, or brightness.
 	
@@ -104,33 +104,33 @@ typedef struct
 	in the range [0, 360], but +colorWithedHue:... expects values in the
 	range [0, 1].
 */
-- (float) hueComponent;
-- (float) saturationComponent;
-- (float) brightnessComponent;
-- (void) getHue:(float *)hue saturation:(float *)saturation brightness:(float *)brightness alpha:(float *)alpha;
+@property (atomic, readonly) float hueComponent;
+@property (atomic, readonly) float saturationComponent;
+@property (atomic, readonly) float brightnessComponent;
+- (void) getHue:(nonnull float *)hue saturation:(nonnull float *)saturation brightness:(nonnull float *)brightness alpha:(nonnull float *)alpha;
 
-- (OOHSBAComponents) hsbaComponents;
+@property (atomic, readonly) OOHSBAComponents hsbaComponents;
 
 
 // Get the alpha component.
-- (float) alphaComponent;
+@property (atomic, readonly) float alphaComponent;
 
 /*	Returns the colour, premultiplied by its alpha channel, and with an alpha
 	of 1.0. If the reciever's alpha is 1.0, it will return itself.
 */
-- (OOColor *) premultipliedColor;
+@property (atomic, readonly, assign, nonnull) OOColor *premultipliedColor;
 
 // Multiply r, g and b components of a colour by specified factor, clamped to [0..1].
-- (OOColor *) colorWithBrightnessFactor:(float)factor;
+- (nonnull OOColor *) colorWithBrightnessFactor:(float)factor;
 
 // r,g,b,a array in 0..1 range.
-- (NSArray *) normalizedArray;
+@property (atomic, readonly, copy, nonnull) NSArray *normalizedArray;
 
-- (NSString *) rgbaDescription;
-- (NSString *) hsbaDescription;
+@property (atomic, readonly, copy, nonnull) NSString *rgbaDescription;
+@property (atomic, readonly, copy, nonnull) NSString *hsbaDescription;
 
 @end
 
 
-NSString *OORGBAComponentsDescription(OORGBAComponents components);
-NSString *OOHSBAComponentsDescription(OOHSBAComponents components);
+NSString *__nonnull OORGBAComponentsDescription(OORGBAComponents components);
+NSString *__nonnull OOHSBAComponentsDescription(OOHSBAComponents components);

@@ -517,9 +517,9 @@ MA 02110-1301, USA.
 	float r, g, b, a;
 	[self getRed:&r green:&g blue:&b alpha:&a];
 	return @[@(r),
-		@(g),
-		@(b),
-		@(a)];
+			 @(g),
+			 @(b),
+			 @(a)];
 }
 
 

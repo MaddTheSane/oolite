@@ -66,7 +66,7 @@ SOFTWARE.
 + (id) filterEnumerator:(NSEnumerator *)enumerator withSelector:(SEL)selector;
 + (id) filterEnumerator:(NSEnumerator *)enumerator withSelector:(SEL)selector andArgument:(id)argument;
 
-- (id) initWithUnderlyingEnumerator:(NSEnumerator *)enumerator
+- (instancetype) initWithUnderlyingEnumerator:(NSEnumerator *)enumerator
 					   withSelector:(SEL)selector
 					 takingArgument:(BOOL)takesArgument
 					  argumentValue:(id)argument;

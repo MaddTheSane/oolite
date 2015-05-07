@@ -739,12 +739,10 @@ typedef enum
 - (void) completeSetUpAndSetTarget:(BOOL)setTarget;
 - (void) startUpComplete;
 
-- (NSString *) commanderName;
-- (void) setCommanderName:(NSString *)value;
-- (NSString *) lastsaveName;
-- (void) setLastsaveName:(NSString *)value;
+@property (copy) NSString *commanderName;
+@property (copy) NSString *lastsaveName;
 
-- (BOOL) isDocked;
+@property (readonly, atomic, getter=isDocked) BOOL docked;
 
 - (void) warnAboutHostiles;
 
@@ -754,27 +752,22 @@ typedef enum
 - (void) unloadCargoPodsForType:(OOCommodityType)type amount:(OOCargoQuantity) quantity;
 - (void) loadCargoPodsForType:(OOCommodityType)type fromManifest:(OOCommodityMarket *) manifest;
 - (void) loadCargoPodsForType:(OOCommodityType)type amount:(OOCargoQuantity) quantity;
-- (OOCommodityMarket *) shipCommodityData;
 
 - (OOCreditsQuantity) deciCredits;
 
-- (int) random_factor;
-- (void) setRandom_factor:(int)rf;
-- (OOGalaxyID) galaxyNumber;
-- (NSPoint) galaxy_coordinates;
-- (void) setGalaxyCoordinates:(NSPoint)newPosition;
-- (NSPoint) cursor_coordinates;
-- (NSPoint) chart_centre_coordinates;
-- (OOScalar) chart_zoom;
-- (NSPoint) adjusted_chart_centre;
-- (OORouteType) ANAMode;
+@property int random_factor;
+@property (readonly) OOGalaxyID galaxyNumber;
+@property (setter=setGalaxyCoordinates:) NSPoint galaxy_coordinates;
+@property (readonly) NSPoint cursor_coordinates;
+@property (readonly) NSPoint chart_centre_coordinates;
+@property (readonly) OOScalar chart_zoom;
+@property (readonly, atomic) NSPoint adjusted_chart_centre;
+@property (readonly) OORouteType ANAMode;
 
 
-- (OOSystemID) systemID;
-- (void) setSystemID:(OOSystemID) sid;
-- (OOSystemID) targetSystemID;
-- (void) setTargetSystemID:(OOSystemID) sid;
-- (OOSystemID) nextHopTargetSystemID;
+@property (nonatomic) OOSystemID systemID;
+@property (nonatomic) OOSystemID targetSystemID;
+@property (readonly, atomic) OOSystemID nextHopTargetSystemID;
 
 
 - (NSDictionary *) commanderDataDictionary;
@@ -1091,23 +1084,19 @@ typedef enum
 - (Vector) viewpointOffsetStarboard;
 
 
-- (NSDictionary *) missionOverlayDescriptor;
-- (NSDictionary *) missionOverlayDescriptorOrDefault;
-- (void) setMissionOverlayDescriptor:(NSDictionary *)descriptor;
+@property (copy) NSDictionary *missionOverlayDescriptor;
+@property (readonly, atomic) NSDictionary *missionOverlayDescriptorOrDefault;
 
-- (NSDictionary *) missionBackgroundDescriptor;
-- (NSDictionary *) missionBackgroundDescriptorOrDefault;
-- (void) setMissionBackgroundDescriptor:(NSDictionary *)descriptor;
+@property (copy) NSDictionary *missionBackgroundDescriptor;
+@property (readonly, atomic) NSDictionary *missionBackgroundDescriptorOrDefault;
 - (OOGUIBackgroundSpecial) missionBackgroundSpecial;
 - (void) setMissionBackgroundSpecial:(NSString *)special;
-- (void) setMissionExitScreen:(OOGUIScreenID)screen;
-- (OOGUIScreenID) missionExitScreen;
+@property OOGUIScreenID missionExitScreen;
 
 // Nasty hack to keep background textures around while on equip screens.
-- (NSDictionary *) equipScreenBackgroundDescriptor;
-- (void) setEquipScreenBackgroundDescriptor:(NSDictionary *)descriptor;
+@property (copy) NSDictionary *equipScreenBackgroundDescriptor;
 
-- (BOOL) scriptsLoaded;
+@property (readonly, atomic) BOOL scriptsLoaded;
 - (NSArray *) worldScriptNames;
 - (NSDictionary *) worldScriptsByName;
 
@@ -1123,15 +1112,12 @@ typedef enum
 
 - (void) setGalacticHyperspaceBehaviour:(OOGalacticHyperspaceBehaviour) galacticHyperspaceBehaviour;
 - (OOGalacticHyperspaceBehaviour) galacticHyperspaceBehaviour;
-- (void) setGalacticHyperspaceFixedCoords:(NSPoint)point;
+@property (nonatomic) NSPoint galacticHyperspaceFixedCoords;
 - (void) setGalacticHyperspaceFixedCoordsX:(unsigned char)x y:(unsigned char)y;
-- (NSPoint) galacticHyperspaceFixedCoords;
 
-- (OOLongRangeChartMode) longRangeChartMode;
-- (void) setLongRangeChartMode:(OOLongRangeChartMode) mode;
+@property OOLongRangeChartMode longRangeChartMode;
 
-- (BOOL) scoopOverride;
-- (void) setScoopOverride:(BOOL)newValue;
+@property (atomic) BOOL scoopOverride;
 - (void) setDockTarget:(ShipEntity *)entity;
 
 - (BOOL) clearedToDock;
@@ -1141,8 +1127,7 @@ typedef enum
 
 - (NSArray *) scannedWormholes;
 
-- (WormholeEntity *) wormhole;
-- (void) setWormhole:(WormholeEntity *)newWormhole;
+@property (retain) WormholeEntity *wormhole;
 - (void) addScannedWormhole:(WormholeEntity*)wormhole;
 
 - (void) initialiseMissionDestinations:(NSDictionary *)destinations andLegacy:(NSArray *)legacy;

@@ -146,10 +146,7 @@ static id ShipGroupIterate(OOShipGroupEnumerator *enumerator);
 }
 
 
-- (NSString *) name
-{
-	return _name;
-}
+@synthesize name = _name;
 
 
 - (void) setName:(NSString *)name
@@ -159,7 +156,7 @@ static id ShipGroupIterate(OOShipGroupEnumerator *enumerator);
 	if (_name != name)
 	{
 		[_name release];
-		_name = [name retain];
+		_name = [name copy];
 	}
 }
 

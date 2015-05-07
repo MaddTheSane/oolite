@@ -49,7 +49,7 @@ SOFTWARE.
 	pthread_setname_np([name UTF8String]);
 #endif
 	
-	[pool release];
+	[pool drain];
 }
 
 @end

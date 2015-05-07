@@ -31,7 +31,7 @@ MA 02110-1301, USA.
 
 
 // Option flags for OOExpandDescriptionString().
-enum
+typedef NS_OPTIONS(NSUInteger, OOExpandOptions)
 {
 	kOOExpandForJavaScript		= 0x00000001,	///< Report warnings through JavaScript runtime system instead of normal logging.
 	kOOExpandBackslashN			= 0x00000002,	///< Convert literal "\\n"s to line breaks (used for missiontext.plist for historical reasons).
@@ -42,7 +42,6 @@ enum
 
 	kOOExpandNoOptions			= 0
 };
-typedef NSUInteger OOExpandOptions;
 
 
 /*
