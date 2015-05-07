@@ -16,7 +16,6 @@
 			);
 			dependencies = (
 				1AD267560C83052600B4BFD1 /* PBXTargetDependency */,
-				1A7E3A05180AC8BF00576095 /* PBXTargetDependency */,
 				1ABF219A12D691A300075821 /* PBXTargetDependency */,
 			);
 			name = "Build All";
@@ -201,7 +200,7 @@
 		1A3D03161173536C005BF5E6 /* OOMultiTextureMaterial.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3D03141173536C005BF5E6 /* OOMultiTextureMaterial.m */; };
 		1A3D034A11736EDA005BF5E6 /* OOMaterialConvenienceCreators.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A3D034811736EDA005BF5E6 /* OOMaterialConvenienceCreators.h */; };
 		1A3D034B11736EDA005BF5E6 /* OOMaterialConvenienceCreators.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3D034911736EDA005BF5E6 /* OOMaterialConvenienceCreators.m */; };
-		1A3E019B11C574C2000FF226 /* Oolite.mdimporter in Copy MDImporter */ = {isa = PBXBuildFile; fileRef = 1A3E019611C574AC000FF226 /* Oolite.mdimporter */; };
+		1A3E019B11C574C2000FF226 /* Oolite.mdimporter in Copy MDImporter */ = {isa = PBXBuildFile; fileRef = 1A3E019611C574AC000FF226 /* Oolite.mdimporter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		1A401F8815E7AF7B004CDF95 /* OOPrimaryWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A401F8615E7AF7B004CDF95 /* OOPrimaryWindow.h */; };
 		1A401F8915E7AF7B004CDF95 /* OOPrimaryWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A401F8715E7AF7B004CDF95 /* OOPrimaryWindow.m */; };
 		1A43234E0BCFC9BB00F65914 /* OOOpenGLExtensionManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A43234A0BCFC9BB00F65914 /* OOOpenGLExtensionManager.h */; };
@@ -491,7 +490,7 @@
 		1AE7325012F75D470045513D /* OOLaserShotEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AE7324E12F75D470045513D /* OOLaserShotEntity.h */; };
 		1AE7325112F75D470045513D /* OOLaserShotEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AE7324F12F75D470045513D /* OOLaserShotEntity.m */; };
 		1AE8837412EF91560075814F /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE8837312EF91560075814F /* Sparkle.framework */; };
-		1AE8837612EF91810075814F /* Sparkle.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE8837312EF91560075814F /* Sparkle.framework */; };
+		1AE8837612EF91810075814F /* Sparkle.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE8837312EF91560075814F /* Sparkle.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		1AE8838012EF91E80075814F /* SparkleVerificationKey.pem in Resources */ = {isa = PBXBuildFile; fileRef = 1AE8837F12EF91E80075814F /* SparkleVerificationKey.pem */; };
 		1AEA229E12CBD18600EC0F43 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AEA229D12CBD18600EC0F43 /* CoreServices.framework */; };
 		1AEB491A119D5AAA007BD514 /* OORegExpMatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AEB4918119D5AAA007BD514 /* OORegExpMatcher.h */; };
@@ -594,13 +593,6 @@
 			containerPortal = 1A0519340C7CCAC900BA5CCA /* DebugBundle.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 8D5B49B6048680CD000E48DA;
-			remoteInfo = "Debug Bundle";
-		};
-		1A7E3A04180AC8BF00576095 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1A0519340C7CCAC900BA5CCA /* DebugBundle.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 8D5B49AC048680CD000E48DA;
 			remoteInfo = "Debug Bundle";
 		};
 		1A8FA92612F0C694008FF5A2 /* PBXContainerItemProxy */ = {
@@ -728,12 +720,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		06AFA01500A58FB77F000001 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		06AFA01500A58FB77F000001 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		083325DB09DDBCDE00F5B8E4 /* OOColor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOColor.h; sourceTree = "<group>"; };
 		083325DC09DDBCDE00F5B8E4 /* OOColor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OOColor.m; sourceTree = "<group>"; };
 		0865432206B8447D000CA0AB /* Oolite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Oolite.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		0878FD2F086EF845004CB752 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
-		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		0878FD2F086EF845004CB752 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
+		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		1A00248B1657B56E00EAE045 /* oolite-star-1-alt.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "oolite-star-1-alt.png"; sourceTree = "<group>"; };
 		1A00248C1657B56E00EAE045 /* oolite-star-1-large.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "oolite-star-1-large.png"; sourceTree = "<group>"; };
 		1A00248D1657B56E00EAE045 /* oolite-star-2-large.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "oolite-star-2-large.png"; sourceTree = "<group>"; };
@@ -1138,9 +1130,9 @@
 		1A43F28A105170A8003FDE8B /* OONSOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OONSOperation.h; sourceTree = "<group>"; };
 		1A4501E10DBF699A00815C04 /* descriptions.plist */ = {isa = PBXFileReference; explicitFileType = text; fileEncoding = 4; path = descriptions.plist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		1A45BCC9104AB46900A89324 /* oolite-targets.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "oolite-targets.xcconfig"; path = "src/Cocoa/oolite-targets.xcconfig"; sourceTree = "<group>"; };
-		1A472916096B5454000E78D8 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
-		1A47291F096B5468000E78D8 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = /System/Library/Frameworks/AudioToolbox.framework; sourceTree = "<absolute>"; };
-		1A472920096B5468000E78D8 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
+		1A472916096B5454000E78D8 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		1A47291F096B5468000E78D8 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		1A472920096B5468000E78D8 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
 		1A4DF25912FDC4420027F43D /* OORingEffectEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OORingEffectEntity.h; sourceTree = "<group>"; };
 		1A4DF25A12FDC4420027F43D /* OORingEffectEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OORingEffectEntity.m; sourceTree = "<group>"; };
 		1A4DF35112FDF0410027F43D /* OOParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOParticleSystem.h; sourceTree = "<group>"; };
@@ -1159,7 +1151,7 @@
 		1A5218DD0D72ECE5000865E9 /* OOSpatialReference.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OOSpatialReference.m; sourceTree = "<group>"; };
 		1A54115914B8913E00B8A4BE /* OOMacJoystickManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOMacJoystickManager.h; sourceTree = "<group>"; };
 		1A54115A14B8913E00B8A4BE /* OOMacJoystickManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OOMacJoystickManager.m; sourceTree = "<group>"; };
-		1A54125014B892A200B8A4BE /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
+		1A54125014B892A200B8A4BE /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		1A54AB510E3E17A0001EB817 /* OOJSPlayerShip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOJSPlayerShip.h; sourceTree = "<group>"; };
 		1A54AB520E3E17A0001EB817 /* OOJSPlayerShip.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OOJSPlayerShip.m; sourceTree = "<group>"; };
 		1A572FB80D84B640003D4A26 /* oolite-nova-mission.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "oolite-nova-mission.js"; sourceTree = "<group>"; };
@@ -1227,7 +1219,7 @@
 		1A7038A112BB9F5A0015CCDC /* dummy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dummy.cpp; sourceTree = "<group>"; };
 		1A71D8A80E5F17410088C456 /* OOSoundSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OOSoundSource.m; sourceTree = "<group>"; };
 		1A71D8A90E5F17410088C456 /* OOSoundSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOSoundSource.h; sourceTree = "<group>"; };
-		1A71E8780BCE8EB100CD5C13 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
+		1A71E8780BCE8EB100CD5C13 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		1A72F86315E002E100281337 /* OOMouseInteractionMode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOMouseInteractionMode.h; sourceTree = "<group>"; };
 		1A72F86415E002E100281337 /* OOMouseInteractionMode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OOMouseInteractionMode.m; sourceTree = "<group>"; };
 		1A72F86715E14F1100281337 /* OOMacSystemStandardFullScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOMacSystemStandardFullScreenController.h; sourceTree = "<group>"; };
@@ -1668,8 +1660,8 @@
 		25F46750099695D5009483BF /* OoliteApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OoliteApp.h; sourceTree = "<group>"; };
 		25F46751099695D5009483BF /* OoliteApp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OoliteApp.m; sourceTree = "<group>"; };
 		25F4676309969672009483BF /* MyOpenGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MyOpenGLView.m; sourceTree = "<group>"; };
-		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
-		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		2B060ED410E42715001EFB22 /* screenbackgrounds.plist */ = {isa = PBXFileReference; explicitFileType = text; fileEncoding = 4; path = screenbackgrounds.plist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		2B060ED610E42735001EFB22 /* oolite-short-range-chart.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "oolite-short-range-chart.png"; sourceTree = "<group>"; };
 		2B060ED710E42735001EFB22 /* oolite-long-range-chart.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "oolite-long-range-chart.png"; sourceTree = "<group>"; };
@@ -1722,9 +1714,10 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1AE8837312EF91560075814F /* Sparkle.framework */,
+				1AA0861518257A11007CCAEB /* OpenAL.framework */,
 				1AEA229D12CBD18600EC0F43 /* CoreServices.framework */,
 				1A033F90132687DC006F9DB7 /* Quartz.framework */,
-				1AE8837312EF91560075814F /* Sparkle.framework */,
 				0878FD2F086EF845004CB752 /* Carbon.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				06AFA01500A58FB77F000001 /* OpenGL.framework */,
@@ -3152,7 +3145,6 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				1AA0861518257A11007CCAEB /* OpenAL.framework */,
 				1A5D58811825241800C779AE /* MiniZip */,
 				1AB775FC12CA2E53001478BB /* libjs.xcodeproj */,
 				1AE3454B12CB77A700FD8C62 /* Ogg.xcodeproj */,
@@ -4106,8 +4098,11 @@
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -4128,7 +4123,10 @@
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -4187,7 +4185,10 @@
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;

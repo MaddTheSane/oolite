@@ -175,23 +175,23 @@ enum OOScanClass
 }
 
 // The session in which the entity was created.
-- (NSUInteger) sessionID;
+@property (readonly) NSUInteger sessionID;
 
-- (BOOL) isShip;
-- (BOOL) isDock;
-- (BOOL) isStation;
-- (BOOL) isSubEntity;
-- (BOOL) isPlayer;
-- (BOOL) isPlanet;
-- (BOOL) isSun;
-- (BOOL) isStellarObject;
-- (BOOL) isSky;
-- (BOOL) isWormhole;
-- (BOOL) isEffect;
-- (BOOL) isVisualEffect;
-- (BOOL) isWaypoint;
+@property (atomic, readonly, getter=isShip) BOOL ship;
+@property (atomic, readonly, getter=isDock) BOOL dock;
+@property (atomic, readonly, getter=isStation) BOOL station;
+@property (atomic, readonly, getter=isSubEntity) BOOL subEntity;
+@property (atomic, readonly, getter=isPlayer) BOOL player;
+@property (atomic, readonly, getter=isPlanet) BOOL planet;
+@property (atomic, readonly, getter=isSun) BOOL sun;
+@property (atomic, readonly, getter=isStellarObject) BOOL stellarObject;
+@property (atomic, readonly, getter=isSky) BOOL sky;
+@property (atomic, readonly, getter=isWormhole) BOOL wormhole;
+@property (atomic, readonly, getter=isEffect) BOOL effect;
+@property (atomic, readonly, getter=isVisualEffect) BOOL visualEffect;
+@property (atomic, readonly, getter=isWaypoint) BOOL waypoint;
 
-- (BOOL) validForAddToUniverse;
+@property (atomic, readonly) BOOL validForAddToUniverse;
 - (void) addToLinkedLists;
 - (void) removeFromLinkedLists;
 
@@ -202,82 +202,69 @@ enum OOScanClass
 
 - (void) warnAboutHostiles;
 
-- (CollisionRegion *) collisionRegion;
-- (void) setCollisionRegion:(CollisionRegion*)region;
+@property (retain) CollisionRegion *collisionRegion;
 
-- (void) setUniversalID:(OOUniversalID)uid;
-- (OOUniversalID) universalID;
+@property (assign) OOUniversalID universalID;
 
-- (BOOL) throwingSparks;
-- (void) setThrowSparks:(BOOL)value;
+@property (atomic, getter=throwingSparks, setter=setThrowSparks:) BOOL throwsSparks;
 - (void) throwSparks;
 
+//@property (atomic, retain) Entity *owner;
 - (void) setOwner:(Entity *)ent;
 - (id) owner;
-- (ShipEntity *) parentEntity;		// owner if self is subentity of owner, otherwise nil.
-- (ShipEntity *) rootShipEntity;	// like parentEntity, but recursive.
+/// owner if self is subentity of owner, otherwise nil.
+@property (atomic, readonly, assign) ShipEntity *parentEntity;
+/// like parentEntity, but recursive.
+@property (atomic, readonly, assign) ShipEntity *rootShipEntity;
 
-- (void) setPosition:(HPVector)posn;
 - (void) setPositionX:(OOHPScalar)x y:(OOHPScalar)y z:(OOHPScalar)z;
-- (HPVector) position;
-- (Vector) cameraRelativePosition;
-- (GLfloat) cameraRangeFront;
-- (GLfloat) cameraRangeBack;
+@property (nonatomic) HPVector position;
+@property (nonatomic, readonly) Vector cameraRelativePosition;
+@property (atomic, readonly) GLfloat cameraRangeFront;
+@property (atomic, readonly) GLfloat cameraRangeBack;
 
 - (void) updateCameraRelativePosition;
 // gets a low-position relative vector
 - (Vector) vectorTo:(Entity *)entity;
 
-- (HPVector) absolutePositionForSubentity;
+@property (atomic, readonly) HPVector absolutePositionForSubentity;
 - (HPVector) absolutePositionForSubentityOffset:(HPVector) offset;
 
-- (double) zeroDistance;
-- (double) camZeroDistance;
+@property (atomic, readonly) double zeroDistance;
+@property (atomic, readonly) double camZeroDistance;
 - (NSComparisonResult) compareZeroDistance:(Entity *)otherEntity;
 
-- (BoundingBox) boundingBox;
+@property (readonly) BoundingBox boundingBox;
 
-- (GLfloat) mass;
+@property (readonly) GLfloat mass;
 
-- (Quaternion) orientation;
-- (void) setOrientation:(Quaternion) quat;
-- (Quaternion) normalOrientation;	// Historical wart: orientation.w is reversed for player; -normalOrientation corrects this.
-- (void) setNormalOrientation:(Quaternion) quat;
+@property (nonatomic) Quaternion orientation;
+/// Historical wart: orientation.w is reversed for player; -normalOrientation corrects this.
+@property (nonatomic) Quaternion normalOrientation;
 - (void) orientationChanged;
 
-- (void) setVelocity:(Vector)vel;
-- (Vector) velocity;
-- (double) speed;
+@property Vector velocity;
+@property (atomic, readonly) double speed;
+@property GLfloat distanceTravelled;
 
-- (GLfloat) distanceTravelled;
-- (void) setDistanceTravelled:(GLfloat)value;
+@property OOEntityStatus status;
+@property OOScanClass scanClass;
 
-
-- (void) setStatus:(OOEntityStatus)stat;
-- (OOEntityStatus) status;
-
-- (void) setScanClass:(OOScanClass)sClass;
-- (OOScanClass) scanClass;
-
-- (void) setEnergy:(GLfloat)amount;
-- (GLfloat) energy;
-
-- (void) setMaxEnergy:(GLfloat)amount;
-- (GLfloat) maxEnergy;
+@property GLfloat energy;
+@property GLfloat maxEnergy;
 
 - (void) applyRoll:(GLfloat)roll andClimb:(GLfloat)climb;
 - (void) applyRoll:(GLfloat)roll climb:(GLfloat) climb andYaw:(GLfloat)yaw;
 - (void) moveForward:(double)amount;
 
-- (OOMatrix) rotationMatrix;
-- (OOMatrix) drawRotationMatrix;
-- (OOMatrix) transformationMatrix;
-- (OOMatrix) drawTransformationMatrix;
+@property (atomic, readonly) OOMatrix rotationMatrix;
+@property (atomic, readonly) OOMatrix drawRotationMatrix;
+@property (atomic, readonly) OOMatrix transformationMatrix;
+@property (atomic, readonly) OOMatrix drawTransformationMatrix;
 
 - (BOOL) canCollide;
-- (GLfloat) collisionRadius;
-- (void) setCollisionRadius:(GLfloat)amount;
-- (NSMutableArray *)collisionArray;
+@property GLfloat collisionRadius;
+@property (readonly, retain) NSMutableArray *collisionArray;
 
 - (void) update:(OOTimeDelta)delta_t;
 
@@ -292,14 +279,14 @@ enum OOScanClass
 // Subclass repsonsibilities
 - (double) findCollisionRadius;
 - (void) drawImmediate:(bool)immediate translucent:(bool)translucent;
-- (BOOL) isVisible;
-- (BOOL) isInSpace;
-- (BOOL) isImmuneToBreakPatternHide;
+@property (atomic, readonly, getter=isVisible) BOOL visible;
+@property (atomic, readonly, getter=isInSpace) BOOL inSpace;
+@property (atomic, readonly, getter=isImmuneToBreakPatternHide) BOOL immuneToBreakPatternHide;
 
 // For shader bindings.
-- (GLfloat) universalTime;
-- (GLfloat) spawnTime;
-- (GLfloat) timeElapsedSinceSpawn;
+@property (nonatomic, readonly) GLfloat universalTime;
+@property (nonatomic, readonly) GLfloat spawnTime;
+@property (nonatomic, readonly) GLfloat timeElapsedSinceSpawn;
 
 #ifndef NDEBUG
 - (NSString *) descriptionForObjDumpBasic;
@@ -312,7 +299,7 @@ enum OOScanClass
 
 @protocol OOHUDBeaconIcon;
 
-// Methods that must be supported by entities with beacons, regardless of type.
+/// Methods that must be supported by entities with beacons, regardless of type.
 @protocol OOBeaconEntity
 
 - (NSComparisonResult) compareBeaconCodeWith:(Entity <OOBeaconEntity>*) other;

@@ -45,34 +45,26 @@ MA 02110-1301, USA.
 	OOJSScript			*_script;
 }
 
-- (id) initWithRole:(NSString *)role andOriginalSystem:(OOSystemID)s;
+- (instancetype) initWithRole:(NSString *)role andOriginalSystem:(OOSystemID)s;
 
-+ (OOCharacter *) characterWithRole:(NSString *)c_role andOriginalSystem:(OOSystemID)s;
-+ (OOCharacter *) randomCharacterWithRole:(NSString *)c_role andOriginalSystem:(OOSystemID)s;
-+ (OOCharacter *) characterWithDictionary:(NSDictionary *)c_dict;
++ (instancetype) characterWithRole:(NSString *)c_role andOriginalSystem:(OOSystemID)s;
++ (instancetype) randomCharacterWithRole:(NSString *)c_role andOriginalSystem:(OOSystemID)s;
++ (instancetype) characterWithDictionary:(NSDictionary *)c_dict;
 
-- (NSString*) planetOfOrigin;
-- (OOSystemID) planetIDOfOrigin;
-- (NSString*) species;
+@property (atomic, readonly, copy) NSString *planetOfOrigin;
+@property (nonatomic, readonly) OOSystemID planetIDOfOrigin;
+@property (atomic, readonly, copy) NSString *species;
 
 - (void) basicSetUp;
 - (BOOL) castInRole:(NSString *)role;
 
-- (NSString *) name;
-- (void) setName:(NSString *)value;
+@property (copy) NSString *name;
+@property (copy) NSString *shortDescription;
+@property int legalStatus;
+@property OOCreditsQuantity insuranceCredits;
 
-- (NSString *) shortDescription;
-- (void) setShortDescription:(NSString *)value;
-
-- (int) legalStatus;
-- (void) setLegalStatus:(int)value;
-
-- (OOCreditsQuantity) insuranceCredits;
-- (void) setInsuranceCredits:(OOCreditsQuantity)value;
-
-- (NSArray *) legacyScript;
-- (void) setLegacyScript:(NSArray *)scriptActions;
-- (OOJSScript *)script;
+@property (nonatomic, copy) NSArray *legacyScript;
+@property (readonly, retain) OOJSScript *script;
 - (void) setCharacterScript:(NSString *)scriptName;
 - (void) doScriptEvent:(jsid)message;
 

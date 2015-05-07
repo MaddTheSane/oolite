@@ -33,16 +33,24 @@ MA 02110-1301, USA.
 
 @interface OOCharacter (Private)
 
-- (id) initWithGenSeed:(Random_Seed)characterSeed andOriginalSystem:(OOSystemID)systemSeed;
+- (instancetype) initWithGenSeed:(Random_Seed)characterSeed andOriginalSystem:(OOSystemID)systemSeed;
 - (void) setCharacterFromDictionary:(NSDictionary *)dict;
 
-- (void)setOriginSystem:(OOSystemID)value;
+@property (nonatomic, readwrite, setter=setOriginSystem:) OOSystemID planetIDOfOrigin;
+
 - (Random_Seed)genSeed;
 
 @end
 
 
 @implementation OOCharacter
+@synthesize name = _name;
+@synthesize legalStatus = _legalStatus;
+@synthesize shortDescription = _shortDescription;
+@synthesize insuranceCredits = _insuranceCredits;
+@synthesize planetIDOfOrigin = _originSystem;
+@synthesize legacyScript = _scriptActions;
+@synthesize script = _script;
 
 - (NSString *) descriptionComponents
 {
@@ -330,39 +338,9 @@ MA 02110-1301, USA.
 }
 
 
-- (NSString *)name
-{
-	return _name;
-}
-
-
-- (NSString *)shortDescription
-{
-	return _shortDescription;
-}
-
-
 - (Random_Seed)genSeed
 {
 	return _genSeed;
-}
-
-
-- (int)legalStatus
-{
-	return _legalStatus;
-}
-
-
-- (OOCreditsQuantity)insuranceCredits
-{
-	return _insuranceCredits;
-}
-
-
-- (NSArray *)legacyScript
-{
-	return _scriptActions;
 }
 
 
@@ -373,60 +351,15 @@ MA 02110-1301, USA.
 		  [self shortDescription], @"description",
 		  [self species], @"species",
 		  [NSNumber numberWithInt:[self legalStatus]], @"legalStatus",
-	      [NSNumber numberWithUnsignedInt:[self insuranceCredits]], @"insuranceCredits",
+		  @([self insuranceCredits]), @"insuranceCredits",
 		  [NSNumber numberWithInt:[self planetIDOfOrigin]], @"homeSystem",
 		  nil];
-}
-
-
-- (void)setName:(NSString *)value
-{
-	[_name autorelease];
-	_name = [value copy];
-}
-
-
-- (void)setShortDescription:(NSString *)value
-{
-	[_shortDescription autorelease];
-	_shortDescription = [value copy];
-}
-
-
-- (void)setOriginSystem:(OOSystemID)value
-{
-	_originSystem = value;
 }
 
 
 - (void)setGenSeed:(Random_Seed)value
 {
 	_genSeed = value;
-}
-
-
-- (void)setLegalStatus:(int)value
-{
-	_legalStatus = value;
-}
-
-
-- (void)setInsuranceCredits:(OOCreditsQuantity)value
-{
-	_insuranceCredits = value;
-}
-
-
-- (void)setLegacyScript:(NSArray *)some_actions
-{
-	[_scriptActions autorelease];
-	_scriptActions = [some_actions copy];
-}
-
-
-- (OOJSScript *)script
-{
-	return _script;
 }
 
 

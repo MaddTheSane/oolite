@@ -64,6 +64,7 @@ static NSString * const kOOLogEntityVerificationError		= @"entity.linkedList.ver
 
 
 @implementation Entity
+@synthesize sessionID = _sessionID;
 
 - (id) init
 {
@@ -116,12 +117,6 @@ static NSString * const kOOLogEntityVerificationError		= @"entity.linkedList.ver
 - (NSString *)descriptionComponents
 {
 	return [NSString stringWithFormat:@"position: %@ scanClass: %@ status: %@", HPVectorDescription([self position]), OOStringFromScanClass([self scanClass]), OOStringFromEntityStatus([self status])];
-}
-
-
-- (NSUInteger) sessionID
-{
-	return _sessionID;
 }
 
 
@@ -521,41 +516,9 @@ static NSString * const kOOLogEntityVerificationError		= @"entity.linkedList.ver
 }
 
 
-- (CollisionRegion*) collisionRegion
-{
-	return collisionRegion;
-}
-
-
-- (void) setCollisionRegion: (CollisionRegion*) region
-{
-	if (collisionRegion) [collisionRegion release];
-	collisionRegion = [region retain];
-}
-
-
-- (void) setUniversalID:(OOUniversalID)uid
-{
-	universalID = uid;
-}
-
-
-- (OOUniversalID) universalID
-{
-	return universalID;
-}
-
-
-- (BOOL) throwingSparks
-{
-	return throw_sparks;
-}
-
-
-- (void) setThrowSparks:(BOOL) value
-{
-	throw_sparks = value;
-}
+@synthesize collisionRegion;
+@synthesize universalID;
+@synthesize throwsSparks;
 
 
 - (void) throwSparks
@@ -599,16 +562,8 @@ static NSString * const kOOLogEntityVerificationError		= @"entity.linkedList.ver
 	return nil;
 }
 
-
-- (HPVector) position
-{
-	return position;
-}
-
-- (Vector) cameraRelativePosition
-{
-	return cameraRelativePosition;
-}
+@synthesize position;
+@synthesize cameraRelativePosition;
 
 - (GLfloat) cameraRangeFront
 {
@@ -700,29 +655,15 @@ static NSString * const kOOLogEntityVerificationError		= @"entity.linkedList.ver
 		return NSOrderedDescending;
 }
 
-
-- (BoundingBox) boundingBox
-{
-	return boundingBox;
-}
-
-
-- (GLfloat) mass
-{
-	return mass;
-}
+@synthesize boundingBox;
+@synthesize mass;
+@synthesize orientation;
 
 
 - (void) setOrientation:(Quaternion) quat
 {
 	orientation = quat;
 	[self orientationChanged];
-}
-
-
-- (Quaternion) orientation
-{
-	return orientation;
 }
 
 
@@ -745,16 +686,7 @@ static NSString * const kOOLogEntityVerificationError		= @"entity.linkedList.ver
 }
 
 
-- (void) setVelocity:(Vector) vel
-{
-	velocity = vel;
-}
-
-
-- (Vector) velocity
-{
-	return velocity;
-}
+@synthesize velocity;
 
 
 - (double) speed
@@ -763,64 +695,11 @@ static NSString * const kOOLogEntityVerificationError		= @"entity.linkedList.ver
 }
 
 
-- (GLfloat) distanceTravelled
-{
-	return distanceTravelled;
-}
-
-
-- (void) setDistanceTravelled: (GLfloat) value
-{
-	distanceTravelled = value;
-}
-
-
-- (void) setStatus:(OOEntityStatus) stat
-{
-	_status = stat;
-}
-
-
-- (OOEntityStatus) status
-{
-	return _status;
-}
-
-
-- (void) setScanClass:(OOScanClass)sClass
-{
-	scanClass = sClass;
-}
-
-
-- (OOScanClass) scanClass
-{
-	return scanClass;
-}
-
-
-- (void) setEnergy:(GLfloat) amount
-{
-	energy = amount;
-}
-
-
-- (GLfloat) energy
-{
-	return energy;
-}
-
-
-- (void) setMaxEnergy:(GLfloat)amount
-{
-	maxEnergy = amount;
-}
-
-
-- (GLfloat) maxEnergy
-{
-	return maxEnergy;
-}
+@synthesize distanceTravelled;
+@synthesize status = _status;
+@synthesize scanClass;
+@synthesize energy;
+@synthesize maxEnergy;
 
 
 - (void) applyRoll:(GLfloat) roll andClimb:(GLfloat) climb
@@ -892,23 +771,8 @@ static NSString * const kOOLogEntityVerificationError		= @"entity.linkedList.ver
 	return YES;
 }
 
-
-- (GLfloat) collisionRadius
-{
-	return collision_radius;
-}
-
-
-- (void) setCollisionRadius:(GLfloat) amount
-{
-	collision_radius = amount;
-}
-
-
-- (NSMutableArray *) collisionArray
-{
-	return collidingEntities;
-}
+@synthesize collisionRadius = collision_radius;
+@synthesize collisionArray = collidingEntities;
 
 
 - (void) update:(OOTimeDelta)delta_t
