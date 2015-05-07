@@ -38,6 +38,7 @@ MA 02110-1301, USA.
 #import "OOStringParsing.h"
 #import "OOCollectionExtractors.h"
 #import "OOLoggingExtended.h"
+#import "OOSystemDescriptionManager.h"
 
 // Hidden interface
 @interface WormholeEntity (Private)
@@ -88,11 +89,13 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 	{
 		NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 
-		origin = RandomSeedFromString([dict oo_stringForKey:@"origin_seed"]);
-		destination = RandomSeedFromString([dict oo_stringForKey:@"dest_seed"]);
-		// Since these are new for 1.75.1, we must give them default values as we could be loading an old savegame
-		originCoords = PointFromString( [dict oo_stringForKey:@"origin_coords" defaultValue:StringFromPoint(NSMakePoint(origin.d, origin.b))]);
-		destinationCoords = PointFromString( [dict oo_stringForKey:@"dest_coords" defaultValue:StringFromPoint(NSMakePoint(destination.d, destination.b))]);
+		// wormholes from pre-1.80 savegames using "origin_seed" and "dest_seed"
+		// currently get defaults set; will probably disappear unnoticed
+		origin = [dict oo_intForKey:@"origin_id" defaultValue:0];
+		destination = [dict oo_intForKey:@"dest_id" defaultValue:255];
+
+		originCoords = [[UNIVERSE systemManager] getCoordinatesForSystem:origin inGalaxy:[PLAYER galaxyNumber]];
+		destinationCoords = [[UNIVERSE systemManager] getCoordinatesForSystem:destination inGalaxy:[PLAYER galaxyNumber]];
 
 		// We only ever init from dictionary if we're loaded by the player, so
 		// by definition we have been scanned
@@ -145,7 +148,7 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 	return self;
 }
 
-- (WormholeEntity*) initWormholeTo:(Random_Seed) s_seed fromShip:(ShipEntity *) ship
+- (WormholeEntity*) initWormholeTo:(OOSystemID) s fromShip:(ShipEntity *) ship
 {
 	assert(ship != nil);
 
@@ -156,10 +159,10 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 		OOSunEntity	*sun = [UNIVERSE sun];
 		
 		_misjump = NO;
-		origin = [UNIVERSE systemSeed];
-		destination = s_seed;
+		origin = [UNIVERSE currentSystemID];
+		destination = s;
 		originCoords = [PLAYER galaxy_coordinates];
-		destinationCoords = NSMakePoint(destination.d, destination.b);
+		destinationCoords = [[UNIVERSE systemManager] getCoordinatesForSystem:destination inGalaxy:[PLAYER galaxyNumber]];
 		distance = distanceBetweenPlanetPositions(originCoords.x, originCoords.y, destinationCoords.x, destinationCoords.y);
 		distance = fmax(distance, 0.1);
 		witch_mass = 200000.0; // MKW 2010.11.21 - originally the ship's mass was added twice - once here and once in suckInShip.  Instead, we give each wormhole a minimum mass.
@@ -253,7 +256,7 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 	{
 		return NO;
 	}
-	if (!equal_seeds(origin,[UNIVERSE systemSeed]))
+	if (origin != [UNIVERSE currentSystemID])
 	{
 		// if we're no longer in the origin system, can't suck in
 		return NO;
@@ -372,7 +375,7 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 					min_d1 *= 3.0;
 				}
 
-				if (abs(d1) < min_d1)	// no closer than 750m to edge of buoy
+				if (fabs(d1) < min_d1)	// no closer than 750m to edge of buoy
 				{
 					d1 += ((d1 > 0.0)? min_d1: -min_d1);
 				}
@@ -496,12 +499,12 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 	hasExitPosition = YES;
 }
 
-- (Random_Seed) origin
+- (OOSystemID) origin
 {
 	return origin;
 }
 
-- (Random_Seed) destination
+- (OOSystemID) destination
 {
 	return destination;
 }
@@ -631,7 +634,7 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 - (BOOL) canCollide
 {
 	/* Correct test for far end of wormhole */
-	if (!equal_seeds(origin,[UNIVERSE systemSeed]))
+	if (origin != [UNIVERSE currentSystemID])
 	{
 		// if we're no longer in the origin system, can't suck in
 		return NO;
@@ -792,11 +795,11 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 {
 	NSMutableDictionary *myDict = [NSMutableDictionary dictionary];
 
-	myDict[@"origin_seed"] = StringFromRandomSeed(origin);
-	myDict[@"dest_seed"] = StringFromRandomSeed(destination);
+	myDict[@"origin_seed"] = @(origin);
+	myDict[@"dest_seed"] = @(destination);
 	myDict[@"origin_coords"] = StringFromPoint(originCoords);
 	myDict[@"dest_coords"] = StringFromPoint(destinationCoords);
-	// Anything converting a wormhole to a dictionary should already have 
+	// Anything converting a wormhole to a dictionary should already have
 	// modified its time to shipClock time
 	[myDict oo_setFloat:(expiry_time) forKey:@"expiry_time"];
 	[myDict oo_setFloat:(arrival_time) forKey:@"arrival_time"];

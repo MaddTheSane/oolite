@@ -45,7 +45,8 @@ MA 02110-1301, USA.
 #import "OOExcludeObjectEnumerator.h"
 #import "OOWeakSet.h"
 #import "GameController.h"
-
+#import "MyOpenGLView.h"
+#import "OOSystemDescriptionManager.h"
 #import "OOCharacter.h"
 #import "AI.h"
 
@@ -86,11 +87,11 @@ MA 02110-1301, USA.
 
 #import "OODebugGLDrawing.h"
 #import "OODebugFlags.h"
+#import "OODebugStandards.h"
 
 #import "OOJSScript.h"
 #import "OOJSVector.h"
 #import "OOJSEngineTimeManagement.h"
-
 
 #define USEMASC 1
 
@@ -161,6 +162,8 @@ static GLfloat calcFuelChargeRate (GLfloat myMass)
 - (void) setShipHitByLaser:(ShipEntity *)ship;
 
 - (void) noteFrustration:(NSString *)context;
+
+- (BOOL) cloakPassive;
 
 @end
 
@@ -259,8 +262,11 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	suppressExplosion = NO;
 	_lightsActive = YES;
 	
-	
+
 	// set things from dictionary from here out - default values might require adjustment -- Kaks 20091130
+	_scaleFactor = [shipDict oo_floatForKey:@"model_scale_factor" defaultValue:1.0f];
+
+
 	float defaultSpeed = isStation ? 0.0f : 160.0f;
 	maxFlightSpeed = [shipDict oo_floatForKey:@"max_flight_speed" defaultValue:defaultSpeed];
 	max_flight_roll = [shipDict oo_floatForKey:@"max_flight_roll" defaultValue:2.0f];
@@ -270,21 +276,43 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	
 	max_thrust = [shipDict oo_floatForKey:@"thrust" defaultValue:15.0f];
 	thrust = max_thrust;
+
+	afterburner_rate = [shipDict oo_floatForKey:@"injector_burn_rate" defaultValue:AFTERBURNER_BURNRATE];
+	afterburner_speed_factor = [shipDict oo_floatForKey:@"injector_speed_factor" defaultValue:7.0f];
+	if (afterburner_speed_factor < 1.0)
+	{
+		OOLog(@"ship.setup.injectorSpeed",@"injector_speed_factor cannot be lower than 1.0 for %@",self);
+		afterburner_speed_factor = 1.0;
+	}
+#if OO_VARIABLE_TORUS_SPEED
+	else if (afterburner_speed_factor > MIN_HYPERSPEED_FACTOR)
+	{
+		OOLog(@"ship.setup.injectorSpeed",@"injector_speed_factor cannot be higher than minimum torus speed factor (%f) for %@.",MIN_HYPERSPEED_FACTOR,self);
+		afterburner_speed_factor = MIN_HYPERSPEED_FACTOR;
+#else
+	else if (afterburner_speed_factor > HYPERSPEED_FACTOR)
+	{
+		OOLog(@"ship.setup.injectorSpeed",@"injector_speed_factor cannot be higher than torus speed factor (%f) for %@.",HYPERSPEED_FACTOR,self);
+		afterburner_speed_factor = HYPERSPEED_FACTOR;
+#endif
+	}
+
 	maxEnergy = [shipDict oo_floatForKey:@"max_energy" defaultValue:200.0f];
 	energy_recharge_rate = [shipDict oo_floatForKey:@"energy_recharge_rate" defaultValue:1.0f];
 	
+	_showDamage = [shipDict oo_boolForKey:@"show_damage" defaultValue:(energy_recharge_rate > 0)];
 	// Each new ship should start in seemingly good operating condition, unless specifically told not to - this does not affect the ship's energy levels
 	[self setThrowSparks:[shipDict oo_boolForKey:@"throw_sparks" defaultValue:NO]];
 	
 	weapon_facings = [shipDict oo_intForKey:@"weapon_facings" defaultValue:VALID_WEAPON_FACINGS] & VALID_WEAPON_FACINGS;
 	if (weapon_facings & WEAPON_FACING_FORWARD)
-		forward_weapon_type = OOWeaponTypeFromString([shipDict oo_stringForKey:@"forward_weapon_type" defaultValue:@"WEAPON_NONE"]);
+		forward_weapon_type = OOWeaponTypeFromString([shipDict oo_stringForKey:@"forward_weapon_type" defaultValue:@"EQ_WEAPON_NONE"]);
 	if (weapon_facings & WEAPON_FACING_AFT)
-		aft_weapon_type = OOWeaponTypeFromString([shipDict oo_stringForKey:@"aft_weapon_type" defaultValue:@"WEAPON_NONE"]);
+		aft_weapon_type = OOWeaponTypeFromString([shipDict oo_stringForKey:@"aft_weapon_type" defaultValue:@"EQ_WEAPON_NONE"]);
 	if (weapon_facings & WEAPON_FACING_PORT)
-		port_weapon_type = OOWeaponTypeFromString([shipDict oo_stringForKey:@"port_weapon_type" defaultValue:@"WEAPON_NONE"]);
+		port_weapon_type = OOWeaponTypeFromString([shipDict oo_stringForKey:@"port_weapon_type" defaultValue:@"EQ_WEAPON_NONE"]);
 	if (weapon_facings & WEAPON_FACING_STARBOARD)
-		starboard_weapon_type = OOWeaponTypeFromString([shipDict oo_stringForKey:@"starboard_weapon_type" defaultValue:@"WEAPON_NONE"]);
+		starboard_weapon_type = OOWeaponTypeFromString([shipDict oo_stringForKey:@"starboard_weapon_type" defaultValue:@"EQ_WEAPON_NONE"]);
 
 	cloaking_device_active = NO;
 	military_jammer_active = NO;
@@ -334,6 +362,8 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	
 	// can it be 'mined' for alloys?
 	canFragment = [shipDict oo_fuzzyBooleanForKey:@"fragment_chance" defaultValue:0.9];
+	isWreckage = NO;
+
 	// can subentities be destroyed separately?
 	isFrangible = [shipDict oo_boolForKey:@"frangible" defaultValue:YES];
 	
@@ -359,13 +389,17 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	NSString *modelName = [shipDict oo_stringForKey:@"model"];
 	if (modelName != nil)
 	{
-		OOMesh *mesh = [OOMesh meshWithName:modelName
-								   cacheKey:_shipKey
-						 materialDictionary:[shipDict oo_dictionaryForKey:@"materials"]
-						  shadersDictionary:[shipDict oo_dictionaryForKey:@"shaders"]
-									 smooth:[shipDict oo_boolForKey:@"smooth" defaultValue:NO]
-							   shaderMacros:OODefaultShipShaderMacros()
-						shaderBindingTarget:self];
+		OOMesh *mesh = nil;
+
+		mesh = [OOMesh meshWithName:modelName
+						   cacheKey:[NSString stringWithFormat:@"%@-%.3f",_shipKey,_scaleFactor]
+				 materialDictionary:[shipDict oo_dictionaryForKey:@"materials"]
+				  shadersDictionary:[shipDict oo_dictionaryForKey:@"shaders"]
+							 smooth:[shipDict oo_boolForKey:@"smooth" defaultValue:NO]
+					   shaderMacros:OODefaultShipShaderMacros()
+					   shaderBindingTarget:self
+						scaleFactor:_scaleFactor];
+
 		if (mesh == nil)  return NO;
 		[self setMesh:mesh];
 	}
@@ -373,18 +407,24 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	float density = [shipDict oo_floatForKey:@"density" defaultValue:1.0f];
 	if (octree)  mass = (GLfloat)(density * 20.0 * [octree volume]);
 	
-	OOColor *color = [OOColor brightColorWithDescription:shipDict[@"laser_color"]];
+	DESTROY(default_laser_color);
+	default_laser_color = [[OOColor brightColorWithDescription:[shipDict objectForKey:@"laser_color"]] retain];
 	
-	if (color == nil)  color = [OOColor redColor];
-	[self setLaserColor:color];
-	
+	if (default_laser_color == nil) 
+	{
+		[self setLaserColor:[OOColor redColor]];
+	}
+	else
+	{
+		[self setLaserColor:default_laser_color];
+	}
 	// exhaust emissive color
 	OORGBAComponents defaultExhaustEmissiveColorComponents; // pale blue is exhaust default color
 	defaultExhaustEmissiveColorComponents.r = 0.7f;
 	defaultExhaustEmissiveColorComponents.g = 0.9f;
 	defaultExhaustEmissiveColorComponents.b = 1.0f;
 	defaultExhaustEmissiveColorComponents.a = 0.9f;
-	color = [OOColor brightColorWithDescription:shipDict[@"exhaust_emissive_color"]];
+	OOColor *color = [OOColor brightColorWithDescription:[shipDict objectForKey:@"exhaust_emissive_color"]];
 	if (color == nil)  color = [OOColor colorWithRGBAComponents:defaultExhaustEmissiveColorComponents];
 	[self setExhaustEmissiveColor:color];
 	
@@ -392,13 +432,13 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	[self setUpSubEntities];
 
 // correctly initialise weaponRange, etc. (must be after subentity setup)
-	if (forward_weapon_type == WEAPON_NONE)
+	if (isWeaponNone(forward_weapon_type))
 	{
-		OOWeaponType 			weapon_type = WEAPON_NONE;
+		OOWeaponType 			weapon_type = nil;
 		BOOL hasTurrets = NO;
 		NSEnumerator	*subEnum = [self shipSubEntityEnumerator];
 		ShipEntity		*se = nil;
-		while (weapon_type == WEAPON_NONE && (se = [subEnum nextObject]))
+		while (isWeaponNone(weapon_type) && (se = [subEnum nextObject]))
 		{
 			weapon_type = se->forward_weapon_type;
 			if (se->behaviour == BEHAVIOUR_TRACK_AS_TURRET)
@@ -406,11 +446,14 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 				hasTurrets = YES;
 			}
 		}
-		if (weapon_type == WEAPON_NONE && hasTurrets)
+		if (isWeaponNone(weapon_type) && hasTurrets)
 		{ // safety for ships only equipped with turrets
-			weapon_type = WEAPON_PLASMA_CANNON;
+			weaponRange = 10000.0;
 		}
-		[self setWeaponDataFromType:weapon_type];
+		else
+		{
+			[self setWeaponDataFromType:weapon_type];
+		}
 	}
 	else
 	{
@@ -424,13 +467,27 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	// set weapon offsets
 	[self setDefaultWeaponOffsets];
 	
-	forwardWeaponOffset = [shipDict oo_vectorForKey:@"weapon_position_forward" defaultValue:forwardWeaponOffset];
-	aftWeaponOffset = [shipDict oo_vectorForKey:@"weapon_position_aft" defaultValue:aftWeaponOffset];
-	portWeaponOffset = [shipDict oo_vectorForKey:@"weapon_position_port" defaultValue:portWeaponOffset];
-	starboardWeaponOffset = [shipDict oo_vectorForKey:@"weapon_position_starboard" defaultValue:starboardWeaponOffset];
+	if (EXPECT(_scaleFactor == 1.0))
+	{
+		forwardWeaponOffset = [shipDict oo_vectorForKey:@"weapon_position_forward" defaultValue:forwardWeaponOffset];
+		aftWeaponOffset = [shipDict oo_vectorForKey:@"weapon_position_aft" defaultValue:aftWeaponOffset];
+		portWeaponOffset = [shipDict oo_vectorForKey:@"weapon_position_port" defaultValue:portWeaponOffset];
+		starboardWeaponOffset = [shipDict oo_vectorForKey:@"weapon_position_starboard" defaultValue:starboardWeaponOffset];
 
-	// fuel scoop destination position (where cargo gets sucked into)
-	tractor_position = [shipDict oo_vectorForKey:@"scoop_position"];
+		// fuel scoop destination position (where cargo gets sucked into)
+		tractor_position = [shipDict oo_vectorForKey:@"scoop_position"];
+
+	}
+	else
+	{
+		forwardWeaponOffset = vector_multiply_scalar([shipDict oo_vectorForKey:@"weapon_position_forward" defaultValue:forwardWeaponOffset],_scaleFactor);
+		aftWeaponOffset = vector_multiply_scalar([shipDict oo_vectorForKey:@"weapon_position_aft" defaultValue:aftWeaponOffset],_scaleFactor);
+		portWeaponOffset = vector_multiply_scalar([shipDict oo_vectorForKey:@"weapon_position_port" defaultValue:portWeaponOffset],_scaleFactor);
+		starboardWeaponOffset = vector_multiply_scalar([shipDict oo_vectorForKey:@"weapon_position_starboard" defaultValue:starboardWeaponOffset],_scaleFactor);
+
+		tractor_position = vector_multiply_scalar([shipDict oo_vectorForKey:@"scoop_position"],_scaleFactor);
+	}
+
 	
 	// sun glare filter - default is no filter
 	[self setSunGlareFilter:[shipDict oo_floatForKey:@"sun_glare_filter" defaultValue:0.0f]];
@@ -438,6 +495,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	// Get scriptInfo dictionary, containing arbitrary stuff scripts might be interested in.
 	scriptInfo = [[shipDict oo_dictionaryForKey:@"script_info" defaultValue:nil] retain];
 
+	explosionType = [[shipDict oo_arrayForKey:@"explosion_type" defaultValue:nil] retain];
 	
 	return YES;
 	
@@ -473,6 +531,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 		scanClass = OOScanClassFromString([shipDict oo_stringForKey:@"scanClass" defaultValue:@"CLASS_NOT_SET"]);
 	}
 
+	scan_description = [shipDict oo_stringForKey:@"scan_description" defaultValue:nil];
 
 	// FIXME: give NPCs shields instead.
 	
@@ -491,11 +550,11 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	// no weapon_damage? It's a missile: set weapon_damage from shipdata!
 	if (weapon_damage == 0.0) 
 	{
-		weapon_damage_override = weapon_damage = [shipDict oo_floatForKey:@"weapon_energy"]; // any damage value for missiles/bombs
+		weapon_damage_override = weapon_damage = [shipDict oo_floatForKey:@"weapon_energy" defaultValue:0]; // any damage value for missiles/bombs
 	}
 	else
-	{ 
-		weapon_damage_override = OOClamp_0_max_f([shipinfoDictionary oo_floatForKey:@"weapon_energy" defaultValue:weapon_damage],50.0); // front laser damage can be modified, within limits!
+	{
+		weapon_damage_override = 0;
 	}
 
 	scannerRange = [shipDict oo_floatForKey:@"scanner_range" defaultValue:(float)SCANNER_MAX_RANGE];
@@ -515,7 +574,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	noRocks = [shipDict oo_fuzzyBooleanForKey:@"no_boulders"];
 	
 	commodity_amount = 0;
-	commodity_type = COMMODITY_UNDEFINED;
+	commodity_type = nil;
 	NSString *cargoString = [shipDict oo_stringForKey:@"cargo_carried"];
 	if (cargoString != nil)
 	{
@@ -531,20 +590,26 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 		{
 			cargo_flag = CARGO_FLAG_FULL_UNIFORM;
 
-			OOCommodityType	c_commodity = COMMODITY_UNDEFINED;
+			OOCommodityType	c_commodity = nil;
 			int				c_amount = 1;
 			NSScanner		*scanner = [NSScanner scannerWithString:cargoString];
 			if ([scanner scanInt:&c_amount])
 			{
 				[scanner ooliteScanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];	// skip whitespace
-				c_commodity = [UNIVERSE commodityForName:[[scanner string] substringFromIndex:[scanner scanLocation]]];
-				if (c_commodity != COMMODITY_UNDEFINED)  [self setCommodityForPod:c_commodity andAmount:c_amount];
+				c_commodity = [[scanner string] substringFromIndex:[scanner scanLocation]];
+				if ([[UNIVERSE commodities] goodDefined:c_commodity])
+				{
+					[self setCommodityForPod:c_commodity andAmount:c_amount];
+				}
 			}
 			else
 			{
 				c_amount = 1;
-				c_commodity = [UNIVERSE commodityForName:[shipDict oo_stringForKey:@"cargo_carried"]];
-				if (c_commodity != COMMODITY_UNDEFINED)  [self setCommodity:c_commodity andAmount:c_amount];
+				c_commodity = [shipDict oo_stringForKey:@"cargo_carried"];
+				if ([[UNIVERSE commodities] goodDefined:c_commodity])
+				{
+					[self setCommodityForPod:c_commodity andAmount:c_amount];
+				}
 			}
 		}
 	}
@@ -579,6 +644,10 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	// these are the colors used for the "lollipop" of the ship. Any of the two (or both, for flash effect) can be defined. nil means use default from shipData.
 	[self setScannerDisplayColor1:nil];
 	[self setScannerDisplayColor2:nil];
+	// and the same for the "hostile" colours
+	[self setScannerDisplayColorHostile1:nil];
+	[self setScannerDisplayColorHostile2:nil];
+
 
 	// Populate the missiles here. Must come after scanClass.
 	_missileRole = [shipDict oo_stringForKey:@"missile_role"];
@@ -670,6 +739,8 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 
 	home_system = [UNIVERSE currentSystemID];
 	destination_system = [UNIVERSE currentSystemID];
+
+	reactionTime = [shipDict oo_floatForKey: @"reaction_time" defaultValue: COMBAT_AI_STANDARD_REACTION_TIME];
 	
 	return YES;
 	
@@ -766,7 +837,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	for (i = 0; i < [plumes count]; i++)
 	{
 		NSArray *definition = ScanTokensFromString([plumes oo_stringAtIndex:i]);
-		OOExhaustPlumeEntity *exhaust = [OOExhaustPlumeEntity exhaustForShip:self withDefinition:definition];
+		OOExhaustPlumeEntity *exhaust = [OOExhaustPlumeEntity exhaustForShip:self withDefinition:definition andScale:_scaleFactor];
 		[self addSubEntity:exhaust];
 	}
 	
@@ -816,7 +887,8 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 - (BOOL) setUpOneFlasher:(NSDictionary *) subentDict
 {
 	OOFlasherEntity *flasher = [OOFlasherEntity flasherWithDictionary:subentDict];
-	[flasher setPosition:[subentDict oo_hpvectorForKey:@"position"]];
+	[flasher setPosition:HPvector_multiply_scalar([subentDict oo_hpvectorForKey:@"position"],_scaleFactor)];
+	[flasher rescaleBy:_scaleFactor];
 	[self addSubEntity:flasher];
 	return YES;
 }
@@ -837,18 +909,18 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	
 	if (!asTurret && [self isStation] && [subentDict oo_boolForKey:@"is_dock"])
 	{
-		subentity = [UNIVERSE newDockWithName:subentKey];
+		subentity = [UNIVERSE newDockWithName:subentKey andScaleFactor:_scaleFactor];
 	}
 	else 
 	{
-		subentity = [UNIVERSE newSubentityWithName:subentKey];
+		subentity = [UNIVERSE newSubentityWithName:subentKey andScaleFactor:_scaleFactor];
 	}
 	if (subentity == nil) {
 		OOLog(@"setup.ship.badEntry.subentities",@"Failed to set up entity %@",subentKey);
 		return NO;
 	}
 	
-	subPosition = vectorToHPVector([subentDict oo_vectorForKey:@"position"]);
+	subPosition = HPvector_multiply_scalar([subentDict oo_hpvectorForKey:@"position"],_scaleFactor);
 	subOrientation = [subentDict oo_quaternionForKey:@"orientation"];
 	
 	[subentity setPosition:subPosition];
@@ -917,31 +989,35 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	{
 		case CARGO_SLAVES:
 			commodity_amount = 1;
-			commodity_type = [UNIVERSE commodityForName:@"Slaves"];
+			DESTROY(commodity_type);
+			commodity_type = @"slaves";
 			cargo_type = CARGO_RANDOM; // not realy random, but it tells that cargo is selected.
 			break;
 			
 		case CARGO_ALLOY:
 			commodity_amount = 1;
-			commodity_type = [UNIVERSE commodityForName:@"Alloys"];
+			DESTROY(commodity_type);
+			commodity_type = @"alloys";
 			cargo_type = CARGO_RANDOM;
 			break;
 			
 		case CARGO_MINERALS:
 			commodity_amount = 1;
-			commodity_type = [UNIVERSE commodityForName:@"Minerals"];
+			DESTROY(commodity_type);
+			commodity_type = @"minerals";
 			cargo_type = CARGO_RANDOM;
 			break;
 			
 		case CARGO_THARGOID:
 			commodity_amount = 1;
-			commodity_type = [UNIVERSE commodityForName:@"Alien Items"];
+			DESTROY(commodity_type);
+			commodity_type = @"alien_items";
 			cargo_type = CARGO_RANDOM;
 			break;
 			
 		case CARGO_SCRIPTED_ITEM:
 			commodity_amount = 1; // value > 0 is needed to be recognised as cargo by scripts;
-			commodity_type = COMMODITY_UNDEFINED; // will be defined elsewhere when needed.
+			DESTROY(commodity_type); // will be defined elsewhere when needed.
 			break;
 			
 		case CARGO_RANDOM:
@@ -983,12 +1059,16 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	DESTROY(shipUniqueName);
 	DESTROY(shipClassName);
 	DESTROY(displayName);
+	DESTROY(scan_description);
 	DESTROY(roleSet);
 	DESTROY(primaryRole);
 	DESTROY(laser_color);
+	DESTROY(default_laser_color);
 	DESTROY(exhaust_emissive_color);
 	DESTROY(scanner_display_color1);
 	DESTROY(scanner_display_color2);
+	DESTROY(scanner_display_color_hostile1);
+	DESTROY(scanner_display_color_hostile2);
 	DESTROY(script);
 	DESTROY(aiScript);
 	DESTROY(previousCondition);
@@ -997,7 +1077,10 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	DESTROY(lastRadioMessage);
 	DESTROY(octree);
 	DESTROY(_defenseTargets);
+	DESTROY(_collisionExceptions);
 	
+	DESTROY(commodity_type);
+
 	[self setSubEntityTakingDamage:nil];
 	[self removeAllEquipment];
 	
@@ -1012,6 +1095,8 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	DESTROY(_beaconLabel);
 	DESTROY(_beaconDrawable);
 	
+	DESTROY(explosionType);
+
 	[super dealloc];
 }
 
@@ -1034,6 +1119,18 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	_profileRadius = collision_radius;
 	float density = [[self shipInfoDictionary] oo_floatForKey:@"density" defaultValue:1.0f];
 	if (octree)  mass = (GLfloat)(density * 20.0 * [octree volume]);
+}
+
+
+- (Quaternion) subEntityRotationalVelocity
+{
+	return subentityRotationalVelocity;
+}
+
+
+- (void) setSubEntityRotationalVelocity:(Quaternion)rv
+{
+	subentityRotationalVelocity = rv;
 }
 
 
@@ -1660,7 +1757,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	NSDictionary		*systeminfo = nil;
 	OOGovernmentID		government;
 
-	systeminfo = [UNIVERSE generateSystemData:[UNIVERSE systemSeed]];
+	systeminfo = [UNIVERSE currentSystemData];
  	government = [systeminfo oo_unsignedCharForKey:KEY_GOVERNMENT];
 
 	OOShipGroup *escortGroup = [self escortGroup];
@@ -1915,6 +2012,12 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	{	
 		return NO;
 	}
+
+	if (isWreckage)
+	{
+		// wreckage won't collide
+		return NO;
+	}
 	
 	if (isMissile && [self shotTime] < 0.25) // not yet fused
 	{
@@ -2128,7 +2231,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	{
 		[pod setOwner:self];
 		[pod setTemperature:[self randomEjectaTemperatureWithMaxFactor:0.9]];
-		[pod setCommodity:[UNIVERSE commodityForName:@"Slaves"] andAmount:1];
+		[pod setCommodity:@"slaves" andAmount:1];
 		[pod setCrew:podCrew];
 		[pod switchAITo:@"oolite-shuttleAI.js"];
 		[self dumpItem:pod];	// CLASS_CARGO, STATUS_IN_FLIGHT, AI state GLOBAL
@@ -2174,6 +2277,8 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 			scanClass = CLASS_NEUTRAL;
 			OOLog(@"ship.sanityCheck.failed", @"Ship %@ %@ with scanClass CLASS_NOT_SET; forced to CLASS_NEUTRAL.", self, [self primaryRole]);
 		}
+
+		[self updateTrackingCurve];
 
 		//
 		// deal with collisions
@@ -2300,7 +2405,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 			external_temp = SUN_TEMPERATURE * alt1;
 			if ([sun goneNova])  external_temp *= 100;
 
-			if ([self hasScoop] && alt1 > 0.75 && [self fuel] < [self fuelCapacity])
+			if ([self hasFuelScoop] && alt1 > 0.75 && [self fuel] < [self fuelCapacity])
 			{
 				fuel_accumulator += (float)(delta_t * flightSpeed * 0.010 / [self fuelChargeRate]);
 			// are we fast enough to collect any fuel?
@@ -2336,7 +2441,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		[self takeHeatDamage: delta_t * ship_temperature];
 
 	// are we burning due to low energy
-	if ((energy < maxEnergy * 0.20)&&(energy_recharge_rate > 0.0))	// prevents asteroid etc. from burning
+	if ((energy < maxEnergy * 0.20)&&_showDamage)	// prevents asteroid etc. from burning
 		throw_sparks = YES;
 	
 	// burning effects
@@ -2500,28 +2605,12 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	{
 		flightYaw = 0.0;
 		[self applyAttitudeChanges:delta_t];
-		GLfloat range2 = 0.1 * HPdistance2(position, destination) / (collision_radius * collision_radius);
+		GLfloat range2 = 0.1 * HPdistance2(position, _destination) / (collision_radius * collision_radius);
 		if ((range2 > 1.0)||(velocity.z > 0.0))	range2 = 1.0;
 		position = HPvector_add(position, vectorToHPVector(vector_multiply_scalar(velocity, range2 * delta_t)));
 	}
 	else
 	{
-		ShipEntity *target = [self primaryTarget];
-		
-		if (target == nil || [target scanClass] == CLASS_NO_DRAW || ![target isShip] || [target isCloaked])
-		{
-			 // It's no longer a parrot, it has ceased to be, it has joined the choir invisible...
-			if ([self primaryTarget] != nil)
-			{
-				if ([target isShip] && [target isCloaked])
-				{
-					[self doScriptEvent:OOJSID("shipTargetCloaked") andReactToAIMessage:@"TARGET_CLOAKED"];
-					DESTROY(_lastEscortTarget); // needed to deploy escorts again after decloaking.
-				}
-				[self noteLostTarget];
-			}
-		}
-
 		[self processBehaviour:delta_t];
 
 		// manage energy
@@ -2561,15 +2650,18 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 	
 	// subentity rotation
-	if (!quaternion_equal(subentityRotationalVelocity, kIdentityQuaternion) &&
-		!quaternion_equal(subentityRotationalVelocity, kZeroQuaternion))
+	if (isSubEnt)
 	{
-		Quaternion qf = subentityRotationalVelocity;
-		qf.w *= (1.0 - delta_t);
-		qf.x *= delta_t;
-		qf.y *= delta_t;
-		qf.z *= delta_t;
-		[self setOrientation:quaternion_multiply(qf, orientation)];
+		if (!quaternion_equal(subentityRotationalVelocity, kIdentityQuaternion) &&
+			!quaternion_equal(subentityRotationalVelocity, kZeroQuaternion))
+		{
+			Quaternion qf = subentityRotationalVelocity;
+			qf.w *= (1.0 - delta_t);
+			qf.x *= delta_t;
+			qf.y *= delta_t;
+			qf.z *= delta_t;
+			[self setOrientation:quaternion_multiply(qf, orientation)];
+		}
 	}
 	
 	//	reset totalBoundingBox
@@ -2847,7 +2939,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	{
 		// Check for primary weapon
 		OOWeaponType weaponType = OOWeaponTypeFromEquipmentIdentifierStrict(itemKey);
-		if (weaponType != WEAPON_NONE)
+		if (!isWeaponNone(weaponType))
 		{
 			if ([self hasPrimaryWeapon:weaponType])  return YES;
 		}
@@ -2886,14 +2978,35 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	NSEnumerator				*subEntEnum = nil;
 	ShipEntity					*subEntity = nil;
 	
-	if (forward_weapon_type == weaponType || aft_weapon_type == weaponType || port_weapon_type == weaponType || starboard_weapon_type == weaponType)  return YES;
-	
+	if ([[forward_weapon_type identifier] isEqualToString:[weaponType identifier]] ||
+		[[aft_weapon_type identifier] isEqualToString:[weaponType identifier]] ||
+		[[port_weapon_type identifier] isEqualToString:[weaponType identifier]] ||
+		[[starboard_weapon_type identifier] isEqualToString:[weaponType identifier]])
+	{
+		return YES;
+	}
+
 	for (subEntEnum = [self shipSubEntityEnumerator]; (subEntity = [subEntEnum nextObject]); )
 	{
 		if ([subEntity hasPrimaryWeapon:weaponType])  return YES;
 	}
 	
 	return NO;
+}
+
+
+- (NSUInteger) countEquipmentItem:(NSString *)eqkey
+{
+	NSString *eq = nil;
+	NSUInteger count = 0;
+	foreach (eq, _equipment)
+	{
+		if ([eqkey isEqualToString:eq])
+		{
+			++count;
+		}
+	}
+	return count;
 }
 
 
@@ -2922,6 +3035,52 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 - (BOOL) hasEquipmentItem:(id)equipmentKeys
 {
 	return [self hasEquipmentItem:equipmentKeys includeWeapons:NO whileLoading:NO];
+}
+
+
+/* allows OXP equipment to provide core functions (or indeed OXP
+ * functions, potentially) */
+- (BOOL) hasEquipmentItemProviding:(NSString *)equipmentType
+{
+	NSString *key = nil;
+	foreach (key, _equipment) {
+		if ([key isEqualToString:equipmentType])
+		{
+			// equipment always provides itself
+			return YES;
+		}
+		else
+		{
+			OOEquipmentType *et = [OOEquipmentType equipmentTypeWithIdentifier:key];
+			if (et != nil && [et provides:equipmentType])
+			{
+				return YES;
+			}
+		}
+	}
+	return NO;
+}
+
+
+- (NSString *) equipmentItemProviding:(NSString *)equipmentType
+{
+	NSString *key = nil;
+	foreach (key, _equipment) {
+		if ([key isEqualToString:equipmentType])
+		{
+			// equipment always provides itself
+			return [[key copy] autorelease];
+		}
+		else
+		{
+			OOEquipmentType *et = [OOEquipmentType equipmentTypeWithIdentifier:key];
+			if (et != nil && [et provides:equipmentType])
+			{
+				return [[key copy] autorelease];
+			}
+		}
+	}
+	return nil;
 }
 
 
@@ -2963,6 +3122,12 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 }
 
 
+- (void) setHyperspaceSpinTime:(float)new
+{
+	hyperspaceMotorSpinTime = new;
+}
+
+
 - (BOOL) canAddEquipment:(NSString *)equipmentKey inContext:(NSString *)context
 {
 	if ([equipmentKey hasSuffix:@"_DAMAGED"])
@@ -2993,7 +3158,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 
 - (OOWeaponType) weaponTypeIDForFacing:(OOWeaponFacing)facing strict:(BOOL)strict
 {
-	OOWeaponType weaponType = WEAPON_NONE;
+	OOWeaponType weaponType = nil;
 
 	if (facing & weapon_facings)
 	{
@@ -3002,11 +3167,11 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 			case WEAPON_FACING_FORWARD:
 				weaponType = forward_weapon_type;
 				// if no forward weapon, and not carrying out a strict check, see if subentities have forward weapons, return the first one found.
-				if (weaponType == WEAPON_NONE && !strict)
+				if (isWeaponNone(weaponType) && !strict)
 				{
 					NSEnumerator	*subEntEnum = [self shipSubEntityEnumerator];
 					ShipEntity		*subEntity = nil;
-					while (weaponType == WEAPON_NONE && (subEntity = [subEntEnum nextObject]))
+					while (isWeaponNone(weaponType) && (subEntity = [subEntEnum nextObject]))
 					{
 						weaponType = subEntity->forward_weapon_type;
 					}
@@ -3034,9 +3199,9 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 
 - (OOEquipmentType *) weaponTypeForFacing:(OOWeaponFacing)facing strict:(BOOL)strict
 {
-	OOWeaponType weaponType = [self weaponTypeIDForFacing:facing strict:strict];
-
-	return [OOEquipmentType equipmentTypeWithIdentifier:OOEquipmentIdentifierFromWeaponType(weaponType)];
+//	OOWeaponType weaponType = [self weaponTypeIDForFacing:facing strict:strict];
+//	return [OOEquipmentType equipmentTypeWithIdentifier:OOEquipmentIdentifierFromWeaponType(weaponType)];
+	return [self weaponTypeIDForFacing:facing strict:strict];
 }
 
 
@@ -3098,10 +3263,24 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	for (eqTypeEnum = [eqTypes objectEnumerator]; (eqType = [eqTypeEnum nextObject]); )
 	{
 		// Equipment list,  consistent with the rest of the API - Kaks
-		isDamaged = [self hasEquipmentItem:[[eqType identifier] stringByAppendingString:@"_DAMAGED"]];
-		if ([self hasEquipmentItem:[eqType identifier]] || isDamaged)
+		if ([eqType canCarryMultiple])
 		{
-			[quip addObject:eqType];
+			NSString *damagedIdentifier = [[eqType identifier] stringByAppendingString:@"_DAMAGED"];
+			NSUInteger i, count = 0;
+			count += [self countEquipmentItem:[eqType identifier]];
+			count += [self countEquipmentItem:damagedIdentifier];
+			for (i=0;i<count;i++)
+			{
+				[quip addObject:eqType];	
+			}
+		}
+		else
+		{
+			isDamaged = [self hasEquipmentItem:[[eqType identifier] stringByAppendingString:@"_DAMAGED"]];
+			if ([self hasEquipmentItem:[eqType identifier]] || isDamaged)
+			{
+				[quip addObject:eqType];
+			}
 		}
 	}
 	
@@ -3265,15 +3444,18 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	{
 		eqType = [OOEquipmentType equipmentTypeWithIdentifier:[equipmentKey substringToIndex:[equipmentKey length] - [@"_DAMAGED" length]]];
 	}
-	else
+	else 
 	{
 		eqType = [OOEquipmentType equipmentTypeWithIdentifier:equipmentKey];
 		// in case we have the damaged version!
-		damagedKey = [equipmentKey stringByAppendingString:@"_DAMAGED"];
-		if ([_equipment containsObject:damagedKey])
+		if (![eqType canCarryMultiple])
 		{
-			[_equipment removeObject:damagedKey];
-			isRepairedEquipment = YES;
+			damagedKey = [equipmentKey stringByAppendingString:@"_DAMAGED"];
+			if ([_equipment containsObject:damagedKey])
+			{
+				[_equipment removeObject:damagedKey];
+				isRepairedEquipment = YES;
+			}
 		}
 	}
 	
@@ -3300,30 +3482,28 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 	// end special cases
 	
-	if (_equipment == nil)  _equipment = [[NSMutableSet alloc] init];
+	if (_equipment == nil)  _equipment = [[NSMutableArray alloc] init];
 	
-	if ([equipmentKey isEqual:@"EQ_CARGO_BAY"])
+	if (![equipmentKey isEqualToString:@"EQ_PASSENGER_BERTH"] && !isRepairedEquipment) 
 	{
-		max_cargo += extra_cargo;
-	}
-	else
-	{
-		if (![equipmentKey isEqualToString:@"EQ_PASSENGER_BERTH"] && !isRepairedEquipment) 
+		// Add to equipment_weight with all other equipment.
+		equipment_weight += [eqType requiredCargoSpace];
+		if (equipment_weight > max_cargo)
 		{
-			// Add to equipment_weight with all other equipment.
-			equipment_weight += [eqType requiredCargoSpace];
-			if (equipment_weight > max_cargo)
-			{
-				// should not even happen with old save games. Reject equipment now.
-				equipment_weight -= [eqType requiredCargoSpace];
-				return NO;
-			}
+			// should not even happen with old save games. Reject equipment now.
+			equipment_weight -= [eqType requiredCargoSpace];
+			return NO;
 		}
 	}
 	
+	
 	if (!isPlayer)
 	{
-		if([equipmentKey isEqualToString:@"EQ_SHIELD_BOOSTER"]) 
+		if ([equipmentKey isEqual:@"EQ_CARGO_BAY"])
+		{
+			max_cargo += extra_cargo;
+		}
+		else if([equipmentKey isEqualToString:@"EQ_SHIELD_BOOSTER"]) 
 		{
 			maxEnergy += 256.0f;
 		}
@@ -3335,6 +3515,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 	// add the equipment
 	[_equipment addObject:equipmentKey];
+	[self doScriptEvent:OOJSID("equipmentAdded") withArgument:equipmentKey];
 	return YES;
 }
 
@@ -3355,7 +3536,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 {
 	NSString		*equipmentTypeCheckKey = equipmentKey;
 	NSString		*lcEquipmentKey = [equipmentKey lowercaseString];
-	
+	NSUInteger		equipmentIndex = NSNotFound;
 	// determine the equipment type and make sure it works also in the case of damaged equipment
 	if ([equipmentKey hasSuffix:@"_DAMAGED"])
 	{
@@ -3372,18 +3553,11 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	{
 		if ([_equipment containsObject:equipmentKey])
 		{
-			if ([equipmentKey isEqual:@"EQ_CARGO_BAY"])
+			if (![equipmentKey isEqualToString:@"EQ_PASSENGER_BERTH"])
 			{
-				max_cargo -= extra_cargo;
+				equipment_weight -= [eqType requiredCargoSpace]; // all other cases;
 			}
-			else
-			{
-				if (![equipmentKey isEqualToString:@"EQ_PASSENGER_BERTH"])
-				{
-					equipment_weight -= [eqType requiredCargoSpace]; // all other cases;
-				}
-			}
-			
+						
 			if ([equipmentKey isEqualToString:@"EQ_CLOAKING_DEVICE"])
 			{
 				if ([self isCloaked])  [self setCloaked:NO];
@@ -3396,26 +3570,48 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 					maxEnergy -= 256.0f;
 					if (maxEnergy < energy) energy = maxEnergy;
 				}
-				if([equipmentKey isEqualToString:@"EQ_SHIELD_ENHANCER"]) 
+				else if([equipmentKey isEqualToString:@"EQ_SHIELD_ENHANCER"]) 
 				{
 					maxEnergy -= 256.0f;
 					energy_recharge_rate /= 1.5;
 					if (maxEnergy < energy) energy = maxEnergy;
 				}
+				else if ([equipmentKey isEqual:@"EQ_CARGO_BAY"])
+				{
+					max_cargo -= extra_cargo;
+				}
 			}
 		}
 		
-		if (![equipmentKey hasSuffix:@"_DAMAGED"])
+		if (![equipmentKey hasSuffix:@"_DAMAGED"] && ![eqType canCarryMultiple])
 		{
 			NSString *damagedKey = [equipmentKey stringByAppendingString:@"_DAMAGED"];
 			if ([_equipment containsObject:damagedKey])
 			{
-				[_equipment removeObject:damagedKey]; // remove the damaged counterpart
+				equipmentIndex = [_equipment indexOfObject:damagedKey];
+				if (equipmentIndex != NSNotFound)
+				{
+					// remove damaged counterpart
+					[_equipment removeObjectAtIndex:equipmentIndex];
+				}
 				equipment_weight -= [eqType requiredCargoSpace];
 			}
 		}
+		equipmentIndex = [_equipment indexOfObject:equipmentKey];
+		if (equipmentIndex != NSNotFound)
+		{
+			[_equipment removeObjectAtIndex:equipmentIndex];
+		}
+		// this event must come after the item is actually removed
+		[self doScriptEvent:OOJSID("equipmentRemoved") withArgument:equipmentKey];
 		
-		[_equipment removeObject:equipmentKey];
+		// if all docking computers are damaged while active
+		if ([self isPlayer] && [self status] == STATUS_AUTOPILOT_ENGAGED && ![self hasDockingComputer])
+		{
+			[(PlayerEntity *)self disengageAutopilot];
+		}
+
+
 		if ([_equipment count] == 0)  [self removeAllEquipment];
 	}
 }
@@ -3638,20 +3834,35 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 }
 
 
+/* This is used for e.g. displaying the HUD icon */
 - (BOOL) hasScoop
 {
-	return [self hasEquipmentItem:@"EQ_FUEL_SCOOPS"];
+	return [self hasEquipmentItemProviding:@"EQ_FUEL_SCOOPS"] || [self hasEquipmentItemProviding:@"EQ_CARGO_SCOOPS"];
+}
+
+
+- (BOOL) hasFuelScoop
+{
+	return [self hasEquipmentItemProviding:@"EQ_FUEL_SCOOPS"];
+}
+
+
+/* No such core equipment item, but EQ_FUEL_SCOOPS provides it */
+- (BOOL) hasCargoScoop
+{
+	return [self hasEquipmentItemProviding:@"EQ_CARGO_SCOOPS"];
 }
 
 
 - (BOOL) hasECM
 {
-	return [self hasEquipmentItem:@"EQ_ECM"];
+	return [self hasEquipmentItemProviding:@"EQ_ECM"];
 }
 
 
 - (BOOL) hasCloakingDevice
 {
+	/* TODO: Checks above stop this being 'providing'. */
 	return [self hasEquipmentItem:@"EQ_CLOAKING_DEVICE"];
 }
 
@@ -3659,7 +3870,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 - (BOOL) hasMilitaryScannerFilter
 {
 #if USEMASC
-	return [self hasEquipmentItem:@"EQ_MILITARY_SCANNER_FILTER"];
+	return [self hasEquipmentItemProviding:@"EQ_MILITARY_SCANNER_FILTER"];
 #else
 	return NO;
 #endif
@@ -3669,7 +3880,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 - (BOOL) hasMilitaryJammer
 {
 #if USEMASC
-	return [self hasEquipmentItem:@"EQ_MILITARY_JAMMER"];
+	return [self hasEquipmentItemProviding:@"EQ_MILITARY_JAMMER"];
 #else
 	return NO;
 #endif
@@ -3678,55 +3889,61 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 
 - (BOOL) hasExpandedCargoBay
 {
+	/* Not 'providing' - controlled through scripts */
 	return [self hasEquipmentItem:@"EQ_CARGO_BAY"];
 }
 
 
 - (BOOL) hasShieldBooster
 {
+	/* Not 'providing' - controlled through scripts */
 	return [self hasEquipmentItem:@"EQ_SHIELD_BOOSTER"];
 }
 
 
 - (BOOL) hasMilitaryShieldEnhancer
 {
+	/* Not 'providing' - controlled through scripts */
 	return [self hasEquipmentItem:@"EQ_NAVAL_SHIELD_BOOSTER"];
 }
 
 
 - (BOOL) hasHeatShield
 {
-	return [self hasEquipmentItem:@"EQ_HEAT_SHIELD"];
+	return [self hasEquipmentItemProviding:@"EQ_HEAT_SHIELD"];
 }
 
 
 - (BOOL) hasFuelInjection
 {
-	return [self hasEquipmentItem:@"EQ_FUEL_INJECTION"];
+	return [self hasEquipmentItemProviding:@"EQ_FUEL_INJECTION"];
 }
 
 
 - (BOOL) hasCascadeMine
 {
+	/* TODO: this could be providing since theoretically OXP
+	 * deployable mines could also do cascade effects, but there are
+	 * probably better ways to manage OXP pylon AI */
 	return [self hasEquipmentItem:@"EQ_QC_MINE" includeWeapons:YES whileLoading:NO];
 }
 
 
 - (BOOL) hasEscapePod
 {
-	return [self hasEquipmentItem:@"EQ_ESCAPE_POD"];
+	return [self hasEquipmentItemProviding:@"EQ_ESCAPE_POD"];
 }
 
 
 - (BOOL) hasDockingComputer
 {
-	return [self hasEquipmentItem:@"EQ_DOCK_COMP"];
+	return [self hasEquipmentItemProviding:@"EQ_DOCK_COMP"];
 }
 
 
 - (BOOL) hasGalacticHyperdrive
 {
-	return [self hasEquipmentItem:@"EQ_GAL_DRIVE"];
+	return [self hasEquipmentItemProviding:@"EQ_GAL_DRIVE"];
 }
 
 
@@ -3740,6 +3957,8 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 }
 
 
+/* These next three are never called as of 12/12/2014, as NPCs don't
+ * have shields and PlayerEntity overrides these. */
 - (float) maxForwardShieldLevel
 {
 	return BASELINE_SHIELD_LEVEL * [self shieldBoostFactor];
@@ -3765,13 +3984,37 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 
 - (float) afterburnerFactor
 {
-	return 7.0f;
+	return afterburner_speed_factor;
+}
+
+
+- (float) afterburnerRate
+{
+	return afterburner_rate;
+}
+
+
+- (void) setAfterburnerFactor:(GLfloat)new
+{
+	afterburner_speed_factor = new;
+}
+
+
+- (void) setAfterburnerRate:(GLfloat)new
+{
+	afterburner_rate = new;
 }
 
 
 - (float) maxThrust
 {
 	return max_thrust;
+}
+
+
+- (void) setMaxThrust:(GLfloat)new
+{
+	max_thrust = new;
 }
 
 
@@ -3836,7 +4079,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	ShipEntity* hauler = (ShipEntity*)[self owner];
 	if ((hauler)&&([hauler isShip]))
 	{
-		destination = [hauler absoluteTractorPosition];
+		_destination = [hauler absoluteTractorPosition];
 		double  distance = [self rangeToDestination];
 		if (distance < desired_range)
 		{
@@ -3854,7 +4097,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		velocity.z += moment * dv.z;
 		// acceleration = force / mass
 		// force proportional to distance (spring rule)
-		HPVector dp = HPvector_between(position, destination);
+		HPVector dp = HPvector_between(position, _destination);
 		moment = delta_t * 0.5 * tf;
 		velocity.x += moment * dp.x;
 		velocity.y += moment * dp.y;
@@ -3963,7 +4206,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		double  distance = [self rangeToDestination];
 		success_factor = distance;
 		//
-		double slowdownTime = 96.0 / thrust;	// more thrust implies better slowing
+		double slowdownTime = 96.0 / (thrust*SHIP_THRUST_FACTOR);	// more thrust implies better slowing
 		double minTurnSpeedFactor = 0.005 * max_flight_pitch * max_flight_roll;	// faster turning implies higher speeds
 
 		if ((eta < slowdownTime)&&(flightSpeed > maxFlightSpeed * minTurnSpeedFactor))
@@ -3985,7 +4228,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 			desired_speed = maxFlightSpeed;
 		}
 
-		destination = target->position;
+		_destination = target->position;
 		desired_range = 0.5 * target->collision_radius;
 		[self trackDestination: delta_t : NO];
 
@@ -4017,19 +4260,19 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 
 - (void) behaviour_attack_break_off_target:(double) delta_t
 {
-	BOOL	canBurn = [self hasFuelInjection] && (fuel > MIN_FUEL);
-	float	max_available_speed = maxFlightSpeed;
-	double  range = [self rangeToPrimaryTarget];
-	if (range > scannerRange || [self primaryTarget] == nil)
+	if (![self canStillTrackPrimaryTarget])
 	{
 		[self noteLostTargetAndGoIdle];
 		return;
 	}
+	BOOL	canBurn = [self hasFuelInjection] && (fuel > MIN_FUEL);
+	float	max_available_speed = maxFlightSpeed;
+	double  range = [self rangeToPrimaryTarget];
 	if (canBurn) max_available_speed *= [self afterburnerFactor];
 
 	desired_speed = max_available_speed;
 
-	ShipEntity*	target = [self primaryTarget];
+	Entity*	target = [self primaryTarget];
 
 	if (desired_speed > maxFlightSpeed)
 	{
@@ -4053,7 +4296,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		desired_speed = maxFlightSpeed / 2.0;
 	}
 	double aspect = [self approachAspectToPrimaryTarget];
-	if (range > 3000.0 || [target primaryTarget] != self || frustration - floor(frustration) > fmin(1.6/max_flight_roll,aspect))
+	if (range > 3000.0 || ([target isShip] && [(ShipEntity*)target primaryTarget] != self) || frustration - floor(frustration) > fmin(1.6/max_flight_roll,aspect))
 	{
 		[self trackPrimaryTarget:delta_t:YES];
 	}
@@ -4090,9 +4333,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 
 - (void) behaviour_attack_slow_dogfight:(double) delta_t
 {
-	double  range = [self rangeToPrimaryTarget];
-	ShipEntity*	target = [self primaryTarget];
-	if (range > scannerRange || target == nil)
+	if (![self canStillTrackPrimaryTarget])
 	{
 		[self noteLostTargetAndGoIdle];
 		return;
@@ -4102,6 +4343,8 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		[self avoidCollision];
 		return;
 	} 
+	double  range = [self rangeToPrimaryTarget];
+	ShipEntity*	target = [self primaryTarget];
 	double aspect = [self approachAspectToPrimaryTarget];
 	if (range < 2.5*(collision_radius+target->collision_radius) && [self proximityAlert] == target && aspect > 0) {
 		desired_speed = maxFlightSpeed;
@@ -4221,12 +4464,12 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	GLfloat forward_weapon_real_temp = forward_weapon_temp;
 
 // if forward weapon is actually on a subent
-	if (forward_weapon_real_type == WEAPON_NONE)
+	if (isWeaponNone(forward_weapon_real_type))
 	{
 		BOOL hasTurrets = NO;
 		NSEnumerator	*subEnum = [self shipSubEntityEnumerator];
 		ShipEntity		*se = nil;
-		while (forward_weapon_real_type == WEAPON_NONE && (se = [subEnum nextObject]))
+		while (isWeaponNone(forward_weapon_real_type) && (se = [subEnum nextObject]))
 		{
 			forward_weapon_real_type = se->forward_weapon_type;
 			forward_weapon_real_temp = se->forward_weapon_temp;
@@ -4235,14 +4478,14 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 				hasTurrets = YES;
 			}
 		}
-		if (forward_weapon_real_type == WEAPON_NONE && hasTurrets)
+		if (isWeaponNone(forward_weapon_real_type) && hasTurrets)
 		{ // safety for ships only equipped with turrets
-			forward_weapon_real_type = WEAPON_PLASMA_CANNON;
+			forward_weapon_real_type = OOWeaponTypeFromEquipmentIdentifierSloppy(@"EQ_WEAPON_PULSE_LASER");
 			forward_weapon_real_temp = COMBAT_AI_WEAPON_TEMP_USABLE * 0.9;
 		}
 	}
 
-	if (forward_weapon_real_type == WEAPON_THARGOID_LASER) 
+	if ([forward_weapon_real_type isTurretLaser]) 
 	{
 		behaviour = BEHAVIOUR_ATTACK_FLY_TO_TARGET_TWELVE;
 	} 
@@ -4250,29 +4493,32 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	{
 		BOOL in_good_range = aim_tolerance*range < COMBAT_AI_CONFIDENCE_FACTOR;
 
-		BOOL aft_weapon_ready = (aft_weapon_type != WEAPON_NONE) && (aft_weapon_temp < COMBAT_AI_WEAPON_TEMP_READY) && in_good_range;
-		BOOL forward_weapon_ready = (forward_weapon_real_type != WEAPON_NONE) && (forward_weapon_real_temp < COMBAT_AI_WEAPON_TEMP_READY); // does not require in_good_range
-		BOOL port_weapon_ready = (port_weapon_type != WEAPON_NONE) && (port_weapon_temp < COMBAT_AI_WEAPON_TEMP_READY) && in_good_range;
-		BOOL starboard_weapon_ready = (starboard_weapon_type != WEAPON_NONE) && (starboard_weapon_temp < COMBAT_AI_WEAPON_TEMP_READY) && in_good_range;
+		BOOL aft_weapon_ready = !isWeaponNone(aft_weapon_type) && (aft_weapon_temp < COMBAT_AI_WEAPON_TEMP_READY) && in_good_range;
+		BOOL forward_weapon_ready = !isWeaponNone(forward_weapon_real_type) && (forward_weapon_real_temp < COMBAT_AI_WEAPON_TEMP_READY); // does not require in_good_range
+		BOOL port_weapon_ready = !isWeaponNone(port_weapon_type) && (port_weapon_temp < COMBAT_AI_WEAPON_TEMP_READY) && in_good_range;
+		BOOL starboard_weapon_ready = !isWeaponNone(starboard_weapon_type) && (starboard_weapon_temp < COMBAT_AI_WEAPON_TEMP_READY) && in_good_range;
 // if no weapons cool enough to be good choices, be less picky
 		BOOL weapons_heating = NO;
 		if (!forward_weapon_ready && !aft_weapon_ready && !port_weapon_ready && !starboard_weapon_ready)
 		{
 			weapons_heating = YES;
-			aft_weapon_ready = (aft_weapon_type != WEAPON_NONE) && (aft_weapon_temp < COMBAT_AI_WEAPON_TEMP_USABLE) && in_good_range;
-			forward_weapon_ready = (forward_weapon_real_type != WEAPON_NONE) && (forward_weapon_real_temp < COMBAT_AI_WEAPON_TEMP_USABLE); // does not require in_good_range
-			port_weapon_ready = (port_weapon_type != WEAPON_NONE) && (port_weapon_temp < COMBAT_AI_WEAPON_TEMP_USABLE) && in_good_range;
-			starboard_weapon_ready = (starboard_weapon_type != WEAPON_NONE) && (starboard_weapon_temp < COMBAT_AI_WEAPON_TEMP_USABLE) && in_good_range;
+			aft_weapon_ready = !isWeaponNone(aft_weapon_type) && (aft_weapon_temp < COMBAT_AI_WEAPON_TEMP_USABLE) && in_good_range;
+			forward_weapon_ready = !isWeaponNone(forward_weapon_real_type) && (forward_weapon_real_temp < COMBAT_AI_WEAPON_TEMP_USABLE); // does not require in_good_range
+			port_weapon_ready = !isWeaponNone(port_weapon_type) && (port_weapon_temp < COMBAT_AI_WEAPON_TEMP_USABLE) && in_good_range;
+		starboard_weapon_ready = !isWeaponNone(starboard_weapon_type) && (starboard_weapon_temp < COMBAT_AI_WEAPON_TEMP_USABLE) && in_good_range;
 		}
 
-		ShipEntity*	target = [self primaryTarget];
+		Entity*	target = [self primaryTarget];
 		double aspect = [self approachAspectToPrimaryTarget];
 
 		if (!forward_weapon_ready && !aft_weapon_ready && !port_weapon_ready && !starboard_weapon_ready)
 		{ // no usable weapons! Either not fitted or overheated
 			
 			// if unarmed
-			if (forward_weapon_real_type == WEAPON_NONE && aft_weapon_type == WEAPON_NONE && port_weapon_type == WEAPON_NONE && starboard_weapon_type == WEAPON_NONE)
+			if (isWeaponNone(forward_weapon_real_type) && 
+				isWeaponNone(aft_weapon_type) && 
+				isWeaponNone(port_weapon_type) && 
+				isWeaponNone(starboard_weapon_type))
 			{
 				behaviour = BEHAVIOUR_ATTACK_FLY_FROM_TARGET;
 			}
@@ -4307,7 +4553,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 			}
 		}
 // if our current target isn't targeting us, and we have some idea of how to fight, and our weapons are running hot, and we're fairly nearby
-		else if (weapons_heating && accuracy >= COMBAT_AI_ISNT_AWFUL && [target primaryTarget] != self && range < COMBAT_OUT_RANGE_FACTOR * weaponRange) 
+		else if (weapons_heating && accuracy >= COMBAT_AI_ISNT_AWFUL && [target isShip] && [(ShipEntity *)target primaryTarget] != self && range < COMBAT_OUT_RANGE_FACTOR * weaponRange) 
 		{
 // then back off a bit for weapons to cool so we get a good attack run later, rather than weaving closer
 			float relativeSpeed = magnitude(vector_subtract([self velocity], [target velocity]));
@@ -4359,7 +4605,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 				jink = kZeroVector; // almost all behaviours
 
 				// TODO: good pilots use behaviour_attack_sniper sometimes
-				if (getWeaponRangeFromType(forward_weapon_real_type) > getWeaponRangeFromType(WEAPON_PULSE_LASER) && range > getWeaponRangeFromType(WEAPON_PULSE_LASER))
+				if (getWeaponRangeFromType(forward_weapon_real_type) > 12500 && range > 12500)
 				{
 					behaviour = BEHAVIOUR_ATTACK_SNIPER;
 				}
@@ -4409,7 +4655,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	
 	if (cloakAutomatic) [self activateCloakingDevice];
 
-	if (range > scannerRange || [self primaryTarget] == nil)
+	if (![self canStillTrackPrimaryTarget])
 	{
 		[self noteLostTargetAndGoIdle];
 		return;
@@ -4424,7 +4670,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	{
 		if (port_weapon_temp < starboard_weapon_temp)
 		{
-			if (port_weapon_type == WEAPON_NONE)
+			if (isWeaponNone(port_weapon_type))
 			{
 				behaviour = BEHAVIOUR_ATTACK_BROADSIDE_RIGHT;
 				[self setWeaponDataFromType:starboard_weapon_type];
@@ -4437,7 +4683,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		}
 		else
 		{
-			if (starboard_weapon_type != WEAPON_NONE)
+			if (isWeaponNone(starboard_weapon_type))
 			{
 				behaviour = BEHAVIOUR_ATTACK_BROADSIDE_RIGHT;
 				[self setWeaponDataFromType:starboard_weapon_type];
@@ -4511,7 +4757,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 	else
 	{
-		if (range > scannerRange)
+		if (![self canStillTrackPrimaryTarget])
 		{
 			[self noteLostTargetAndGoIdle];
 			return;
@@ -4533,7 +4779,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	{ // will probably have more luck with the other laser or picking a different attack method
 		if (leftside)
 		{
-			if (starboard_weapon_type != WEAPON_NONE)
+			if (!isWeaponNone(starboard_weapon_type))
 			{
 				behaviour = BEHAVIOUR_ATTACK_BROADSIDE_RIGHT;
 			}
@@ -4544,7 +4790,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		}
 		else
 		{
-			if (port_weapon_type != WEAPON_NONE)
+			if (!isWeaponNone(port_weapon_type))
 			{
 				behaviour = BEHAVIOUR_ATTACK_BROADSIDE_LEFT;
 			}
@@ -4613,7 +4859,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		}
 		return;
 	}
-	if (range > scannerRange || [self primaryTarget] == nil)
+	if (![self canStillTrackPrimaryTarget])
 	{
 		[self noteLostTargetAndGoIdle];
 		return;
@@ -4621,7 +4867,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 
 	behaviour = BEHAVIOUR_ATTACK_FLY_TO_TARGET_TWELVE;
 	[self behaviour_fly_to_target_six:delta_t];
-	if (port_weapon_type != WEAPON_NONE)
+	if (!isWeaponNone(port_weapon_type))
 	{
 		[self setWeaponDataFromType:port_weapon_type];
 	}
@@ -4656,7 +4902,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		}
 		return;
 	}
-	if (range > scannerRange || [self primaryTarget] == nil)
+	if (![self canStillTrackPrimaryTarget])
 	{
 		[self noteLostTargetAndGoIdle];
 		return;
@@ -4681,15 +4927,24 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 
 - (void) behaviour_attack_sniper:(double) delta_t
 {
-	double  range = [self rangeToPrimaryTarget];
-	float	max_available_speed = maxFlightSpeed;
-
-	if (range > scannerRange || [self primaryTarget] == nil)
+	if (![self canStillTrackPrimaryTarget])
 	{
 		[self noteLostTargetAndGoIdle];
 		return;
 	}
-	else if (range < getWeaponRangeFromType(WEAPON_PULSE_LASER))
+	Entity*	rawTarget = [self primaryTarget];
+	if (![rawTarget isShip])
+	{
+		// can't attack a wormhole
+		[self noteLostTargetAndGoIdle];
+		return;
+	}
+	ShipEntity *target = (ShipEntity *)rawTarget;
+
+	double  range = [self rangeToPrimaryTarget];
+	float	max_available_speed = maxFlightSpeed;
+
+	if (range < 15000)
 	{
 		behaviour = BEHAVIOUR_ATTACK_TARGET;
 	}
@@ -4697,6 +4952,13 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	{
 		if (range > weaponRange || range > scannerRange * 0.8)
 		{
+			BOOL	canBurn = [self hasFuelInjection] && (fuel > MIN_FUEL);
+			if (canBurn && [target weaponRange] > weaponRange && range > weaponRange)
+			{
+				// if outside maximum weapon range, but inside target weapon range
+				// close to fight ASAP!
+				max_available_speed *= [self afterburnerFactor];
+			}
 			desired_speed = max_available_speed;
 		}
 		else
@@ -4762,7 +5024,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		}
 		return;
 	}
-	if (range > scannerRange || [self primaryTarget] == nil)
+	if (![self canStillTrackPrimaryTarget])
 	{
 		[self noteLostTargetAndGoIdle];
 		return;
@@ -4770,9 +5032,20 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 
 	// control speed
 	BOOL isUsingAfterburner = canBurn && (flightSpeed > maxFlightSpeed);
+	BOOL closeQuickly = (canBurn && range > weaponRange);
 	double	slow_down_range = weaponRange * COMBAT_WEAPON_RANGE_FACTOR * ((isUsingAfterburner)? 3.0 * [self afterburnerFactor] : 1.0);
+	if (closeQuickly)
+	{
+		slow_down_range = weaponRange * COMBAT_OUT_RANGE_FACTOR;
+	}
 	double	back_off_range = weaponRange * COMBAT_OUT_RANGE_FACTOR * ((isUsingAfterburner)? 3.0 * [self afterburnerFactor] : 1.0);
-	ShipEntity*	target = [self primaryTarget];
+	Entity*	rawTarget = [self primaryTarget];
+	if (![rawTarget isShip])
+	{
+		[self noteLostTargetAndGoIdle];
+		return;
+	}
+	ShipEntity*	target = (ShipEntity *)rawTarget;
 	double target_speed = [target speed];
 	double last_success_factor = success_factor;
 	double distance = [self rangeToDestination];
@@ -4820,14 +5093,15 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	{
 		// head for a point weapon-range * 0.5 to the six of the target
 		//
-		destination = [target distance_six:0.5 * weaponRange];
+		_destination = [target distance_six:0.5 * weaponRange];
 	}
 	// target-twelve
 	if (behaviour == BEHAVIOUR_ATTACK_FLY_TO_TARGET_TWELVE)
 	{
-		if (forward_weapon_type == WEAPON_THARGOID_LASER) 
+		if ([forward_weapon_type isTurretLaser])
 		{
-      // head for a point near the target, avoiding common Galcop weapon mount locations
+			// head for a point near the target, avoiding common Galcop weapon mount locations
+			// TODO: this should account for weapon ranges
 			GLfloat offset = 1000.0;
 			GLfloat spacing = 2000.0;
 			if (accuracy > 0.0) 
@@ -4839,12 +5113,12 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 			{ // half at random
 				offset = -offset;
 			}
-			destination = [target distance_twelve:spacing withOffset:offset];
+			_destination = [target distance_twelve:spacing withOffset:offset];
 		}
 		else 
 		{
 			// head for a point 1.25km above the target
-			destination = [target distance_twelve:1250 withOffset:0];
+			_destination = [target distance_twelve:1250 withOffset:0];
 		}
 	}
 
@@ -4855,7 +5129,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	else if(frustration > 0.0) frustration -= delta_t * 0.75;
 
 	double aspect = [self approachAspectToPrimaryTarget];
-	if(forward_weapon_type != WEAPON_THARGOID_LASER && (frustration > 10 || aspect > 0.75))
+	if(![forward_weapon_type isTurretLaser] && (frustration > 10 || aspect > 0.75))
 	{
 		behaviour = BEHAVIOUR_ATTACK_FLY_TO_TARGET;
 	}
@@ -4878,7 +5152,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 - (void) behaviour_attack_mining_target:(double) delta_t
 {
 	double  range = [self rangeToPrimaryTarget];
-	if ([self primaryTarget] == nil || range > scannerRange) 
+	if (![self canStillTrackPrimaryTarget])
 	{
 		[self noteLostTargetAndGoIdle];
 		desired_speed = maxFlightSpeed * 0.375;
@@ -4927,7 +5201,15 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		[self noteLostTargetAndGoIdle];
 		return;
 	}
-	ShipEntity*	target = [self primaryTarget];
+	Entity*	rawTarget = [self primaryTarget];
+	if (![rawTarget isShip])
+	{
+		// can't attack a wormhole
+		[self noteLostTargetAndGoIdle];
+		return;
+	}
+
+	ShipEntity *target = (ShipEntity *)rawTarget;
 	if ((range < COMBAT_IN_RANGE_FACTOR * weaponRange)||([self proximityAlert] != nil))
 	{
 		if (![self hasProximityAlertIgnoringTarget:YES])
@@ -4942,7 +5224,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 	else
 	{
-		if (range > scannerRange)
+		if (![self canStillTrackPrimaryTarget])
 		{
 			[self noteLostTargetAndGoIdle];
 			return;
@@ -4952,7 +5234,12 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	// control speed
 	//
 	BOOL isUsingAfterburner = canBurn && (flightSpeed > maxFlightSpeed);
+	BOOL closeQuickly = (canBurn && [target weaponRange] > weaponRange && range > weaponRange);
 	double slow_down_range = weaponRange * COMBAT_WEAPON_RANGE_FACTOR * ((isUsingAfterburner)? 3.0 * [self afterburnerFactor] : 1.0);
+	if (closeQuickly)
+	{
+		slow_down_range = weaponRange * COMBAT_OUT_RANGE_FACTOR;
+	}
 	double	back_off_range = 10000 * COMBAT_OUT_RANGE_FACTOR * ((isUsingAfterburner)? 3.0 * [self afterburnerFactor] : 1.0);
 	double target_speed = [target speed];
 	double aspect = [self approachAspectToPrimaryTarget];
@@ -4981,7 +5268,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		}
 		else
 		{
-			if (accuracy < COMBAT_AI_IS_SMART || [target primaryTarget] == self || range > weaponRange / 2.0)
+			if (accuracy < COMBAT_AI_IS_SMART || ([target isShip] && [(ShipEntity *)target primaryTarget] == self) || range > weaponRange / 2.0)
 			{
 				desired_speed = fmax(target_speed * 1.5, maxFlightSpeed);
 			}
@@ -5000,7 +5287,14 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 	else
 	{
-		desired_speed = fmax(maxFlightSpeed,fmin(3.0 * target_speed, max_available_speed)); // possibly use afterburner to approach
+		if (closeQuickly)
+		{
+			desired_speed = max_available_speed; // use afterburner to approach
+		}
+		else
+		{
+			desired_speed = fmax(maxFlightSpeed,fmin(3.0 * target_speed, max_available_speed)); // possibly use afterburner to approach
+		}
 	}
 
 
@@ -5038,7 +5332,10 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		// don't do this if the target is fleeing and the front laser is
 		// the only weapon, or if we're too far away to use non-front
 		// lasers effectively
-		if (aspect < 0 || aft_weapon_type != WEAPON_NONE || port_weapon_type != WEAPON_NONE || starboard_weapon_type != WEAPON_NONE)
+		if (aspect < 0 || 
+			!isWeaponNone(aft_weapon_type) ||
+			!isWeaponNone(port_weapon_type) ||
+			!isWeaponNone(starboard_weapon_type))
 		{
 			frustration = 0.0;
 			behaviour = BEHAVIOUR_ATTACK_TARGET;
@@ -5050,7 +5347,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		// need to dodge sooner if in aft sights
 		if ([target behaviour] != BEHAVIOUR_FLEE_TARGET && [target behaviour] != BEHAVIOUR_FLEE_EVASIVE_ACTION)
 		{
-			if ((aspect > 0.99999 && [target weaponTypeForFacing:WEAPON_FACING_FORWARD strict:NO] != WEAPON_NONE) || (aspect < -0.999 && [target weaponTypeForFacing:WEAPON_FACING_AFT strict:NO] != WEAPON_NONE)) 
+			if ((aspect > 0.99999 && !isWeaponNone([target weaponTypeForFacing:WEAPON_FACING_FORWARD strict:NO])) || (aspect < -0.999 && !isWeaponNone([target weaponTypeForFacing:WEAPON_FACING_AFT strict:NO])))
 			{
 				frustration = 0.0;
 				behaviour = BEHAVIOUR_EVASIVE_ACTION;
@@ -5145,26 +5442,26 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 
 - (void) behaviour_running_defense:(double) delta_t
 {
-	double  range = [self rangeToPrimaryTarget];
-	if (range > scannerRange || [self primaryTarget] == nil)
+	if (![self canStillTrackPrimaryTarget])
 	{
 		[self noteLostTargetAndGoIdle];
 		return;
 	}
 
+	double  range = [self rangeToPrimaryTarget];
 	desired_speed = maxFlightSpeed; // not injectors
 	jink = kZeroVector;
 	if (range > weaponRange || range > 0.8 * scannerRange || range == 0)
 	{
 		behaviour = BEHAVIOUR_CLOSE_WITH_TARGET;
-		if (forward_weapon_type == WEAPON_THARGOID_LASER) 
+		if ([forward_weapon_type isTurretLaser]) 
 		{
 				behaviour = BEHAVIOUR_ATTACK_FLY_TO_TARGET_TWELVE;
 		} 
 		frustration = 0.0;
 	}
 	[self trackPrimaryTarget:delta_t:YES];
-	if (forward_weapon_type == WEAPON_THARGOID_LASER) 
+	if ([forward_weapon_type isTurretLaser]) 
 	{
 		// most Thargoids will only have the forward weapon
 		[self fireMainWeapon:range];
@@ -5230,7 +5527,9 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 
 	[self trackPrimaryTarget:delta_t:YES];
 
-	if (missiles && ([(ShipEntity *)[self primaryTarget] primaryTarget] == self)) 
+	Entity *target = [self primaryTarget];
+
+	if (missiles && [target isShip] && [(ShipEntity *)target primaryTarget] == self)
 	{
 		[self considerFiringMissile:delta_t];
 	}
@@ -5245,7 +5544,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 
 // thargoids won't normally be fleeing, but if they do, they can still shoot
-	if (forward_weapon_type == WEAPON_THARGOID_LASER)
+	if ([forward_weapon_type isTurretLaser])
 	{
 		[self fireMainWeapon:range];
 	}
@@ -5404,7 +5703,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	[self trackDestination:delta_t: NO];
 
 	eta = eta / 0.51;	// 2% safety margin assuming an average of half current speed
-	GLfloat slowdownTime = (thrust > 0.0)? flightSpeed / thrust : 4.0;
+	GLfloat slowdownTime = (thrust > 0.0)? flightSpeed / (thrust) : 4.0;
 	GLfloat minTurnSpeedFactor = 0.05 * max_flight_pitch * max_flight_roll;	// faster turning implies higher speeds
 
 	if ((eta < slowdownTime)&&(flightSpeed > maxFlightSpeed * minTurnSpeedFactor))
@@ -5476,7 +5775,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 			and the ships runs the risk flying in circles around the target. (exclude active escorts)
 		*/
 		GLfloat eta = ((distance + 1) - desired_range) / (0.51 * flightSpeed * confidenceFactor);	// 2% safety margin assuming an average of half current speed
-		GLfloat slowdownTime = (thrust > 0.0)? flightSpeed / thrust : 4.0;
+		GLfloat slowdownTime = (thrust > 0.0)? flightSpeed / (thrust) : 4.0;
 		GLfloat minTurnSpeedFactor = 0.05 * max_flight_pitch * max_flight_roll;	// faster turning implies higher speeds
 		if (dockingInstructions != nil)
 		{
@@ -5580,7 +5879,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		if (prox_ship)
 		{
 			desired_range = prox_ship->collision_radius * PROXIMITY_AVOID_DISTANCE_FACTOR;
-			destination = prox_ship->position;
+			_destination = prox_ship->position;
 		}
 		double dq = [self trackDestination:delta_t:YES]; // returns 0 when heading towards prox_ship
 		// Heading towards target with desired_speed > 0, avoids collisions better than setting desired_speed to zero.
@@ -5619,6 +5918,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	Entity *target = nil;
 	while ((target = [[targetEnum nextObject] weakRefUnderlyingObject]))
 	{
+		// defense targets cannot be tracked while cloaked
 		if ([target scanClass] == CLASS_NO_DRAW || [(ShipEntity *)target isCloaked] || [target energy] <= 0.0)
 		{
 			[turret_owner removeDefenseTarget:target];
@@ -5701,7 +6001,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		success_factor = dist2;
 
 		// set destination spline point from r1 and ref
-		destination = make_HPvector(d1.x + r1 * ref.x, d1.y + r1 * ref.y, d1.z + r1 * ref.z);
+		_destination = make_HPvector(d1.x + r1 * ref.x, d1.y + r1 * ref.y, d1.z + r1 * ref.z);
 
 		// do the actual piloting!!
 		//
@@ -5874,6 +6174,104 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 }
 
+- (float) reactionTime
+{
+	return reactionTime;
+}
+
+
+- (void) setReactionTime: (float) newReactionTime
+{
+	reactionTime = newReactionTime;
+}
+
+
+- (HPVector) calculateTargetPosition
+{
+	Entity *target = [self primaryTarget];
+	if (target == nil)
+	{
+		return kZeroHPVector;
+	}
+	if (reactionTime <= 0.0)
+	{
+		return [target position];
+	}
+	double t = [UNIVERSE getTime] - trackingCurveTimes[1];
+	return HPvector_add(HPvector_add(trackingCurveCoeffs[0], HPvector_multiply_scalar(trackingCurveCoeffs[1],t)), HPvector_multiply_scalar(trackingCurveCoeffs[2],t*t));
+}
+
+
+- (void) startTrackingCurve
+{
+	Entity *target = [self primaryTarget];
+	if (target == nil)
+	{
+		return;
+	}
+	OOTimeAbsolute now = [UNIVERSE getTime];
+	trackingCurvePositions[0] = [target position];
+	trackingCurvePositions[1] = [target position];
+	trackingCurvePositions[2] = [target position];
+	trackingCurvePositions[3] = [target position];
+	trackingCurveTimes[0] = now;
+	trackingCurveTimes[1] = now - reactionTime/3.0;
+	trackingCurveTimes[2] = now - reactionTime*2.0/3.0;
+	trackingCurveTimes[3] = now - reactionTime;
+	[self calculateTrackingCurve];
+	return;
+}
+
+
+- (void) updateTrackingCurve
+{
+	Entity *target = [self primaryTarget];
+	OOTimeAbsolute now = [UNIVERSE getTime];
+	if (target == nil || reactionTime <= 0.0 || trackingCurveTimes[0] + reactionTime/3.0 > now) return;
+	trackingCurvePositions[3] = trackingCurvePositions[2];
+	trackingCurvePositions[2] = trackingCurvePositions[1];
+	trackingCurvePositions[1] = trackingCurvePositions[0];
+	if (EXPECT_NOT([target isShip] && [(ShipEntity *)target isCloaked]))
+	{
+		// if target is cloaked, introduce some more inaccuracy
+		// 0.02 seems to be enough to give them slight difficulty on
+		// a straight-line target and real trouble on anything better
+		trackingCurvePositions[0] = HPvector_add([target position],OOHPVectorRandomSpatial([(ShipEntity *)target flightSpeed]*reactionTime*0.02));
+	}
+	else
+	{
+		trackingCurvePositions[0] = [target position];
+	}
+	trackingCurveTimes[3] = trackingCurveTimes[2];
+	trackingCurveTimes[2] = trackingCurveTimes[1];
+	trackingCurveTimes[1] = trackingCurveTimes[0];
+	trackingCurveTimes[0] = now;
+	[self calculateTrackingCurve];
+	return;
+}
+
+- (void) calculateTrackingCurve
+{
+	if (reactionTime <= 0.0)
+	{
+		trackingCurveCoeffs[0] = trackingCurvePositions[0];
+		trackingCurveCoeffs[1] = kZeroHPVector;
+		trackingCurveCoeffs[2] = kZeroHPVector;
+		return;
+	}
+	double	t1 = trackingCurveTimes[2] - trackingCurveTimes[1],
+		t2 = trackingCurveTimes[3] - trackingCurveTimes[1];
+	trackingCurveCoeffs[0] = trackingCurvePositions[1];
+	trackingCurveCoeffs[1] = HPvector_add(HPvector_add(
+		HPvector_multiply_scalar(trackingCurvePositions[1], -(t1+t2)/(t1*t2)),
+		HPvector_multiply_scalar(trackingCurvePositions[2], -t2/(t1*(t1-t2)))),
+		HPvector_multiply_scalar(trackingCurvePositions[3], t1/(t2*(t1-t2))));
+	trackingCurveCoeffs[2] = HPvector_add(HPvector_add(
+		HPvector_multiply_scalar(trackingCurvePositions[1], 1/(t1*t2)),
+		HPvector_multiply_scalar(trackingCurvePositions[2], 1/(t1*(t1-t2)))),
+		HPvector_multiply_scalar(trackingCurvePositions[3], -1/(t2*(t1-t2))));
+	return;
+}
 
 - (void) drawImmediate:(bool)immediate translucent:(bool)translucent
 {
@@ -5921,8 +6319,8 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	// HPVect: imprecise here - needs camera relative
 	if (0 && reportAIMessages)
 	{
-		OODebugDrawPoint(HPVectorToVector(destination), [OOColor blueColor]);
-		OODebugDrawColoredLine(HPVectorToVector([self position]), HPVectorToVector(destination), [OOColor colorWithWhite:0.15 alpha:1.0]);
+		OODebugDrawPoint(HPVectorToVector(_destination), [OOColor blueColor]);
+		OODebugDrawColoredLine(HPVectorToVector([self position]), HPVectorToVector(_destination), [OOColor colorWithWhite:0.15 alpha:1.0]);
 		
 		Entity *pTarget = [self primaryTarget];
 		if (pTarget != nil)
@@ -5955,13 +6353,11 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	{
 		return; // TOO FAR AWAY
 	}
-	
-	OOGL(glPushMatrix());
+	OOGLPushModelView();
 	
 	// HPVect: need to make camera-relative
-	GLTranslateOOVector(HPVectorToVector(position));
-	
-	GLMultOOMatrix(rotMatrix);
+	OOGLTranslateModelView(HPVectorToVector(position));
+	OOGLMultModelView(rotMatrix);
 	[self drawImmediate:immediate translucent:translucent];
 	
 #ifndef NDEBUG
@@ -5971,7 +6367,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 #endif
 	
-	OOGL(glPopMatrix());
+	OOGLPopModelView();
 	
 	OOVerifyOpenGLState();	
 }
@@ -5989,8 +6385,37 @@ static GLfloat mascem_color1[4] =	{ 0.3, 0.3, 0.3, 1.0};	// dark gray
 static GLfloat mascem_color2[4] =	{ 0.4, 0.1, 0.4, 1.0};	// purple
 static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by script
 
-- (GLfloat *) scannerDisplayColorForShip:(ShipEntity*)otherShip :(BOOL)isHostile :(BOOL)flash :(OOColor *)scannerDisplayColor1 :(OOColor *)scannerDisplayColor2
+- (GLfloat *) scannerDisplayColorForShip:(ShipEntity*)otherShip :(BOOL)isHostile :(BOOL)flash :(OOColor *)scannerDisplayColor1 :(OOColor *)scannerDisplayColor2 :(OOColor *)scannerDisplayColorH1 :(OOColor *)scannerDisplayColorH2
 {
+	if (isHostile)
+	{
+		/* if there are any scripted scanner hostile display colours
+		 * for the ship, use them - otherwise fall through to the
+		 * normal scripted colours, then the scan class colours */
+		if (scannerDisplayColorH1 || scannerDisplayColorH2)
+		{
+			if (scannerDisplayColorH1 && !scannerDisplayColorH2)
+			{
+				[scannerDisplayColorH1 getRed:&scripted_color[0] green:&scripted_color[1] blue:&scripted_color[2] alpha:&scripted_color[3]];
+			}
+		
+			if (!scannerDisplayColorH1 && scannerDisplayColorH2)
+			{
+				[scannerDisplayColorH2 getRed:&scripted_color[0] green:&scripted_color[1] blue:&scripted_color[2] alpha:&scripted_color[3]];
+			}
+		
+			if (scannerDisplayColorH1 && scannerDisplayColorH2)
+			{
+				if (flash)
+					[scannerDisplayColorH1 getRed:&scripted_color[0] green:&scripted_color[1] blue:&scripted_color[2] alpha:&scripted_color[3]];
+				else
+					[scannerDisplayColorH2 getRed:&scripted_color[0] green:&scripted_color[1] blue:&scripted_color[2] alpha:&scripted_color[3]];
+			}
+		
+			return scripted_color;
+		}
+	}
+
 	// if there are any scripted scanner display colors for the ship, use them
 	if (scannerDisplayColor1 || scannerDisplayColor2)
 	{
@@ -6102,9 +6527,45 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 }
 
 
+- (void)setScannerDisplayColorHostile1:(OOColor *)color
+{
+	DESTROY(scanner_display_color_hostile1);
+	
+	if (color == nil)  color = [OOColor colorWithDescription:[[self shipInfoDictionary] objectForKey:@"scanner_hostile_display_color1"]];
+	scanner_display_color_hostile1 = [color retain];
+}
+
+
+- (void)setScannerDisplayColorHostile2:(OOColor *)color
+{
+	DESTROY(scanner_display_color_hostile2);
+	
+	if (color == nil)  color = [OOColor colorWithDescription:[[self shipInfoDictionary] objectForKey:@"scanner_hostile_display_color2"]];
+	scanner_display_color_hostile2 = [color retain];
+}
+
+
+- (OOColor *)scannerDisplayColorHostile1
+{
+	return [[scanner_display_color_hostile1 retain] autorelease];
+}
+
+
+- (OOColor *)scannerDisplayColorHostile2
+{
+	return [[scanner_display_color_hostile2 retain] autorelease];
+}
+
+
 - (BOOL)isCloaked
 {
 	return cloaking_device_active;
+}
+
+
+- (BOOL) cloakPassive
+{
+	return cloakPassive;
 }
 
 
@@ -6165,7 +6626,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 
 - (void) applyThrust:(double) delta_t
 {
-	GLfloat dt_thrust = thrust * delta_t;
+	GLfloat dt_thrust = SHIP_THRUST_FACTOR * thrust * delta_t;
 	BOOL	canBurn = [self hasFuelInjection] && (fuel > MIN_FUEL);
 	BOOL	isUsingAfterburner = (canBurn && (flightSpeed > maxFlightSpeed) && (desired_speed >= flightSpeed));
 	float	max_available_speed = maxFlightSpeed;
@@ -6203,7 +6664,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 	// burn fuel at the appropriate rate
 	if (isUsingAfterburner) // no fuelconsumption on slowdown
 	{
-		fuel_accumulator -= delta_t * AFTERBURNER_NPC_BURNRATE;
+		fuel_accumulator -= delta_t * afterburner_rate;
 		while (fuel_accumulator < 0.0)
 		{
 			fuel--;
@@ -6287,10 +6748,10 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 		}
 		[previousCondition oo_setFloat:desired_range forKey:@"desired_range"];
 		[previousCondition oo_setFloat:desired_speed forKey:@"desired_speed"];
-		[previousCondition oo_setHPVector:destination forKey:@"destination"];
+		[previousCondition oo_setHPVector:_destination forKey:@"destination"];
 		
-		destination = [prox_ship position];
-		destination = OOHPVectorInterpolate(position, [prox_ship position], 0.5);		// point between us and them
+		_destination = [prox_ship position];
+		_destination = OOHPVectorInterpolate(position, [prox_ship position], 0.5);		// point between us and them
 		
 		desired_range = prox_ship->collision_radius * PROXIMITY_AVOID_DISTANCE_FACTOR;
 		
@@ -6307,9 +6768,10 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 	behaviour =		[previousCondition oo_intForKey:@"behaviour"];
 	[_primaryTarget release];
 	_primaryTarget =	[previousCondition[@"primaryTarget"] weakRetain];
+	[self startTrackingCurve];
 	desired_range =	[previousCondition oo_floatForKey:@"desired_range"];
 	desired_speed =	[previousCondition oo_floatForKey:@"desired_speed"];
-	destination =	[previousCondition oo_hpvectorForKey:@"destination"];
+	_destination =	[previousCondition oo_hpvectorForKey:@"destination"];
 
 	[previousCondition release];
 	previousCondition = nil;
@@ -6567,6 +7029,56 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 }
 
 
+// needed so that scan_description = scan_description doesn't have odd effects
+- (NSString *)scanDescriptionForScripting
+{
+	return scan_description;
+}
+
+
+- (NSString *)scanDescription
+{
+	if (scan_description != nil)
+	{
+		return scan_description;
+	}
+	else
+	{
+		NSString *desc = nil;
+		switch ([self scanClass])
+		{
+		case CLASS_NEUTRAL:
+			{
+				int legal = [self legalStatus];
+				int legal_i = 0;
+				if (legal > 0)
+				{
+					legal_i =  (legal <= 50) ? 1 : 2;
+				}
+				desc = [[[UNIVERSE descriptions] oo_arrayForKey:@"legal_status"] oo_stringAtIndex:legal_i];
+			}
+			break;
+	
+		case CLASS_THARGOID:
+			desc = DESC(@"legal-desc-alien");
+			break;
+		
+		case CLASS_POLICE:
+			desc = DESC(@"legal-desc-system-vessel");
+			break;
+		
+		case CLASS_MILITARY:
+			desc = DESC(@"legal-desc-military-vessel");
+			break;
+		
+		default:
+			break;
+		}
+		return desc;
+	}
+}
+
+
 - (void) setName:(NSString *)inName
 {
 	[name release];
@@ -6592,6 +7104,13 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 {
 	[displayName release];
 	displayName = [inName copy];
+}
+
+
+- (void) setScanDescription:(NSString *)inName
+{
+	[scan_description release];
+	scan_description = [inName copy];
 }
 
 
@@ -6799,11 +7318,15 @@ static BOOL IsBehaviourHostile(OOBehaviour behaviour)
 // Exposed to shaders.
 - (BOOL) hasHostileTarget
 {
-	if ([self primaryTarget] == nil)
+	Entity *t = [self primaryTarget];
+	if (t == nil || ![t isShip])
+	{
 		return NO;
+	}
 	if ([self isMissile])
+	{
 		return YES;	// missiles are always fired against a hostile target
-
+	}
 	if ((behaviour == BEHAVIOUR_AVOID_COLLISION)&&(previousCondition))
 	{
 		int old_behaviour = [previousCondition oo_intForKey:@"behaviour"];
@@ -6833,65 +7356,20 @@ static BOOL IsBehaviourHostile(OOBehaviour behaviour)
 - (void) setWeaponDataFromType: (OOWeaponType) weapon_type
 {
 	weaponRange = getWeaponRangeFromType(weapon_type);
-	switch (weapon_type)
+	weapon_energy_use = [weapon_type weaponEnergyUse];
+	weapon_recharge_rate = [weapon_type weaponRechargeRate];
+	weapon_shot_temperature = [weapon_type weaponShotTemperature];
+	weapon_damage = [weapon_type weaponDamage];
+
+	if (default_laser_color == nil)
 	{
-		case WEAPON_PLASMA_CANNON:
-			weapon_damage =			6.0;
-			weapon_recharge_rate =	0.25;
-			weapon_shot_temperature =	8.0f;
-			break;
-		case WEAPON_PULSE_LASER:
-#ifdef DEBUG_LASER_TYPES
-			[self setLaserColor:[OOColor redColor]];
-#endif
-			weapon_damage =			15.0;
-			// weapon_recharge_rate =	0.33;
-			weapon_recharge_rate =	0.5;
-			weapon_shot_temperature =	7.0f;
-			break;
-		case WEAPON_BEAM_LASER:
-#ifdef DEBUG_LASER_TYPES
-			[self setLaserColor:[OOColor yellowColor]];
-#endif
-			weapon_damage =			15.0;
-			// weapon_recharge_rate =	0.25;
-			weapon_recharge_rate =	0.1;
-			weapon_shot_temperature =	8.0f;
-			break;
-		case WEAPON_MINING_LASER:
-#ifdef DEBUG_LASER_TYPES
-			[self setLaserColor:[OOColor blueColor]];
-#endif
-			weapon_damage =			50.0;
-			weapon_recharge_rate =	2.5;
-			weapon_shot_temperature =	10.0f;
-			break;
-		case WEAPON_THARGOID_LASER:		// omni directional lasers FRIGHTENING!
-			weapon_damage =			12.5;
-// changing weapon_recharge_rate to accompany change to onTarget - CIM 20120502
-//			weapon_recharge_rate =	0.5;
-// old behaviour gave range of 0.7-1.3 between 25 and 100 FPS
-// so duplicate this range
-//			weapon_recharge_rate = 0.7+(0.6*[self entityPersonality]);
-			weapon_recharge_rate = 0.7+(0.04*(10-accuracy));
-			weapon_shot_temperature =	8.0f;
-			break;
-		case WEAPON_MILITARY_LASER:
-#ifdef DEBUG_LASER_TYPES
-			[self setLaserColor:[OOColor magentaColor]];
-#endif
-			weapon_damage =			23.0;
-			// weapon_recharge_rate =	0.20;
-			weapon_recharge_rate =	0.10;
-			weapon_shot_temperature =	8.0f;
-			break;
-		case WEAPON_NONE:
-		case WEAPON_UNDEFINED:
-			weapon_damage =			0.0;	// indicating no weapon!
-			weapon_recharge_rate =	0.20;	// maximum rate
-			weapon_shot_temperature =	0.0f;
-			break;
+		OOColor *wcol = [weapon_type weaponColor];
+		if (wcol != nil)
+		{
+			[self setLaserColor:wcol];
+		}
 	}
+
 }
 
 
@@ -6899,6 +7377,13 @@ static BOOL IsBehaviourHostile(OOBehaviour behaviour)
 {
 	return energy_recharge_rate;
 }
+
+
+- (void) setEnergyRechargeRate:(GLfloat)new
+{
+	energy_recharge_rate = new;
+}
+
 
 - (float) weaponRechargeRate
 {
@@ -7358,7 +7843,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	if (![self isUnpiloted])
 	{
 		OOCharacter *crewMember = [OOCharacter randomCharacterWithRole:crewRole
-												 andOriginalSystemSeed:[UNIVERSE systemSeedForSystemNumber:[self homeSystem]]];
+													 andOriginalSystem:[self homeSystem]];
 		[self setCrew:@[crewMember]];
 	}
 }
@@ -7374,14 +7859,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	NSMutableArray *result = [NSMutableArray arrayWithCapacity:4];
 	foreach (crewMember, crew)
 	{
-		NSDictionary *crewDict = [NSDictionary dictionaryWithObjectsAndKeys:
-		  [crewMember name], @"name",
-		  [crewMember shortDescription], @"description",
-		  [crewMember species], @"species",
-		  [NSNumber numberWithInt:[crewMember legalStatus]], @"legalStatus",
-	      @([crewMember insuranceCredits]), @"insuranceCredits",
-		  [NSNumber numberWithInt:[crewMember planetIDOfOrigin]], @"homeSystem",
-		  nil];
+		NSDictionary *crewDict = [crewMember infoForScripting];
 		[result addObject:crewDict];
 	}
 	return result;
@@ -7445,13 +7923,44 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	if (script == nil)
 	{
 		actions = [shipinfoDictionary oo_arrayForKey:@"launch_actions"];
-		if (actions)  properties[@"legacy_launchActions"] = actions;	
+		if (actions)
+		{
+			OOStandardsDeprecated([NSString stringWithFormat:@"The launch_actions ship key is deprecated on %@.",[self displayName]]);
+			if (!OOEnforceStandards()) 
+			{
+				[properties setObject:actions forKey:@"legacy_launchActions"];	
+			}
+		}
+
 		actions = [shipinfoDictionary oo_arrayForKey:@"script_actions"];
-		if (actions)  properties[@"legacy_scriptActions"] = actions;
+		if (actions)
+		{
+			OOStandardsDeprecated([NSString stringWithFormat:@"The script_actions ship key is deprecated on %@.",[self displayName]]);
+			if (!OOEnforceStandards()) 
+			{
+				[properties setObject:actions forKey:@"legacy_scriptActions"];	
+			}
+		}
+
 		actions = [shipinfoDictionary oo_arrayForKey:@"death_actions"];
-		if (actions)  properties[@"legacy_deathActions"] = actions;
+		if (actions)
+		{
+			OOStandardsDeprecated([NSString stringWithFormat:@"The death_actions ship key is deprecated on %@.",[self displayName]]);
+			if (!OOEnforceStandards()) 
+			{
+				[properties setObject:actions forKey:@"legacy_deathActions"];	
+			}
+		}
+
 		actions = [shipinfoDictionary oo_arrayForKey:@"setup_actions"];
-		if (actions)  properties[@"legacy_setupActions"] = actions;
+		if (actions)
+		{
+			OOStandardsDeprecated([NSString stringWithFormat:@"The setup_actions ship key is deprecated on %@.",[self displayName]]);
+			if (!OOEnforceStandards()) 
+			{
+				[properties setObject:actions forKey:@"legacy_setupActions"];	
+			}
+		}
 		
 		script = [OOScript jsScriptFromFileNamed:@"oolite-default-ship-script.js"
 									  properties:properties];
@@ -7686,9 +8195,14 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 
 - (void) setCommodity:(OOCommodityType)co_type andAmount:(OOCargoQuantity)co_amount
 {
-	if (co_type != COMMODITY_UNDEFINED && cargo_type != CARGO_SCRIPTED_ITEM)
+	if (co_type != nil)
 	{
-		commodity_type = co_type;
+		/* The tmp variable is needed as scoopUp can cause the method
+		 * to be passed a reference to self.commodity_type, so DESTROY
+		 * then copying the parameter segfaults */
+		NSString *tmp = [co_type copy];
+		DESTROY(commodity_type);
+		commodity_type = tmp;
 		commodity_amount = co_amount;
 	}
 }
@@ -7696,14 +8210,20 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 
 - (void) setCommodityForPod:(OOCommodityType)co_type andAmount:(OOCargoQuantity)co_amount
 {
+	// can be nil for pods
+	if (co_type == nil)
+	{
+		DESTROY(commodity_type);
+		commodity_amount = 0;
+		return;
+	}
 	// pod content should never be greater than 1 ton or this will give cargo counting problems elsewhere in the code.
 	// so do first a mass check for cargo added by script/plist.
-	OOMassUnit	unit = [UNIVERSE unitsForCommodity:co_type];
+	OOMassUnit	unit = [[UNIVERSE commodityMarket] massUnitForGood:co_type];
 	if (unit == UNITS_TONS && co_amount > 1) co_amount = 1;
 	else if (unit == UNITS_KILOGRAMS && co_amount > 1000) co_amount = 1000;
 	else if (unit == UNITS_GRAMS && co_amount > 1000000) co_amount = 1000000;
-	commodity_type = co_type;
-	commodity_amount = co_amount;
+	[self setCommodity:co_type andAmount:co_amount];
 }
 
 
@@ -7722,6 +8242,12 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 - (OOCargoQuantity) maxAvailableCargoSpace
 {
 	return max_cargo - equipment_weight;
+}
+
+
+- (void) setMaxAvailableCargoSpace:(OOCargoQuantity)new
+{
+	max_cargo = new + equipment_weight;
 }
 
 
@@ -7760,9 +8286,11 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 {
 	NSMutableArray		*list = [NSMutableArray array];
 	
-	NSUInteger			i, commodityCount = 1+COMMODITY_ALIEN_ITEMS;
+	OOCommodityType		good = nil;
+	NSArray 			*goods = [[UNIVERSE commodityMarket] goods];
+	NSUInteger			i, j, commodityCount = [goods count];
 	OOCargoQuantity		quantityInHold[commodityCount];
-	
+
 	for (i = 0; i < commodityCount; i++)
 	{
 		quantityInHold[i] = 0;
@@ -7770,7 +8298,8 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	for (i = 0; i < [cargo count]; i++)
 	{
 		ShipEntity *container = cargo[i];
-		quantityInHold[[container commodityType]] += [container commodityAmount];
+		j = [goods indexOfObject:[container commodityType]];
+		quantityInHold[j] += [container commodityAmount];
 	}
 	
 	for (i = 0; i < commodityCount; i++)
@@ -7778,12 +8307,12 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 		if (quantityInHold[i] > 0)
 		{
 			NSMutableDictionary	*commodity = [NSMutableDictionary dictionaryWithCapacity:4];
-			NSString *symName = [UNIVERSE symbolicNameForCommodity:i];
+			good = [goods objectAtIndex:i];
 			// commodity, quantity - keep consistency between .manifest and .contracts
-			commodity[@"commodity"] = CommodityTypeToString(i);
+			commodity[@"commodity"] = good;
 			commodity[@"quantity"] = @(quantityInHold[i]);
-			commodity[@"displayName"] = CommodityDisplayNameForSymbolicName(symName); 
-			commodity[@"unit"] = DisplayStringForMassUnitForCommodity(i); 
+			commodity[@"displayName"] = [[UNIVERSE commodityMarket] nameForGood:good];
+			commodity[@"unit"] = DisplayStringForMassUnitForCommodity(good);
 			[list addObject:commodity];
 		}
 	}
@@ -7796,6 +8325,56 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	[cargo removeAllObjects];
 	[cargo addObjectsFromArray:some_cargo];
 }
+
+
+- (BOOL) addCargo:(NSArray *) some_cargo
+{
+	if ([cargo count] + [some_cargo count] > [self maxAvailableCargoSpace])
+	{
+		return NO;
+	}
+	else
+	{
+		[cargo addObjectsFromArray:some_cargo];
+		return YES;
+	}
+}
+
+
+- (BOOL) removeCargo:(OOCommodityType)commodity amount:(OOCargoQuantity) amount
+{
+	OOCargoQuantity found = 0;
+	ShipEntity *pod = nil;
+	foreach (pod, cargo)
+	{
+		if ([[pod commodityType] isEqualToString:commodity])
+		{
+			found++;
+		}
+	}
+	if (found < amount)
+	{
+		// don't remove any if there aren't enough to remove the full amount
+		return NO;
+	}
+	
+	NSUInteger i = [cargo count] - 1;
+	// iterate downwards to be safe removing during iteration
+	while (amount > 0)
+	{
+		if ([[[cargo objectAtIndex:i] commodityType] isEqualToString:commodity])
+		{
+			amount--;
+			[cargo removeObjectAtIndex:i];
+		}
+		// check above means array index can't underflow here
+		i--;
+	}
+
+	return YES;
+}
+
+
 
 - (BOOL) showScoopMessage
 {
@@ -7921,12 +8500,19 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 - (void) decrease_flight_speed:(double) delta
 {
 	double factor = 1.0;
-	if (flightSpeed > maxFlightSpeed) factor = [self afterburnerFactor] / 2;
+	if (flightSpeed > maxFlightSpeed) 
+	{
+		factor = MIN_HYPERSPEED_FACTOR;
+	}
 
 	if (flightSpeed > factor * delta)
-		flightSpeed -= factor * delta;  // Player uses here: flightSpeed -= 5 * HYPERSPEED_FACTOR * delta (= 160 * delta);
+	{
+		flightSpeed -= factor * delta;
+	}
 	else
+	{
 		flightSpeed = 0;
+	}
 }
 
 
@@ -8029,6 +8615,30 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 - (GLfloat) maxFlightYaw
 {
 	return max_flight_yaw;
+}
+
+
+- (void) setMaxFlightPitch:(GLfloat)new
+{
+	max_flight_pitch = new;
+}
+
+
+- (void) setMaxFlightSpeed:(GLfloat)new
+{
+	maxFlightSpeed = new;
+}
+
+
+- (void) setMaxFlightRoll:(GLfloat)new
+{
+	max_flight_roll = new;
+}
+
+
+- (void) setMaxFlightYaw:(GLfloat)new
+{
+	max_flight_yaw = new;
 }
 
 
@@ -8159,7 +8769,8 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	}
 	// and a visual sign of the explosion
 	// "fireball" explosion effect
-	[UNIVERSE addEntity:[OOExplosionCloudEntity explosionCloudFromEntity:self withSize:range*3.0]];
+	NSDictionary *explosion = [UNIVERSE explosionSetting:@"oolite-default-ship-explosion"];
+	[UNIVERSE addEntity:[OOExplosionCloudEntity explosionCloudFromEntity:self withSize:range*3.0 andSettings:explosion]];
 
 }
 
@@ -8168,6 +8779,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 // Exposed to AI
 - (void) dealEnergyDamageWithinDesiredRange
 {
+	OOStandardsDeprecated([NSString stringWithFormat:@"dealEnergyDamageWithinDesiredRange is deprecated for %@",self]);
 	// not over scannerRange
 	NSArray* targets = [UNIVERSE entitiesWithinRange:(desired_range < SCANNER_MAX_RANGE ? desired_range : SCANNER_MAX_RANGE) ofEntity:self];
 	if ([targets count] > 0)
@@ -8201,9 +8813,9 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 				double ecr = [e2 collisionRadius];
 				double d2 = magnitude2(p2) - ecr * ecr;
 				// limit momentum transfer to relatively sensible levels
-				if (d2 < 1.0)
+				if (d2 < 0.1)
 				{
-					d2 = 1.0;
+					d2 = 0.1;
 				}
 				double moment = amount*desired_range/d2;
 				[e2 addImpactMoment:vector_normal(p2) fraction:moment];
@@ -8298,9 +8910,26 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 
 - (void) rescaleBy:(GLfloat)factor
 {
-	// rescale mesh (and collision detection stuff)
-	[self setMesh:[[self mesh] meshRescaledBy:factor]];
-	
+	_scaleFactor *= factor;
+	OOMesh *mesh = nil;
+
+	NSDictionary *shipDict = [self shipInfoDictionary];
+	NSString *modelName = [shipDict oo_stringForKey:@"model"];
+	if (modelName != nil)
+	{
+		mesh = [OOMesh meshWithName:modelName
+						   cacheKey:[NSString stringWithFormat:@"%@-%.3f",_shipKey,_scaleFactor]
+				 materialDictionary:[shipDict oo_dictionaryForKey:@"materials"]
+				  shadersDictionary:[shipDict oo_dictionaryForKey:@"shaders"]
+							 smooth:[shipDict oo_boolForKey:@"smooth" defaultValue:NO]
+					   shaderMacros:OODefaultShipShaderMacros()
+					   shaderBindingTarget:self
+						scaleFactor:factor];
+
+		if (mesh == nil)  return;
+		[self setMesh:mesh];
+	}
+
 	// rescale subentities
 	Entity<OOSubEntity>	*se = nil;
 	foreach (se, [self subEntities])
@@ -8386,6 +9015,19 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 
 }
 
+
+- (void) setIsWreckage:(BOOL)isw
+{
+	isWreckage = isw;
+}
+
+
+- (BOOL) showDamage
+{
+	return _showDamage;
+}
+
+
 - (void) becomeExplosion
 {
 	
@@ -8415,6 +9057,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	int speed_low = 200;
 	GLfloat n_alloys = sqrtf(sqrtf(mass / 6000.0f));
 	NSUInteger numAlloys = 0;
+	BOOL canReleaseSubWreckage = isWreckage && ([UNIVERSE detailLevel] >= DETAIL_LEVEL_EXTRAS);
 
 	if ([self status] == STATUS_DEAD)
 	{
@@ -8429,7 +9072,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 		
 		if (!suppressExplosion)
 		{
-			if (mass > 500000.0f && randf() < 0.25f) // big!
+			if (!isWreckage && mass > 500000.0f && randf() < 0.25f) // big!
 			{
 				// draw an expanding ring
 				OORingEffectEntity *ring = [OORingEffectEntity ringFromEntity:self];
@@ -8446,23 +9089,60 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 			
 			if (add_debris)
 			{
-				if ([UNIVERSE reducedDetail] || (scanClass == CLASS_CARGO && ![self isHulk]) || scanClass == CLASS_MISSILE || scanClass == CLASS_MINE)
+				if ([UNIVERSE reducedDetail])
 				{
-					// "burst" explosion effect for small explosions
-					// and minimum detail
+					// Quick explosion effects for reduced detail mode
+					
 					// 1. fast sparks
 					[UNIVERSE addEntity:[OOSmallFragmentBurstEntity fragmentBurstFromEntity:self]];
 					// 2. slow clouds
 					[UNIVERSE addEntity:[OOBigFragmentBurstEntity fragmentBurstFromEntity:self]];
+					// 3. flash
+					[UNIVERSE addEntity:[OOFlashEffectEntity explosionFlashFromEntity:self]];
+					/* This mode used to be the default for
+					 * cargo/munitions but this now must be explicitly
+					 * specified. */
 				}
 				else
 				{
+					NSString *explosionKey = @"oolite-default-ship-explosion";
+					NSDictionary *explosion = nil;
+					if (explosionType == nil)
+					{
+						explosion = [UNIVERSE explosionSetting:explosionKey];
+						[UNIVERSE addEntity:[OOExplosionCloudEntity explosionCloudFromEntity:self withSettings:explosion]];
+						// 3. flash
+						[UNIVERSE addEntity:[OOFlashEffectEntity explosionFlashFromEntity:self]];
+					}
+					for (NSUInteger i=0;i<[explosionType count];i++)
+					{
+						explosionKey = [explosionType oo_stringAtIndex:i defaultValue:nil];
+						if (explosionKey != nil)
+						{
+							// three special-case builtins
+							if ([explosionKey isEqualToString:@"oolite-builtin-flash"])
+							{
+								[UNIVERSE addEntity:[OOFlashEffectEntity explosionFlashFromEntity:self]];
+							}
+							else if ([explosionKey isEqualToString:@"oolite-builtin-slowcloud"])
+							{
+								[UNIVERSE addEntity:[OOBigFragmentBurstEntity fragmentBurstFromEntity:self]];
+							}
+							else if ([explosionKey isEqualToString:@"oolite-builtin-fastspark"])
+							{
+								[UNIVERSE addEntity:[OOSmallFragmentBurstEntity fragmentBurstFromEntity:self]];
+							}
+							else
+							{
+								explosion = [UNIVERSE explosionSetting:explosionKey];
+								[UNIVERSE addEntity:[OOExplosionCloudEntity explosionCloudFromEntity:self withSettings:explosion]];
+							}
+						}
+					}
 					// "fireball" explosion effect
-					[UNIVERSE addEntity:[OOExplosionCloudEntity explosionCloudFromEntity:self]];								
+
 				}
 			}
-			// 3. flash
-			[UNIVERSE addEntity:[OOFlashEffectEntity explosionFlashFromEntity:self]];
 			 
 			// If UNIVERSE is nearing limit for entities don't add to it!
 			if (add_debris)
@@ -8515,7 +9195,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 								{
 									[rock setScanClass: CLASS_CARGO];
 									[rock setBounty: 0 withReason:kOOLegalStatusReasonSetup];
-									[rock setCommodity:[UNIVERSE commodityForName:@"Minerals"] andAmount: 1];
+									[rock setCommodity:@"minerals" andAmount: 1];
 								}
 								else
 								{
@@ -8532,7 +9212,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 
 				// throw out burning chunks of wreckage
 				//
-				if (n_alloys && canFragment)
+				if ((n_alloys && canFragment) || canReleaseSubWreckage)
 				{
 					NSUInteger n_wreckage = 0;
 					
@@ -8541,42 +9221,27 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 						// Create wreckage only when UNIVERSE is less than half full.
 						// (condition set in r906 - was < 0.75 before) --Kaks 2011.10.17
 						NSUInteger maxWrecks = 3;
-						// if it can cope with extra detail, allow more wreckage
-						if ([UNIVERSE detailLevel] >= DETAIL_LEVEL_EXTRAS)
+						if (n_alloys == 0)
 						{
-							maxWrecks = 8;
+							// must be sub-wreckage here
+							n_wreckage = (mass > 600.0 && randf() < 0.2)?2:0;
 						}
-						n_wreckage = (n_alloys < maxWrecks)? floorf(n_alloys) : maxWrecks;
+						else
+						{
+							n_wreckage = (n_alloys < maxWrecks)? floorf(randf()*(n_alloys+2)) : maxWrecks;
+						}
 					}
 					
 					for (i = 0; i < n_wreckage; i++)
 					{
-						ShipEntity* wreck = [UNIVERSE newShipWithRole:@"wreckage"];   // retain count = 1
-						if (wreck)
-						{
-							GLfloat expected_mass = 0.1f * mass * (0.75 + 0.5 * randf());
-							GLfloat wreck_mass = [wreck mass];
-							GLfloat scale_factor = powf(expected_mass / wreck_mass, 0.33333333f);	// cube root of volume ratio
-							[wreck rescaleBy: scale_factor];
-							
-							Vector r1 = [octree randomPoint];
-							HPVector rpos = HPvector_add(vectorToHPVector(quaternion_rotate_vector([self normalOrientation], r1)), xposition);
-							[wreck setPosition:rpos];
-							
-							[wreck setVelocity:[self velocity]];
+						Vector r1 = [octree randomPoint];
+						Vector dir = quaternion_rotate_vector([self normalOrientation], r1);
+						HPVector rpos = HPvector_add(vectorToHPVector(dir), xposition);
+						GLfloat lifetime = 750.0 * randf() + 250.0 * i + 100.0;
+						ShipEntity *wreck = [UNIVERSE addWreckageFrom:self withRole:@"wreckage" at:rpos scale:1.0 lifetime:lifetime/2];
 
-							quaternion_set_random(&q);
-							[wreck setOrientation:q];
-							
-							[wreck setTemperature: 1000.0];		// take 1000e heat damage per second
-							[wreck setHeatInsulation: 1.0e7];	// very large! so it won't cool down
-							[wreck setEnergy: 750.0 * randf() + 250.0 * i + 100.0];	// burn for 0.25s -> 1.25s
-							
-							[UNIVERSE addEntity:wreck];	// STATUS_IN_FLIGHT, AI state GLOBAL
-							[wreck performTumble];
-							[wreck rescaleBy: 1.0/scale_factor];
-							[wreck release];
-						}
+						[wreck setVelocity:vector_add([wreck velocity],vector_multiply_scalar(vector_normal(dir),randf()*[wreck collisionRadius]))];
+
 					}
 					n_alloys = randf() * n_alloys;
 				}
@@ -8618,7 +9283,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 					
 					[plate setTemperature:[self randomEjectaTemperature]];
 					[plate setScanClass: CLASS_CARGO];
-					[plate setCommodity:[UNIVERSE commodityForName:@"Alloys"] andAmount:1];
+					[plate setCommodity:@"alloys" andAmount:1];
 					[UNIVERSE addEntity:plate];	// STATUS_IN_FLIGHT, AI state GLOBAL
 					
 					[plate release];
@@ -8918,14 +9583,14 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 - (GLfloat)laserHeatLevelForward
 {
 	GLfloat result = forward_weapon_temp / NPC_MAX_WEAPON_TEMP;
-	if (forward_weapon_type == WEAPON_NONE) 
+	if (isWeaponNone(forward_weapon_type)) 
 	{ // must check subents
-		OOWeaponType forward_weapon_real_type = WEAPON_NONE;
+		OOWeaponType forward_weapon_real_type = nil;
 		NSEnumerator	*subEnum = [self shipSubEntityEnumerator];
 		ShipEntity		*se = nil;
-		while (forward_weapon_real_type == WEAPON_NONE && (se = [subEnum nextObject]))
+		while (isWeaponNone(forward_weapon_real_type) && (se = [subEnum nextObject]))
 		{
-			if (se->forward_weapon_type != WEAPON_NONE)
+			if (!isWeaponNone(se->forward_weapon_type))
 			{
 				forward_weapon_real_type = se->forward_weapon_type;
 				result = se->forward_weapon_temp / NPC_MAX_WEAPON_TEMP;
@@ -9019,7 +9684,8 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	GLfloat scannerRange2 = scannerRange * scannerRange;
 	while ((scan)&&(scan->position.z > position.z - scannerRange)&&(n_scanned_ships < MAX_SCAN_NUMBER))
 	{
-		if (scan->isShip && ![(ShipEntity*)scan isCloaked])
+		// can't scan cloaked ships
+		if (scan->isShip && ![(ShipEntity*)scan isCloaked] && [self isValidTarget:scan])
 		{
 			distance2_scanned_ships[n_scanned_ships] = HPdistance2(position, scan->position);
 			if (distance2_scanned_ships[n_scanned_ships] < scannerRange2)
@@ -9031,7 +9697,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	scan = z_next;	while ((scan)&&(scan->isShip == NO))	scan = scan->z_next;	// skip non-ships
 	while ((scan)&&(scan->position.z < position.z + scannerRange)&&(n_scanned_ships < MAX_SCAN_NUMBER))
 	{
-		if (scan->isShip && ![(ShipEntity*)scan isCloaked])
+		if (scan->isShip && ![(ShipEntity*)scan isCloaked] && [self isValidTarget:scan])
 		{
 			distance2_scanned_ships[n_scanned_ships] = HPdistance2(position, scan->position);
 			if (distance2_scanned_ships[n_scanned_ships] < scannerRange2)
@@ -9050,7 +9716,11 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	n_scanned_ships = 0;
 	//
 	GLfloat scannerRange2 = scannerRange * scannerRange;
-	scan = z_previous;	while ((scan)&&(scan->isShip == NO)&&(scan->scanClass!=CLASS_ROCK)&&(scan->scanClass!=CLASS_CARGO))	scan = scan->z_previous;	// skip non-ships
+	scan = z_previous;	
+	while ((scan)&&((scan->isShip == NO)||(scan->scanClass==CLASS_ROCK)||(scan->scanClass==CLASS_CARGO)))	
+	{
+		scan = scan->z_previous;	// skip non-ships
+	}
 	while ((scan)&&(scan->position.z > position.z - scannerRange)&&(n_scanned_ships < MAX_SCAN_NUMBER))
 	{
 		if (scan->isShip && ![(ShipEntity*)scan isCloaked])
@@ -9059,10 +9729,19 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 			if (distance2_scanned_ships[n_scanned_ships] < scannerRange2)
 				scanned_ships[n_scanned_ships++] = (ShipEntity*)scan;
 		}
-		scan = scan->z_previous;	while ((scan)&&(scan->isShip == NO)&&(scan->scanClass!=CLASS_ROCK)&&(scan->scanClass!=CLASS_CARGO))	scan = scan->z_previous;
+		scan = scan->z_previous;
+		while ((scan)&&((scan->isShip == NO)||(scan->scanClass==CLASS_ROCK)||(scan->scanClass==CLASS_CARGO)))	
+		{
+			scan = scan->z_previous;	// skip non-ships
+		}
 	}
 	//
-	scan = z_next;	while ((scan)&&(scan->isShip == NO)&&(scan->scanClass!=CLASS_ROCK)&&(scan->scanClass!=CLASS_CARGO))	scan = scan->z_next;	// skip non-ships
+	scan = z_next;	
+	while ((scan)&&((scan->isShip == NO)||(scan->scanClass==CLASS_ROCK)||(scan->scanClass==CLASS_CARGO)))	
+	{
+		scan = scan->z_next;	// skip non-ships
+	}
+
 	while ((scan)&&(scan->position.z < position.z + scannerRange)&&(n_scanned_ships < MAX_SCAN_NUMBER))
 	{
 		if (scan->isShip && ![(ShipEntity*)scan isCloaked])
@@ -9071,7 +9750,11 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 			if (distance2_scanned_ships[n_scanned_ships] < scannerRange2)
 				scanned_ships[n_scanned_ships++] = (ShipEntity*)scan;
 		}
-		scan = scan->z_next;	while ((scan)&&(scan->isShip == NO)&&(scan->scanClass!=CLASS_ROCK)&&(scan->scanClass!=CLASS_CARGO))	scan = scan->z_next;	// skip non-ships
+		scan = scan->z_next;
+		while ((scan)&&((scan->isShip == NO)||(scan->scanClass==CLASS_ROCK)||(scan->scanClass==CLASS_CARGO)))	
+		{
+			scan = scan->z_next;	// skip non-ships
+		}
 	}
 	//
 	scanned_ships[n_scanned_ships] = nil;	// terminate array
@@ -9238,6 +9921,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	{
 		DESTROY(_primaryTarget);
 		_primaryTarget = [targetEntity weakRetain];
+		[self startTrackingCurve];
 	}
 	
 	[[self shipSubEntityEnumerator] makeObjectsPerformSelector:@selector(addTarget:) withObject:targetEntity];
@@ -9253,6 +9937,43 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	// we don't want to send lostTarget messages while the missile is mounted.
 	
 	[[self shipSubEntityEnumerator] makeObjectsPerformSelector:@selector(removeTarget:) withObject:targetEntity];
+}
+
+
+/* Checks if the primary target is still trackable.
+ * 
+ * 1.80 behaviour: still exists, is in scanner range, is not cloaked
+ *
+ * 1.81 (planned) behaviour:
+ * - track cloaked ships once primary targeted (but no missiles, and can't keep as a mere defense target, and probably some other penalties)
+ * - track ships at 120% scanner range *if* they are also primary aggressor
+ *
+ * But first, just switch over to this method on 1.80 behaviour and check
+ * that things still work.
+ */
+- (BOOL) canStillTrackPrimaryTarget
+{
+	Entity *target = (Entity *)[self primaryTargetWithoutValidityCheck];
+	if (target == nil)
+	{
+		return NO;
+	}
+	if (![self isValidTarget:target])
+	{
+		return NO;
+	}
+	double range2 = HPmagnitude2(HPvector_subtract([target position], position));
+	if (range2 > scannerRange * scannerRange * 1.5625) 
+	{
+		// 1.5625 = 1.25*1.25
+		return NO;
+	}
+	// 1.81: can retain cloaked ships as a *primary* target now
+/*	if ([target isShip] && [(ShipEntity*)target isCloaked])
+	{
+		return NO;
+		} */
+	return YES;
 }
 
 
@@ -9397,7 +10118,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 
 - (HPVector) destination
 {
-	return destination;
+	return _destination;
 }
 
 - (HPVector) coordinates
@@ -9615,20 +10336,24 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 		return 0.0;
 	}
 
+	if (![self canStillTrackPrimaryTarget])
+	{
+		[self noteLostTargetAndGoIdle];	// NOTE: was AI message: rather than reactToMessage:
+		return 0.0;
+	}
+
+	/* 1.81 change: do the above check first: if a missile can't be
+	 * fired outside scanner range it should self-destruct if the
+	 * target gets far enough away (it's going to miss anyway) -
+	 * CIM */
 	if (scanClass == CLASS_MISSILE)
 		return [self missileTrackPrimaryTarget: delta_t];
 
 	GLfloat  d_forward, d_up, d_right;
 	
-	Vector  relPos = [self vectorTo:target];
+	Vector  relPos = HPVectorToVector(HPvector_subtract([self calculateTargetPosition], position));
 	
-	double	range2 = magnitude2(relPos);
-
-	if (range2 > scannerRange * scannerRange)
-	{
-		[self noteLostTargetAndGoIdle];	// NOTE: was AI message: rather than reactToMessage:
-		return 0.0;
-	}
+	double	range2 = HPmagnitude2(HPvector_subtract([target position], position));
 
 	//jink if retreating
 	if (retreat) // calculate jink position when flying away from target.
@@ -9845,19 +10570,20 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 		return 0.0;
 	}
 
+	if (![self canStillTrackPrimaryTarget])
+	{
+		[self noteLostTargetAndGoIdle];	// NOTE: was AI message: rather than reactToMessage:
+		return 0.0;
+	}
+
+
 	if (scanClass == CLASS_MISSILE) // never?
 		return [self missileTrackPrimaryTarget: delta_t];
 
 	GLfloat  d_forward, d_up, d_right;
 	
-	Vector  relPos = [self vectorTo:target];
-	double	range2 = magnitude2(relPos);
+	Vector  relPos = HPVectorToVector(HPvector_subtract([self calculateTargetPosition], position));
 
-	if (range2 > scannerRange * scannerRange)
-	{
-		[self noteLostTargetAndGoIdle];	// NOTE: was AI message: rather than reactToMessage:
-		return 0.0;
-	}
 
 	if (!vector_equal(relPos, kZeroVector))  relPos = vector_normal(relPos);
 	else  relPos.z = 1.0;
@@ -10080,7 +10806,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 		reversePlayer = -1;
 	}
 
-	relPos = HPVectorToVector(HPvector_subtract(destination, position));
+	relPos = HPVectorToVector(HPvector_subtract(_destination, position));
 	double range2 = magnitude2(relPos);
 	double desired_range2 = desired_range*desired_range;
 	
@@ -10237,8 +10963,49 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 
 - (GLfloat) rangeToDestination
 {
-	return HPdistance(position, destination);
+	return HPdistance(position, _destination);
 }
+
+
+- (NSArray *) collisionExceptions
+{
+	if (_collisionExceptions == nil)
+	{
+		return [NSArray array];
+	}
+	return [_collisionExceptions allObjects];
+}
+
+
+- (void) addCollisionException:(ShipEntity *)ship
+{
+	if (_collisionExceptions == nil)
+	{
+		// Allocate lazily for the benefit of the ships that never need this.
+		_collisionExceptions = [[OOWeakSet alloc] init];
+	}
+	[_collisionExceptions addObject:ship];
+}
+
+
+- (void) removeCollisionException:(ShipEntity *)ship
+{
+	if (_collisionExceptions != nil)
+	{
+		[_collisionExceptions removeObject:ship];
+	}
+}
+
+
+- (BOOL) collisionExceptedFor:(ShipEntity *)ship
+{
+	if (_collisionExceptions == nil)
+	{
+		return NO;
+	}
+	return [_collisionExceptions containsObject:ship];
+}
+
 
 
 - (NSUInteger) defenseTargetCount
@@ -10265,7 +11032,8 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	{
 		return NO;
 	}
-	if (target == nil || [self isDefenseTarget:target])
+	// primary target can be a wormhole, defense targets shouldn't be
+	if (target == nil || [self isDefenseTarget:target] || ![target isShip])
 	{
 		return NO;
 	}
@@ -10477,11 +11245,8 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	GLfloat dq = -1.0f;
 	GLfloat d2, radius, astq;
 	Vector rel_pos, urp;
-	if (weapon_type == WEAPON_THARGOID_LASER)
+	if ([weapon_type isTurretLaser])
 	{
-/* this gives a frame rate dependency. Modified weapon_recharge_time
- * elsewhere to give a similar effect - CIM 20120502 */		
-// if (randf() < 0.05) return YES;	// one in twenty shots on target
 		return YES;
 	}
 	
@@ -10494,7 +11259,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 		return NO;	// 3/4 of the time you can't see from a lit place into a darker place
 	}
 	radius = target->collision_radius;
-	rel_pos = [self vectorTo:target];
+	rel_pos = HPVectorToVector(HPvector_subtract([self calculateTargetPosition], position));
 	d2 = magnitude2(rel_pos);
 	urp = vector_normal_or_zbasis(rel_pos);
 	
@@ -10560,8 +11325,9 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	}
 	if (weapon_temp / NPC_MAX_WEAPON_TEMP >= WEAPON_COOLING_CUTOUT) return NO;
 
+	if (energy <= weapon_energy_use) return NO;
 	if ([self shotTime] < weapon_recharge_rate)  return NO;
-	if (weapon_type != WEAPON_THARGOID_LASER)
+	if (![weapon_type isTurretLaser])
 	{ // thargoid laser may just pick secondary target in this case
 		if (range > randf() * weaponRange * (accuracy+7.5))  return NO;
 		if (range > weaponRange)  return NO;
@@ -10569,34 +11335,23 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	if (![self onTarget:direction withWeapon:weapon_type])  return NO;
 	
 	BOOL fired = NO;
-	switch (weapon_type)
+	if (!isWeaponNone(weapon_type))
 	{
-		case WEAPON_PLASMA_CANNON:
-			[self firePlasmaShotAtOffset:0.0 speed:NPC_PLASMA_SPEED color:[OOColor yellowColor] direction:direction];
-			fired = YES;
-			break;
-		
-		case WEAPON_PULSE_LASER:
-		case WEAPON_BEAM_LASER:
-		case WEAPON_MINING_LASER:
-		case WEAPON_MILITARY_LASER:
-			[self fireLaserShotInDirection:direction];
-			fired = YES;
-			break;
-		
-		case WEAPON_THARGOID_LASER:
+		if ([weapon_type isTurretLaser])
+		{
 			[self fireDirectLaserShot:range];
 			fired = YES;
-			break;
-		
-		case WEAPON_NONE:
-		case WEAPON_UNDEFINED:
-			// Do nothing
-			break;
+		}
+		else
+		{
+			[self fireLaserShotInDirection:direction];
+			fired = YES;
+		}
 	}
 
 	if (fired)
 	{
+		energy -= weapon_energy_use;
 		switch (direction)
 		{
 			case WEAPON_FACING_FORWARD:
@@ -10647,18 +11402,19 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	currentWeaponFacing = WEAPON_FACING_FORWARD;
 	[self setWeaponDataFromType:forward_weapon_type];
 
-	weapon_damage = weapon_damage_override;
+//  weapon damage override no longer effective
+//	weapon_damage = weapon_damage_override;
 	
 	BOOL result = [self fireWeapon:forward_weapon_type direction:WEAPON_FACING_FORWARD range:range];
-	if (forward_weapon_type == WEAPON_NONE)
+	if (isWeaponNone(forward_weapon_type))
 	{
 		// need to check subentities to avoid AI oddities
 		// will already have fired them by now, though
 		NSEnumerator	*subEnum = [self shipSubEntityEnumerator];
 		ShipEntity		*se = nil;
-		OOWeaponType 			weapon_type = WEAPON_NONE;
+		OOWeaponType 			weapon_type = nil;
 		BOOL hasTurrets = NO;
-		while (weapon_type == WEAPON_NONE && (se = [subEnum nextObject]))
+		while (isWeaponNone(weapon_type) && (se = [subEnum nextObject]))
 		{
 			weapon_type = se->forward_weapon_type;
 			weapon_temp = se->forward_weapon_temp;
@@ -10667,9 +11423,9 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 				hasTurrets = YES;
 			}
 		}
-		if (weapon_type == WEAPON_NONE && hasTurrets)
+		if (isWeaponNone(weapon_type) && hasTurrets)
 		{ // no forward weapon but has turrets, so set up range calculations accordingly
-			[self setWeaponDataFromType:WEAPON_PLASMA_CANNON];
+			weaponRange = 10000.0;
 		}
 		else
 		{
@@ -10728,8 +11484,15 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 		return NO;
 	if (range > weaponRange * 1.01) // 1% more than max range - open up just slightly early
 		return NO;
-	if ([[self rootShipEntity] isPlayer] && ![PLAYER weaponsOnline])
+	ShipEntity *root = [self rootShipEntity];
+	if ([root isPlayer] && ![PLAYER weaponsOnline])
 		return NO;
+
+	if ([root isCloaked] && [root cloakPassive])
+	{
+		// can't fire turrets while cloaked
+		return NO;
+	}
 
 	Vector		vel;	
 	HPVector		origin = [self position];
@@ -10804,18 +11567,21 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 {
 	[self setShipHitByLaser:nil];
 	
-	if (forward_weapon_type == WEAPON_NONE)  return NO;
+	if (isWeaponNone(forward_weapon_type))  return NO;
 	[self setWeaponDataFromType:forward_weapon_type];
 	
 	ShipEntity *parent = [self owner];
 	NSAssert([parent isShipWithSubEntityShip:self], @"-fireSubentityLaserShot: called on ship which is not a subentity.");
-	
+
+	// subentity lasers still draw power from the main entity
+	if ([parent energy] <= weapon_energy_use) return NO;
 	if ([self shotTime] < weapon_recharge_rate)  return NO;
 	if (forward_weapon_temp > WEAPON_COOLING_CUTOUT * NPC_MAX_WEAPON_TEMP)  return NO;
 	if (range > weaponRange)  return NO;
-	
+
 	forward_weapon_temp += weapon_shot_temperature;
-	
+	[parent setEnergy:([parent energy] - weapon_energy_use)];
+
 	GLfloat hitAtRange = weaponRange;
 	OOWeaponFacing direction = WEAPON_FACING_FORWARD;
 	ShipEntity *victim = [UNIVERSE firstShipHitByLaserFromShip:self inDirection:direction offset:kZeroVector gettingRangeFound:&hitAtRange];
@@ -10849,7 +11615,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 			[shot setRange:hitAtRange];
 			Vector vd = vector_forward_from_quaternion([shot orientation]);
 			HPVector flash_pos = HPvector_add([shot position], vectorToHPVector(vector_multiply_scalar(vd, hitAtRange)));
-			[UNIVERSE addEntity:[OOFlashEffectEntity laserFlashWithPosition:flash_pos velocity:[victim velocity] color:laser_color]];
+			[UNIVERSE addLaserHitEffectsAt:flash_pos against:victim damage:weapon_damage color:laser_color];
 		}
 	}
 	else
@@ -10901,6 +11667,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	Entity *target = nil;
 	while ((target = [[targetEnum nextObject] weakRefUnderlyingObject]))
 	{
+		// can't fire defensively at cloaked ships
 		if ([target scanClass] == CLASS_NO_DRAW || [(ShipEntity *)target isCloaked] || [target energy] <= 0.0)
 		{
 			[self removeDefenseTarget:target];
@@ -10973,19 +11740,13 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 			[shot setRange:hit_at_range];
 			Vector vd = vector_forward_from_quaternion([shot orientation]);
 			HPVector flash_pos = HPvector_add([shot position], vectorToHPVector(vector_multiply_scalar(vd, hit_at_range)));
-			[UNIVERSE addEntity:[OOFlashEffectEntity laserFlashWithPosition:flash_pos velocity:[victim velocity] color:laser_color]];
+			[UNIVERSE addLaserHitEffectsAt:flash_pos against:victim damage:weapon_damage color:laser_color];
 		}
 	}
 	
 	[UNIVERSE addEntity:shot];
 	
 	[self resetShotTime];
-	
-	// random laser over-heating for AI ships
-/*	if ((!isPlayer)&&((ranrot_rand() & 255) < weapon_damage)&&(![self isMining]))
-	{
-		shot_time -= (randf() * weapon_damage);
-		} */
 	
 	return YES;
 }
@@ -11066,7 +11827,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 			[shot setRange:hit_at_range];
 			Vector vd = vector_forward_from_quaternion([shot orientation]);
 			HPVector flash_pos = HPvector_add([shot position], vectorToHPVector(vector_multiply_scalar(vd, hit_at_range)));
-			[UNIVERSE addEntity:[OOFlashEffectEntity laserFlashWithPosition:flash_pos velocity:[victim velocity] color:laser_color]];
+			[UNIVERSE addLaserHitEffectsAt:flash_pos against:victim damage:weapon_damage color:laser_color];
 		}
 	}
 	else
@@ -11287,6 +12048,10 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	
 	// custom launching position
 	start = [shipinfoDictionary oo_vectorForKey:@"missile_launch_position" defaultValue:start];
+	if (EXPECT_NOT(_scaleFactor != 1.0))
+	{
+		start = vector_multiply_scalar(start,_scaleFactor);
+	}
 	
 	if (start.x == 0.0f && start.y == 0.0f && start.z <= 0.0f) // The kZeroVector as start is illegal also.
 	{
@@ -11327,8 +12092,19 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	if ([target isShip])
 	{
 		target_ship = (ShipEntity*)target;
-		if ([target_ship isCloaked])  return nil;
-		if (![self hasMilitaryScannerFilter] && [target_ship isJammingScanning]) return nil;
+		if ([target_ship isCloaked])
+		{
+			return nil;
+		}
+		// missile fire requires being in scanner range
+		if (HPmagnitude2(HPvector_subtract([target_ship position], position)) > scannerRange * scannerRange)
+		{
+			return nil;
+		}
+		if (![self hasMilitaryScannerFilter] && [target_ship isJammingScanning]) 
+		{
+			return nil;
+		}
 	}
 	
 	unsigned i;
@@ -11592,8 +12368,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	for (i = 1; i < n_pods; i++)
 	{
 		ShipEntity	*passenger = nil;
-		Random_Seed orig = [UNIVERSE systemSeedForSystemNumber:gen_rnd_number()];
-		passenger = [self launchPodWithCrew:@[[OOCharacter randomCharacterWithRole:@"passenger" andOriginalSystemSeed:orig]]];
+		passenger = [self launchPodWithCrew:@[[OOCharacter randomCharacterWithRole:@"passenger" andOriginalSystem:gen_rnd_number()]]];
 		[passengers addObject:passenger];
 	}
 	
@@ -11606,23 +12381,52 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 // This is a documented AI method; do not change semantics. (Note: AIs don't have access to the return value.)
 - (OOCommodityType) dumpCargo
 {
-	ShipEntity *jetto = [self dumpCargoItem];
-	if (jetto != nil)  return [jetto commodityType];
-	else  return COMMODITY_UNDEFINED;
+	ShipEntity *jetto = [self dumpCargoItem:nil];
+	if (jetto != nil)
+	{
+		return [jetto commodityType];
+	}
+	else
+	{
+		return nil;
+	}
 }
 
 
-- (ShipEntity *) dumpCargoItem
+- (ShipEntity *) dumpCargoItem:(OOCommodityType)preferred
 {
 	ShipEntity				*jetto = nil;
+	NSUInteger				 i = 0;
 	
 	if (([cargo count] > 0)&&([UNIVERSE getTime] - cargo_dump_time > 0.5))  // space them 0.5s or 10m apart
 	{
-		jetto = [[cargo[0] retain] autorelease];
+		if (preferred == nil)
+		{
+			jetto = [[[cargo objectAtIndex:0] retain] autorelease];
+		}
+		else
+		{
+			BOOL found = NO;
+			for (i=0;i<[cargo count];i++)
+			{
+				if ([[[cargo objectAtIndex:i] commodityType] isEqualToString:preferred])
+				{
+					jetto = [[[cargo objectAtIndex:i] retain] autorelease];
+					found = YES;
+					break;
+				}
+			}
+			if (found == NO)
+			{
+				// dump anything
+				jetto = [[[cargo objectAtIndex:0] retain] autorelease];
+				i = 0;
+			}
+		}
 		if (jetto != nil)
 		{
 			[self dumpItem:jetto];	// CLASS_CARGO, STATUS_IN_FLIGHT, AI state GLOBAL
-			[cargo removeObjectAtIndex:0];
+			[cargo removeObjectAtIndex:i];
 			[self broadcastAIMessage:@"CARGO_DUMPED"]; // goes only to 16 nearby ships in range, but that should be enough.
 			unsigned i;
 			// only send script event to powered entities
@@ -11951,7 +12755,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 - (BOOL) canScoop:(ShipEntity*)other
 {
 	if (other == nil)							return NO;
-	if (![self hasScoop])						return NO;
+	if (![self hasCargoScoop])						return NO;
 	if ([cargo count] >= [self maxAvailableCargoSpace])	return NO;
 	if (scanClass == CLASS_CARGO)				return NO;  // we have no power so we can't scoop
 	if ([other scanClass] != CLASS_CARGO)		return NO;
@@ -12010,7 +12814,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 {
 	if (other == nil)  return;
 	
-	OOCommodityType	co_type;
+	OOCommodityType	co_type = nil;
 	OOCargoQuantity	co_amount;
 	
 	// don't even think of trying to scoop if the cargo hold is already full
@@ -12034,30 +12838,30 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 				[player setScriptTarget:self];
 				[other doScriptEvent:OOJSID("shipWasScooped") withArgument:self];
 				
-				if ([other commodityType] != COMMODITY_UNDEFINED)
+				if ([other commodityType] != nil)
 				{
 					co_type = [other commodityType];
 					co_amount = [other commodityAmount];
-					// don't show scoop message now, wil happen later.
+					// don't show scoop message now, will happen later.
 				}
 				else
 				{
 					if (isPlayer && [other showScoopMessage])
 					{
-						NSString* scoopedMS = [NSString stringWithFormat:DESC(@"@-scooped"), [other displayName]];
 						[UNIVERSE clearPreviousMessage];
-						[UNIVERSE addMessage:scoopedMS forCount:4];
+						NSString *shipName = [other displayName];
+						[UNIVERSE addMessage:OOExpandKey(@"scripted-item-scooped", shipName) forCount:4];
 					}
-					[other setCommodityForPod:COMMODITY_UNDEFINED andAmount:0];
+					[other setCommodityForPod:nil andAmount:0];
 					co_amount = 0;
-					co_type = COMMODITY_UNDEFINED;
+					co_type = nil;
 				}
 			}
 			break;
 		
 		default :
 			co_amount = 0;
-			co_type = COMMODITY_UNDEFINED;
+			co_type = nil;
 			break;
 	}
 	
@@ -12069,7 +12873,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 		Fix 2: catch NSNotFound here and substitute random cargo type.
 		-- Ahruman 20070714
 	*/
-	if (co_type == COMMODITY_UNDEFINED && co_amount > 0)
+	if (co_type == nil && co_amount > 0)
 	{
 		co_type = [UNIVERSE getRandomCommodity];
 		co_amount = [UNIVERSE getRandomAmountOfCommodity:co_type];
@@ -12091,13 +12895,14 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 					for (i = 0; i < [[other crew] count]; i++)
 					{
 						OOCharacter *rescuee = [other crew][i];
+						NSString *characterName = [rescuee name];
 						if ([rescuee legalStatus])
 						{
-							[UNIVERSE addMessage: [NSString stringWithFormat:DESC(@"scoop-captured-@"), [rescuee name]] forCount: 4.5];
+							[UNIVERSE addMessage:OOExpandKey(@"scoop-captured-character", characterName) forCount: 4.5];
 						}
 						else if ([rescuee insuranceCredits])
 						{
-							[UNIVERSE addMessage: [NSString stringWithFormat:DESC(@"scoop-rescued-@"), [rescuee name]] forCount: 4.5];
+							[UNIVERSE addMessage:OOExpandKey(@"scoop-rescued-character", characterName) forCount: 4.5];
 						}
 						else
 						{
@@ -12399,7 +13204,11 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 		if (![self isPlayer])
 		{
 			OK = YES;
-			[self removeEquipmentItem:@"EQ_ESCAPE_POD"];
+			// if multiple items providing escape pod, remove all of them (NPC process)
+			while ([self hasEquipmentItemProviding:@"EQ_ESCAPE_POD"])
+			{
+				[self removeEquipmentItem:[self equipmentItemProviding:@"EQ_ESCAPE_POD"]];
+			}
 			[self setAITo:@"nullAI.plist"];
 			behaviour = BEHAVIOUR_IDLE;
 			frustration = 0.0;
@@ -12431,7 +13240,12 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	else if (EXPECT([self isSubEntity]))
 	{
 		// may still have launched passenger pods even if no crew
-		[self removeEquipmentItem:@"EQ_ESCAPE_POD"];
+		// if multiple items providing escape pod, remove all of them (NPC process)
+		while ([self hasEquipmentItemProviding:@"EQ_ESCAPE_POD"])
+		{
+			[self removeEquipmentItem:[self equipmentItemProviding:@"EQ_ESCAPE_POD"]];
+		}
+
 	}
 	else
 	{
@@ -12458,7 +13272,17 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	// oops we hit too hard!!!
 	if (energy <= 0.0)
 	{
-		being_mined = YES;  // same as using a mining laser
+		float frag_chance = [ent mass]*10/[self mass];
+		/* impacts from heavier entities produce fragments
+		 * impacts from lighter entities might do but not always
+		 * asteroid-asteroid impacts likely to fragment
+		 * ship-asteroid impacts might, or might just vaporise it
+		 * projectile weapons just get the default chance
+		 */
+		if (randf() < frag_chance)
+		{
+			being_mined = YES;  // same as using a mining laser
+		}
 		if ([ent isShip])
 		{
 			[(ShipEntity *)ent noteTargetDestroyed:self];
@@ -12600,7 +13424,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	
 	GLfloat min_d1 = [UNIVERSE safeWitchspaceExitDistance];
 
-	while (abs(d1) < min_d1)
+	while (fabs(d1) < min_d1)
 	{
 		// not scannerRange - has no effect on witchspace exit
 		d1 = SCANNER_MAX_RANGE * (randf() - randf());
@@ -12729,14 +13553,14 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 
 - (void) setDestination:(HPVector) dest
 {
-	destination = dest;
+	_destination = dest;
 	frustration = 0.0;	// new destination => no frustration!
 }
 
 
 - (void) setEscortDestination:(HPVector) dest
 {
-	destination = dest; // don't reset frustration for escorts.
+	_destination = dest; // don't reset frustration for escorts.
 }
 
 
@@ -13230,7 +14054,7 @@ static BOOL AuthorityPredicate(Entity *entity, void *parameter)
 	
 	NSDictionary *specials = @{@"[self:name]": [self displayName],
 							  @"[target:name]": [other_ship identFromShip: self]};
-	NSString *expandedMessage = OOExpandDescriptionString(message_text, [UNIVERSE systemSeed], specials, nil, nil, kOOExpandNoOptions);
+	NSString *expandedMessage = OOExpandDescriptionString(OOStringExpanderDefaultRandomSeed(), message_text, specials, nil, nil, kOOExpandNoOptions);
 	
 	[self sendMessage:expandedMessage toShip:other_ship withUnpilotedOverride:NO];
 }
@@ -13329,7 +14153,7 @@ static BOOL AuthorityPredicate(Entity *entity, void *parameter)
 
 - (BOOL) isMining
 {
-	return ((behaviour == BEHAVIOUR_ATTACK_MINING_TARGET)&&(forward_weapon_type == WEAPON_MINING_LASER));
+	return ((behaviour == BEHAVIOUR_ATTACK_MINING_TARGET)&&([forward_weapon_type isMiningLaser]));
 }
 
 
@@ -13569,7 +14393,7 @@ static BOOL AuthorityPredicate(Entity *entity, void *parameter)
 	id target = [self primaryTarget];
 	if (target == nil)  target = @"<none>";
 	OOLog(@"dumpState.shipEntity", @"Target: %@", target);
-	OOLog(@"dumpState.shipEntity", @"Destination: %@", HPVectorDescription(destination));
+	OOLog(@"dumpState.shipEntity", @"Destination: %@", HPVectorDescription(_destination));
 	OOLog(@"dumpState.shipEntity", @"Other destination: %@", HPVectorDescription(coordinates));
 	OOLog(@"dumpState.shipEntity", @"Waypoint count: %u", number_of_navpoints);
 	OOLog(@"dumpState.shipEntity", @"Desired speed: %g", desired_speed);
@@ -13810,6 +14634,22 @@ static BOOL AuthorityPredicate(Entity *entity, void *parameter)
 				}
 			}
 		}
+		// also need to check primary target separately
+		if ([self hasHostileTarget])
+		{
+			Entity *ptarget = [self primaryTargetWithoutValidityCheck];
+			if (ptarget != nil && [ptarget isShip])
+			{
+				ship = (ShipEntity *)ptarget;
+				if ([ship hasHostileTarget] || ([ship isPlayer] && [PLAYER weaponsOnline]))
+				{
+					if (HPdistance2([ship position],position) < scanrange2 * 1.5625)
+					{
+						return ALERT_CONDITION_RED;
+					}
+				}
+			}
+		}
 		if (_group)
 		{
 			sEnum = [_group objectEnumerator];
@@ -13960,24 +14800,11 @@ BOOL OOUniformBindingPermitted(NSString *propertyName, id bindingTarget)
 
 GLfloat getWeaponRangeFromType(OOWeaponType weapon_type)
 {
-	switch (weapon_type)
-	{
-	case WEAPON_PLASMA_CANNON:
-		return 5000.0;
-	case WEAPON_PULSE_LASER:
-	case WEAPON_MINING_LASER:
-		return 12500.0;
-	case WEAPON_BEAM_LASER:
-		return 15000.0;
-	case WEAPON_THARGOID_LASER:
-		return 17500.0;
-	case WEAPON_MILITARY_LASER:
-		return 30000.0;
-	case WEAPON_NONE:
-	case WEAPON_UNDEFINED:
-		return 32000.0;
-	}
-// never reached
-	return 32000.0;
+	return [weapon_type weaponRange];
 }
 
+
+BOOL isWeaponNone(OOWeaponType weapon)
+{
+	return weapon == nil || [[weapon identifier] isEqualToString:@"EQ_WEAPON_NONE"];
+}

@@ -195,7 +195,8 @@
 	
 	
 	missile.damage.calc						= no; // Debugging of missile damage curves
-	
+	missile.tidying.debug					= no;
+
 	
 	oxp.conflict							= $error;
 	oxp.duplicate							= $error;
@@ -230,12 +231,13 @@
 	
 	resourceManager.error					= yes;
 	resourceManager.foundFile				= no;					// Tells you where all assets (models, textures, sounds) are found. Very verbose!
-	
+	resourceManager.planetinfo				= no;
 	
 	save.failed								= $error;
 	save.success							= no;
 	quickSave.failed						= $error;
 	load.failed								= $error;
+	load.progress							= no;
 	
 	
 	setup.ship.badEntry.subentities			= inherit;

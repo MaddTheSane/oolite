@@ -41,7 +41,9 @@ SOFTWARE.
 #import "OOStringExpander.h"
 #import "OOShipLibraryDescriptions.h"
 #import "Universe.h"
+#import "OOJSScript.h"
 
+#import "OODebugStandards.h"
 
 #define PRELOAD 0
 
@@ -57,7 +59,6 @@ static OOShipRegistry	*sSingleton = nil;
 static NSString * const	kShipRegistryCacheName = @"ship registry";
 static NSString * const	kShipDataCacheKey = @"ship data";
 static NSString * const	kPlayerShipsCacheKey = @"player ships";
-static NSString * const	kDemoShipsCacheKey = @"demo ships";
 static NSString * const	kRoleWeightsCacheKey = @"role weights";
 static NSString * const	kDefaultDemoShip = @"coriolis-station";
 static NSString * const	kVisualEffectRegistryCacheName = @"visual effect registry";
@@ -67,6 +68,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 @interface OOShipRegistry (OODataLoader)
 
 - (void) loadShipData;
+- (void) loadDemoShipConditions;
 - (void) loadDemoShips;
 - (void) loadCachedRoleProbabilitySets;
 - (void) buildRoleProbabilitySets;
@@ -134,6 +136,9 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 {
 	if (sSingleton != nil)
 	{
+		/* CIM: 'release' doesn't work - the class definition
+		 * overrides it, so this leaks memory. Needs a proper reset
+		 * method for reloading the ship registry data instead */
 		[sSingleton release];
 		sSingleton = nil;
 		
@@ -165,14 +170,11 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 			}
 		}
 		
-		_demoShips = [[cache objectForKey:kDemoShipsCacheKey inCache:kShipRegistryCacheName] retain];
+		[self loadDemoShipConditions];
+		[self loadDemoShips]; // testing only
 		if ([_demoShips count] == 0)
 		{
-			[self loadDemoShips];
-			if ([_demoShips count] == 0)
-			{
-				[NSException raise:@"OOShipRegistryLoadFailure" format:@"Could not load or synthesize any demo ships."];
-			}
+			[NSException raise:@"OOShipRegistryLoadFailure" format:@"Could not load or synthesize any demo ships."];
 		}
 		
 		[self loadCachedRoleProbabilitySets];
@@ -229,7 +231,10 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 
 - (NSArray *) demoShipKeys
 {
-	return _demoShips;
+	// with condition scripts in use, can't cache this value
+	[self loadDemoShips];
+
+	return [[_demoShips copy] autorelease]; 
 }
 
 
@@ -376,6 +381,32 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 }
 
 
+- (void) loadDemoShipConditions
+{
+	NSMutableArray *conditionScripts = [[NSMutableArray alloc] init];
+	NSEnumerator			*enumerator = nil;
+	NSDictionary			*key = nil;
+	NSArray					*initialDemoShips = nil;
+
+	initialDemoShips = [ResourceManager arrayFromFilesNamed:@"shiplibrary.plist"
+												   inFolder:@"Config"
+												   andMerge:YES
+													  cache:NO];
+
+	for (enumerator = [initialDemoShips objectEnumerator]; (key = [enumerator nextObject]); )
+	{
+		NSString *conditions = [key oo_stringForKey:kOODemoShipConditions defaultValue:nil];
+		if (conditions != nil)
+		{
+			[conditionScripts addObject:conditions];
+		}
+	}
+
+	[[OOCacheManager sharedCache] setObject:conditionScripts forKey:@"demoship conditions" inCache:@"condition scripts"];
+	[conditionScripts release];
+}
+
+
 /*	-loadDemoShips
 	
 	Load demoships.plist, and filter out non-existent ships. If no existing
@@ -389,8 +420,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 	NSArray					*initialDemoShips = nil;
 	NSMutableArray			*demoShips = nil;
 	
-	[_demoShips release];
-	_demoShips = nil;
+	DESTROY(_demoShips);
 	
 	initialDemoShips = [ResourceManager arrayFromFilesNamed:@"shiplibrary.plist"
 												   inFolder:@"Config"
@@ -401,9 +431,50 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 	// Note: iterate over initialDemoShips to avoid mutating the collection being enu,erated.
 	for (enumerator = [initialDemoShips objectEnumerator]; (key = [enumerator nextObject]); )
 	{
-		if (![key isKindOfClass:[NSDictionary class]] || [self shipInfoForKey:[key oo_stringForKey:kOODemoShipKey]] == nil)
+		NSString *shipKey = [key oo_stringForKey:kOODemoShipKey];
+		if (![key isKindOfClass:[NSDictionary class]] || [self shipInfoForKey:shipKey] == nil)
 		{
 			[demoShips removeObject:key];
+		}
+		else 
+		{
+			NSString *conditions = [key oo_stringForKey:kOODemoShipConditions defaultValue:nil];
+			if (conditions != nil)
+			{
+				if ([PLAYER status] == STATUS_START_GAME)
+				{
+					// conditions always false here
+					[demoShips removeObject:key];
+				}
+				else
+				{
+					OOJSScript *condScript = [UNIVERSE getConditionScript:conditions];
+					if (condScript != nil) // should always be non-nil, but just in case
+					{
+						JSContext			*context = OOJSAcquireContext();
+						BOOL OK;
+						JSBool allow_use;
+						jsval result;
+						jsval args[] = { OOJSValueFromNativeObject(context, shipKey) };
+						
+						OK = [condScript callMethod:OOJSID("allowShowLibraryShip")
+										  inContext:context
+									  withArguments:args count:sizeof args / sizeof *args
+											 result:&result];
+
+						if (OK) OK = JS_ValueToBoolean(context, result, &allow_use);
+			
+						OOJSRelinquishContext(context);
+						if (OK && !allow_use)
+						{
+							/* if the script exists, the function exists, the function
+							 * returns a bool, and that bool is false, hide the
+							 * ship. Otherwise allow it as default */
+							[demoShips removeObject:key];
+						}
+					}
+				}
+			}
 		}
 	}
 	
@@ -457,7 +528,6 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 
 	// and then sort the ship list list by class name
 	_demoShips = [[[demoList allValues] sortedArrayUsingFunction:SortDemoCategoriesByName context:NULL] retain];
-	[[OOCacheManager sharedCache] setObject:_demoShips forKey:kDemoShipsCacheKey inCache:kShipRegistryCacheName];
 }
 
 
@@ -597,6 +667,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 			{
 				[reportedBadShips sortUsingSelector:@selector(caseInsensitiveCompare:)];
 				OOLogERR(@"shipData.merge.failed", @"one or more shipdata.plist entries have %@ references that cannot be resolved: %@", likeKey, [reportedBadShips componentsJoinedByString:@", "]); // FIXME: distinguish shipdata and effectdata
+				OOStandardsError(@"Likely missing a dependency in a manifest.plist");
 			}
 			break;
 		}
@@ -787,7 +858,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 														mergeMode:MERGE_SMART
 															cache:NO];
 	
-	playerShips = [NSMutableSet setWithCapacity:[shipyard count]];
+	playerShips = [NSMutableArray arrayWithCapacity:[shipyard count]];
 	
 	// Insert merged shipyard and shipyardOverrides entries.
 	for (shipKeyEnum = [shipyard keyEnumerator]; (shipKey = [shipKeyEnum nextObject]); )
@@ -854,6 +925,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 				// If entry is broken, we need to kill this ship.
 				if (fatal)
 				{
+					OOStandardsError(@"Bad subentity definition found");
 					remove = YES;
 				}
 				else if (subentityDict != nil)
@@ -865,7 +937,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 					{
 						subentityKey = [subentityDict oo_stringForKey:@"subentity_key"];
 						subentityShipEntry = ioData[subentityKey];
-						if (subentityKey == nil)
+						if (subentityKey == nil || subentityShipEntry == nil)
 						{
 							// Oops, reference to non-existent subent.
 							if (badSubentities == nil)  badSubentities = [NSMutableSet set];
@@ -896,6 +968,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 				{
 					badSubentitiesList = [[[badSubentities allObjects] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)] componentsJoinedByString:@", "];
 					OOLogERR(@"shipData.load.error", @"the shipdata.plist entry \"%@\" has unresolved subentit%@ %@.", shipKey, ([badSubentities count] == 1) ? @"y" : @"ies", badSubentitiesList);
+					OOStandardsError(@"Bad subentity definition found");
 				}
 				remove = YES;
 			}
@@ -931,6 +1004,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 		{
 			OOLogERR(@"shipData.load.error", @"the shipdata.plist entry \"%@\" specifies no %@.", shipKey, @"roles");
 			remove = YES;
+			OOStandardsError(@"Error in shipdata.plist");
 		}
 		else
 		{
@@ -938,11 +1012,13 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 			if (shipMode && [modelName length] == 0)
 			{
 				OOLogERR(@"shipData.load.error", @"the shipdata.plist entry \"%@\" specifies no %@.", shipKey, @"model");
+				OOStandardsError(@"Error in shipdata.plist");
 				remove = YES;
 			}
 			else if ([modelName length] != 0 && [ResourceManager pathForFileNamed:modelName inFolder:@"Models"] == nil)
 			{
 				OOLogERR(@"shipData.load.error", @"the shipdata.plist entry \"%@\" specifies non-existent model \"%@\".", shipKey, modelName);
+				OOStandardsError(@"Error in shipdata.plist");
 				remove = YES;
 			}
 		}
@@ -1006,65 +1082,76 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 		
 		if (conditions != nil)
 		{
-			if ([conditions isKindOfClass:[NSArray class]])
+			OOStandardsDeprecated([NSString stringWithFormat:@"The 'conditions' key is deprecated in shipdata entry %@",shipKey]);
+			if (!OOEnforceStandards())
 			{
-				conditions = OOSanitizeLegacyScriptConditions(conditions, [NSString stringWithFormat:@"<shipdata.plist entry \"%@\">", shipKey]);
-			}
-			else
-			{
-				OOLogWARN(@"shipdata.load.warning", @"conditions for shipdata.plist entry \"%@\" are not an array, ignoring.", shipKey);
-				conditions = nil;
-			}
+				if ([conditions isKindOfClass:[NSArray class]])
+				{
+					conditions = OOSanitizeLegacyScriptConditions(conditions, [NSString stringWithFormat:@"<shipdata.plist entry \"%@\">", shipKey]);
+				}
+				else
+				{
+					OOLogWARN(@"shipdata.load.warning", @"conditions for shipdata.plist entry \"%@\" are not an array, ignoring.", shipKey);
+					conditions = nil;
+				}
 			
-			if (conditions != nil)
-			{
-				shipEntry[@"conditions"] = conditions;
-			}
-			else
-			{
-				[shipEntry removeObjectForKey:@"conditions"];
+				if (conditions != nil)
+				{
+					[shipEntry setObject:conditions forKey:@"conditions"];
+				}
+				else
+				{
+					[shipEntry removeObjectForKey:@"conditions"];
+				}
 			}
 		}
 		
 		if (hasShipyard != nil)
 		{
 			hasShipyard = OOSanitizeLegacyScriptConditions(hasShipyard, [NSString stringWithFormat:@"<shipdata.plist entry \"%@\" hasShipyard conditions>", shipKey]);
-			
-			if (hasShipyard != nil)
+			OOStandardsDeprecated([NSString stringWithFormat:@"Use of legacy script conditions in the 'has_shipyard' key is deprecated in shipyard entry %@",shipKey]);
+			if (!OOEnforceStandards())
 			{
-				shipEntry[@"has_shipyard"] = hasShipyard;
-			}
-			else
-			{
-				[shipEntry removeObjectForKey:@"hasShipyard"];
-				[shipEntry removeObjectForKey:@"has_shipyard"];
+				if (hasShipyard != nil)
+				{
+					[shipEntry setObject:hasShipyard forKey:@"has_shipyard"];
+				}
+				else
+				{
+					[shipEntry removeObjectForKey:@"hasShipyard"];
+					[shipEntry removeObjectForKey:@"has_shipyard"];
+				}
 			}
 		}
 		
 		if (shipyardConditions != nil)
 		{
-			mutableShipyard = [[[shipEntry oo_dictionaryForKey:@"_oo_shipyard"] mutableCopy] autorelease];
+			OOStandardsDeprecated([NSString stringWithFormat:@"The 'conditions' key is deprecated in shipyard entry %@",shipKey]);
+			if (!OOEnforceStandards())
+			{
+				mutableShipyard = [[[shipEntry oo_dictionaryForKey:@"_oo_shipyard"] mutableCopy] autorelease];
 			
-			if ([shipyardConditions isKindOfClass:[NSArray class]])
-			{
-				shipyardConditions = OOSanitizeLegacyScriptConditions(shipyardConditions, [NSString stringWithFormat:@"<shipyard.plist entry \"%@\">", shipKey]);
-			}
-			else
-			{
-				OOLogWARN(@"shipdata.load.warning", @"conditions for shipyard.plist entry \"%@\" are not an array, ignoring.", shipKey);
-				shipyardConditions = nil;
-			}
+				if ([shipyardConditions isKindOfClass:[NSArray class]])
+				{
+					shipyardConditions = OOSanitizeLegacyScriptConditions(shipyardConditions, [NSString stringWithFormat:@"<shipyard.plist entry \"%@\">", shipKey]);
+				}
+				else
+				{
+					OOLogWARN(@"shipdata.load.warning", @"conditions for shipyard.plist entry \"%@\" are not an array, ignoring.", shipKey);
+					shipyardConditions = nil;
+				}
 			
-			if (shipyardConditions != nil)
-			{
-				mutableShipyard[@"conditions"] = shipyardConditions;
-			}
-			else
-			{
-				[mutableShipyard removeObjectForKey:@"conditions"];
-			}
+				if (shipyardConditions != nil)
+				{
+					[mutableShipyard setObject:shipyardConditions forKey:@"conditions"];
+				}
+				else
+				{
+					[mutableShipyard removeObjectForKey:@"conditions"];
+				}
 			
-			shipEntry[@"_oo_shipyard"] = mutableShipyard;
+				[shipEntry setObject:mutableShipyard forKey:@"_oo_shipyard"];
+			}
 		}
 	}
 
@@ -1183,11 +1270,14 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 	if ([declaration isKindOfClass:[NSString class]])
 	{
 		// Update old-style string-based declaration.
-		result = [self translateOldStyleSubentityDeclaration:declaration
-													 forShip:shipKey
-													shipData:shipData
-												  fatalError:outFatalError];
-		
+		OOStandardsDeprecated([NSString stringWithFormat:@"Old style sub-entity declarations are deprecated in %@",shipKey]);
+		if (!OOEnforceStandards())
+		{
+			result = [self translateOldStyleSubentityDeclaration:declaration
+														 forShip:shipKey
+														shipData:shipData
+													  fatalError:outFatalError];
+		}
 		if (result != nil)
 		{
 			// Ensure internal translation made sense, and clean up a bit.

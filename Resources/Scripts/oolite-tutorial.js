@@ -411,7 +411,7 @@ this.startUp = function()
 	}
 
 
-	this.$HUDSelectors = ["drawEnergyGauge:","drawForwardShieldBar:","drawAftShieldBar:","drawSpeedBar:","drawRollBar:","drawPitchBar:","drawYellowSurround:","drawFuelBar:","drawCabinTempBar:","drawWeaponTempBar:","drawAltitudeBar:","drawMissileDisplay:","drawStatusLight:","drawClock:","drawCompass:","drawScanner:","drawScannerZoomIndicator:"];
+	this.$HUDSelectors = ["drawEnergyGauge:","drawForwardShieldBar:","drawAftShieldBar:","drawSpeedBar:","drawRollBar:","drawPitchBar:","drawSurround:","drawFuelBar:","drawCabinTempBar:","drawWeaponTempBar:","drawAltitudeBar:","drawMissileDisplay:","drawStatusLight:","drawClock:","drawCompass:","drawScanner:","drawScannerZoomIndicator:"];
 	this.$HUDHighlighter = null;
 	this.$HUDHighlighterSelector = null;	
 	this.$HUDHighlighterCycles = 10;
@@ -479,6 +479,7 @@ this.startUp = function()
 		player.ship.energy = 256;		
 		player.ship.forwardShield = 128;
 		player.ship.aftShield = 128;
+		player.bounty = 0;
 		player.ship.forwardWeapon = "EQ_WEAPON_PULSE_LASER";
 		for (var i=0;i<4;i++)
 		{
@@ -604,7 +605,7 @@ this.startUp = function()
 	{
 		player.ship.fuel = 5;
 		this._setInstructions("oolite-tutorial-1-7");
-		this._showHUDItem("drawYellowSurround:");
+		this._showHUDItem("drawSurround:");
 		this._showHUDItem("drawFuelBar:");
 	}
 

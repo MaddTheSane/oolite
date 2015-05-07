@@ -25,9 +25,15 @@ MA 02110-1301, USA.
 #import "OOCocoa.h"
 #import "OOOpenGL.h"
 #import "OOMouseInteractionMode.h"
+#import "OOOpenGLMatrixManager.h"
+
 
 #include <SDL.h>
 
+#define	MIN_FOV_DEG		30.0f
+#define	MAX_FOV_DEG		80.0f
+#define MIN_FOV			(tan((MIN_FOV_DEG / 2) * M_PI / 180.0f))
+#define MAX_FOV			(tan((MAX_FOV_DEG / 2) * M_PI / 180.0f))
 
 #define MOUSEVIRTUALSTICKSENSITIVITYFACTOR	0.95f
 #define MOUSEX_MAXIMUM 0.6
@@ -151,6 +157,7 @@ extern int debug;
 	NSRect				bounds;
 
 	float				_gamma;
+	float				_fov;
 
    // Full screen sizes
 	NSMutableArray		*screenSizes;
@@ -170,10 +177,16 @@ extern int debug;
 	BOOL				saveSize;
 	unsigned			keyboardMap;
 	HWND 				SDL_Window;
+	MONITORINFOEX		monitorInfo;
+	RECT				lastGoodRect;
 
 #endif
 
+	BOOL				grabMouseStatus;
+
 	NSSize				firstScreen;
+	
+	OOOpenGLMatrixManager		*matrixManager;
 
    // Mouse mode indicator (for mouse movement model)
    BOOL					mouseInDeltaMode;
@@ -204,6 +217,13 @@ extern int debug;
 
 - (void) initialiseGLWithSize:(NSSize) v_size;
 - (void) initialiseGLWithSize:(NSSize) v_size useVideoMode:(BOOL) v_mode;
+- (BOOL) isRunningOnPrimaryDisplayDevice;
+#if OOLITE_WINDOWS
+- (BOOL) getCurrentMonitorInfo:(MONITORINFOEX *)mInfo;
+- (MONITORINFOEX) currentMonitorInfo;
+#endif
+
+- (void) grabMouseInsideGameWindow:(BOOL) value;
 
 - (void) drawRect:(NSRect)rect;
 - (void) updateScreen;
@@ -265,8 +285,13 @@ extern int debug;
 - (void) setGammaValue: (float) value;
 - (float) gammaValue;
 
+- (void) setFov:(float)value fromFraction:(BOOL)fromFraction;
+- (float) fov:(BOOL)inFraction;
+
 // Check current state of shift key rather than relying on last event.
 + (BOOL)pollShiftKey;
+
+- (OOOpenGLMatrixManager *) getOpenGLMatrixManager;
 
 #ifndef NDEBUG
 // General image-dumping method.

@@ -42,6 +42,7 @@ MA 02110-1301, USA.
 #import "OODebugSupport.h"
 #import "legacy_random.h"
 #import "OOOXZManager.h"
+#import "OOOpenGLMatrixManager.h"
 
 #if OOLITE_MAC_OS_X
 #import "JAPersistentFileReference.h"
@@ -135,11 +136,13 @@ static GameController *sSharedController = nil;
 		_resumeMode = [self mouseInteractionMode];
 		[self setMouseInteractionModeForUIWithMouseInteraction:NO];
 		gameIsPaused = YES;
+		[PLAYER doScriptEvent:OOJSID("gamePaused")];
 	}
 	else if (!value && gameIsPaused)
 	{
 		[self setMouseInteractionMode:_resumeMode];
 		gameIsPaused = NO;
+		[PLAYER doScriptEvent:OOJSID("gameResumed")];
 	}
 }
 
@@ -933,13 +936,10 @@ static NSMutableArray *sMessageStack;
 	OOGL(glClearDepth(1.0));
 	OOGL(glViewport(0, 0, viewSize.width, viewSize.height));
 	
-	OOGL(glMatrixMode(GL_PROJECTION));
-	OOGL(glLoadIdentity());	// reset matrix
-	OOGL(glFrustum(-ratio, ratio, -aspect*ratio, aspect*ratio, 1.0, MAX_CLEAR_DEPTH));	// set projection matrix
-	
-	OOGL(glMatrixMode(GL_MODELVIEW));
-	
-	OOGL(glDepthFunc(GL_LEQUAL));			// depth buffer
+	OOGLResetProjection(); // reset matrix
+	OOGLFrustum(-ratio, ratio, -aspect*ratio, aspect*ratio, 1.0, MAX_CLEAR_DEPTH);	// set projection matrix
+		
+	OOGL(glDepthFunc(GL_LESS));			// depth buffer
 	
 	if (UNIVERSE)
 	{

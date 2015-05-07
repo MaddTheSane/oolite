@@ -28,7 +28,7 @@ MA 02110-1301, USA.
 #import "OOOpenGL.h"
 #import "NSFileManagerOOExtensions.h"
 
-@class OOSound, OOMusic;
+@class OOSound, OOMusic, OOSystemDescriptionManager;
 
 
 typedef enum
@@ -38,10 +38,19 @@ typedef enum
 	MERGE_SMART		// Merge files by merging the top-level elements of each file (second-order merge, but not recursive)
 } OOResourceMergeMode;
 
+/* 'All' doesn't quite mean 'all' - OXPs with the tag
+ * "oolite-scenario-only" will only be loaded if required by a
+ * scenario.
+ *
+ * Note that this means that the scenario itself must be in a
+ * different OXP, or it'll never be loaded when on the start-game
+ * screen.
+ */
 #define SCENARIO_OXP_DEFINITION_ALL    @""
 #define SCENARIO_OXP_DEFINITION_NONE   @"strict"
 #define SCENARIO_OXP_DEFINITION_BYID   @"id:"
 #define SCENARIO_OXP_DEFINITION_BYTAG  @"tag:"
+#define SCENARIO_OXP_DEFINITION_NOPLIST  @"exc:"
 
 @interface ResourceManager : NSObject
 
@@ -79,6 +88,8 @@ typedef enum
 + (NSString *) pathForFileNamed:(NSString *)fileName inFolder:(NSString *)folderName;
 + (NSString *) pathForFileNamed:(NSString *)fileName inFolder:(NSString *)folderName cache:(BOOL)useCache;
 
++ (BOOL) corePlist:(NSString *)fileName excludedAt:(NSString *)path;
+
 + (NSDictionary *)dictionaryFromFilesNamed:(NSString *)fileName
 								  inFolder:(NSString *)folderName
 								  andMerge:(BOOL) mergeFiles;
@@ -102,6 +113,7 @@ typedef enum
 // These have special merging rules.
 + (NSDictionary *) logControlDictionary;
 + (NSDictionary *) roleCategoriesDictionary;
++ (OOSystemDescriptionManager *) systemDescriptionManager;
 
 + (OOSound *)ooSoundNamed:(NSString *)fileName inFolder:(NSString *)folderName;
 + (OOMusic *)ooMusicNamed:(NSString *)fileName inFolder:(NSString *)folderName;

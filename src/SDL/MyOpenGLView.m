@@ -154,22 +154,29 @@ MA 02110-1301, USA.
 	NSArray				*arguments = nil;
 	NSEnumerator		*argEnum = nil;
 	NSString			*arg = nil;
+	BOOL				noSplashArgFound = NO;
 
 	arguments = [[NSProcessInfo processInfo] arguments];
 
 	// scan for splash screen overrides: -nosplash || --nosplash , -splash || --splash
+	// scan for V-sync disabling overrides: -novsync || --novsync
 	for (argEnum = [arguments objectEnumerator]; (arg = [argEnum nextObject]); )
 	{
 		if ([arg isEqual:@"-nosplash"] || [arg isEqual:@"--nosplash"])
 		{
 			showSplashScreen = NO;
-			break;	// -nosplash always trumps -splash
+			noSplashArgFound = YES;	// -nosplash always trumps -splash
 		}
-		else if ([arg isEqual:@"-splash"] || [arg isEqual:@"--splash"])
+		else if (([arg isEqual:@"-splash"] || [arg isEqual:@"--splash"]) && !noSplashArgFound)
 		{
 			showSplashScreen = YES;
 		}
+		
+		// if V-sync is disabled at the command line, override the defaults file
+		if ([arg isEqual:@"-novsync"] || [arg isEqual:@"--novsync"])  vSyncPreference = NO;
 	}
+
+	matrixManager = [[OOOpenGLMatrixManager alloc] init];
 
 	// TODO: This code up to and including stickHandler really ought
 	// not to be in this class.
@@ -197,14 +204,23 @@ MA 02110-1301, USA.
 	SDL_WM_SetCaption (windowCaption, "Oolite");	// Set window title.
 
 #if OOLITE_WINDOWS
-
+	// needed for enabling system window manager events, which is needed for handling window movement messages
+	SDL_EventState (SDL_SYSWMEVENT, SDL_ENABLE);
+	
 	//capture the window handle for later
 	static SDL_SysWMinfo wInfo;
 	SDL_VERSION(&wInfo.version);
 	SDL_GetWMInfo(&wInfo);
 	SDL_Window   = wInfo.window;
-
+	
+	// This must be inited after SDL_Window has been set - we need the main window handle in order to get monitor info
+	if (![self getCurrentMonitorInfo:&monitorInfo])
+	{
+		OOLogWARN(@"display.initGL.monitorInfoWarning", @"Could not get current monitor information.");
+	}
 #endif
+
+	grabMouseStatus = NO;
 
 	imagesDir = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Images"];
 	icon = SDL_LoadBMP([[imagesDir stringByAppendingPathComponent:@"WMicon.bmp"] UTF8String]);
@@ -387,6 +403,11 @@ MA 02110-1301, USA.
 
 	SDL_Quit();
 
+	if (matrixManager)
+	{
+		[matrixManager release];
+	}
+
 	[super dealloc];
 }
 
@@ -512,8 +533,22 @@ MA 02110-1301, USA.
 - (void) toggleScreenMode
 {
 	[self setFullScreenMode: !fullScreen];
-	if(fullScreen)
-		[self initialiseGLWithSize:[self modeAsSize: currentSize]];
+#if OOLITE_WINDOWS
+	[self getCurrentMonitorInfo:&monitorInfo];
+#endif
+ 	if(fullScreen)
+	{
+#if OOLITE_WINDOWS
+		if(![self isRunningOnPrimaryDisplayDevice])
+		{
+			[self initialiseGLWithSize:NSMakeSize(monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+												monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top)];
+		}
+		else  [self initialiseGLWithSize:[self modeAsSize: currentSize]];
+#else
+ 		[self initialiseGLWithSize:[self modeAsSize: currentSize]];
+#endif
+	}
 	else
 		[self initialiseGLWithSize: currentWindowSize];
 }
@@ -659,15 +694,12 @@ MA 02110-1301, USA.
 	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
 	glClear( GL_COLOR_BUFFER_BIT );
 
-	glMatrixMode( GL_PROJECTION );
-	glPushMatrix();
-	glLoadIdentity();
+	[matrixManager resetProjection];
+	[matrixManager orthoLeft: 0.0f right: dest.w bottom: dest.h top: 0.0 near: -1.0 far: 1.0];
+	[matrixManager syncProjection];
 
-	glOrtho(0.0f, dest.w , dest.h, 0.0f, -1.0f, 1.0f);
-
-	glMatrixMode( GL_MODELVIEW );
-	glPushMatrix();
-	glLoadIdentity();
+	[matrixManager resetModelView];
+	[matrixManager syncModelView];
 
 	GLuint texture;
 	GLenum texture_format;
@@ -721,7 +753,8 @@ MA 02110-1301, USA.
 	glEnd();
 
 	SDL_GL_SwapBuffers();
-	glLoadIdentity();       // reset matrix
+	[matrixManager resetModelView];
+	[matrixManager syncModelView];
 
 	if ( image ) {
 		SDL_FreeSurface( image );
@@ -732,10 +765,76 @@ MA 02110-1301, USA.
 	OOVerifyOpenGLState();
 }
 
+
+#if OOLITE_WINDOWS
+- (MONITORINFOEX) currentMonitorInfo
+{
+	return monitorInfo;
+}
+
+
+- (BOOL) getCurrentMonitorInfo:(MONITORINFOEX *)mInfo
+{
+	HMONITOR hMon = MonitorFromWindow(SDL_Window, MONITOR_DEFAULTTOPRIMARY);
+	ZeroMemory(mInfo, sizeof(MONITORINFOEX));
+	mInfo->cbSize = sizeof(MONITORINFOEX);
+	if (GetMonitorInfo (hMon, (LPMONITORINFO)mInfo))
+	{
+		return YES;
+	}
+	return NO;
+}
+
+
+- (BOOL) isRunningOnPrimaryDisplayDevice
+{
+	BOOL result = YES;
+	[self getCurrentMonitorInfo:&monitorInfo];
+	if (!(monitorInfo.dwFlags & MONITORINFOF_PRIMARY))
+	{
+		result = NO;
+	}
+	return result;
+}
+
+
+- (void) grabMouseInsideGameWindow:(BOOL) value
+{
+	if(value)
+	{
+		RECT gameWindowRect;
+		GetWindowRect(SDL_Window, &gameWindowRect);
+		ClipCursor(&gameWindowRect);
+	}
+	else
+	{
+		ClipCursor(NULL);
+	}
+	grabMouseStatus = !!value;
+}
+
+#else	// Linus stub methods
+
+// for Linux we assume we are always on the primary monitor for now
+- (BOOL) isRunningOnPrimaryDisplayDevice
+{
+	return YES;
+}
+
+
+- (void) grabMouseInsideGameWindow:(BOOL) value
+{
+	// do nothing
+}
+
+#endif //OOLITE_WINDOWS
+
+
 - (void) initialiseGLWithSize:(NSSize) v_size
 {
 	[self initialiseGLWithSize:v_size useVideoMode:YES];
 }
+
 
 - (void) initialiseGLWithSize:(NSSize) v_size useVideoMode:(BOOL) v_mode
 {
@@ -745,47 +844,110 @@ MA 02110-1301, USA.
 	viewSize = v_size;
 	OOLog(@"display.initGL", @"Requested a new surface of %d x %d, %@.", (int)viewSize.width, (int)viewSize.height,(fullScreen ? @"fullscreen" : @"windowed"));
 	SDL_GL_SwapBuffers();	// clear the buffer before resize
+	
 #if OOLITE_WINDOWS
-
 	if (!updateContext) return;
 
 	DEVMODE settings;
 	settings.dmSize        = sizeof(DEVMODE);
 	settings.dmDriverExtra = 0;
 	EnumDisplaySettings(0, ENUM_CURRENT_SETTINGS, &settings);
-			//ChangeDisplaySettings(NULL, 0);
+	
+	static BOOL lastWindowPlacementMaximized = NO;
+	WINDOWPLACEMENT windowPlacement;
+	windowPlacement.length = sizeof(WINDOWPLACEMENT);
+	if (fullScreen && GetWindowPlacement(SDL_Window, &windowPlacement) && (windowPlacement.showCmd == SW_SHOWMAXIMIZED))
+	{
+		if (!wasFullScreen)
+		{
+			lastWindowPlacementMaximized = YES;
+		}
+	}
+	
+	// are we attempting to go to a different screen resolution? Note: this also takes care of secondary monitor situations because 
+	// EnumDisplaySettings was called with zero as first parameter, hence it yields settings for the display device the main application
+	// thread is running on (i.e. primary). Since we only uae native resolution for full screen on secondaty moniors, changingResolution
+	// is expected to always be false for non-primary display devices - Nikos 20150310
+	BOOL changingResolution = 	(fullScreen && settings.dmPelsWidth != viewSize.width && settings.dmPelsHeight != viewSize.height) ||
+								(wasFullScreen && settings.dmPelsWidth != [[[screenSizes objectAtIndex:0] objectForKey: kOODisplayWidth] intValue]
+								&& settings.dmPelsHeight != [[[screenSizes objectAtIndex:0] objectForKey: kOODisplayWidth] intValue]);
+			
 	RECT wDC;
 
 	if (fullScreen)
 	{
-
+		/*NOTE: If we ever decide to change the default behaviour of launching
+		always on primary monitor to launching on the monitor the program was 
+		started on, all that needs to be done is comment out the line below, as
+		well as the identical one in the else branch further down.
+		Nikos 20141222
+	   */
+	   [self getCurrentMonitorInfo: &monitorInfo];
+		
 		settings.dmPelsWidth = viewSize.width;
 		settings.dmPelsHeight = viewSize.height;
 		settings.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
-		if(!wasFullScreen) {
+		
+		
+		// just before going fullscreen, save the location of the current window. It
+		// may be needed in case of potential attempts to move our fullscreen window
+		// in a maximized state (yes, in Windows this is entirely possible).
+		if(lastWindowPlacementMaximized)
+		{
+			CopyRect(&lastGoodRect, &windowPlacement.rcNormalPosition);
+		}
+		else  GetWindowRect(SDL_Window, &lastGoodRect);
+		
+		// ok, can go fullscreen now
+		if(!wasFullScreen)
+		{
 			SetWindowLong(SDL_Window,GWL_STYLE,GetWindowLong(SDL_Window,GWL_STYLE) & ~WS_CAPTION & ~WS_THICKFRAME);
 		}
 		SetForegroundWindow(SDL_Window);
-		if (ChangeDisplaySettings(&settings, CDS_FULLSCREEN)==DISP_CHANGE_SUCCESSFUL)
+		if (changingResolution)
 		{
-			MoveWindow(SDL_Window, 0, 0, viewSize.width, viewSize.height, TRUE);
+			if (ChangeDisplaySettingsEx(monitorInfo.szDevice, &settings, NULL, CDS_FULLSCREEN, NULL) != DISP_CHANGE_SUCCESSFUL)
+			{
+				m_glContextInitialized = YES;
+				OOLogERR(@"displayMode.change.error", @"Could not switch to requested display mode.");
+				return;
+			}
 		}
-		else
-		{
-			m_glContextInitialized = YES;
-			return;
-		}
-
+		MoveWindow(SDL_Window, monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top, viewSize.width, viewSize.height, TRUE);
 	}
 	else if ( wasFullScreen )
 	{
 			// stop saveWindowSize from reacting to caption & frame
 			saveSize=NO;
-			ChangeDisplaySettings(NULL, 0);
-			SetWindowLong(SDL_Window,GWL_STYLE,GetWindowLong(SDL_Window,GWL_STYLE) | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX );
+			
+			if (changingResolution)  ChangeDisplaySettingsEx(NULL, NULL, NULL, 0, NULL);
+			
+			/*NOTE: If we ever decide to change the default behaviour of launching
+			always on primary monitor to launching on the monitor the program was 
+			started on, we need to comment out the line below.
+			For now, this line is needed for correct positioning of our window in case
+			we return from a non-native resolution fullscreen and has to come after the
+			display settings have been reverted.
+			Nikos 20141222
+			*/
+			[self getCurrentMonitorInfo: &monitorInfo];
+			
+			SetWindowLong(SDL_Window,GWL_STYLE,GetWindowLong(SDL_Window,GWL_STYLE) | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX |
+									WS_MAXIMIZEBOX );
+									
+			if (!lastWindowPlacementMaximized)
+			{
+				windowPlacement.showCmd = SW_SHOWNORMAL;
+				SetWindowPlacement(SDL_Window, &windowPlacement);
+			}
 
-			MoveWindow(SDL_Window,(GetSystemMetrics(SM_CXSCREEN)-(int)viewSize.width)/2,
-			(GetSystemMetrics(SM_CYSCREEN)-(int)viewSize.height)/2 -16,(int)viewSize.width,(int)viewSize.height,TRUE);
+			MoveWindow(SDL_Window,	(monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left - (int)viewSize.width)/2 + 
+									monitorInfo.rcMonitor.left,
+									(monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top - (int)viewSize.height)/2 +
+									monitorInfo.rcMonitor.top - (lastWindowPlacementMaximized ? 32 : 16),
+									(int)viewSize.width,(int)viewSize.height,TRUE);
+									
+			lastWindowPlacementMaximized = NO;
 
 			ShowWindow(SDL_Window,SW_SHOW);
 	}
@@ -822,6 +984,11 @@ MA 02110-1301, USA.
 	// Reset bounds and viewSize to current values
 	bounds.size.width = viewSize.width = wDC.right - wDC.left;
 	bounds.size.height = viewSize.height = wDC.bottom - wDC.top;
+	if (fullScreen) // bounds on fullscreen coincide with client area, since we are borderless
+	{
+		bounds.origin.x = monitorInfo.rcMonitor.left;
+		bounds.origin.y = monitorInfo.rcMonitor.top;
+	}
 	wasFullScreen=fullScreen;
 
 #else //OOLITE_LINUX
@@ -1829,6 +1996,88 @@ keys[a] = NO; keys[b] = NO; \
 				}
 				break;
 			}
+				
+#if OOLITE_WINDOWS	
+			// need to track this because the user may move the game window
+			// to a secondary monitor, in which case we must potentially
+			// refresh the information displayed (e.g. Game Options screen)
+			// Nikos - 20140920
+			case SDL_SYSWMEVENT:
+			{
+				switch (event.syswm.msg->msg)
+				{
+					case WM_WINDOWPOSCHANGING:
+						/* if we are in fullscreen mode we normally don't worry about having the window moved.
+						   However, when using multiple monitors, one can use hotkey combinations to make the
+						   window "jump" from one monitor to the next. We don't want this to happen, so if we
+						   detect that our (fullscreen) window has moved, we immediately bring it back to its
+						   original position. Nikos - 20140922
+						*/
+						if (fullScreen)
+						{
+							RECT rDC;
+							
+							/* attempting to move our fullscreen window while in maximized state can freak
+							   Windows out and the window may not return to its original position properly.
+							   Solution: if such a move takes place, first change the window placement to
+							   normal, move it normally, then restore its placement to maximized again. 
+							   Additionally, the last good known window position seems to be lost in such
+							   a case. While at it, update also the coordinates of the non-maximized window
+							   so that it can return to its original position - this is why we need lastGoodRect.
+							 */
+							WINDOWPLACEMENT wp;
+							wp.length = sizeof(WINDOWPLACEMENT);
+							GetWindowPlacement(SDL_Window, &wp);
+							
+							GetWindowRect(SDL_Window, &rDC);
+							if (rDC.left != monitorInfo.rcMonitor.left || rDC.top != monitorInfo.rcMonitor.top)
+							{
+								BOOL fullScreenMaximized = NO;
+								if (wp.showCmd == SW_SHOWMAXIMIZED && !fullScreenMaximized)
+								{
+									fullScreenMaximized = YES;
+									wp.showCmd = SW_SHOWNORMAL;
+									SetWindowPlacement(SDL_Window, &wp);
+								}
+			
+								MoveWindow(SDL_Window, monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top, viewSize.width, viewSize.height, TRUE);
+								
+								if (fullScreenMaximized)
+								{
+									GetWindowPlacement(SDL_Window, &wp);
+									wp.showCmd = SW_SHOWMAXIMIZED;
+									CopyRect(&wp.rcNormalPosition, &lastGoodRect);
+									SetWindowPlacement(SDL_Window, &wp);
+								}
+							}
+							else if (wp.showCmd == SW_SHOWMAXIMIZED)
+							{
+									CopyRect(&wp.rcNormalPosition, &lastGoodRect);
+									SetWindowPlacement(SDL_Window, &wp);
+							}
+						}
+						// it is important that this gets done after we've dealt with possible fullscreen movements,
+						// because -doGuiScreenResizeUpdates does itself an update on current monitor
+						if ([PlayerEntity sharedPlayer])
+						{
+							[[PlayerEntity sharedPlayer] doGuiScreenResizeUpdates];
+						}
+						/*
+						 deliberately no break statement here - moving or resizing the window changes its bounds
+						 rectangle. Therefore we must check whether to clip the mouse or not inside the newly
+						 updated rectangle, so just let it fall through
+						*/
+						
+					case WM_ACTIVATEAPP:
+						if(grabMouseStatus)  [self grabMouseInsideGameWindow:YES];
+						break;
+						
+					default:
+						;
+				}
+				break;
+			}
+#endif
 
 			// caused by INTR or someone hitting close
 			case SDL_QUIT:
@@ -2061,12 +2310,32 @@ keys[a] = NO; keys[b] = NO; \
 
 	_gamma = value;
 	SDL_SetGamma(_gamma, _gamma, _gamma);
+	
+	[[NSUserDefaults standardUserDefaults] setFloat:_gamma forKey:@"gamma-value"];
 }
 
 
 - (float) gammaValue
 {
 	return _gamma;
+}
+
+
+- (void) setFov:(float)value fromFraction:(BOOL)fromFraction
+{
+	_fov = fromFraction ? value : tan((value / 2) * M_PI / 180);
+}
+
+
+- (float) fov:(BOOL)inFraction
+{
+	return inFraction ? _fov : 2 * atan(_fov) * 180 / M_PI;
+}
+
+
+- (OOOpenGLMatrixManager *) getOpenGLMatrixManager
+{
+	return matrixManager;
 }
 
 

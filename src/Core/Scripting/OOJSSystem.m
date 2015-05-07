@@ -41,6 +41,7 @@
 #import "OOEntityFilterPredicate.h"
 #import "OOFilteringEnumerator.h"
 #import "OOJSPopulatorDefinition.h"
+#import "OODebugStandards.h"
 
 static JSObject *sSystemPrototype;
 
@@ -113,6 +114,7 @@ enum
 	kSystem_allDemoShips,				// demo ships, array of Ship, read-only
 	kSystem_allShips,				// ships in system, array of Ship, read-only
 	kSystem_allVisualEffects,				// VEs in system, array of VEs, read-only
+	kSystem_ambientLevel,			// ambient light level, float, read/write
 	kSystem_breakPattern, // witchspace break pattern shown
 	kSystem_description,			// description, string, read/write
 	kSystem_economy,				// economy ID, integer, read/write
@@ -148,6 +150,7 @@ static JSPropertySpec sSystemProperties[] =
 	{ "allDemoShips",			kSystem_allDemoShips,			OOJS_PROP_READONLY_CB },
 	{ "allShips",				kSystem_allShips,				OOJS_PROP_READONLY_CB },
 	{ "allVisualEffects",	 kSystem_allVisualEffects,		OOJS_PROP_READONLY_CB },
+	{ "ambientLevel",			kSystem_ambientLevel,			OOJS_PROP_READWRITE_CB },
 	{ "breakPattern",			kSystem_breakPattern,			OOJS_PROP_READWRITE_CB },
 	{ "description",			kSystem_description,			OOJS_PROP_READWRITE_CB },
 	{ "economy",				kSystem_economy,				OOJS_PROP_READWRITE_CB },
@@ -310,6 +313,9 @@ static JSBool SystemGetProperty(JSContext *context, JSObject *this, jsid propID,
 			handled = YES;
 			break;
 			
+		case kSystem_ambientLevel:
+			return JS_NewNumberValue(context, [UNIVERSE ambientLightLevel], value);
+			
 		case kSystem_info:
 			*value = GetJSSystemInfoForSystem(context, [player currentGalaxyID], [player currentSystemID]);
 			return YES;
@@ -459,6 +465,8 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 	OOGalaxyID					galaxy;
 	OOSystemID					system;
 	NSString					*stringValue = nil;
+	NSString					*manifest = nil;
+	jsdouble					fValue;
 	int32						iValue;
 	JSBool            bValue;
 	
@@ -469,6 +477,15 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 
 	switch (JSID_TO_INT(propID))
 	{
+		case kSystem_ambientLevel:
+			if (JS_ValueToNumber(context, *value, &fValue))
+			{
+				[UNIVERSE setAmbientLightLevel:fValue];
+				[UNIVERSE setLighting];
+				return YES;
+			}
+			break;
+			
 		case kSystem_breakPattern:
 			if (JS_ValueToBoolean(context, *value, &bValue))
 			{
@@ -483,6 +500,8 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 
 	
 	if (system == -1)  return YES;	// Can't change anything else in interstellar space.
+
+	manifest = [[OOJSScript currentlyRunningScript] propertyNamed:kLocalManifestProperty];
 	
 	switch (JSID_TO_INT(propID))
 	{
@@ -490,7 +509,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 			stringValue = OOStringFromJSValue(context, *value);
 			if (stringValue != nil)
 			{
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_NAME value:stringValue];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_NAME value:stringValue fromManifest:manifest forLayer:OO_LAYER_OXP_DYNAMIC];
 				return YES;
 			}
 			break;
@@ -499,7 +518,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 			stringValue = OOStringFromJSValue(context, *value);
 			if (stringValue != nil)
 			{
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_DESCRIPTION value:stringValue];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_DESCRIPTION value:stringValue fromManifest:manifest forLayer:OO_LAYER_OXP_DYNAMIC];
 				return YES;
 			}
 			break;
@@ -508,7 +527,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 			stringValue = OOStringFromJSValue(context, *value);
 			if (stringValue != nil)
 			{
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_INHABITANTS value:stringValue];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_INHABITANTS value:stringValue fromManifest:manifest forLayer:OO_LAYER_OXP_DYNAMIC];
 				return YES;
 			}
 			break;
@@ -518,7 +537,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 			{
 				if (iValue < 0)  iValue = 0;
 				if (7 < iValue)  iValue = 7;
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_GOVERNMENT value:@(iValue)];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_GOVERNMENT value:@(iValue) fromManifest:manifest forLayer:OO_LAYER_OXP_DYNAMIC];
 				return YES;
 			}
 			break;
@@ -528,7 +547,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 			{
 				if (iValue < 0)  iValue = 0;
 				if (7 < iValue)  iValue = 7;
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_ECONOMY value:@(iValue)];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_ECONOMY value:@(iValue) fromManifest:manifest forLayer:OO_LAYER_OXP_DYNAMIC];
 				return YES;
 			}
 			break;
@@ -538,7 +557,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 			{
 				if (iValue < 0)  iValue = 0;
 				if (15 < iValue)  iValue = 15;
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_TECHLEVEL value:@(iValue)];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_TECHLEVEL value:@(iValue) fromManifest:manifest forLayer:OO_LAYER_OXP_DYNAMIC];
 				return YES;
 			}
 			break;
@@ -546,7 +565,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 		case kSystem_population:
 			if (JS_ValueToInt32(context, *value, &iValue))
 			{
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_POPULATION value:@(iValue)];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_POPULATION value:@(iValue) fromManifest:manifest forLayer:OO_LAYER_OXP_DYNAMIC];
 				return YES;
 			}
 			break;
@@ -554,7 +573,7 @@ static JSBool SystemSetProperty(JSContext *context, JSObject *this, jsid propID,
 		case kSystem_productivity:
 			if (JS_ValueToInt32(context, *value, &iValue))
 			{
-				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_PRODUCTIVITY value:@(iValue)];
+				[UNIVERSE setSystemDataForGalaxy:galaxy planet:system key:KEY_PRODUCTIVITY value:@(iValue) fromManifest:manifest forLayer:OO_LAYER_OXP_DYNAMIC];
 				return YES;
 			}
 			break;
@@ -951,8 +970,9 @@ static JSBool SystemAddGroupToRoute(JSContext *context, uintN argc, jsval *vp)
 // legacy_addShips(role : String, count : Number)
 static JSBool SystemLegacyAddShips(JSContext *context, uintN argc, jsval *vp)
 {
+	OOStandardsDeprecated(@"system.legacy_addShips() is deprecated");
 	OOJS_NATIVE_ENTER(context)
-	
+		
 	NSString			*role = nil;
 	int32				count;
 	
@@ -979,6 +999,7 @@ static JSBool SystemLegacyAddShips(JSContext *context, uintN argc, jsval *vp)
 // legacy_addSystemShips(role : String, count : Number, location : Number)
 static JSBool SystemLegacyAddSystemShips(JSContext *context, uintN argc, jsval *vp)
 {
+	OOStandardsDeprecated(@"system.legacy_addSystemShips() is deprecated");
 	OOJS_NATIVE_ENTER(context)
 	
 	jsdouble			position;
@@ -1009,6 +1030,7 @@ static JSBool SystemLegacyAddSystemShips(JSContext *context, uintN argc, jsval *
 // legacy_addShipsAt(role : String, count : Number, coordScheme : String, coords : vectorExpression)
 static JSBool SystemLegacyAddShipsAt(JSContext *context, uintN argc, jsval *vp)
 {
+	OOStandardsDeprecated(@"system.legacy_addShipsAt() is deprecated");
 	OOJS_NATIVE_ENTER(context)
 	
 	PlayerEntity		*player = OOPlayerForScripting();
@@ -1045,6 +1067,7 @@ static JSBool SystemLegacyAddShipsAt(JSContext *context, uintN argc, jsval *vp)
 // legacy_addShipsAtPrecisely(role : String, count : Number, coordScheme : String, coords : vectorExpression)
 static JSBool SystemLegacyAddShipsAtPrecisely(JSContext *context, uintN argc, jsval *vp)
 {
+	OOStandardsDeprecated(@"system.legacy_addShipsAtPrecisely() is deprecated");
 	OOJS_NATIVE_ENTER(context)
 	
 	PlayerEntity		*player = OOPlayerForScripting();
@@ -1081,6 +1104,7 @@ static JSBool SystemLegacyAddShipsAtPrecisely(JSContext *context, uintN argc, js
 // legacy_addShipsWithinRadius(role : String, count : Number, coordScheme : String, coords : vectorExpression, radius : Number)
 static JSBool SystemLegacyAddShipsWithinRadius(JSContext *context, uintN argc, jsval *vp)
 {
+	OOStandardsDeprecated(@"system.legacy_addShipsWithinRadius() is deprecated");
 	OOJS_NATIVE_ENTER(context)
 	
 	PlayerEntity		*player = OOPlayerForScripting();
@@ -1120,6 +1144,7 @@ static JSBool SystemLegacyAddShipsWithinRadius(JSContext *context, uintN argc, j
 // legacy_spawnShip(key : string)
 static JSBool SystemLegacySpawnShip(JSContext *context, uintN argc, jsval *vp)
 {
+	OOStandardsDeprecated(@"system.legacy_spawnShip() is deprecated");
 	OOJS_NATIVE_ENTER(context)
 	
 	NSString			*key = nil;
@@ -1160,7 +1185,7 @@ static JSBool SystemStaticSystemNameForID(JSContext *context, uintN argc, jsval 
 	if (systemID == -1)
 		OOJS_RETURN_OBJECT(DESC(@"interstellar-space"));
 	else
-		OOJS_RETURN_OBJECT([UNIVERSE getSystemName:[UNIVERSE systemSeedForSystemNumber:systemID]]);
+		OOJS_RETURN_OBJECT([UNIVERSE getSystemName:systemID]);
 	
 	OOJS_NATIVE_EXIT
 }
@@ -1183,7 +1208,7 @@ static JSBool SystemStaticSystemIDForName(JSContext *context, uintN argc, jsval 
 	
 	OOJS_BEGIN_FULL_NATIVE(context)
 
-	result = [UNIVERSE systemIDForSystemSeed:[UNIVERSE systemSeedForSystemName:name]];
+	result = [UNIVERSE findSystemFromName:name];
 
 	OOJS_END_FULL_NATIVE
 	

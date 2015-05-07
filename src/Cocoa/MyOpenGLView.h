@@ -25,6 +25,7 @@ MA 02110-1301, USA.
 #import "OOCocoa.h"
 #import "OOOpenGL.h"
 #import "OOMouseInteractionMode.h"
+#import "OOOpenGLMatrixManager.h"
 
 
 #define MAX_CLEAR_DEPTH		10000000000.0
@@ -32,6 +33,10 @@ MA 02110-1301, USA.
 #define INTERMEDIATE_CLEAR_DEPTH		100.0
 // 100 m.
 
+#define	MIN_FOV_DEG		30.0f
+#define	MAX_FOV_DEG		80.0f
+#define MIN_FOV			(tan((MIN_FOV_DEG / 2) * M_PI / 180.0f))
+#define MAX_FOV			(tan((MAX_FOV_DEG / 2) * M_PI / 180.0f))
 
 #define NUM_KEYS			320
 #define MOUSE_DOUBLE_CLICK_INTERVAL	0.40
@@ -134,8 +139,13 @@ extern int debug;
 	GLfloat				display_z;
 	GLfloat				x_offset, y_offset;
 	
+	float				_fov;
+	
 	int					_virtualScreen;
 	NSData				*_pixelFormatAttributes;
+	
+	OOOpenGLMatrixManager		*matrixManager;
+
 }
 
 
@@ -192,6 +202,8 @@ extern int debug;
 // Check current state of shift key rather than relying on last event.
 + (BOOL)pollShiftKey;
 
+- (OOOpenGLMatrixManager *) getOpenGLMatrixManager;
+
 #ifndef NDEBUG
 // General image-dumping methods.
 - (void) dumpRGBAToFileNamed:(NSString *)name
@@ -230,5 +242,8 @@ extern int debug;
 // no-ops to allow gamma value to be easily saved/restored
 - (void) setGammaValue: (float) value;
 - (float) gammaValue;
+
+- (void) setFov:(float)value fromFraction:(BOOL)fromFraction;
+- (float) fov:(BOOL)inFraction;
 
 @end

@@ -244,8 +244,9 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 
 		for (i = page*n_rows ; i < count && row < start_row + n_rows ; i++)
 		{
-			scenario = [UNIVERSE scenarios][i];
-			[gui setText:OOExpand([NSString stringWithFormat:@" %@ ",[scenario oo_stringForKey:@"name"]]) forRow:row];
+			scenario = [[UNIVERSE scenarios] objectAtIndex:i];
+			NSString *scenarioName = [NSString stringWithFormat:@" %@ ",[scenario oo_stringForKey:@"name"]];
+			[gui setText:OOExpand(scenarioName) forRow:row];
 			[gui setKey:[NSString stringWithFormat:@"Scenario:%lu", (unsigned long)i] forRow:row];
 			++row;
 		}
@@ -276,7 +277,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 
 - (void) addScenarioModel:(NSString *)shipKey
 {
-	[self showShipModelWithKey:shipKey shipData:nil personality:ENTITY_PERSONALITY_INVALID factorX:1.2 factorY:0.8 factorZ:6.4 inContext:@"scenario"];
+	[self showShipModelWithKey:shipKey shipData:nil personality:0 factorX:1.2 factorY:0.8 factorZ:6.4 inContext:@"scenario"];
 }
 
 
@@ -615,6 +616,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	
 	if (loadedOK)
 	{
+		OOLog(@"load.progress",@"Reading file");
 		fileDic = OODictionaryFromFile(fileToOpen);
 		if (fileDic == nil)
 		{
@@ -625,6 +627,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 
 	if (loadedOK)
 	{
+		OOLog(@"load.progress",@"Restricting scenario");
 		NSString *scenarioRestrict = [fileDic oo_stringForKey:@"scenario_restriction" defaultValue:nil];
 		if (scenarioRestrict == nil)
 		{
@@ -640,16 +643,17 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 			}
 		}
 
-		if (![UNIVERSE setUseAddOns:scenarioRestrict fromSaveGame:YES]) 
+		if (![UNIVERSE setUseAddOns:scenarioRestrict fromSaveGame:YES forceReinit:YES]) 
 		{
 			fail_reason = DESC(@"loadfailed-saved-game-failed-to-load");
 			loadedOK = NO;
 		} 
 	}
 	
-	
+
 	if (loadedOK)
 	{
+		OOLog(@"load.progress",@"Creating player ship");
 		// Check that player ship exists
 		NSString		*shipKey = nil;
 		NSDictionary	*shipDict = nil;
@@ -667,6 +671,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	
 	if (loadedOK)
 	{
+		OOLog(@"load.progress",@"Initialising player entity");
 		if (![self setUpAndConfirmOK:YES saveGame:YES])
 		{
 			fail_reason = DESC(@"loadfailed-could-not-reset-javascript");
@@ -676,6 +681,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	
 	if (loadedOK)
 	{
+		OOLog(@"load.progress",@"Loading commander data");
 		if (![self setCommanderDataFromDictionary:fileDic])
 		{
 			// this could still be a reset js issue, if switching from strict / unrestricted
@@ -687,6 +693,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	
 	if (loadedOK)
 	{
+		OOLog(@"load.progress",@"Recording save path");
 		if (!asNew)
 		{
 			[save_path autorelease];
@@ -707,13 +714,15 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 		return NO;
 	}
 	
+	OOLog(@"load.progress",@"Creating system");
 	[UNIVERSE setTimeAccelerationFactor:TIME_ACCELERATION_FACTOR_DEFAULT];
-	[UNIVERSE setSystemTo:system_seed];
+	[UNIVERSE setSystemTo:system_id];
 	[UNIVERSE removeAllEntitiesExceptPlayer];
-	[UNIVERSE setGalaxySeed: galaxy_seed andReinit:YES]; // set overridden planet names on long range map
+	[UNIVERSE setGalaxyTo: galaxy_number andReinit:YES]; // set overridden planet names on long range map
 	[UNIVERSE setUpSpace];
 	[UNIVERSE setAutoSaveNow:NO];
 	
+	OOLog(@"load.progress",@"Resetting player flight variables");
 	[self setDockedAtMainStation];
 	StationEntity *dockedStation = [self dockedStation];
 	
@@ -735,14 +744,22 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	
 	[self setEntityPersonalityInt:PersonalityForCommanderDict(fileDic)];
 	
+	OOLog(@"load.progress",@"Loading system market");
 	// dockedStation is always the main station at this point;
 	// "localMarket" save key always refers to the main station (system) market
 	NSArray *market = [fileDic oo_arrayForKey:@"localMarket"];
-	if (market != nil)  [dockedStation setLocalMarket:market];
-	else  [dockedStation initialiseLocalMarketWithRandomFactor:market_rnd];
+	if (market != nil) 
+	{
+		[dockedStation setLocalMarket:market];
+	}
+	else
+	{
+		[dockedStation initialiseLocalMarket];
+	}
 
 	[self calculateCurrentCargo];
 	
+	OOLog(@"load.progress",@"Setting scenario key");
 	// set scenario key if the scenario allows saving and has one
 	NSString *scenario = [fileDic oo_stringForKey:@"scenario_key" defaultValue:nil];
 	DESTROY(scenarioKey);
@@ -751,9 +768,11 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 		scenarioKey = [scenario retain];
 	}
 
+	OOLog(@"load.progress",@"Starting JS engine");
 	// Remember the savegame target, run js startUp.
 	[self completeSetUpAndSetTarget:NO];
 	// run initial system population
+	OOLog(@"load.progress",@"Populating initial system");
 	[UNIVERSE populateNormalSpace];
 
 	// might as well start off with a collected JS environment
@@ -773,11 +792,14 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	// and initialise markets for the secondary stations
 	[UNIVERSE loadStationMarkets:[fileDic oo_arrayForKey:@"station_markets"]];
 
+	OOLog(@"load.progress",@"Completing JS startup");
 	[self startUpComplete];
 
 	[[UNIVERSE gameView] supressKeysUntilKeyUp];
+	gui_screen = GUI_SCREEN_LOAD; // force evaluation of new gui screen on startup
 	[self setGuiToStatusScreen];
 	if (loadedOK) [self doWorldEventUntilMissionScreen:OOJSID("missionScreenOpportunity")];  // trigger missionScreenOpportunity immediately after loading
+	OOLog(@"load.progress",@"Loading complete");
 	return loadedOK;
 }
 
@@ -1202,7 +1224,7 @@ NSComparisonResult sortCommanders(id cdr1, id cdr2, void *context)
 		[gui addLongText: folderDesc startingAtRow: CDRDESCROW align: GUI_ALIGN_LEFT];
 		return;
 	}
-	[gui setColor: [OOColor yellowColor] forRow: CDRDESCROW];
+	[gui setColor:[gui colorFromSetting:nil defaultValue:nil] forRow: CDRDESCROW];
 
 	if (![cdr oo_boolForKey:@"isSavedGame"])  return;	// don't show things that aren't saved games
 	
@@ -1251,26 +1273,18 @@ NSComparisonResult sortCommanders(id cdr1, id cdr2, void *context)
 	// Nikos - Add some more information in the load game screen (current location, galaxy number and timestamp).
 	//-------------------------------------------------------------------------------------------------------------------------
 	
-	// Store the current galaxy seed because findSystemNumberAtCoords may alter it in a while.
-	PlayerEntity		*player = PLAYER;
-	Random_Seed		player_galaxy_seed = [player galaxy_seed];	
-	
 	int			galNumber;
 	NSString		*timeStamp  = nil;
 	NSString 		*locationName = [cdr oo_stringForKey:@"current_system_name"];
 	
-	// If there is no key containing the name of the current system in the savefile, fall back to
-	// extracting the name from the galaxy seed and coordinates information.
+	// If there is no key containing the name of the current system in
+	// the savefile, calculating what it should have been is going to
+	// be tricky now that system generation isn't seed based - but
+	// this implies a save game well over 5 years old.
 	if (locationName == nil)
 	{	
-		Random_Seed		gal_seed;
-		NSPoint			gal_coords;
-		int			locationNumber;
-		
-		gal_coords = PointFromString([cdr oo_stringForKey:@"galaxy_coordinates"]);
-		gal_seed = RandomSeedFromString([cdr oo_stringForKey:@"galaxy_seed"]);
-		locationNumber = [UNIVERSE findSystemNumberAtCoords:gal_coords withGalaxySeed:gal_seed];
-		locationName = [UNIVERSE systemNameIndex:locationNumber];
+		// Leaving the location blank in this case is probably okay
+		locationName = @"";
 	}
 	
 	galNumber = [cdr oo_intForKey:@"galaxy_number"] + 1;	// Galaxy numbering starts at 0.
@@ -1293,8 +1307,6 @@ NSComparisonResult sortCommanders(id cdr1, id cdr2, void *context)
 	
 	[gui addLongText:cdrDesc startingAtRow:CDRDESCROW align:GUI_ALIGN_LEFT];
 	
-	// Restore the seed of the galaxy the player is currently in.
-	[UNIVERSE setGalaxySeed: player_galaxy_seed];
 }
 
 

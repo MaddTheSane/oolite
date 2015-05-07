@@ -32,7 +32,7 @@ MA 02110-1301, USA.
 #import "GuiDisplayGen.h"
 #import "OOTypes.h"
 #import "OOJSPropID.h"
-
+#import "OOCommodityMarket.h"
 
 @class GuiDisplayGen, OOTrumble, MyOpenGLView, HeadUpDisplay, ShipEntity;
 @class OOSound, OOSoundSource, OOSoundReferencePoint;
@@ -42,10 +42,14 @@ MA 02110-1301, USA.
 #define ALLOW_CUSTOM_VIEWS_WHILE_PAUSED	1
 #define SCRIPT_TIMER_INTERVAL			10.0
 
+#ifndef OO_VARIABLE_TORUS_SPEED
+#define OO_VARIABLE_TORUS_SPEED			1
+#endif
+
 #define GUI_ROW_INIT(GUI) /*int n_rows = [(GUI) rows]*/
 #define GUI_FIRST_ROW(GROUP) ((GUI_DEFAULT_ROWS - GUI_ROW_##GROUP##OPTIONS_END_OF_LIST) / 2)
 // reposition menu
-#define GUI_ROW(GROUP,ITEM) (GUI_FIRST_ROW(GROUP) - 5 + GUI_ROW_##GROUP##OPTIONS_##ITEM)
+#define GUI_ROW(GROUP,ITEM) (GUI_FIRST_ROW(GROUP) - 4 + GUI_ROW_##GROUP##OPTIONS_##ITEM)
 
 
 #define ENTRY(label, value) label,
@@ -143,6 +147,10 @@ enum
 	GUI_ROW_EQUIPMENT_CASH				= 1,
 	GUI_ROW_MARKET_KEY					= 1,
 	GUI_ROW_MARKET_START				= 2,
+	GUI_ROW_MARKET_SCROLLUP				= 4,
+	GUI_ROW_MARKET_SCROLLDOWN			= 16,
+	GUI_ROW_MARKET_LAST					= 18,
+	GUI_ROW_MARKET_END					= 19,
 	GUI_ROW_MARKET_CASH					= 20,
 	GUI_ROW_INTERFACES_HEADING			= 1,
 	GUI_ROW_INTERFACES_START			= 3,
@@ -181,13 +189,17 @@ enum
 	GUI_ROW_GAMEOPTIONS_DISPLAYSTYLE,
 	GUI_ROW_GAMEOPTIONS_DETAIL,
 	GUI_ROW_GAMEOPTIONS_WIREFRAMEGRAPHICS,
+#if !NEW_PLANETS
 	GUI_ROW_GAMEOPTIONS_PROCEDURALLYTEXTUREDPLANETS,
+#endif
 	GUI_ROW_GAMEOPTIONS_SHADEREFFECTS,
 #if OOLITE_SDL
 	GUI_ROW_GAMEOPTIONS_GAMMA,
 #endif
+	GUI_ROW_GAMEOPTIONS_FOV,
 	GUI_ROW_GAMEOPTIONS_SPACER_STICKMAPPER,
 	GUI_ROW_GAMEOPTIONS_STICKMAPPER,
+	GUI_ROW_GAMEOPTIONS_KEYMAPPER,
 	GUI_ROW_GAMEOPTIONS_SPACER3,
 	GUI_ROW_GAMEOPTIONS_BACK,
 	
@@ -240,6 +252,33 @@ typedef enum
 } OOPlayerFleeingStatus;
 
 
+typedef enum
+{
+	MARKET_FILTER_MODE_OFF = 0,
+	MARKET_FILTER_MODE_TRADE = 1,
+	MARKET_FILTER_MODE_HOLD = 2,
+	MARKET_FILTER_MODE_STOCK = 3,
+	MARKET_FILTER_MODE_LEGAL = 4,
+	MARKET_FILTER_MODE_RESTRICTED = 5, // import or export
+
+
+	MARKET_FILTER_MODE_MAX = 5 // always equal to highest real mode
+} OOMarketFilterMode;
+
+
+typedef enum
+{
+	MARKET_SORTER_MODE_OFF = 0,
+	MARKET_SORTER_MODE_ALPHA = 1,
+	MARKET_SORTER_MODE_PRICE = 2,
+	MARKET_SORTER_MODE_STOCK = 3,
+	MARKET_SORTER_MODE_HOLD = 4,
+	MARKET_SORTER_MODE_UNIT = 5,
+
+	MARKET_SORTER_MODE_MAX = 5 // always equal to highest real mode
+} OOMarketSorterMode;
+
+
 #define ECM_ENERGY_DRAIN_FACTOR			20.0f
 #define ECM_DURATION					2.5f
 
@@ -248,7 +287,12 @@ typedef enum
 #define YAW_DAMPING_FACTOR				1.0f
 
 #define PLAYER_MAX_WEAPON_TEMP			256.0f
+#ifdef OO_DUMP_PLANETINFO
+// debugging
+#define PLAYER_MAX_FUEL					7000
+#else
 #define PLAYER_MAX_FUEL					70
+#endif
 #define PLAYER_MAX_MISSILES				16
 #define PLAYER_STARTING_MAX_MISSILES	4
 #define PLAYER_STARTING_MISSILES		3
@@ -259,7 +303,13 @@ typedef enum
 
 #define	PLAYER_TARGET_MEMORY_SIZE		16
 
+#if OO_VARIABLE_TORUS_SPEED
+#define HYPERSPEED_FACTOR				[PLAYER hyperspeedFactor]
+#define MIN_HYPERSPEED_FACTOR			32.0
+#define MAX_HYPERSPEED_FACTOR			1024.0
+#else
 #define HYPERSPEED_FACTOR				32.0
+#endif
 
 #define PLAYER_SHIP_DESC				@"cobra3-player"
 
@@ -289,7 +339,7 @@ typedef enum
 
 #define SCANNER_ZOOM_RATE_UP			2.0
 #define SCANNER_ZOOM_RATE_DOWN			-8.0
-#define SCANNER_ECM_FUZZINESS			1.5
+#define SCANNER_ECM_FUZZINESS			1.25
 
 #define PLAYER_INTERNAL_DAMAGE_FACTOR	31
 
@@ -304,15 +354,17 @@ typedef enum
 @interface PlayerEntity: ShipEntity
 {
 @private
-	Random_Seed				system_seed;
-	Random_Seed				target_system_seed;
+	OOSystemID				system_id;
+	OOSystemID				target_system_id;
+
 	float					occlusion_dial;
 	
-	Random_Seed				found_system_seed;
+	OOSystemID				found_system_id;
 	int						ship_trade_in_factor;
 	
 	NSDictionary			*worldScripts;
 	NSDictionary			*worldScriptsRequiringTickle;
+	NSMutableDictionary		*commodityScripts;
 	NSMutableDictionary		*mission_variables;
 	NSMutableDictionary		*localVariables;
 	NSString				*_missionTitle;
@@ -382,6 +434,11 @@ typedef enum
 	BOOL					pollControls;
 // ...end save screen   
 
+	NSInteger				marketOffset;
+	OOCommodityType			marketSelectedCommodity;
+	OOMarketFilterMode		marketFilterMode;
+	OOMarketSorterMode		marketSorterMode;
+
 	OOWeakReference			*_dockedStation;
 	
 /* Used by the DOCKING_CLEARANCE code to implement docking at non-main
@@ -393,13 +450,14 @@ typedef enum
 	NSMutableDictionary		*multiFunctionDisplayText;
 	NSMutableArray			*multiFunctionDisplaySettings;
 	NSUInteger				activeMFD;
+	NSMutableDictionary		*customDialSettings;
 
 	GLfloat					roll_delta, pitch_delta, yaw_delta;
 	GLfloat					launchRoll;
 	
 	GLfloat					forward_shield, aft_shield;
+	GLfloat					max_forward_shield, max_aft_shield, forward_shield_recharge_rate, aft_shield_recharge_rate;
 	OOTimeDelta				forward_shot_time, aft_shot_time, port_shot_time, starboard_shot_time;
-	GLfloat					weapon_energy_use, weapon_reload_time;
 	
 	OOWeaponFacing			chosen_weapon_facing;   // for purchasing weapons
 	
@@ -438,12 +496,10 @@ typedef enum
 	NSString				*_lastsaveName;
 	NSPoint					galaxy_coordinates;
 	
-	Random_Seed				galaxy_seed;
-	
 	OOCreditsQuantity		credits;	
 	OOGalaxyID				galaxy_number;
 	
-	NSArray					*shipCommodityData;
+	OOCommodityMarket		*shipCommodityData;
 	
 	ShipEntity				*missile_entity[PLAYER_MAX_MISSILES];	// holds the actual missile entities or equivalents
 	OOUniversalID			_dockTarget;	// used by the escape pod code
@@ -456,7 +512,11 @@ typedef enum
 	OOWeakReference			*compassTarget;
 	
 	GLfloat					fuel_leak_rate;
-	
+
+#if OO_VARIABLE_TORUS_SPEED
+	GLfloat					hyperspeedFactor;
+#endif
+
 	// keys!
 	NSDictionary   *keyconfig_settings;
 
@@ -534,6 +594,8 @@ typedef enum
 	OOKeyCode				key_next_compass_mode;
 	
 	OOKeyCode				key_chart_highlight;
+	OOKeyCode				key_market_filter_cycle;
+	OOKeyCode				key_market_sorter_cycle;
 	
 	OOKeyCode				key_next_target;
 	OOKeyCode				key_previous_target;
@@ -550,7 +612,14 @@ typedef enum
 
 	OOKeyCode				key_cycle_mfd;
 	OOKeyCode				key_switch_mfd;
+
+	OOKeyCode				key_oxzmanager_setfilter;
+	OOKeyCode				key_oxzmanager_showinfo;
+	OOKeyCode				key_oxzmanager_extract;
 	
+	OOKeyCode				key_inc_field_of_view;
+	OOKeyCode				key_dec_field_of_view;
+
 	// save-file
 	NSString				*save_path;
 	NSString				*scenarioKey;
@@ -629,6 +698,7 @@ typedef enum
 #endif
 	OOSpeechSettings		isSpeechOn;
 
+
 	// For PlayerEntity (StickMapper)
 	int						selFunctionIdx;
 	NSArray					*stickFunctions; 
@@ -650,9 +720,15 @@ typedef enum
 	OOLaserShotEntity *lastShot; // used to correctly position laser shots on first frame of firing
 	
 	StickProfileScreen		*stickProfileScreen;
+
+	double					maxFieldOfView;
+	double					fieldOfView;
+#if OO_FOV_INFLIGHT_CONTROL_ENABLED
+	double					fov_delta;
+#endif
 }
 
-@property (readonly, copy) NSArray *shipCommodityData;
+@property (readonly, retain) OOCommodityMarket *shipCommodityData;
 
 + (PlayerEntity *) sharedPlayer;
 - (void) deferredInit;
@@ -674,17 +750,17 @@ typedef enum
 
 - (void) unloadCargoPods;
 - (void) loadCargoPods;
-- (void) unloadAllCargoPodsForType:(OOCommodityType)type fromArray:(NSMutableArray *) manifest;
+- (void) unloadAllCargoPodsForType:(OOCommodityType)type toManifest:(OOCommodityMarket *) manifest;
 - (void) unloadCargoPodsForType:(OOCommodityType)type amount:(OOCargoQuantity) quantity;
-- (void) loadCargoPodsForType:(OOCommodityType)type fromArray:(NSMutableArray *) manifest;
+- (void) loadCargoPodsForType:(OOCommodityType)type fromManifest:(OOCommodityMarket *) manifest;
 - (void) loadCargoPodsForType:(OOCommodityType)type amount:(OOCargoQuantity) quantity;
+- (OOCommodityMarket *) shipCommodityData;
 
 - (OOCreditsQuantity) deciCredits;
 
 - (int) random_factor;
 - (void) setRandom_factor:(int)rf;
 - (OOGalaxyID) galaxyNumber;
-- (Random_Seed) galaxy_seed;
 - (NSPoint) galaxy_coordinates;
 - (void) setGalaxyCoordinates:(NSPoint)newPosition;
 - (NSPoint) cursor_coordinates;
@@ -693,10 +769,13 @@ typedef enum
 - (NSPoint) adjusted_chart_centre;
 - (OORouteType) ANAMode;
 
-- (Random_Seed) system_seed;
-- (void) setSystem_seed:(Random_Seed) s_seed;
-- (Random_Seed) target_system_seed;
-- (void) setTargetSystemSeed:(Random_Seed) s_seed;
+
+- (OOSystemID) systemID;
+- (void) setSystemID:(OOSystemID) sid;
+- (OOSystemID) targetSystemID;
+- (void) setTargetSystemID:(OOSystemID) sid;
+- (OOSystemID) nextHopTargetSystemID;
+
 
 - (NSDictionary *) commanderDataDictionary;
 - (BOOL)setCommanderDataFromDictionary:(NSDictionary *) dict;
@@ -707,8 +786,7 @@ typedef enum
 - (BOOL) massLocked;
 - (BOOL) atHyperspeed;
 
-- (float) occlusionLevel;
-- (void) setOcclusionLevel:(float)level;
+@property (atomic) float occlusionLevel;
 
 - (void) setDockedAtMainStation;
 - (StationEntity *) dockedStation;
@@ -728,6 +806,13 @@ typedef enum
 - (BOOL) switchHudTo:(NSString *)hudFileName;
 - (void) resetHud;
 
+- (float) dialCustomFloat:(NSString *)dialKey;
+- (NSString *) dialCustomString:(NSString *)dialKey;
+- (OOColor *) dialCustomColor:(NSString *)dialKey;
+- (void) setDialCustom:(id)value forKey:(NSString *)key;
+
+
+- (NSArray *) multiFunctionDisplayList;
 - (NSString *) multiFunctionText:(NSUInteger) index;
 - (void) setMultiFunctionText:(NSString *)text forKey:(NSString *)key;
 - (BOOL) setMultiFunctionDisplay:(NSUInteger) index toKey:(NSString *)key;
@@ -744,6 +829,14 @@ typedef enum
 
 - (void) setForwardShieldLevel:(GLfloat)level;
 - (void) setAftShieldLevel:(GLfloat)level;
+
+- (float) forwardShieldRechargeRate;
+- (float) aftShieldRechargeRate;
+
+- (void) setMaxForwardShieldLevel:(float)new;
+- (void) setMaxAftShieldLevel:(float)new;
+- (void) setForwardShieldRechargeRate:(float)new;
+- (void) setAftShieldRechargeRate:(float)new;
 
 // return keyconfig.plist settings for scripting
 - (NSDictionary *) keyConfig;
@@ -775,6 +868,13 @@ typedef enum
 
 - (float) fuelLeakRate;
 - (void) setFuelLeakRate:(float)value;
+
+#if OO_VARIABLE_TORUS_SPEED
+- (GLfloat) hyperspeedFactor;
+#endif
+- (BOOL) injectorsEngaged;
+- (BOOL) hyperspeedEngaged;
+
 
 - (double) clockTime;			// Note that this is not an OOTimeAbsolute
 - (double) clockTimeAdjusted;	// Note that this is not an OOTimeAbsolute
@@ -905,6 +1005,11 @@ typedef enum
 - (OOCargoQuantity) setCargoQuantityForType:(OOCommodityType)type amount:(OOCargoQuantity)amount;
 - (void) calculateCurrentCargo;
 - (void) setGuiToMarketScreen;
+- (void) setGuiToMarketInfoScreen;
+- (NSArray *) applyMarketFilter:(NSArray *)goods onMarket:(OOCommodityMarket *)market;
+- (NSArray *) applyMarketSorter:(NSArray *)goods onMarket:(OOCommodityMarket *)market;
+- (OOCommodityMarket *) localMarket;
+
 
 - (void) setupStartScreenGui;
 - (void) setGuiToIntroFirstGo:(BOOL)justCobra;
@@ -919,7 +1024,6 @@ typedef enum
 
 - (void) buySelectedItem;
 
-- (BOOL) marketFlooded:(OOCommodityType)type;
 - (BOOL) tryBuyingCommodity:(OOCommodityType)type all:(BOOL)all;
 - (BOOL) trySellingCommodity:(OOCommodityType)type all:(BOOL)all;
 
@@ -977,7 +1081,7 @@ typedef enum
 - (Vector)customViewRightVector;
 - (NSString *)customViewDescription;
 - (void)resetCustomView;
-- (void)setCustomViewDataFromDictionary:(NSDictionary*) viewDict;
+- (void)setCustomViewDataFromDictionary:(NSDictionary*) viewDict withScaling:(BOOL)withScaling;
 - (HPVector) viewpointPosition;
 - (HPVector) breakPatternPosition;
 - (Vector) viewpointOffset;
@@ -1006,6 +1110,8 @@ typedef enum
 - (BOOL) scriptsLoaded;
 - (NSArray *) worldScriptNames;
 - (NSDictionary *) worldScriptsByName;
+
+- (OOScript *) commodityScriptNamed:(NSString *)script;
 
 // *** World script events.
 // In general, script events should be sent through doScriptEvent:..., which

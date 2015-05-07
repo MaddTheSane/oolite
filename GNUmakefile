@@ -52,7 +52,7 @@ else
     ADDITIONAL_INCLUDE_DIRS      = -I$(LIBJS_INC_DIR) -Isrc/SDL -Isrc/Core -Isrc/BSDCompat -Isrc/Core/Scripting -Isrc/Core/Materials -Isrc/Core/Entities -Isrc/Core/OXPVerifier -Isrc/Core/Debug -Isrc/Core/Tables -Isrc/Core/MiniZip
     ADDITIONAL_OBJC_LIBS         = -lGLU -lGL -lX11 -lSDL -lgnustep-base -l$(LIBJS) `nspr-config --libs` -lstdc++ -lopenal -lz -lvorbisfile
     ADDITIONAL_CFLAGS            = -Wall -DLINUX -DNEED_STRLCPY `sdl-config --cflags` `nspr-config --cflags`
-    ADDITIONAL_OBJCFLAGS         = -Wall -std=c99 -DLOADSAVEGUI -DLINUX -DXP_UNIX -Wno-import `sdl-config --cflags` `nspr-config --cflags`
+    ADDITIONAL_OBJCFLAGS         = -Wall -std=gnu99 -DLOADSAVEGUI -DLINUX -DXP_UNIX -Wno-import `sdl-config --cflags` `nspr-config --cflags`
     oolite_LIB_DIRS              += -L$(LIBJS_LIB_DIR) -L/usr/X11R6/lib/
 
     ifeq ($(use_deps),yes)
@@ -109,6 +109,8 @@ ifeq ($(DEPLOYMENT_RELEASE_CONFIGURATION),yes)
     ADDITIONAL_OBJCFLAGS         += -DOO_LOCALIZATION_TOOLS=0
     ADDITIONAL_CFLAGS            += -DDEBUG_GRAPHVIZ=0
     ADDITIONAL_OBJCFLAGS         += -DDEBUG_GRAPHVIZ=0
+    ADDITIONAL_CFLAGS            += -DOO_FOV_INFLIGHT_CONTROL_ENABLED=0
+    ADDITIONAL_OBJCFLAGS         += -DOO_FOV_INFLIGHT_CONTROL_ENABLEDD=0
 else
     ifeq ($(BUILD_WITH_DEBUG_FUNCTIONALITY),no)
         ADDITIONAL_CFLAGS        += -DNDEBUG
@@ -134,6 +136,10 @@ else
         ADDITIONAL_CFLAGS        += -DDEBUG_GRAPHVIZ=1
         ADDITIONAL_OBJCFLAGS     += -DDEBUG_GRAPHVIZ=1
     endif
+    ifeq ($(OO_FOV_INFLIGHT_CONTROL_ENABLED),yes)
+        ADDITIONAL_CFLAGS        += -DOO_FOV_INFLIGHT_CONTROL_ENABLED=1
+        ADDITIONAL_OBJCFLAGS     += -DOO_FOV_INFLIGHT_CONTROL_ENABLED=1
+    endif
 endif
 
 ifeq ($(SNAPSHOT_BUILD), yes)
@@ -154,6 +160,7 @@ oolite_C_FILES = \
 
 OOLITE_DEBUG_FILES = \
     OODebugMonitor.m \
+	OODebugStandards.m \
     OODebugSupport.m \
     OODebugTCPConsoleClient.m \
     OOJSConsole.m \
@@ -240,6 +247,7 @@ OOLITE_GRAPHICS_MISC_FILES = \
     OOOpenGL.m \
     OOOpenGLStateManager.m \
     OOOpenGLExtensionManager.m \
+    OOOpenGLMatrixManager.m \
     OOProbabilisticTextureManager.m \
     OOSkyDrawable.m \
     OOTextureSprite.m \
@@ -260,6 +268,8 @@ OOLITE_OXP_VERIFIER_FILES = \
     OOAIStateMachineVerifierStage.m \
     OOCheckDemoShipsPListVerifierStage.m \
     OOCheckEquipmentPListVerifierStage.m \
+    OOCheckJSSyntaxVerifierStage.m \
+    OOCheckPListSyntaxVerifierStage.m \
     OOCheckRequiresPListVerifierStage.m \
     OOCheckShipDataPListVerifierStage.m \
     OOFileScannerVerifierStage.m \
@@ -276,6 +286,7 @@ OOLITE_RSRC_MGMT_FILES = \
     OOConvertSystemDescriptions.m \
 	OOOXZManager.m \
     OOPListParsing.m \
+	OOSystemDescriptionManager.m \
     ResourceManager.m \
     TextureStore.m
 
@@ -393,6 +404,8 @@ OOLITE_MISC_FILES = \
     MyOpenGLView.m \
     OOCharacter.m \
     OOCocoa.m \
+	OOCommodities.m \
+	OOCommodityMarket.m \
     OOEquipmentType.m \
     OOMouseInteractionMode.m \
     OORoleSet.m \

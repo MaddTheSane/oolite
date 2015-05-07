@@ -552,7 +552,7 @@ static JSBool PlayerReplaceShip(JSContext *context, uintN argc, jsval *vp)
 
 	if (success) 
 	{ // slightly misnamed world event now
-		[player doScriptEvent:OOJSID("playerBoughtNewShip") withArgument:player];
+		[player doScriptEvent:OOJSID("playerBoughtNewShip") withArgument:player andArgument:[NSNumber numberWithInt:0]];
 	}
 
 	OOJS_RETURN_BOOL(success);
@@ -626,7 +626,7 @@ static JSBool PlayerSetEscapePodDestination(JSContext *context, uintN argc, jsva
 					[player addToAdjustTime:(.2 + dist * dist) * 3600.0 + 5400.0 * (ranrot_rand() & 127)];
 					
 					// at the end of the docking sequence we'll check if the target system is the same as the system we're in...
-					[player setTargetSystemSeed:RandomSeedFromString([dest oo_stringForKey:@"system_seed"])];
+					[player setTargetSystemID:i];
 				}
 				OK = YES;
 			}

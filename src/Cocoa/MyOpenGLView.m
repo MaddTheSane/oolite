@@ -87,6 +87,8 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 	}
 #endif
 	
+	matrixManager = [[OOOpenGLMatrixManager alloc] init];
+
 	// Pixel Format Attributes for the View-based (non-FullScreen) NSOpenGLContext
 	NSOpenGLPixelFormatAttribute attrs[] =
 	{
@@ -155,6 +157,7 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 {
 	DESTROY(typedString);
 	DESTROY(_pixelFormatAttributes);
+	DESTROY(matrixManager);
 	
 	[super dealloc];
 }
@@ -1006,6 +1009,10 @@ FAIL:
 	return KEYMAP_GET(map, 56) || KEYMAP_GET(map, 60);	// Left shift or right shift -- although 60 shouldn't occur.
 }
 
+- (OOOpenGLMatrixManager *) getOpenGLMatrixManager
+{
+	return matrixManager;
+}
 
 #ifndef NDEBUG
 // General image-dumping method.
@@ -1217,6 +1224,18 @@ static void UnapplyCursorState(OOMouseInteractionMode mode)
 - (float) gammaValue
 {
 	return 1.0;
+}
+
+
+- (void) setFov:(float)value fromFraction:(BOOL)fromFraction
+{
+	_fov = fromFraction ? value : tan((value / 2) * M_PI / 180);
+}
+
+
+- (float) fov:(BOOL)inFraction
+{
+	return inFraction ? _fov : 2 * atan(_fov) * 180 / M_PI;
 }
 
 @end

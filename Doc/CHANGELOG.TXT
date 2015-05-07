@@ -1,24 +1,52 @@
-Changes between Oolite 1.80.1 and Oolite 1.82:
+Changes between Oolite 1.80 and Oolite 1.82:
 
 General:
 ========
-* More AI improvements
+
+* More AI improvements and adjustments. Extensive rebalancing of
+  combat difficulty for more interesting fights
+* Laser damage and heating rates adjusted
+* Missile damage adjusted
 * Heat cooldown slower
 * Installation time now on equipment purchase screen
 * OXZ installer now updates dependency check after each install
-* Added zooming, scrolling galaxy chart
+* Added zooming, scrolling galaxy chart unifying "short range" and "long range"
+  options
 * Internal damage from missiles now more serious
 * Damaged equipment now sorts to the top of the status screen
+* Adjustments to acceleration, deceleration and top speed of torus drive
+* AI reaction to being attacked by ships they can't scan is more useful
+* Removed some differences between NPCs and player ship performance
+* Advanced Navigational Array now allows for jumping to the next system on
+  a long route without having to retarget
+* Stations will warn if player tries to dock without required clearance
+* Docking clearance now defaults to 'on' for new games (no effect on
+  existing games)
+* Keyboard settings can be viewed from game options
+* Scrape damage now does not automatically mine asteroids
+* Extra detail graphics mode now has more detailed planet textures
+* Field of View added as a game option
+* Windows port: Improved multi-monitor support
+* Windows port: Added support for grabbing mouse inside the game window when
+  mouse control is active
+* Windows and Linux ports: V-Sync can now be controlled via user preferences
 
 Graphics:
 =========
+
 * ECM bursts now have an effect on the scanner
 * Spacedust fades out when entering atmosphere
+* New and more varied explosions
 
 Expansion pack manager:
 =======================
+
 * Installation status now updated without having to restart manager
 * Missing requirements will be installed automatically if possible
+* Ability to filter expansion pack lists by pressing 'f'
+* Can view additional information on packs by pressing 'i'
+* Can extract a pack to an OXP in your AddOns folder by pressing 'x'
+* Update date now visible in OXZ manager
 
 Expansion pack development:
 ===========================
@@ -32,26 +60,226 @@ General:
   If multiple entries have the same heading, they are grouped.
 * Subentities now inherit their parent's entity personality - useful
   for shader randomisation.
+* New trade-goods.plist allowing definition of customised trade goods
+* New market scripts for JS-based modification of markets
+* OXP Developer builds will now warn about deprecated code in OXPs.
+* Changes to planet properties made by OXPs will be reverted if the OXP
+  is uninstalled
+* Scenarios may now exclude OXPs and selected core plists
+* Maximum star size increased significantly
+* Implementation of many core equipment items modified to allow
+  greater customisation. No difference to effect.
+* Waypoints may now have [0,0,0,0] orientation for a non-directional waypoint
 
-Plists:
--------
+New Plists:
+-----------
+
+* global-settings.plist: new plist file to hold some properties which didn't
+  belong in planetinfo.plist
+* commodities.plist and illegal-goods.plist replaced by trade-goods.plist
+* gui-settings.plist: allows customisation of various GUI options and
+  chart settings
+* explosions.plist: allows custom explosion types to be created
+
+Modified Plists:
+----------------
+
 * oolite-font.plist: new f6KernGovernment and f6KernTechLevel options
 * equipment.plist: installation_time, repair_time
+* equipment.plist: laser properties may be customised using weapon_info and
+  new laser weapons may be created
+* equipment.plist: equipment may 'provide' other equipment
+* equipment.plist: can_carry_multiple can be set on non-pylon equipment
 * descriptions.plist: long-range-chart-title-G-S now allows chart title
   to vary from system to system
+  Numerous changes due to unification of string formatting systems, see separate
+  "Format strings" section below
+* shipdata.plist: market_broadcast, market_capacity, market_definition, market_monitored, market_script properties for stations
+* shipdata.plist: weapon_energy property no longer affects lasers
+* shipdata.plist: model_scale_factor property for easy size variations
+* shipdata.plist: scanner_hostile_display_color1, scanner_hostile_display_color2
+* shipdata.plist: show_damage to control sparks and other damage effects
+* planetinfo.plist: all major properties are now coded into the main
+  planetinfo.plist rather than being generated using random numbers.
+* planetinfo.plist: layer property allows overrides of planetinfo to
+  have different priorities and for JS and plist changes to planetinfo to
+  coexist more easily.
+* planetinfo.plist: coordinates property for system coordinates (may not be
+  set by JS)
+* planetinfo.plist: random_seed property for aspects still requiring random
+  generation (e.g. the precise detail of planet textures)
+* planetinfo.plist: several new properties for customisation - planet_distance,
+  station_vector, sun_vector, planet_name, sun_name, population_description,
+  economy_description, government_description, percent_ice
+* planetinfo.plist: has_atmosphere can apply to main planets
+* planetinfo.plist: market_script property for systems
+* hud.plist: MFDs and legends have color property
+* hud.plist: allow_big_gui general property for HUDs which don't take up the
+  bottom six lines of the screen
+* hud.plist: new drawCustomImage dial
+* hud.plist: 'permanent' can be set on message_gui
+* hud.plist: hyperspace destination can be right-aligned
+* hud.plist: negative height/width can be applied to HUD bars
+* shiplibrary.plist: condition_script property added
 
+Properties:
+-----------
+* Removed manifest.liquor/wines, manifest.liquorWines, manifest.gemStones
+  manifest.alienItems aliases for trade goods
+* ship.maxYaw, ship.maxPitch, ship.maxRoll, ship.maxThrust, ship.thrust,
+  ship.maxSpeed, ship.maxEnergy, ship.energyRechargeRate now read/write
+* ship.collisionExceptions
+* ship.cargoSpaceCapacity now writable
+* ship.injectorBurnRate, ship.injectorSpeedFactor properties
+* ship.scanDescription
+* ship.hyperspaceSpinTime, now writable, now property of all ships not
+  just player
+* ship.scannerHostileDisplayColor1, ship.scannerHostileDisplayColor2
+* ship.subEntityRotation
+* ship.entityPersonality is now writable
+* equipmentInfo.provides
+* player.ship.forwardShield, player.ship.maxForwardShield,
+  player.ship.forwardShieldRechargeRate, player.ship.aftShield,
+  player.ship.maxAftShield, player.ship.aftShieldRechargeRate are all
+  now writable.
+* player.ship.injectorsEngaged and player.ship.torusEngaged
+* player.ship.routeMode
+* system.ambientLevel
 
+Methods:
+--------
+* manifest.comment()
+* manifest.setComment()
+* manifest.setShortComment()
+* manifest.shortComment()
+* mission.runShipLibrary()
+* systemInfo.samplePrice()
+* ship.addCollisionException(ship)
+* ship.adjustCargo(commodity,amount)
+* ship.removeCollisionException(ship)
+* ship.hasEquipmentProviding(eq)
+* ship.dumpCargo(amount, preferredtype) second parameter
+* player.ship.equipmentStatus(eqKey,true) second parameter
+* SystemInfo.setInterstellarProperty(g,s1,s2,l,k,v,[m]) 
+
+Events:
+-------
+
+* gamePaused and gameResumed world events (useful for sound OXPs)
+* equipmentAdded and equipmentRemoved ship events
+* updateEquipmentPrice(eq,price) condition script event
+* allowShowLibraryShip(key) condition script event
+* shipWillEnterWitchspace event has second parameter (destination)
+* playerRescuedEscapePod(decicredits, reason, rescuee) event
+* playerCompletedContract(type,result,fee,contract) event
+* playerEnteredContract(type,info) event
+* stationReceivedDockingRequest ship event now does what it says
+* stationAcceptedDockingRequest new ship event
+* playerBoughtNewShip has second 'price' parameter
+
+AI Methods:
+-----------
+* behaviourWaitHere
+
+Format strings:
+---------------
+Work has begun on replacing the %@-type formatting strings in descriptions.plist
+with ones that work the same as format strings used in scripts. In most cases,
+a placeholder like %@ or %d has been replaced with one like [destination] or
+[population].
+* @-credits -> credits-format
+* oxp-containing-messages-list-@ -> oxp-containing-messages-list
+* bounty-@-total-@ -> bounty-awarded
+* autopilot-station-@-does-not-allow-autodocking -> autopilot-station-does-not-allow-autodocking
+* witch-to-@-in-f-seconds -> witch-to-x-in-y-seconds
+* witch-blocked-by-@ -> witch-blocked
+* witch-galactic-in-f-seconds -> witch-galactic-in-x-seconds
+* game-paused-@ -> game-paused
+* game-paused-docked-@ -> game-paused-docked
+* missile-locked-onto-@ -> missile-locked-onto-target
+* ident-locked-onto-@ -> ident-locked-onto-target
+* @-armed -> missile-armed and mine-armed
+* @-ejected -> commodity-ejected
+* @-ready-to-eject and ready-to-eject-@ -> ready-to-eject-commodity
+* @-scooped -> scripted-item-scooped
+* scoop-captured-@ -> scoop-captured-character
+* scoop-rescued-@ -> scoop-rescued-character
+* equipment-primed-@ -> equipment-primed
+* equipment-primed-hud-@ -> equipment-primed-hud
+* mfd-d-selected -> mfd-N-selected
+* station-docking-clearance-abort-cancelled-in-f -> station-docking-clearance-abort-cancelled-in-time
+* status-hyperspace-system-multi-@-@ -> status-hyperspace-system-multi
+* equipment-plural-d-@ -> equipment-plural
+* equipment-plural-d-d-@ -> equipment-plural-some-na
+* manifest-cargo-quantity-format -> manifest-cargo-quantity
+* manifest-cargo-quantity-format2 -> manifest-cargo-quantity-extended
+* manifest-@-travelling-to-@-to-arrive-within-@ -> oolite-manifest-person-travelling
+* manifest-deliver-@-to-@within-@ -> oolite-manifest-item-delivery
+* charts-distance-f -> charts-distance
+* charts-est-travel-time-f -> charts-est-travel-time
+* short-range-chart-distance-f -> short-range-chart-distance
+* short-range-chart-est-travel-time-f -> short-range-chart-est-travel-time
+* long-range-chart-distance-f -> long-range-chart-distance
+* long-range-chart-est-travel-time-f -> long-range-chart-est-travel-time
+* @-commodity-market -> system-commodity-market
+* @-station-commodity-market -> station-commodity-market
+* cash-@-load-d-of-d -> market-cash-and-load
+* sysdata-planet-name-@ -> sysdata-data-on-system
+* sysdata-prod-worth -> sysdata-prod-value
+* gameoptions-voice-@ -> gameoptions-voice-name
+* gameoptions-music-mode-@ -> gameoptions-music-mode
+* gameoptions-fullscreen-mode-d-by-d-at-g-hz -> gameoptions-fullscreen-with-refresh-rate
+* gameoptions-fullscreen-mode-d-by-d -> gameoptions-fullscreen
+* equip-cash-@ -> equip-cash-value
+* @-equip-cash-value -> equip-cash-value
+* shipyard-price -> shipyard-price-label
+* shipyard-cargo -> shipyard-cargo-label
+* shipyard-cargo-d-tc -> shipyard-cargo-value
+* shipyard-speed -> shipyard-speed-label
+* shipyard-speed-f-ls -> shipyard-speed-value
+* shipyard-your-@-trade-in-value-@ -> shipyard-trade-in-value
+* shipyard-total-available-%@-%@-plus-%@-trade -> shipyard-total-available-with-trade-in
+* plus-@ -> shipyard-first-extra and shipyard-additional-extra
+* shipyard-forward-weapon-upgraded-to-@ -> shipyard-forward-weapon-upgraded
+* shipyard-price-@ -> shipyard-price
+* character-a-@-from-@ -> character-generic-description
+* sysdata-billion-word has been replaced with sysdata-pop-value, which allows
+  more flexible formatting of population values
+* planetname-derivative-suffix has been replaced with planetname-possessive.
+  The default planetname-possessive references planetname-derivative-suffix for
+  compatibility (it isn't used anywhere else).
+* New: number-negative
+* New: credits-negative
+* New: sysdata-tl-value
+* New: sysdata-radius-value
+* Removed: extra-@-@-(long-description)
+* Removed: extra-@-@-@-(passenger-berth-long-description)
+* Removed: shipyard-forward-weapon-upgraded-long
+* Removed: shipyard-selling-price-@
+
+OXP Verifier:
+-------------
+
+* Validates syntax (but not keys) of all plists
+* Validates syntax of all JS files
+* Updates to shipdata plist verifier
 
 Bug fixes:
 ==========
+
 * Restore something like the 1.76 behaviour in terms of alloy plates in debris
 * Speech synthesis slightly more conservative in detecting 'credits' 
   abbreviation
-
--------------------------------------------------------------------------------
-
-Changes between Oolite 1.80 and Oolite 1.80.1:
-
+* Fixes to some core ship role lists
+* Show JS error locations properly
+* Better handling of various ZIP formats in the OXZ manager
+* Fix slowness in market screen
+* Corona_flare property works more consistently
+* Better handling of system info changes in Nova mission
+* Apply higher safety factor to docking
+* Contracts no longer generated to Nova systems
+* Suns now display properly at extreme range
+* Some missing commands added to the Joystick mapper
 * Fix non-alphanumeric characters not being available on mission screen
 * Fix problem with large OXZ downloads on Windows
 * Fix some problems with docking of fast and fast-turning ships
@@ -62,6 +290,32 @@ Changes between Oolite 1.80 and Oolite 1.80.1:
 * Fix errors with escape pod launch from subentities
 * Fix consistency errors on ship library screen
 * Ship registration forms now return to interfaces page
+* Fix error with "OUTER_SYSTEM" positions in very large systems
+* Fix bug where ship.checkScanner would detect a docked player and other
+  invalid targets.
+* Windows and Linux ports: Gamma is now a generic game option, not a save
+  file one. Fixes unexpected gamma resets when starting a new game.
+* Windows port: Fixed unnecessary double OpenGL initializations under
+  certain resize window conditions.
+* Windows port: Fixed bugs in handling a maximized game window.
+* Windows and Linux ports: Fix for inability to unset joystick buttons
+  beyond 16.
+* Fix return type of EquipmentInfo.requiredCargoSpace
+* Handle sun glare correctly also for too tall or too wide game windows.
+* Redefining the currently selected waypoint no longer resets the compass
+* Assassins no longer chase players who only take low-risk contracts
+* Zero-distance system doubles now handled better on chart
+* More docking protocol bug fixes
+* Various chart view settings now preserved in the save game
+* Some full-screen and multi-monitor fixes
+* NPC ships entering hyperspace near massive stations should be clearer
+* Destination systems for long-range NPCs now set correctly
+* checkScanner method now correctly excludes unpowered ships
+* Plasma turrets won't fire when cloaked if cloakPassive is true
+* AI errors related to system ID 0 fixed
+* Bug making tutorial extremely difficult to complete if player obtained a
+  bounty fixed.
+
 
 -------------------------------------------------------------------------------
 

@@ -139,7 +139,8 @@ enum
 	kPlanetScale4096x4096,
 	
 	kPlanetScaleReducedDetail	= kPlanetScale512x512,
-	kPlanetScaleFullDetail		= kPlanetScale1024x1024
+	kPlanetScaleFullDetail		= kPlanetScale1024x1024,
+	kPlanetScaleExtraDetail		= kPlanetScale2048x2048
 };
 
 
@@ -155,6 +156,7 @@ enum
 		OOLog(@"texture.planet.generate",@"Extracting parameters for generator %@",self);
 
 		_info.landFraction = OOClamp_0_1_f([planetInfo oo_floatForKey:@"land_fraction" defaultValue:0.3]);
+		_info.polarFraction = OOClamp_0_1_f([planetInfo oo_floatForKey:@"polar_fraction" defaultValue:0.05]);
 		_info.landColor = FloatRGBFromDictColor(planetInfo, @"land_color");
 		_info.seaColor = FloatRGBFromDictColor(planetInfo, @"sea_color");
 		_info.paleLandColor = FloatRGBFromDictColor(planetInfo, @"polar_land_color");
@@ -171,13 +173,17 @@ enum
 		}
 		
 #ifndef TEXGEN_TEST_RIG
-		if ([UNIVERSE detailLevel] < DETAIL_LEVEL_SHADERS)
+		if ([UNIVERSE detailLevel] < DETAIL_LEVEL_SHADERS || [planetInfo oo_boolForKey:@"isMiniature" defaultValue:NO])
 		{
 			_planetScale = kPlanetScaleReducedDetail;
 		}
-		else
+		else if ([UNIVERSE detailLevel] == DETAIL_LEVEL_SHADERS)
 		{
 			_planetScale = kPlanetScaleFullDetail;
+		}
+		else
+		{
+			_planetScale = kPlanetScaleExtraDetail;
 		}
 #else
 		_planetScale = kPlanetScale4096x4096;
@@ -427,7 +433,7 @@ enum
 	float rHeight = 1.0f / _height;
 	float fy, fHeight = _height;
 	// The second parameter is the temperature fraction. Most favourable: 1.0f,  little ice. Most unfavourable: 0.0f, frozen planet. TODO: make it dependent on ranrot / planetinfo key...
-	SetMixConstants(&_info, 0.95f);	// no need to recalculate them inside each loop!
+	SetMixConstants(&_info, 1.0f-_info.polarFraction);	// no need to recalculate them inside each loop!
 	
 	// first pass, calculate q.
 	_info.qBuffer = malloc(_width * _height * sizeof (float));

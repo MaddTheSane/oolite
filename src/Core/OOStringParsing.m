@@ -261,10 +261,17 @@ NSString *StringFromRandomSeed(Random_Seed seed)
 }
 
 
-NSString *OOPadStringToEms(NSString * string, float numEms)
+NSString *OOPadStringToEms(NSString * string, float padEms)
 {
 	NSString		*result = string;
-	numEms -= OOStringWidthInEm(result);
+	float numEms = padEms - OOStringWidthInEm(result);
+	if (numEms>0)
+	{
+		numEms /= OOStringWidthInEm(@" "); // start with wide space
+		result=[[@"" stringByPaddingToLength:(NSUInteger)numEms withString: @" " startingAtIndex:0] stringByAppendingString: result];
+	}
+	// most of the way there, so switch to narrow space
+	numEms = padEms - OOStringWidthInEm(result);
 	if (numEms>0)
 	{
 		numEms /= OOStringWidthInEm(@"\037"); // 037 is narrow space
@@ -284,6 +291,15 @@ NSString *OOStringFromDeciCredits(OOCreditsQuantity tenthsOfCredits, BOOL includ
 	NSString			*result = nil;
 	jsval				exception;
 	BOOL				hadException;
+	
+	/*	Because the |cr etc. formatting operators call this, and the
+		implementation may use string expansion, we need to ensure recursion
+		can't happen.
+	*/
+	static BOOL reentrancyLock;
+	if (reentrancyLock)  return [NSString stringWithFormat:@"%0.1f", tenthsOfCredits * 0.1];
+	
+	reentrancyLock = YES;
 	
 	hadException = JS_GetPendingException(context, &exception);
 	JS_ClearPendingException(context);
@@ -309,6 +325,8 @@ NSString *OOStringFromDeciCredits(OOCreditsQuantity tenthsOfCredits, BOOL includ
 	OOJSRelinquishContext(context);
 	
 	if (EXPECT_NOT(result == nil))  result = [NSString stringWithFormat:@"%li", (long)(tenthsOfCredits) / 10];
+	
+	reentrancyLock = NO;
 	
 	return result;
 }

@@ -467,7 +467,7 @@ static id sSharedStickHandler = nil;
 - (void) unsetButtonFunction:(int)function
 {
 	int i,j;
-	for (i = 0; i < MAX_AXES; i++)
+	for (i = 0; i < MAX_BUTTONS; i++)
 	{
 		for (j = 0; j < MAX_STICKS; j++)
 		{
@@ -597,6 +597,7 @@ static id sSharedStickHandler = nil;
 		case AXIS_VIEWY:
 			axstate[function] = axisvalue / STICK_NORMALDIV;
 			break;
+		// TODO AXIS_FIELD_OF_VIEW
 		default:
 			// set the state with no modification.
 			axstate[function] = axisvalue / 32768;         

@@ -41,8 +41,8 @@
 
 #define TURRET_MINIMUM_COS				0.20f
 
+#define SHIP_THRUST_FACTOR				5.0f
 #define AFTERBURNER_BURNRATE			0.25f
-#define AFTERBURNER_NPC_BURNRATE		1.0f
 
 #define CLOAKING_DEVICE_ENERGY_RATE		12.8f
 #define CLOAKING_DEVICE_MIN_ENERGY		128
@@ -100,7 +100,12 @@
 #define INITIAL_SHOT_TIME				100.0
 
 #define	MIN_FUEL						0				// minimum fuel required for afterburner use
+#ifdef OO_DUMP_PLANETINFO
+// debugging planetinfo needs rapid jumping
+#define MAX_JUMP_RANGE					150.0
+#else
 #define MAX_JUMP_RANGE					7.0				// the 7 ly limit
+#endif
 
 #define ENTITY_PERSONALITY_MAX			0x7FFFU
 #define ENTITY_PERSONALITY_INVALID		0xFFFFU
@@ -127,6 +132,8 @@
 #define COMBAT_AI_USES_SNIPING			8.5f
 // adds BEHAVIOUR_ATTACK_SNIPER
 #define COMBAT_AI_FLEES_BETTER_2		9.0f
+// AI reacts to changes in target path in about 1.5 seconds.
+#define COMBAT_AI_STANDARD_REACTION_TIME	1.5f
 
 
 
@@ -147,7 +154,7 @@ typedef enum OOBehaviour
 #undef ENTRY
 
 
-typedef enum
+/*typedef enum
 {
 	WEAPON_NONE						= 0U,
 	WEAPON_PLASMA_CANNON			= 1,
@@ -157,7 +164,8 @@ typedef enum
 	WEAPON_MILITARY_LASER			= 5,
 	WEAPON_THARGOID_LASER			= 10,
 	WEAPON_UNDEFINED
-} OOWeaponType;
+	} OOWeaponType; */
+typedef OOEquipmentType* OOWeaponType;
 
 
 typedef enum
@@ -191,7 +199,7 @@ typedef enum
 	Vector					v_forward, v_up, v_right;	// unit vectors derived from the direction faced
 	
 	// variables which are controlled by AI
-	HPVector					destination;				// for flying to/from a set point
+	HPVector				_destination;				// for flying to/from a set point
 
 	GLfloat					desired_range;				// range to which to journey/scan
 	GLfloat					desired_speed;				// speed at which to travel
@@ -218,9 +226,12 @@ typedef enum
 	NSDictionary			*dockingInstructions;
 	
 	OOColor					*laser_color;
+	OOColor					*default_laser_color;
 	OOColor					*exhaust_emissive_color;
 	OOColor					*scanner_display_color1;
 	OOColor					*scanner_display_color2;
+	OOColor					*scanner_display_color_hostile1;
+	OOColor					*scanner_display_color_hostile2;
 	
 	// per ship-type variables
 	//
@@ -254,6 +265,8 @@ typedef enum
 							cloakPassive: 1,			// cloak deactivates when main weapons or missiles are fired
 							cloakAutomatic: 1,			// cloak activates itself automatic during attack
 							canFragment: 1,				// Can it break into wreckage?
+							isWreckage: 1,              // Is it wreckage?
+							_showDamage: 1,             // Show damage?
 							suppressExplosion: 1,		// Avoid exploding on death (script hook)
 							suppressAegisMessages: 1,	// No script/AI messages sent by -checkForAegis,
 							isMissile: 1,				// Whether this was launched by fireMissile (used to track submunitions).
@@ -274,6 +287,9 @@ typedef enum
 	OOFuelQuantity			fuel;						// witch-space fuel
 	GLfloat					fuel_accumulator;
 	
+	GLfloat					afterburner_rate;
+	GLfloat					afterburner_speed_factor;
+
 	OOCargoQuantity			likely_cargo;				// likely amount of cargo (for pirates, this is what is spilled as loot)
 	OOCargoQuantity			max_cargo;					// capacity of cargo hold
 	OOCargoQuantity			extra_cargo;				// capacity of cargo hold extension (if any)
@@ -294,7 +310,7 @@ typedef enum
 	GLfloat					weaponRange;				// range of the weapon (in meters)
 	OOWeaponFacing			currentWeaponFacing;		// not necessarily the same as view for the player
 	
-	GLfloat					weapon_temp, weapon_shot_temperature; // active weapon temp, delta-temp
+	GLfloat					weapon_energy_use, weapon_temp, weapon_shot_temperature; // active weapon temp, delta-temp
 	GLfloat					forward_weapon_temp, aft_weapon_temp, port_weapon_temp, starboard_weapon_temp; // current weapon temperatures
 
 	GLfloat					scannerRange;				// typically 25600
@@ -311,8 +327,11 @@ typedef enum
 	NSString				*shipUniqueName;			// uniqish name e.g. "Terror of Lave"
 	NSString				*shipClassName;				// e.g. "Cobra III"
 	NSString				*displayName;				// name shown on screen
+	NSString				*scan_description;			// scan class name
 	OORoleSet				*roleSet;					// Roles a ship can take, eg. trader, hunter, police, pirate, scavenger &c.
 	NSString				*primaryRole;				// "Main" role of the ship.
+
+	NSArray 				*explosionType;				// explosion.plist entries
 	
 	// AI stuff
 	Vector					jink;						// x and y set factors for offsetting a pursuing ship's position
@@ -365,6 +384,8 @@ typedef enum
 	
 	Vector					collision_vector;			// direction of colliding thing.
 	
+	GLfloat					_scaleFactor;  // scale factor for size variation
+
 	//position of gun ports
 	Vector					forwardWeaponOffset,
 							aftWeaponOffset,
@@ -419,6 +440,13 @@ typedef enum
 	OOWeakReference			*_rememberedShip;			// ship being remembered
 	OOWeakReference			*_proximityAlert;			// a ShipEntity within 2x collision_radius
 	
+	// Stuff for the target tracking curve.  The ship records the position of the target every reactionTime/2 seconds, then fits a curve to the
+	// last three recorded positions.  Instead of tracking the primary target's actual position it uses the curve to calculate the target's position.
+	// This introduces a small amount of lag to the target tracking making the NPC more human.
+	float				reactionTime;
+	HPVector			trackingCurvePositions[4];
+	OOTimeAbsolute			trackingCurveTimes[4];
+	HPVector			trackingCurveCoeffs[3];
 	
 
 	
@@ -427,7 +455,7 @@ typedef enum
 
 	NSString				*_shipKey;
 	
-	NSMutableSet			*_equipment;
+	NSMutableArray			*_equipment;
 	float					_heatInsulation;
 	
 	OOWeakReference			*_lastAegisLock;			// remember last aegis planet/sun
@@ -442,6 +470,9 @@ typedef enum
 	
 	OOWeakSet				*_defenseTargets;			 // defense targets
 	
+	// ships in this set can't be collided with
+	OOWeakSet				*_collisionExceptions;
+
 	GLfloat					_profileRadius;
 	
 	OOWeakReference			*_shipHitByLaser;			// entity hit by the last laser shot
@@ -454,6 +485,7 @@ typedef enum
 	id <OOHUDBeaconIcon>	_beaconDrawable;
 
 	double			_nextAegisCheck;
+	
 }
 
 // ship brains
@@ -498,6 +530,9 @@ typedef enum
 - (void) setSubEntityTakingDamage:(ShipEntity *)sub;
 
 - (void) clearSubEntities;	// Releases and clears subentity array, after making sure subentities don't think ship is owner.
+
+- (Quaternion) subEntityRotationalVelocity;
+- (void) setSubEntityRotationalVelocity:(Quaternion)rv;
 
 // subentities management
 - (NSString *) serializeShipSubEntities;
@@ -558,6 +593,9 @@ typedef enum
 - (OOWeaponFacingSet) weaponFacings;
 - (BOOL) hasEquipmentItem:(id)equipmentKeys includeWeapons:(BOOL)includeWeapons whileLoading:(BOOL)loading;	// This can take a string or an set or array of strings. If a collection, returns YES if ship has _any_ of the specified equipment. If includeWeapons is NO, missiles and primary weapons are not checked.
 - (BOOL) hasEquipmentItem:(id)equipmentKeys;			// Short for hasEquipmentItem:foo includeWeapons:NO whileLoading:NO
+- (NSUInteger) countEquipmentItem:(NSString *)eqkey;
+- (NSString *) equipmentItemProviding:(NSString *)equipmentType;
+- (BOOL) hasEquipmentItemProviding:(NSString *)equipmentType;
 - (BOOL) hasAllEquipment:(id)equipmentKeys includeWeapons:(BOOL)includeWeapons whileLoading:(BOOL)loading;		// Like hasEquipmentItem:includeWeapons:, but requires _all_ elements in collection.
 - (BOOL) hasAllEquipment:(id)equipmentKeys;				// Short for hasAllEquipment:foo includeWeapons:NO
 - (BOOL) setWeaponMount:(OOWeaponFacing)facing toWeapon:(NSString *)eqKey;
@@ -568,6 +606,7 @@ typedef enum
 - (BOOL) addEquipmentItem:(NSString *)equipmentKey withValidation:(BOOL)validateAddition inContext:(NSString *)context;
 - (BOOL) hasHyperspaceMotor;
 - (float) hyperspaceSpinTime;
+- (void) setHyperspaceSpinTime:(float)new;
 
 
 - (NSEnumerator *) equipmentEnumerator;
@@ -594,7 +633,10 @@ typedef enum
 - (NSUInteger) extraCargo;
 
 // Tests for the various special-cased equipment items
+// (Nowadays, more convenience methods)
 - (BOOL) hasScoop;
+- (BOOL) hasFuelScoop;
+- (BOOL) hasCargoScoop;
 - (BOOL) hasECM;
 - (BOOL) hasCloakingDevice;
 - (BOOL) hasMilitaryScannerFilter;
@@ -617,8 +659,19 @@ typedef enum
 
 - (float) maxHyperspaceDistance;
 - (float) afterburnerFactor;
+- (float) afterburnerRate;
+- (void) setAfterburnerFactor:(GLfloat)new;
+- (void) setAfterburnerRate:(GLfloat)new;
 - (float) maxThrust;
 - (float) thrust;
+
+- (void) setMaxThrust:(GLfloat)new;
+- (void) setMaxFlightPitch:(GLfloat)new;
+- (void) setMaxFlightSpeed:(GLfloat)new;
+- (void) setMaxFlightRoll:(GLfloat)new;
+- (void) setMaxFlightYaw:(GLfloat)new;
+- (void) setEnergyRechargeRate:(GLfloat)new;
+
 
 - (void) processBehaviour:(OOTimeDelta)delta_t;
 // Behaviours
@@ -656,11 +709,22 @@ typedef enum
 - (void) behaviour_fly_thru_navpoints:(double) delta_t;
 - (void) behaviour_scripted_ai:(double) delta_t;
 
-- (GLfloat *) scannerDisplayColorForShip:(ShipEntity*)otherShip :(BOOL)isHostile :(BOOL)flash :(OOColor *)scannerDisplayColor1 :(OOColor *)scannerDisplayColor2;
+- (float) reactionTime;
+- (void) setReactionTime: (float) newReactionTime;
+- (HPVector) calculateTargetPosition;
+- (void) startTrackingCurve;
+- (void) updateTrackingCurve;
+- (void) calculateTrackingCurve;
+
+- (GLfloat *) scannerDisplayColorForShip:(ShipEntity*)otherShip :(BOOL)isHostile :(BOOL)flash :(OOColor *)scannerDisplayColor1 :(OOColor *)scannerDisplayColor2 :(OOColor *)scannerDisplayColorH1 :(OOColor *)scannerDisplayColorH2;
 - (void)setScannerDisplayColor1:(OOColor *)color1;
 - (void)setScannerDisplayColor2:(OOColor *)color2;
 - (OOColor *)scannerDisplayColor1;
 - (OOColor *)scannerDisplayColor2;
+- (void)setScannerDisplayColorHostile1:(OOColor *)color1;
+- (void)setScannerDisplayColorHostile2:(OOColor *)color2;
+- (OOColor *)scannerDisplayColorHostile1;
+- (OOColor *)scannerDisplayColorHostile2;
 
 - (BOOL)isCloaked;
 - (void)setCloaked:(BOOL)cloak;
@@ -702,10 +766,13 @@ typedef enum
 - (NSString *) shipUniqueName;
 - (NSString *) shipClassName;
 - (NSString *) displayName;
+- (NSString *) scanDescription;
+- (NSString *) scanDescriptionForScripting;
 - (void) setName:(NSString *)inName;
 - (void) setShipUniqueName:(NSString *)inName;
 - (void) setShipClassName:(NSString *)inName;
 - (void) setDisplayName:(NSString *)inName;
+- (void) setScanDescription:(NSString *)inName;
 - (NSString *) identFromShip:(ShipEntity*) otherShip; // name displayed to other ships
 
 - (BOOL) hasRole:(NSString *)role;
@@ -747,6 +814,13 @@ typedef enum
 - (BOOL) isDefenseTarget:(Entity *)target;
 - (void) removeDefenseTarget:(Entity *)target;
 - (void) removeAllDefenseTargets;
+
+// collision exceptions
+- (NSArray *) collisionExceptions;
+- (void) addCollisionException:(ShipEntity *)ship;
+- (void) removeCollisionException:(ShipEntity *)ship;
+- (BOOL) collisionExceptedFor:(ShipEntity *)ship;
+
 
 
 - (GLfloat) weaponRange;
@@ -827,12 +901,15 @@ typedef enum
 - (OOCargoQuantity) commodityAmount;
 
 - (OOCargoQuantity) maxAvailableCargoSpace;
+- (void) setMaxAvailableCargoSpace:(OOCargoQuantity)new;
 - (OOCargoQuantity) availableCargoSpace;
 - (OOCargoQuantity) cargoQuantityOnBoard;
 - (OOCargoType) cargoType;
 - (NSArray *) cargoListForScripting;
 - (NSMutableArray *) cargo;
 - (void) setCargo:(NSArray *)some_cargo;
+- (BOOL) addCargo:(NSArray *) some_cargo;
+- (BOOL) removeCargo:(OOCommodityType)commodity amount:(OOCargoQuantity) amount;
 - (BOOL) showScoopMessage;
 
 - (NSArray *) passengerListForScripting;
@@ -901,6 +978,8 @@ typedef enum
 - (void) becomeLargeExplosion:(double) factor;
 - (void) becomeEnergyBlast;
 - (void) broadcastEnergyBlastImminent;
+- (void) setIsWreckage:(BOOL)isw;
+- (BOOL) showDamage;
 
 - (Vector) positionOffsetForAlignment:(NSString*) align;
 Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q, NSString* align);
@@ -957,6 +1036,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 - (BOOL) isValidTarget:(Entity *) target;
 - (void) addTarget:(Entity *) targetEntity;
 - (void) removeTarget:(Entity *) targetEntity;
+- (BOOL) canStillTrackPrimaryTarget;
 - (id) primaryTarget;
 - (id) primaryTargetWithoutValidityCheck;
 - (StationEntity *) targetStation;
@@ -1046,7 +1126,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 - (BOOL) launchCascadeMine;
 - (ShipEntity *) launchEscapeCapsule;
 - (OOCommodityType) dumpCargo;
-- (ShipEntity *) dumpCargoItem;
+- (ShipEntity *) dumpCargoItem:(OOCommodityType)preferred;
 - (OOCargoType) dumpItem: (ShipEntity*) jetto;
 
 - (void) manageCollisions;
@@ -1210,23 +1290,22 @@ NSDictionary *OODefaultShipShaderMacros(void);
 
 GLfloat getWeaponRangeFromType(OOWeaponType weapon_type);
 
-// Stuff implemented in OOConstToString.m
-enum
-{
-	// Values used for unknown strings.
-	kOOWeaponTypeDefault		= WEAPON_NONE
-};
-
+// Defined in OOConstToString.m
 NSString *OOStringFromBehaviour(OOBehaviour behaviour) CONST_FUNC;
 
 // Weapon strings prefixed with EQ_, used in shipyard.plist.
 NSString *OOEquipmentIdentifierFromWeaponType(OOWeaponType weapon) CONST_FUNC;
 OOWeaponType OOWeaponTypeFromEquipmentIdentifierSloppy(NSString *string) PURE_FUNC;	// Uses suffix match for backwards compatibility.
 OOWeaponType OOWeaponTypeFromEquipmentIdentifierStrict(NSString *string) PURE_FUNC;
+OOWeaponType OOWeaponTypeFromEquipmentIdentifierLegacy(NSString *string);
+
 
 NSString *OOStringFromWeaponType(OOWeaponType weapon) CONST_FUNC;
 OOWeaponType OOWeaponTypeFromString(NSString *string) PURE_FUNC;
 
+BOOL isWeaponNone(OOWeaponType weapon);
+
 NSString *OODisplayStringFromAlertCondition(OOAlertCondition alertCondition);
 
 NSString *OOStringFromShipDamageType(OOShipDamageType type) CONST_FUNC;
+

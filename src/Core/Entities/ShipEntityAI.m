@@ -455,7 +455,7 @@
 	OOPlanetEntity	*nearest = [self findNearestPlanet];
 	if (isNearPlanetSurface)
 	{
-		destination = [nearest position];
+		_destination = [nearest position];
 		behaviour = BEHAVIOUR_LAND_ON_PLANET;
 		planetForLanding = [nearest universalID];
 	}
@@ -592,7 +592,7 @@
 {
 	if (dockingInstructions != nil)
 	{
-		destination = [dockingInstructions oo_hpvectorForKey:@"destination"];
+		_destination = [dockingInstructions oo_hpvectorForKey:@"destination"];
 		desired_speed = fmin([dockingInstructions oo_floatForKey:@"speed"], maxFlightSpeed);
 		desired_range = [dockingInstructions oo_floatForKey:@"range"];
 		if (dockingInstructions[@"station"])
@@ -888,14 +888,14 @@
 - (void) setDestinationToCurrentLocation
 {
 	// randomly add a .5m variance
-	destination = HPvector_add(position, OOHPVectorRandomSpatial(0.5));
+	_destination = HPvector_add(position, OOHPVectorRandomSpatial(0.5));
 }
 
 
 - (void) setDestinationToJinkPosition
 {
 	Vector front = vector_multiply_scalar([self forwardVector], flightSpeed / max_flight_pitch * 2);
-	destination = HPvector_add(position, vectorToHPVector(vector_add(front, OOVectorRandomSpatial(100))));
+	_destination = HPvector_add(position, vectorToHPVector(vector_add(front, OOVectorRandomSpatial(100))));
 	pitching_over = YES; // don't complete roll first, but immediately start with pitching. 
 }
 
@@ -1051,7 +1051,7 @@
 	/*-- Locates the nearest debris in range --*/
 	if (!isStation)
 	{
-		if (![self hasScoop])
+		if (![self hasCargoScoop])
 		{
 			[shipAI message:@"NOTHING_FOUND"];		//can't collect loot if you have no scoop!
 			return;
@@ -1082,7 +1082,7 @@
 		ShipEntity *other = (ShipEntity *)scanned_ships[i];
 		if ([other scanClass] == CLASS_CARGO && [other cargoType] != CARGO_NOT_CARGO && [other status] != STATUS_BEING_SCOOPED)
 		{
-			if ((![self isPolice]) || ([other commodityType] == 3)) // police only rescue lifepods and slaves
+			if ((![self isPolice]) || ([[other commodityType] isEqualToString:@"slaves"])) // police only rescue lifepods and slaves
 			{
 				GLfloat d2 = distance2_scanned_ships[i];
 				if (d2 < found_d2)
@@ -1100,7 +1100,7 @@
 - (void) scanForRandomLoot
 {
 	/*-- Locates the all debris in range and chooses a piece at random from the first sixteen found --*/
-	if (![self isStation] && ![self hasScoop])
+	if (![self isStation] && ![self hasCargoScoop])
 	{
 		[shipAI message:@"NOTHING_FOUND"];		//can't collect loot if you have no scoop!
 		return;
@@ -1210,7 +1210,7 @@
 
 - (void) setDestinationFromCoordinates
 {
-	destination = coordinates;
+	_destination = coordinates;
 }
 
 
@@ -1315,7 +1315,7 @@
 		p1.y += variation * (randf() - variation);
 		p1.z += variation * (randf() - variation);
 		p1 = HPvector_normal(p1); 
-		destination = HPvector_add(p_pos, HPvector_multiply_scalar(p1, p_cr));	// on surface
+		_destination = HPvector_add(p_pos, HPvector_multiply_scalar(p1, p_cr));	// on surface
 		desired_range = collision_radius + 100.0;	// +100m from the destination
 	}
 	else
@@ -1331,7 +1331,7 @@
 	OOPlanetEntity	*the_planet =  [self findNearestPlanet];
 	if (the_planet)
 	{
-		destination = HPvector_add([the_planet position], HPvector_multiply_scalar(
+		_destination = HPvector_add([the_planet position], HPvector_multiply_scalar(
 																			   HPvector_normal(HPvector_subtract([the_planet position],position)),-10000.0-the_planet->collision_radius));// 10km straight up
 		desired_range = 50.0;
 	}
@@ -1418,7 +1418,7 @@
 {
 	Entity *the_target = [self primaryTarget];
 	if (the_target)
-		destination = the_target->position;
+		_destination = the_target->position;
 }
 
 
@@ -1431,14 +1431,14 @@
 		Quaternion q;	quaternion_set_random(&q);
 		Vector v = vector_forward_from_quaternion(q);
 		GLfloat d = (randf() - randf()) * the_target->collision_radius;
-		destination = make_HPvector(pos.x + d * v.x, pos.y + d * v.y, pos.z + d * v.z);
+		_destination = make_HPvector(pos.x + d * v.x, pos.y + d * v.y, pos.z + d * v.z);
 	}
 }
 
 
 - (void) checkCourseToDestination
 {
-	Entity *hazard = [UNIVERSE hazardOnRouteFromEntity: self toDistance: desired_range fromPoint: destination];
+	Entity *hazard = [UNIVERSE hazardOnRouteFromEntity: self toDistance: desired_range fromPoint: _destination];
 	
 	if (hazard == nil || ([hazard isShip] && HPdistance(position, [hazard position]) > scannerRange) || ([hazard isPlanet] && aegis_status == AEGIS_NONE)) 
 		[shipAI message:@"COURSE_OK"]; // Avoid going into a waypoint.plist for far away objects, it cripples the main AI a bit in its funtionality.
@@ -1449,7 +1449,7 @@
 			[shipAI reactToMessage:@"HAZARD_CAN_BE_DESTROYED" context:@"checkCourseToDestination"];
 		}
 		
-		destination = [UNIVERSE getSafeVectorFromEntity:self toDistance:desired_range fromPoint:destination];
+		_destination = [UNIVERSE getSafeVectorFromEntity:self toDistance:desired_range fromPoint:_destination];
 		[shipAI message:@"WAYPOINT_SET"];
 	}
 }
@@ -1597,7 +1597,7 @@
 {
 	if (UNIVERSE)
 	{
-		destination = [UNIVERSE getWitchspaceExitPosition];
+		_destination = [UNIVERSE getWitchspaceExitPosition];
 		desired_range = 10000.0;   // 10km away
 	}
 }
@@ -1605,7 +1605,7 @@
 
 - (void) setDestinationToWitchpoint
 {
-	destination = [UNIVERSE getWitchspaceExitPosition];
+	_destination = [UNIVERSE getWitchspaceExitPosition];
 }
 
 
@@ -1613,7 +1613,7 @@
 {
 	if ([UNIVERSE station])
 	{
-		destination = [[UNIVERSE station] beaconPosition];
+		_destination = [[UNIVERSE station] beaconPosition];
 	}
 }
 
@@ -2213,7 +2213,7 @@
 	v0.x *= bo_distance;	v0.y *= bo_distance;	v0.z *= bo_distance;
 	v0.x += d0.x;	v0.y += d0.y;	v0.z += d0.z;
 	coordinates = v0;
-	destination = v0;
+	_destination = v0;
 }
 
 
@@ -2711,7 +2711,7 @@
 	navpoints[2] = make_HPvector(o.x + 2.0 * c * k.x, o.y + 2.0 * c * k.y, o.z + 2.0 * c * k.z);
 	number_of_navpoints = 2;
 	next_navpoint_index = 0;
-	destination = navpoints[0];
+	_destination = navpoints[0];
 	[shipAI message:@"RACEPOINTS_SET"];
 }
 
@@ -2762,7 +2762,7 @@
 	}
 	
 	NSArray			*sDests = nil;
-	Random_Seed		targetSystem;
+	OOSystemID		targetSystem;
 	NSUInteger		i = 0;
 	
 	// get a list of destinations within range
@@ -2798,12 +2798,12 @@
 			i = ranrot_rand() % n_dests;
 		}
 		
-		NSString *systemSeedKey = [sDests oo_dictionaryAtIndex:i][@"system_seed"];
-		targetSystem = RandomSeedFromString(systemSeedKey);
+		
+		targetSystem = [[sDests oo_dictionaryAtIndex:i] oo_intForKey:@"sysID"];
 	}
 	else
 	{
-		targetSystem = [UNIVERSE systemSeedForSystemNumber:systemID];
+		targetSystem = systemID;
 		
 		for (i = 0; i < n_dests; i++)
 		{

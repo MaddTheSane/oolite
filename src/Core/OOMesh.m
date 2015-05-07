@@ -54,7 +54,7 @@ MA 02110-1301, USA.
 #import "NSObjectOOExtensions.h"
 
 #import "OOJavaScriptEngine.h"
-
+#import "OODebugStandards.h"
 
 // If set, collision octree depth varies depending on the size of the mesh.
 #define ADAPTIVE_OCTREE_DEPTH		1
@@ -135,9 +135,10 @@ materialDictionary:(NSDictionary *)materialDict
  shadersDictionary:(NSDictionary *)shadersDict
 			smooth:(BOOL)smooth
 	  shaderMacros:(NSDictionary *)macros
-shaderBindingTarget:(id<OOWeakReferenceSupport>)object;
+shaderBindingTarget:(id<OOWeakReferenceSupport>)object
+	   scaleFactor:(float)scale;
 
-- (BOOL) loadData:(NSString *)filename;
+- (BOOL) loadData:(NSString *)filename scaleFactor:(float)scale;
 - (void) checkNormalsAndAdjustWinding;
 - (void) generateFaceTangents;
 - (void) calculateVertexNormalsAndTangentsWithFaceRefs:(VertexFaceRef *)faceRefs;
@@ -242,7 +243,27 @@ static BOOL IsPerVertexNormalMode(OOMeshNormalMode mode)
 					 shadersDictionary:shadersDict
 								smooth:smooth
 						  shaderMacros:macros
-				   shaderBindingTarget:object] autorelease];
+				   shaderBindingTarget:object
+						   scaleFactor:1.0f] autorelease];
+}
+
++ (instancetype) meshWithName:(NSString *)name
+					 cacheKey:(NSString *)cacheKey
+		   materialDictionary:(NSDictionary *)materialDict
+			shadersDictionary:(NSDictionary *)shadersDict
+					   smooth:(BOOL)smooth
+				 shaderMacros:(NSDictionary *)macros
+		  shaderBindingTarget:(id<OOWeakReferenceSupport>)object
+				  scaleFactor:(float)scale
+{
+	return [[[self alloc] initWithName:name
+							  cacheKey:cacheKey
+					materialDictionary:materialDict
+					 shadersDictionary:shadersDict
+								smooth:smooth
+						  shaderMacros:macros
+				   shaderBindingTarget:object
+						   scaleFactor:scale] autorelease];
 }
 
 
@@ -828,6 +849,7 @@ materialDictionary:(NSDictionary *)materialDict
 			smooth:(BOOL)smooth
 	  shaderMacros:(NSDictionary *)macros
 shaderBindingTarget:(id<OOWeakReferenceSupport>)target
+	   scaleFactor:(float)scale
 {
 	OOJS_PROFILE_ENTER
 	
@@ -841,7 +863,7 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 	_stopwatch = [[OOProfilingStopwatch alloc] init];
 #endif
 	
-	if ([self loadData:name])
+	if ([self loadData:name scaleFactor:scale])
 	{
 		[self calculateBoundingVolumes];
 		PROFILE(@"finished calculateBoundingVolumes (again\?\?)");
@@ -1103,7 +1125,7 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 }
 
 
-- (BOOL)loadData:(NSString *)filename
+- (BOOL)loadData:(NSString *)filename scaleFactor:(float)scale
 {
 	OOJS_PROFILE_ENTER
 	
@@ -1116,7 +1138,7 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 	NSString			*cacheKey = nil;
 	BOOL				using_preloaded = NO;
 	
-	cacheKey = [NSString stringWithFormat:@"%@:%u", filename, _normalMode];
+	cacheKey = [NSString stringWithFormat:@"%@:%u:%.3f", filename, _normalMode, scale];
 	cacheData = [OOCacheManager meshDataForName:cacheKey];
 	if (cacheData != nil)
 	{
@@ -1155,6 +1177,7 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 			{
 				// Model not found
 				OOLog(kOOLogMeshDataNotFound, @"***** ERROR: could not find %@", filename);
+				OOStandardsError(@"Model file not found");
 				return NO;
 			}
 			
@@ -1268,7 +1291,7 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 					if (![scanner scanFloat:&z])  failFlag = YES;
 					if (!failFlag)
 					{
-						_vertices[j] = make_vector(x, y, z);
+						_vertices[j] = make_vector(x*scale, y*scale, z*scale);
 					}
 					else
 					{
