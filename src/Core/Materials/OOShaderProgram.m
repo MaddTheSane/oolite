@@ -205,10 +205,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject);
 }
 
 
-- (GLhandleARB)program
-{
-	return program;
-}
+@synthesize program;
 
 @end
 

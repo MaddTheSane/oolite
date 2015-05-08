@@ -166,7 +166,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 @end
 
 
-@interface ShipEntity (Hax)
+@interface ShipEntity (private)
 
 - (instancetype) initBypassForPlayer;
 
@@ -4400,7 +4400,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	fuel_leak_rate = fmax(value, 0.0f);
 }
 
-
+@synthesize commLog;
 - (NSMutableArray *) commLog
 {
 	assert(kCommLogTrimSize < kCommLogTrimThreshold);
@@ -4422,10 +4422,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (NSMutableArray *) roleWeights
-{
-	return roleWeights;
-}
+@synthesize roleWeights;
 
 
 - (void) addRoleForAggression:(ShipEntity *)victim
@@ -5027,10 +5024,10 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 {
 	if (![self weaponsOnline])  return;
 	
-	unsigned i;
+	NSUInteger i;
 	for (i = 1; i < max_missiles; i++)
 	{
-		int next_missile = (activeMissile + i) % max_missiles;
+		NSInteger next_missile = (activeMissile + i) % max_missiles;
 		if (missile_entity[next_missile])
 		{
 			// If we don't have the multi-targeting module installed, clear the active missiles' target
@@ -5086,14 +5083,10 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	alertFlags = 0;
 }
 
-
-- (int) alertFlags
-{
-	return alertFlags;
-}
+@synthesize alertFlags;
 
 
-- (void) setAlertFlag:(int)flag to:(BOOL)value
+- (void) setAlertFlag:(OOAlertFlags)flag to:(BOOL)value
 {
 	if (value)
 	{
@@ -5145,10 +5138,8 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (OOPlayerFleeingStatus) fleeingStatus
-{
-	return fleeing_status;
-}
+@synthesize fleeingStatus = fleeing_status;
+
 
 /////////////////////////////////////////////////////////////////////
 
@@ -7475,31 +7466,8 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 
 }
 
-
-- (NSString *) fastEquipmentA
-{
-	return _fastEquipmentA;
-}
-
-
-- (NSString *) fastEquipmentB
-{
-	return _fastEquipmentB;
-}
-
-
-- (void) setFastEquipmentA:(NSString *)eqKey
-{
-	[_fastEquipmentA release];
-	_fastEquipmentA = [eqKey copy];
-}
-
-
-- (void) setFastEquipmentB:(NSString *)eqKey
-{
-	[_fastEquipmentB release];
-	_fastEquipmentB = [eqKey copy];
-}
+@synthesize fastEquipmentA = _fastEquipmentA;
+@synthesize fastEquipmentB = _fastEquipmentB;
 
 
 - (OOEquipmentType *) weaponTypeForFacing:(OOWeaponFacing)facing strict:(BOOL)strict
@@ -10552,11 +10520,7 @@ static NSString *last_outfitting_key=nil;
 	return using_mining_laser;
 }
 
-
-- (OOSpeechSettings) isSpeechOn
-{
-	return isSpeechOn;
-}
+@synthesize speechOn = isSpeechOn;
 
 
 - (BOOL) canAddEquipment:(NSString *)equipmentKey inContext:(NSString *)context
@@ -10867,11 +10831,7 @@ static NSString *last_outfitting_key=nil;
 	if (ship_trade_in_factor > 100)  ship_trade_in_factor = 100;
 }
 
-
-- (int) tradeInFactor
-{
-	return ship_trade_in_factor;
-}
+@synthesize tradeInFactor = ship_trade_in_factor;
 
 
 - (double) renovationCosts
@@ -11020,10 +10980,7 @@ static NSString *last_outfitting_key=nil;
 }
 
 
-- (NSUInteger) trumbleCount
-{
-	return trumbleCount;
-}
+@synthesize trumbleCount;
 
 
 - (id)trumbleValue
@@ -11152,16 +11109,7 @@ static NSString *last_outfitting_key=nil;
 }
 
 
-- (float) trumbleAppetiteAccumulator
-{
-	return _trumbleAppetiteAccumulator;
-}
-
-
-- (void) setTrumbleAppetiteAccumulator:(float)value
-{
-	_trumbleAppetiteAccumulator = value;
-}
+@synthesize trumbleAppetiteAccumulator = _trumbleAppetiteAccumulator;
 
 
 - (void) mungChecksumWithNSString:(NSString *)str
@@ -11299,10 +11247,7 @@ static NSString *last_outfitting_key=nil;
 }
 
 
-- (NSMutableArray *) targetMemory
-{
-	return target_memory;
-}
+@synthesize targetMemory = target_memory;
 
 - (BOOL) moveTargetMemoryBy:(int)delta
 {
@@ -11368,46 +11313,13 @@ static NSString *last_outfitting_key=nil;
 }
 
 
-- (Quaternion) customViewQuaternion
-{
-	return customViewQuaternion;
-}
-
-
-- (OOMatrix) customViewMatrix
-{
-	return customViewMatrix;
-}
-
-
-- (Vector) customViewOffset
-{
-	return customViewOffset;
-}
-
-
-- (Vector) customViewForwardVector
-{
-	return customViewForwardVector;
-}
-
-
-- (Vector) customViewUpVector
-{
-	return customViewUpVector;
-}
-
-
-- (Vector) customViewRightVector
-{
-	return customViewRightVector;
-}
-
-
-- (NSString *) customViewDescription
-{
-	return customViewDescription;
-}
+@synthesize customViewDescription;
+@synthesize customViewMatrix;
+@synthesize customViewOffset;
+@synthesize customViewForwardVector;
+@synthesize customViewUpVector;
+@synthesize customViewQuaternion;
+@synthesize customViewRightVector;
 
 
 - (void) resetCustomView
@@ -11659,6 +11571,7 @@ static NSString *last_outfitting_key=nil;
 	}
 }
 
+@synthesize galacticHyperspaceBehaviour;
 
 - (void) setGalacticHyperspaceBehaviour:(OOGalacticHyperspaceBehaviour)inBehaviour
 {
@@ -11666,12 +11579,6 @@ static NSString *last_outfitting_key=nil;
 	{
 		galacticHyperspaceBehaviour = inBehaviour;
 	}
-}
-
-
-- (OOGalacticHyperspaceBehaviour) galacticHyperspaceBehaviour
-{
-	return galacticHyperspaceBehaviour;
 }
 
 
@@ -11689,8 +11596,6 @@ static NSString *last_outfitting_key=nil;
 
 
 @synthesize galacticHyperspaceFixedCoords;
-
-
 @synthesize longRangeChartMode;
 
 
@@ -11829,10 +11734,7 @@ else _dockTarget = NO_TARGET;
 	}
 }
 
-- (OODockingClearanceStatus)getDockingClearanceStatus
-{
-	return dockingClearanceStatus;
-}
+@synthesize dockingClearanceStatus;
 
 
 - (void)penaltyForUnauthorizedDocking

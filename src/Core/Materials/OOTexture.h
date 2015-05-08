@@ -185,24 +185,24 @@ typedef OOPixMapFormat OOTextureDataFormat;
 	-ensureFinishedLoading does, so -ensureFinishedLoading is still required
 	before using the texture in a display list.
 */
-@property (getter=isFinishedLoading, readonly) BOOL finishedLoading;
+@property (getter=isFinishedLoading, readonly, nonatomic) BOOL finishedLoading;
 
-@property (readonly, copy) NSString *cacheKey;
+@property (readonly, copy, nonatomic) NSString *cacheKey;
 
 /*	Dimensions in pixels.
 	This will block until loading is completed.
 */
-@property (readonly) NSSize dimensions;
+@property (readonly, nonatomic) NSSize dimensions;
 
 /*	Original file dimensions in pixels.
 	This will block until loading is completed.
 */
-@property (readonly) NSSize originalDimensions;
+@property (readonly, nonatomic) NSSize originalDimensions;
 
 /*	Check whether texture is mip-mapped.
 	This will block until loading is completed.
 */
-@property (getter=isMipMapped, readonly) BOOL mipMapped;
+@property (getter=isMipMapped, readonly, nonatomic) BOOL mipMapped;
 
 /*	Create a new pixmap with a copy of the texture data. The caller is
 	responsible for free()ing the resulting buffer.
@@ -211,8 +211,8 @@ typedef OOPixMapFormat OOTextureDataFormat;
 
 /*	Identify special texture types.
 */
-@property (getter=isRectangleTexture, readonly) BOOL rectangleTexture;
-@property (getter=isCubeMap, readonly) BOOL cubeMap;
+@property (getter=isRectangleTexture, readonly, nonatomic) BOOL rectangleTexture;
+@property (getter=isCubeMap, readonly, nonatomic) BOOL cubeMap;
 
 
 /*	Dimensions in texture coordinates.
@@ -239,12 +239,12 @@ typedef OOPixMapFormat OOTextureDataFormat;
 	support this in future, but this shouldn’t affect the interface, only
 	avoid the scaling-to-power-of-two stage.
 */
-@property (readonly) NSSize texCoordsScale;
+@property (readonly, nonatomic) NSSize texCoordsScale;
 
 /*	OpenGL texture name.
 	Not reccomended, but required for legacy TextureStore.
 */
-@property (readonly) GLint glTextureName;
+@property (readonly, nonatomic) GLint glTextureName;
 
 //	Forget all cached textures so new texture objects will reload.
 + (void) clearCache;
@@ -258,9 +258,9 @@ typedef OOPixMapFormat OOTextureDataFormat;
 + (NSArray *) cachedTexturesByAge;
 + (NSSet *) allTextures;
 
-@property (readonly) size_t dataSize;
+@property (readonly, nonatomic) size_t dataSize;
 
-@property (readonly, copy) NSString *name;
+@property (readonly, copy, nonatomic) NSString *name;
 #endif
 
 @end

@@ -315,7 +315,7 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 
 	GLfloat					scannerRange;				// typically 25600
 	
-	unsigned				missiles;					// number of on-board missiles
+	NSUInteger				missiles;					// number of on-board missiles
 	NSUInteger				max_missiles;				// number of missile pylons
 	NSString				*_missileRole;
 	OOTimeDelta				missile_load_time;			// minimum time interval between missile launches
@@ -490,23 +490,22 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 
 // ship brains
 - (void) setStateMachine:(NSString *)ai_desc;
-@property (getter=getAI, strong) AI *AI;
-@property (readonly) BOOL hasAutoAI;
-@property (readonly) BOOL hasNewAI;
+@property (getter=getAI, strong, nonatomic) AI *AI;
+@property (readonly, atomic) BOOL hasAutoAI;
+@property (readonly, atomic) BOOL hasNewAI;
 - (void) setShipScript:(NSString *)script_name;
 - (void) removeScript;
 - (OOScript *) shipScript;
 @property (readonly, strong) OOScript *shipAIScript;
-@property (readonly) OOTimeAbsolute shipAIScriptWakeTime;
-- (void) setAIScriptWakeTime:(OOTimeAbsolute) t;
-@property (readonly) double frustration;
+@property (setter=setAIScriptWakeTime:) OOTimeAbsolute shipAIScriptWakeTime;
+@property (atomic, readonly) double frustration;
 - (void) setLaunchDelay:(double)delay;
 
 - (void) interpretAIMessage:(NSString *)message;
 
-@property  GLfloat accuracy;
+@property (nonatomic) GLfloat accuracy;
 
-@property (copy) OOMesh *mesh;
+@property (atomic, copy) OOMesh *mesh;
 
 @property (readonly) BoundingBox totalBoundingBox;
 
@@ -514,29 +513,29 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 @property (readonly) Vector upVector;
 @property (readonly) Vector rightVector;
 
-@property (readonly, copy) NSArray *subEntities;
-@property (readonly) NSUInteger subEntityCount;
+@property (atomic, readonly, copy) NSArray *subEntities;
+@property (atomic, readonly) NSUInteger subEntityCount;
 - (BOOL) hasSubEntity:(Entity<OOSubEntity> *)sub;
 
-@property (readonly, strong) NSEnumerator *subEntityEnumerator;
-@property (readonly, strong) NSEnumerator *shipSubEntityEnumerator;
-@property (readonly, strong) NSEnumerator *flasherEnumerator;
-@property (readonly, strong) NSEnumerator *exhaustEnumerator;
+@property (atomic, readonly, strong) NSEnumerator *subEntityEnumerator;
+@property (atomic, readonly, strong) NSEnumerator *shipSubEntityEnumerator;
+@property (atomic, readonly, strong) NSEnumerator *flasherEnumerator;
+@property (atomic, readonly, strong) NSEnumerator *exhaustEnumerator;
 
-@property (strong) ShipEntity *subEntityTakingDamage;
+@property (atomic, strong) ShipEntity *subEntityTakingDamage;
 
 - (void) clearSubEntities;	// Releases and clears subentity array, after making sure subentities don't think ship is owner.
 
 @property  Quaternion subEntityRotationalVelocity;
 
 // subentities management
-@property (readonly, copy) NSString *serializeShipSubEntities;
+@property (readonly, copy, atomic) NSString *serializeShipSubEntities;
 - (void) deserializeShipSubEntitiesFrom:(NSString *)string;
 @property (readonly) NSUInteger maxShipSubEntities;
 @property  NSUInteger subIdx;
 
 @property (readonly, strong) Octree *octree;
-@property (readonly) float volume;
+@property (readonly, atomic) float volume;
 
 // octree collision hunting
 - (GLfloat)doesHitLine:(HPVector)v0 :(HPVector)v1;
@@ -545,14 +544,14 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 
 - (BoundingBox) findBoundingBoxRelativeToPosition:(HPVector)opv InVectors:(Vector)i :(Vector)j :(Vector)k;
 
-@property (readonly) HPVector absoluteTractorPosition;
+@property (readonly, atomic) HPVector absoluteTractorPosition;
 
 // beacons // definitions now in <OOBeaconEntity> protocol
 
-@property  BOOL isBoulder;
-@property (getter=isMinable, readonly) BOOL minable;
+@property (atomic) BOOL isBoulder;
+@property (getter=isMinable, readonly, atomic) BOOL minable;
 
-@property (readonly) BOOL countsAsKill;
+@property (readonly, atomic) BOOL countsAsKill;
 
 - (void) setUpEscorts;
 - (void) updateEscortFormation;
@@ -560,12 +559,12 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 - (instancetype)initWithKey:(NSString *)key definition:(NSDictionary *)dict NS_DESIGNATED_INITIALIZER;
 - (BOOL)setUpFromDictionary:(NSDictionary *) shipDict;
 - (BOOL)setUpShipFromDictionary:(NSDictionary *) shipDict;
-@property (readonly) BOOL setUpSubEntities;
+- (BOOL)setUpSubEntities;
 - (BOOL) setUpOneStandardSubentity:(NSDictionary *) subentDict asTurret:(BOOL)asTurret;
 @property (readonly) GLfloat frustumRadius;
 
 @property (copy) NSString *shipDataKey;
-@property (readonly, copy) NSString *shipDataKeyAutoRole;
+@property (readonly, copy, atomic) NSString *shipDataKeyAutoRole;
 
 @property (readonly, copy) NSDictionary *shipInfoDictionary;
 
@@ -574,10 +573,10 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 @property (readonly) Vector forwardWeaponOffset;
 @property (readonly) Vector portWeaponOffset;
 @property (readonly) Vector starboardWeaponOffset;
-@property (readonly) BOOL hasAutoWeapons;
+@property (atomic, readonly) BOOL hasAutoWeapons;
 
-@property (getter=isFrangible, readonly) BOOL frangible;
-@property (readonly) BOOL suppressFlightNotifications;
+@property (getter=isFrangible, readonly, atomic) BOOL frangible;
+@property (readonly, atomic) BOOL suppressFlightNotifications;
 
 - (void) respondToAttackFrom:(Entity *)from becauseOf:(Entity *)other;
 
@@ -596,16 +595,16 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 - (BOOL) equipmentValidToAdd:(NSString *)equipmentKey whileLoading:(BOOL)loading inContext:(NSString *)context;
 - (BOOL) addEquipmentItem:(NSString *)equipmentKey inContext:(NSString *)context;
 - (BOOL) addEquipmentItem:(NSString *)equipmentKey withValidation:(BOOL)validateAddition inContext:(NSString *)context;
-@property (readonly) BOOL hasHyperspaceMotor;
+@property (readonly, atomic) BOOL hasHyperspaceMotor;
 @property  float hyperspaceSpinTime;
 
 
-@property (readonly, strong) NSEnumerator *equipmentEnumerator;
-@property (readonly) NSUInteger equipmentCount;
+@property (readonly, strong, atomic) NSEnumerator *equipmentEnumerator;
+@property (readonly, atomic) NSUInteger equipmentCount;
 - (void) removeEquipmentItem:(NSString *)equipmentKey;
 - (void) removeAllEquipment;
-@property (readonly, copy) OOEquipmentType *selectMissile;
-@property (readonly) OOCreditsQuantity removeMissiles;
+- (OOEquipmentType *)selectMissile;
+- (OOCreditsQuantity) removeMissiles;
 
 // Internal, subject to change. Use the methods above instead.
 - (BOOL) hasOneEquipmentItem:(NSString *)itemKey includeWeapons:(BOOL)includeMissiles whileLoading:(BOOL)loading;
@@ -614,44 +613,44 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 - (BOOL) removeExternalStore:(OOEquipmentType *)eqType;
 
 // Passengers and parcels - not supported for NPCs, but interface is here for genericity.
-@property (readonly) NSUInteger parcelCount;
-@property (readonly) NSUInteger passengerCount;
-@property (readonly) NSUInteger passengerCapacity;
+@property (atomic, readonly) NSUInteger parcelCount;
+@property (atomic, readonly) NSUInteger passengerCount;
+@property (atomic, readonly) NSUInteger passengerCapacity;
 
 @property (readonly) NSUInteger missileCount;
 @property (readonly) NSUInteger missileCapacity;
 
-@property (readonly) NSUInteger extraCargo;
+@property (readonly) OOCargoQuantity extraCargo;
 
 // Tests for the various special-cased equipment items
 // (Nowadays, more convenience methods)
-@property (readonly) BOOL hasScoop;
-@property (readonly) BOOL hasFuelScoop;
-@property (readonly) BOOL hasCargoScoop;
-@property (readonly) BOOL hasECM;
-@property (readonly) BOOL hasCloakingDevice;
-@property (readonly) BOOL hasMilitaryScannerFilter;
-@property (readonly) BOOL hasMilitaryJammer;
-@property (readonly) BOOL hasExpandedCargoBay;
-@property (readonly) BOOL hasShieldBooster;
-@property (readonly) BOOL hasMilitaryShieldEnhancer;
-@property (readonly) BOOL hasHeatShield;
-@property (readonly) BOOL hasFuelInjection;
-@property (readonly) BOOL hasCascadeMine;
-@property (readonly) BOOL hasEscapePod;
-@property (readonly) BOOL hasDockingComputer;
-@property (readonly) BOOL hasGalacticHyperdrive;
+@property (atomic, readonly) BOOL hasScoop;
+@property (atomic, readonly) BOOL hasFuelScoop;
+@property (atomic, readonly) BOOL hasCargoScoop;
+@property (atomic, readonly) BOOL hasECM;
+@property (atomic, readonly) BOOL hasCloakingDevice;
+@property (atomic, readonly) BOOL hasMilitaryScannerFilter;
+@property (atomic, readonly) BOOL hasMilitaryJammer;
+@property (atomic, readonly) BOOL hasExpandedCargoBay;
+@property (atomic, readonly) BOOL hasShieldBooster;
+@property (atomic, readonly) BOOL hasMilitaryShieldEnhancer;
+@property (atomic, readonly) BOOL hasHeatShield;
+@property (atomic, readonly) BOOL hasFuelInjection;
+@property (atomic, readonly) BOOL hasCascadeMine;
+@property (atomic, readonly) BOOL hasEscapePod;
+@property (atomic, readonly) BOOL hasDockingComputer;
+@property (atomic, readonly) BOOL hasGalacticHyperdrive;
 
 // Shield information derived from equipment. NPCs can't have shields, but that should change at some point.
-@property (readonly) float shieldBoostFactor;
-@property (readonly) float maxForwardShieldLevel;
-@property (readonly) float maxAftShieldLevel;
-@property (readonly) float shieldRechargeRate;
+@property (atomic, readonly) float shieldBoostFactor;
+@property (atomic, readonly) float maxForwardShieldLevel;
+@property (atomic, readonly) float maxAftShieldLevel;
+@property (atomic, readonly) float shieldRechargeRate;
 
-@property (readonly) float maxHyperspaceDistance;
-@property  float afterburnerFactor;
-@property  float afterburnerRate;
-@property  float maxThrust;
+@property (atomic, readonly) float maxHyperspaceDistance;
+@property float afterburnerFactor;
+@property float afterburnerRate;
+@property float maxThrust;
 - (float) thrust;
 
 
@@ -693,20 +692,19 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 - (void) behaviour_scripted_ai:(double) delta_t;
 
 @property  float reactionTime;
-@property (readonly) HPVector calculateTargetPosition;
+- (HPVector) calculateTargetPosition;
 - (void) startTrackingCurve;
 - (void) updateTrackingCurve;
 - (void) calculateTrackingCurve;
 
 - (GLfloat *) scannerDisplayColorForShip:(ShipEntity*)otherShip :(BOOL)isHostile :(BOOL)flash :(OOColor *)scannerDisplayColor1 :(OOColor *)scannerDisplayColor2 :(OOColor *)scannerDisplayColorH1 :(OOColor *)scannerDisplayColorH2 NS_RETURNS_INNER_POINTER;
-@property (copy) OOColor *scannerDisplayColor1;
-@property (copy) OOColor *scannerDisplayColor2;
-@property (copy) OOColor *scannerDisplayColorHostile1;
-@property (copy) OOColor *scannerDisplayColorHostile2;
+@property (atomic, copy) OOColor *scannerDisplayColor1;
+@property (atomic, copy) OOColor *scannerDisplayColor2;
+@property (atomic, copy) OOColor *scannerDisplayColorHostile1;
+@property (atomic, copy) OOColor *scannerDisplayColorHostile2;
 
-@property (getter=isCloaked) BOOL cloaked;
-@property (readonly) BOOL hasAutoCloak;
-- (void)setAutoCloak:(BOOL)automatic;
+@property (getter=isCloaked, atomic) BOOL cloaked;
+@property (getter=hasAutoCloak, setter=setAutoCloak:, atomic) BOOL hasAutoCloak;
 
 - (void) applyThrust:(double) delta_t;
 - (void) applyAttitudeChanges:(double) delta_t;
@@ -716,20 +714,20 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 
 @property  double messageTime;
 
-@property (strong) OOShipGroup *group;
+@property (nonatomic, strong) OOShipGroup *group;
 
-@property (strong) OOShipGroup *escortGroup;	// Only for use in unconventional set-up situations.
+@property (atomic, strong) OOShipGroup *escortGroup;	// Only for use in unconventional set-up situations.
 
-@property (readonly, strong) OOShipGroup *stationGroup; // should probably be defined in stationEntity.m
+@property (readonly, strong, atomic) OOShipGroup *stationGroup; // should probably be defined in stationEntity.m
 
-@property (readonly) BOOL hasEscorts;
-@property (readonly, strong) NSEnumerator *escortEnumerator;
-@property (readonly, copy) NSArray *escortArray;
+@property (readonly, atomic) BOOL hasEscorts;
+@property (readonly, strong, atomic) NSEnumerator *escortEnumerator;
+@property (readonly, copy, atomic) NSArray *escortArray;
 
-@property (readonly) uint8_t escortCount;
+@property (readonly, atomic) uint8_t escortCount;
 
 // Pending escort count: number of escorts to set up "later".
-@property  uint8_t pendingEscortCount;
+@property (nonatomic) uint8_t pendingEscortCount;
 
 // allow adjustment of escort numbers from shipdata.plist levels
 @property  uint8_t maxEscortCount;
@@ -737,44 +735,44 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 @property (copy) NSString *name;
 @property (copy) NSString *shipUniqueName;
 @property (copy) NSString *shipClassName;
-@property (copy) NSString *displayName;
-@property (copy) NSString *scanDescription;
-@property (readonly, copy) NSString *scanDescriptionForScripting;
+@property (copy, nonatomic) NSString *displayName;
+@property (copy, nonatomic) NSString *scanDescription;
+@property (readonly, copy, atomic) NSString *scanDescriptionForScripting;
 - (NSString *) identFromShip:(ShipEntity*) otherShip; // name displayed to other ships
 
 - (BOOL) hasRole:(NSString *)role;
-@property (readonly, strong) OORoleSet *roleSet;
+@property (readonly, strong, atomic) OORoleSet *roleSet;
 
 - (void) addRole:(NSString *)role;
 - (void) addRole:(NSString *)role withProbability:(float)probability;
 - (void) removeRole:(NSString *)role;
 
-@property (copy) NSString *primaryRole;
+@property (atomic, copy) NSString *primaryRole;
 - (BOOL)hasPrimaryRole:(NSString *)role;
 
-@property (getter=isPolice, readonly) BOOL police;		// Scan class is CLASS_POLICE
-@property (getter=isThargoid, readonly) BOOL thargoid;		// Scan class is CLASS_THARGOID
-@property (getter=isTrader, readonly) BOOL trader;		// Primary role is "trader" || isPlayer
-@property (getter=isPirate, readonly) BOOL pirate;		// Primary role is "pirate"
-@property (getter=isMissile, readonly) BOOL missile;		// Primary role has suffix "MISSILE"
-@property (getter=isMine, readonly) BOOL mine;			// Primary role has suffix "MINE"
-@property (getter=isWeapon, readonly) BOOL weapon;		// isMissile || isWeapon
-@property (getter=isEscort, readonly) BOOL escort;		// Primary role is "escort" or "wingman"
-@property (getter=isShuttle, readonly) BOOL shuttle;		// Primary role is "shuttle"
-@property (getter=isTurret, readonly) BOOL turret;		// Behaviour is BEHAVIOUR_TRACK_AS_TURRET
-@property (getter=isPirateVictim, readonly) BOOL pirateVictim;	// Primary role is listed in pirate-victim-roles.plist
-@property (getter=isExplicitlyUnpiloted, readonly) BOOL explicitlyUnpiloted; // Has unpiloted = yes in its shipdata.plist entry
-@property (getter=isUnpiloted, readonly) BOOL unpiloted;	// Explicitly unpiloted, hulk, rock, cargo, debris etc; an open-ended criterion that may grow.
+@property (atomic, getter=isPolice, readonly) BOOL police;		// Scan class is CLASS_POLICE
+@property (atomic, getter=isThargoid, readonly) BOOL thargoid;		// Scan class is CLASS_THARGOID
+@property (atomic, getter=isTrader, readonly) BOOL trader;		// Primary role is "trader" || isPlayer
+@property (atomic, getter=isPirate, readonly) BOOL pirate;		// Primary role is "pirate"
+@property (atomic, getter=isMissile, readonly) BOOL missile;		// Primary role has suffix "MISSILE"
+@property (atomic, getter=isMine, readonly) BOOL mine;			// Primary role has suffix "MINE"
+@property (atomic, getter=isWeapon, readonly) BOOL weapon;		// isMissile || isWeapon
+@property (atomic, getter=isEscort, readonly) BOOL escort;		// Primary role is "escort" or "wingman"
+@property (atomic, getter=isShuttle, readonly) BOOL shuttle;		// Primary role is "shuttle"
+@property (atomic, getter=isTurret, readonly) BOOL turret;		// Behaviour is BEHAVIOUR_TRACK_AS_TURRET
+@property (atomic, getter=isPirateVictim, readonly) BOOL pirateVictim;	// Primary role is listed in pirate-victim-roles.plist
+@property (atomic, getter=isExplicitlyUnpiloted, readonly) BOOL explicitlyUnpiloted; // Has unpiloted = yes in its shipdata.plist entry
+@property (atomic, getter=isUnpiloted, readonly) BOOL unpiloted;	// Explicitly unpiloted, hulk, rock, cargo, debris etc; an open-ended criterion that may grow.
 
-@property (readonly) OOAlertCondition alertCondition; // quick calc for shaders
-@property (readonly) OOAlertCondition realAlertCondition; // full calculation for scripting
-@property (readonly) BOOL hasHostileTarget;
+@property (atomic, readonly) OOAlertCondition alertCondition; // quick calc for shaders
+@property (atomic, readonly) OOAlertCondition realAlertCondition; // full calculation for scripting
+@property (atomic, readonly) BOOL hasHostileTarget;
 - (BOOL) isHostileTo:(Entity *)entity;
 
 // defense target handling
-@property (readonly) NSUInteger defenseTargetCount;
-@property (readonly, copy) NSArray *allDefenseTargets;
-@property (readonly, strong) NSEnumerator *defenseTargetEnumerator;
+@property (atomic, readonly) NSUInteger defenseTargetCount;
+@property (atomic, readonly, copy) NSArray *allDefenseTargets;
+@property (atomic, readonly, strong) NSEnumerator *defenseTargetEnumerator;
 - (void) validateDefenseTargets;
 - (BOOL) addDefenseTarget:(Entity *)target;
 - (BOOL) isDefenseTarget:(Entity *)target;
@@ -782,7 +780,7 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 - (void) removeAllDefenseTargets;
 
 // collision exceptions
-@property (readonly, copy) NSArray *collisionExceptions;
+@property (atomic, readonly, copy) NSArray *collisionExceptions;
 - (void) addCollisionException:(ShipEntity *)ship;
 - (void) removeCollisionException:(ShipEntity *)ship;
 - (BOOL) collisionExceptedFor:(ShipEntity *)ship;
@@ -793,30 +791,31 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 - (void) setWeaponDataFromType:(OOWeaponType)weapon_type;
 @property  float energyRechargeRate; // final rate after energy units
 @property  float weaponRechargeRate;
-- (void) setWeaponEnergy:(float)value;
+@property  float weaponEnergy;
 @property (readonly) OOWeaponFacing currentWeaponFacing;
 
 @property  GLfloat scannerRange;
 
 @property  Vector reference;
 
-@property  BOOL reportAIMessages;
+@property (atomic) BOOL reportAIMessages;
 
 - (void) transitionToAegisNone;
-@property (readonly, strong) OOPlanetEntity *findNearestPlanet;
-@property (readonly, strong) Entity<OOStellarBody> *findNearestStellarBody;		// NOTE: includes sun.
-@property (readonly, strong) OOPlanetEntity *findNearestPlanetExcludingMoons;
-@property (readonly) OOAegisStatus checkForAegis;
+- (OOPlanetEntity *) findNearestPlanet;
+/// NOTE: includes sun.
+- (Entity<OOStellarBody> *) findNearestStellarBody;
+- (OOPlanetEntity *) findNearestPlanetExcludingMoons;
+- (OOAegisStatus) checkForAegis;
 - (void) forceAegisCheck;
-@property (readonly) BOOL withinStationAegis;
+@property (readonly, atomic) BOOL withinStationAegis;
 - (void) setLastAegisLock:(Entity<OOStellarBody> *)lastAegisLock;
 
-@property  OOSystemID homeSystem;
-@property  OOSystemID destinationSystem;
+@property OOSystemID homeSystem;
+@property OOSystemID destinationSystem;
 
 
-@property (copy) NSArray *crew;
-@property (readonly, copy) NSArray *crewForScripting;
+@property (copy, nonatomic) NSArray *crew;
+@property (readonly, copy, atomic) NSArray *crewForScripting;
 /**
 	Convenience to set the crew to a single character of the given role,
 	originating in the ship's home system. Does nothing if unpiloted.
@@ -824,10 +823,10 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 - (void) setSingleCrewWithRole:(NSString *)crewRole;
 
 // Fuel and capacity in tenths of light-years.
-@property  OOFuelQuantity fuel;
-@property (readonly) OOFuelQuantity fuelCapacity;
+@property (nonatomic) OOFuelQuantity fuel;
+@property (atomic, readonly) OOFuelQuantity fuelCapacity;
 
-@property (readonly) GLfloat fuelChargeRate;
+@property (atomic, readonly) GLfloat fuelChargeRate;
 
 - (void) setRoll:(double)amount;
 - (void) setRawRoll:(double)amount; // does not multiply by PI/2
@@ -845,45 +844,45 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
  */
 - (void) setBounty:(OOCreditsQuantity)amount withReason:(OOLegalStatusReason)reason;
 - (void) setBounty:(OOCreditsQuantity)amount withReasonAsString:(NSString *)reason;
-@property  OOCreditsQuantity bounty;
+@property (atomic) OOCreditsQuantity bounty;
 
-@property (readonly) int legalStatus;
+@property (atomic, readonly) int legalStatus;
 
-@property (getter=isTemplateCargoPod, readonly) BOOL templateCargoPod;
+@property (getter=isTemplateCargoPod, readonly, atomic) BOOL templateCargoPod;
 - (void) setUpCargoType:(NSString *)cargoString;
 - (void) setCommodity:(OOCommodityType)co_type andAmount:(OOCargoQuantity)co_amount;
 - (void) setCommodityForPod:(OOCommodityType)co_type andAmount:(OOCargoQuantity)co_amount;
 @property (readonly, copy) OOCommodityType commodityType;
 @property (readonly) OOCargoQuantity commodityAmount;
 
-@property  OOCargoQuantity maxAvailableCargoSpace;
-@property (readonly) OOCargoQuantity availableCargoSpace;
-@property (readonly) OOCargoQuantity cargoQuantityOnBoard;
+@property (atomic) OOCargoQuantity maxAvailableCargoSpace;
+@property (atomic, readonly) OOCargoQuantity availableCargoSpace;
+@property (atomic, readonly) OOCargoQuantity cargoQuantityOnBoard;
 @property (readonly) OOCargoType cargoType;
-@property (readonly, copy) NSArray *cargoListForScripting;
+@property (nonatomic, readonly, copy) NSArray *cargoListForScripting;
 - (NSMutableArray *) cargo;
 - (void) setCargo:(NSArray *)some_cargo;
 - (BOOL) addCargo:(NSArray *) some_cargo;
 - (BOOL) removeCargo:(OOCommodityType)commodity amount:(OOCargoQuantity) amount;
-@property (readonly) BOOL showScoopMessage;
+@property (atomic, readonly) BOOL showScoopMessage;
 
-@property (readonly, copy) NSArray *passengerListForScripting;
-@property (readonly, copy) NSArray *parcelListForScripting;
-@property (readonly, copy) NSArray *contractListForScripting;
-@property (readonly, copy) NSArray *equipmentListForScripting;
+@property (atomic, readonly, copy) NSArray *passengerListForScripting;
+@property (atomic, readonly, copy) NSArray *parcelListForScripting;
+@property (atomic, readonly, copy) NSArray *contractListForScripting;
+@property (atomic, readonly, copy) NSArray *equipmentListForScripting;
 - (OOWeaponType) weaponTypeIDForFacing:(OOWeaponFacing)facing strict:(BOOL)strict;
 - (OOEquipmentType *) weaponTypeForFacing:(OOWeaponFacing)facing strict:(BOOL)strict;
-@property (readonly, copy) NSArray *missilesList;
+@property (atomic, readonly, copy) NSArray *missilesList;
 
-@property  OOCargoFlag cargoFlag;
+@property (nonatomic) OOCargoFlag cargoFlag;
 
 - (void) setSpeed:(double)amount;
-@property  double desiredSpeed;
-@property  double desiredRange;
+@property (atomic) double desiredSpeed;
+@property (atomic) double desiredRange;
 
-@property (readonly) double cruiseSpeed;
+@property (atomic, readonly) double cruiseSpeed;
 
-@property (readonly) Vector thrustVector;
+@property (atomic, readonly) Vector thrustVector;
 - (void) setTotalVelocity:(Vector)vel;	// Set velocity to vel - thrustVector, effectively setting the instanteneous velocity to vel.
 
 - (void) increase_flight_speed:(double)delta;
@@ -903,16 +902,16 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 @property  GLfloat maxFlightSpeed;
 @property  GLfloat maxFlightRoll;
 @property  GLfloat maxFlightYaw;
-@property (readonly) GLfloat speedFactor;
+@property (atomic, readonly) GLfloat speedFactor;
 
 @property  GLfloat temperature;
 @property  GLfloat heatInsulation;
 
-@property (readonly) float randomEjectaTemperature;
+@property (readonly, atomic) float randomEjectaTemperature;
 - (float) randomEjectaTemperatureWithMaxFactor:(float)factor;
 
 // the percentage of damage taken (100 is destroyed, 0 is fine)
-@property (readonly) int damage;
+@property (readonly, atomic) int damage;
 
 - (void) dealEnergyDamage:(GLfloat) baseDamage atRange:(GLfloat) range withBias:(GLfloat) velocityBias;
 - (void) dealEnergyDamageWithinDesiredRange;
@@ -929,27 +928,26 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 - (void) becomeEnergyBlast;
 - (void) broadcastEnergyBlastImminent;
 - (void) setIsWreckage:(BOOL)isw;
-@property (readonly) BOOL showDamage;
+@property (atomic, readonly) BOOL showDamage;
 
 - (Vector) positionOffsetForAlignment:(NSString*) align;
 Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q, NSString* align);
 
 - (void) collectBountyFor:(ShipEntity *)other;
 
-@property (readonly) BoundingBox findSubentityBoundingBox;
+@property (atomic, readonly) BoundingBox findSubentityBoundingBox;
 
-@property (readonly) Triangle absoluteIJKForSubentity;
+@property (atomic, readonly) Triangle absoluteIJKForSubentity;
 
-@property (readonly) GLfloat weaponRecoveryTime;
-@property (readonly) GLfloat laserHeatLevel;
-@property (readonly) GLfloat laserHeatLevelAft;
-@property (readonly) GLfloat laserHeatLevelForward;
-@property (readonly) GLfloat laserHeatLevelPort;
-@property (readonly) GLfloat laserHeatLevelStarboard;
-@property (readonly) GLfloat hullHeatLevel;
-@property (readonly) GLfloat entityPersonality;
-- (GLint)entityPersonalityInt;
-- (void) setEntityPersonalityInt:(uint16_t)value;
+@property (atomic, readonly) GLfloat weaponRecoveryTime;
+@property (atomic, readonly) GLfloat laserHeatLevel;
+@property (atomic, readonly) GLfloat laserHeatLevelAft;
+@property (atomic, readonly) GLfloat laserHeatLevelForward;
+@property (atomic, readonly) GLfloat laserHeatLevelPort;
+@property (atomic, readonly) GLfloat laserHeatLevelStarboard;
+@property (atomic, readonly) GLfloat hullHeatLevel;
+@property (atomic, readonly) GLfloat entityPersonality;
+@property (nonatomic) uint16_t entityPersonalityInt;
 
 - (void)setSuppressExplosion:(BOOL)suppress;
 
@@ -967,34 +965,34 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 
 - (void) checkScanner;
 - (void) checkScannerIgnoringUnpowered;
-@property (readonly) ShipEntity **scannedShips;
-@property (readonly) int numberOfScannedShips;
+@property (atomic, readonly) ShipEntity **scannedShips;
+@property (atomic, readonly) int numberOfScannedShips;
 
-@property (strong) Entity *foundTarget;
-@property (strong) Entity *primaryAggressor;
-@property (strong) Entity *lastEscortTarget;
-@property (strong) Entity *thankedShip;
-@property (strong) Entity *rememberedShip;
+@property (atomic, strong) Entity *foundTarget;
+@property (atomic, strong) Entity *primaryAggressor;
+@property (atomic, strong) Entity *lastEscortTarget;
+@property (atomic, strong) Entity *thankedShip;
+@property (atomic, strong) Entity *rememberedShip;
 - (Entity *)proximityAlert;
 - (void) setProximityAlert:(ShipEntity *) targetEntity;
 - (void) setTargetStation:(Entity *) targetEntity;
 - (BOOL) isValidTarget:(Entity *) target;
 - (void) addTarget:(Entity *) targetEntity;
 - (void) removeTarget:(Entity *) targetEntity;
-@property (readonly) BOOL canStillTrackPrimaryTarget;
-@property (readonly, strong) id primaryTarget;
-@property (readonly, strong) id primaryTargetWithoutValidityCheck;
+@property (readonly, atomic) BOOL canStillTrackPrimaryTarget;
+@property (readonly, strong, atomic) id primaryTarget;
+@property (readonly, strong, atomic) id primaryTargetWithoutValidityCheck;
 - (StationEntity *) targetStation;
 
 - (BOOL) isFriendlyTo:(ShipEntity *)otherShip;
 
-@property (readonly, strong) ShipEntity *shipHitByLaser;
+@property (readonly, strong, atomic) ShipEntity *shipHitByLaser;
 
 - (void) noteLostTarget;
 - (void) noteLostTargetAndGoIdle;
 - (void) noteTargetDestroyed:(ShipEntity *)target;
 
-@property  OOBehaviour behaviour;
+@property (nonatomic) OOBehaviour behaviour;
 
 - (void) trackOntoTarget:(double) delta_t withDForward: (GLfloat) dp;
 
@@ -1002,12 +1000,12 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 
 - (GLfloat) rollToMatchUp:(Vector) up_vec rotating:(GLfloat) match_roll;
 
-@property (readonly) GLfloat rangeToDestination;
+@property (readonly, atomic) GLfloat rangeToDestination;
 - (double) trackDestination:(double) delta_t :(BOOL) retreat;
 
-- (void) setCoordinate:(HPVector)coord;
-@property (readonly) HPVector coordinates;
-@property  HPVector destination;
+// The name "setCoordinates" is already used by AI scripting.
+@property (setter=setCoordinate:) HPVector coordinates;
+@property (nonatomic) HPVector destination;
 - (HPVector) distance_six: (GLfloat) dist;
 - (HPVector) distance_twelve: (GLfloat) dist withOffset:(GLfloat)offset;
 
@@ -1018,11 +1016,11 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 - (double) missileTrackPrimaryTarget:(double) delta_t;
 
 //return 0.0 if there is no primary target
-@property (readonly) double rangeToPrimaryTarget;
-@property (readonly) double approachAspectToPrimaryTarget;
+@property (readonly, atomic) double rangeToPrimaryTarget;
+@property (readonly, atomic) double approachAspectToPrimaryTarget;
 - (double) rangeToSecondaryTarget:(Entity *)target;
 - (BOOL) hasProximityAlertIgnoringTarget:(BOOL)ignore_target;
-@property (readonly) GLfloat currentAimTolerance;
+@property (readonly, atomic) GLfloat currentAimTolerance;
 /* This method returns a value between 0.0f and 1.0f, depending on how directly our view point
    faces the sun and is used for generating the "staring at the sun" glare effect. 0.0f means that
    we are not facing the sun, 1.0f means that we are looking directly at it. The cosine of the 
@@ -1045,28 +1043,27 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 @property (copy) OOColor *exhaustEmissiveColor;
 - (BOOL) fireSubentityLaserShot:(double)range;
 - (BOOL) fireDirectLaserShot:(double)range;
-@property (readonly) BOOL fireDirectLaserDefensiveShot;
+- (BOOL) fireDirectLaserDefensiveShot;
 - (BOOL) fireDirectLaserShotAt:(Entity *)my_target;
 - (Vector) laserPortOffset:(OOWeaponFacing)direction;
 - (BOOL) fireLaserShotInDirection:(OOWeaponFacing)direction;
 - (void) adjustMissedShots:(int)delta;
-@property (readonly) int missedShots;
+@property (atomic, readonly) int missedShots;
 - (BOOL) firePlasmaShotAtOffset:(double)offset speed:(double)speed color:(OOColor *)color;
 - (void) considerFiringMissile:(double)delta_t;
-@property (readonly) Vector missileLaunchPosition;
-@property (readonly, strong) ShipEntity *fireMissile;
+@property (atomic, readonly) Vector missileLaunchPosition;
+- (ShipEntity *) fireMissile;
 - (ShipEntity *) fireMissileWithIdentifier:(NSString *) identifier andTarget:(Entity *) target;
-@property (getter=isMissileFlagSet, readonly) BOOL missileFlagSet;
-- (void) setIsMissileFlag:(BOOL)newValue;
-@property  OOTimeDelta missileLoadTime;
+@property (getter=isMissileFlagSet, setter=setIsMissileFlag:, atomic) BOOL missileFlagSet;
+@property (nonatomic) OOTimeDelta missileLoadTime;
 - (void) noticeECM;
-@property (readonly) BOOL fireECM;
+- (BOOL) fireECM;
 - (BOOL) cascadeIfAppropriateWithDamageAmount:(double)amount cascadeOwner:(Entity *)owner;
-@property (readonly) BOOL activateCloakingDevice;
+- (BOOL) activateCloakingDevice;
 - (void) deactivateCloakingDevice;
-@property (readonly) BOOL launchCascadeMine;
-@property (readonly, strong) ShipEntity *launchEscapeCapsule;
-@property (readonly, copy) OOCommodityType dumpCargo;
+- (BOOL) launchCascadeMine;
+- (ShipEntity *) launchEscapeCapsule;
+- (OOCommodityType) dumpCargo;
 - (ShipEntity *) dumpCargoItem:(OOCommodityType)preferred;
 - (OOCargoType) dumpItem: (ShipEntity*) jetto;
 
@@ -1079,7 +1076,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 - (void) scoopIn:(ShipEntity *)other;
 - (void) scoopUp:(ShipEntity *)other;
 
-@property (readonly) BOOL abandonShip;
+- (BOOL) abandonShip;
 
 - (void) takeScrapeDamage:(double) amount from:(Entity *) ent;
 - (void) takeHeatDamage:(double) amount;
@@ -1091,7 +1088,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 - (void) enterWormhole:(WormholeEntity *) w_hole replacing:(BOOL)replacing;
 - (void) enterWitchspace;
 - (void) leaveWitchspace;
-@property (readonly) BOOL witchspaceLeavingEffects;
+- (BOOL) witchspaceLeavingEffects;
 
 /* 
  Mark this ship as an offender, this is different to setBounty as some ships such as police 
@@ -1102,7 +1099,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 
 - (void) switchLightsOn;
 - (void) switchLightsOff;
-@property (readonly) BOOL lightsActive;
+@property (readonly, atomic) BOOL lightsActive;
 
 - (void) setEscortDestination:(HPVector) dest;
 
@@ -1125,7 +1122,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 - (void) broadcastHitByLaserFrom:(ShipEntity*) aggressor_ship;
 
 // Sun glare filter - 0 for no filter, 1 for full filter
-@property  GLfloat sunGlareFilter;
+@property (nonatomic) GLfloat sunGlareFilter;
 
 // Unpiloted ships cannot broadcast messages, unless the unpilotedOverride is set to YES.
 - (void) sendExpandedMessage:(NSString *) message_text toShip:(ShipEntity*) other_ship;
@@ -1136,22 +1133,22 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 - (void) receiveCommsMessage:(NSString *) message_text from:(ShipEntity *) other;
 - (void) commsMessage:(NSString *)valueString withUnpilotedOverride:(BOOL)unpilotedOverride;
 
-@property (readonly) BOOL markedForFines;
-@property (readonly) BOOL markForFines;
+@property (readonly, atomic) BOOL markedForFines;
+- (BOOL) markForFines;
 
-@property (getter=isMining, readonly) BOOL mining;
+@property (getter=isMining, readonly, atomic) BOOL mining;
 
 - (void) spawn:(NSString *)roles_number;
 
-@property (readonly) int checkShipsInVicinityForWitchJumpExit;
+- (int) checkShipsInVicinityForWitchJumpExit;
 
-@property  BOOL trackCloseContacts;
+@property (atomic) BOOL trackCloseContacts;
 
 /*
  * Changes a ship to a hulk, for example when the pilot ejects.
  * Aso unsets hulkiness for example when a new pilot gets in.
  */
-@property (getter=isHulk) BOOL hulk;
+@property (getter=isHulk, atomic) BOOL hulk;
 #if OO_SALVAGE_SUPPORT
 - (void) claimAsSalvage;
 - (void) sendCoordinatesToPilot;
@@ -1159,14 +1156,14 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 #endif
 
 @property (readonly, strong) OOJSScript *script;
-@property (readonly, copy) NSDictionary *scriptInfo;
+@property (nonatomic, readonly, copy) NSDictionary *scriptInfo;
 - (void) overrideScriptInfo:(NSDictionary *)override;	// Add items from override (if not nil) to scriptInfo, replacing in case of duplicates. Used for subentities.
 
-@property  BOOL scriptedMisjump;
+@property (atomic) BOOL scriptedMisjump;
 @property  GLfloat scriptedMisjumpRange;
 
 
-@property (readonly, strong) Entity *entityForShaderProperties;
+@property (readonly, strong, atomic) Entity *entityForShaderProperties;
 
 /*	*** Script events.
 	For NPC ships, these call doEvent: on the ship script.

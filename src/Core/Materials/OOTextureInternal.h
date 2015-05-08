@@ -44,7 +44,7 @@ SOFTWARE.
 @interface OOTexture (SubclassResponsibilities)
 
 - (void)apply;
-@property (readonly) NSSize dimensions;
+@property (readonly, nonatomic) NSSize dimensions;
 
 
 - (void) forceRebind;
@@ -59,8 +59,8 @@ SOFTWARE.
 @property (readonly, copy) NSString *cacheKey;						// Default: nil
 @property (getter=isRectangleTexture, readonly) BOOL rectangleTexture;					// Default: NO
 @property (getter=isCubeMap, readonly) BOOL cubeMap;								// Default: NO
-@property (readonly) NSSize texCoordsScale;						// Default: 1,1
-@property (readonly) struct OOPixMap copyPixMapRepresentation;	// Default: kOONullPixMap
+@property (readonly, nonatomic) NSSize texCoordsScale;						// Default: 1,1
+@property (readonly, nonatomic) struct OOPixMap copyPixMapRepresentation;	// Default: kOONullPixMap
 
 @end
 

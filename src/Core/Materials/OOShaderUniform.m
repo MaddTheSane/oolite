@@ -38,9 +38,9 @@ SOFTWARE.
 #import "OOShaderUniformMethodType.h"
 
 
-@interface OOShaderUniform (OOPrivate)
+@interface OOShaderUniform ()
 
-- (instancetype)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram;
+- (instancetype)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram NS_DESIGNATED_INITIALIZER;
 
 - (void)applySimple;
 - (void)applyBinding;
@@ -396,11 +396,6 @@ SOFTWARE.
 	isActiveBinding = OK;
 	if (!OK)  OOLog(@"shader.uniform.bind.failed", @"Shader could not bind uniform \"%@\" to -[%@ %@] (%@).", name, [target class], NSStringFromSelector(value.binding.selector), methodProblem);
 }
-
-@end
-
-
-@implementation OOShaderUniform (OOPrivate)
 
 // Designated initializer.
 - (instancetype)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram

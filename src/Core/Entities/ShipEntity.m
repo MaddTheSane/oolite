@@ -128,7 +128,7 @@ static GLfloat calcFuelChargeRate (GLfloat myMass)
 #endif
 
 
-@interface ShipEntity (Private)
+@interface ShipEntity ()
 
 - (void)subEntityDied:(ShipEntity *)sub;
 - (void)subEntityReallyDied:(ShipEntity *)sub;
@@ -142,7 +142,7 @@ static GLfloat calcFuelChargeRate (GLfloat myMass)
 - (BOOL) setUpOneSubentity:(NSDictionary *) subentDict;
 - (BOOL) setUpOneFlasher:(NSDictionary *) subentDict;
 
-@property (readonly, strong) Entity<OOStellarBody> *lastAegisLock;
+@property (readonly, strong, atomic) Entity<OOStellarBody> *lastAegisLock;
 
 - (void) addSubEntity:(Entity<OOSubEntity> *) subent;
 
@@ -163,7 +163,9 @@ static GLfloat calcFuelChargeRate (GLfloat myMass)
 
 - (void) noteFrustration:(NSString *)context;
 
-@property (readonly) BOOL cloakPassive;
+@property (readonly, atomic) BOOL cloakPassive;
+
+- (instancetype) initBypassForPlayer NS_DESIGNATED_INITIALIZER;
 
 @end
 
@@ -320,7 +322,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	cloakAutomatic = [shipDict oo_boolForKey:@"cloak_automatic" defaultValue:YES];
 
 	missiles = [shipDict oo_intForKey:@"missiles" defaultValue:0];
-	max_missiles = [shipDict oo_intForKey:@"max_missiles" defaultValue:missiles];
+	max_missiles = [shipDict oo_integerForKey:@"max_missiles" defaultValue:missiles];
 	if (max_missiles > SHIPENTITY_MAX_MISSILES) max_missiles = SHIPENTITY_MAX_MISSILES;
 	if (missiles > max_missiles) missiles = max_missiles;
 	missile_load_time = fmax(0.0, [shipDict oo_doubleForKey:@"missile_load_time" defaultValue:0.0]); // no negative load times
@@ -748,22 +750,8 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 }
 
 
-- (void) setSubIdx:(NSUInteger)value
-{
-	_subIdx = value;
-}
-
-
-- (NSUInteger) subIdx
-{
-	return _subIdx;
-}
-
-
-- (NSUInteger) maxShipSubEntities
-{
-	return _maxShipSubIdx;
-}
+	@synthesize subIdx = _subIdx;
+	@synthesize maxShipSubEntities = _maxShipSubIdx;
 
 
 - (NSString *) repeatString:(NSString *)str times:(NSUInteger)times
@@ -797,7 +785,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	}
 	// add trailing zeroes
 	[result appendString:[self repeatString:@"0" times:[self maxShipSubEntities] - i]];
-	return result;
+	return [NSString stringWithString:result];
 }
 
 
@@ -857,12 +845,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	OOJS_PROFILE_EXIT
 }
 
-
-- (GLfloat) frustumRadius
-{
-	return _profileRadius;
-}
-
+@synthesize frustumRadius = _profileRadius;
 
 - (BOOL) setUpOneSubentity:(NSDictionary *) subentDict
 {
@@ -1121,18 +1104,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	if (octree)  mass = (GLfloat)(density * 20.0 * [octree volume]);
 }
 
-
-- (Quaternion) subEntityRotationalVelocity
-{
-	return subentityRotationalVelocity;
-}
-
-
-- (void) setSubEntityRotationalVelocity:(Quaternion)rv
-{
-	subentityRotationalVelocity = rv;
-}
-
+@synthesize subEntityRotationalVelocity;
 
 - (NSString *)descriptionComponents
 {
@@ -1157,24 +1129,14 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	return [NSString stringWithFormat:@"\"%@\"", [self name]];
 }
 
-
-- (GLfloat) sunGlareFilter
-{
-	return sunGlareFilter;
-}
-
+@synthesize sunGlareFilter;
 
 - (void) setSunGlareFilter:(GLfloat)newValue
 {
 	sunGlareFilter = OOClamp_0_1_f(newValue);
 }
 
-
-- (GLfloat) accuracy
-{
-	return accuracy;
-}
-
+@synthesize accuracy;
 
 - (void) setAccuracy:(GLfloat) new_accuracy
 {
@@ -1217,30 +1179,10 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	}
 }
 
-
-- (BoundingBox) totalBoundingBox
-{
-	return totalBoundingBox;
-}
-
-
-- (Vector) forwardVector
-{
-	return v_forward;
-}
-
-
-- (Vector) upVector
-{
-	return v_up;
-}
-
-
-- (Vector) rightVector
-{
-	return v_right;
-}
-
+@synthesize totalBoundingBox;
+@synthesize forwardVector = v_forward;
+@synthesize upVector = v_up;
+@synthesize rightVector = v_right;
 
 - (BOOL) scriptedMisjump
 {
@@ -1254,16 +1196,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 }
 
 
-- (GLfloat) scriptedMisjumpRange
-{
-	return _scriptedMisjumpRange;
-}
-
-
-- (void) setScriptedMisjumpRange:(GLfloat)newValue
-{
-	_scriptedMisjumpRange = newValue;
-}
+@synthesize scriptedMisjumpRange = _scriptedMisjumpRange;
 
 
 - (NSArray *) subEntities
@@ -1355,22 +1288,8 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 }
 
 
-- (OOScript *)shipAIScript
-{
-	return aiScript;
-}
-
-
-- (OOTimeAbsolute) shipAIScriptWakeTime
-{
-	return aiScriptWakeTime;
-}
-
-
-- (void) setAIScriptWakeTime:(OOTimeAbsolute) t
-{
-	aiScriptWakeTime = t;
-}
+@synthesize shipAIScript = aiScript;
+@synthesize shipAIScriptWakeTime = aiScriptWakeTime;
 
 
 - (BoundingBox)findBoundingBoxRelativeToPosition:(HPVector)opv InVectors:(Vector) _i :(Vector) _j :(Vector) _k
@@ -1382,12 +1301,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 												selfBasis:v_right :v_up :v_forward];
 }
 
-
-- (Octree *) octree
-{
-	return octree;
-}
-
+@synthesize octree;
 
 - (float) volume
 {
@@ -1927,29 +1841,14 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	
 }
 
-- (NSString *)shipDataKey
-{
-	return _shipKey;
-}
-
+@synthesize shipDataKey = _shipKey;
 
 - (NSString *)shipDataKeyAutoRole
 {
 	return [[[NSString alloc] initWithFormat:@"[%@]",[self shipDataKey]] autorelease];
 }
 
-
-- (void)setShipDataKey:(NSString *)key
-{
-	DESTROY(_shipKey);
-	_shipKey = [key copy];
-}
-
-
-- (NSDictionary *)shipInfoDictionary
-{
-	return shipinfoDictionary;
-}
+@synthesize shipInfoDictionary;
 
 
 - (void) setDefaultWeaponOffsets
@@ -1960,29 +1859,10 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	starboardWeaponOffset = kZeroVector;
 }
 
-
-- (Vector) aftWeaponOffset
-{
-	return aftWeaponOffset;
-}
-
-
-- (Vector) forwardWeaponOffset
-{
-	return forwardWeaponOffset;
-}
-
-
-- (Vector) portWeaponOffset
-{
-	return portWeaponOffset;
-}
-
-
-- (Vector) starboardWeaponOffset
-{
-	return starboardWeaponOffset;
-}
+@synthesize aftWeaponOffset;
+@synthesize forwardWeaponOffset;
+@synthesize portWeaponOffset;
+@synthesize starboardWeaponOffset;
 
 
 - (BOOL)isFrangible
@@ -3115,18 +2995,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	return hyperspaceMotorSpinTime >= 0;
 }
 
-
-- (float) hyperspaceSpinTime
-{
-	return hyperspaceMotorSpinTime;
-}
-
-
-- (void) setHyperspaceSpinTime:(float)new
-{
-	hyperspaceMotorSpinTime = new;
-}
-
+@synthesize hyperspaceSpinTime = hyperspaceMotorSpinTime;
 
 - (BOOL) canAddEquipment:(NSString *)equipmentKey inContext:(NSString *)context
 {
@@ -3150,10 +3019,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 }
 
 
-- (OOWeaponFacingSet) weaponFacings
-{
-	return weapon_facings;
-}
+@synthesize weaponFacings = weapon_facings;
 
 
 - (OOWeaponType) weaponTypeIDForFacing:(OOWeaponFacing)facing strict:(BOOL)strict
@@ -3815,23 +3681,9 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	return 0;
 }
 
-
-- (NSUInteger) missileCount
-{
-	return missiles;
-}
-
-
-- (NSUInteger) missileCapacity
-{
-	return max_missiles;
-}
-
-
-- (NSUInteger) extraCargo
-{
-	return extra_cargo;
-}
+@synthesize missileCount = missiles;
+@synthesize missileCapacity = max_missiles;
+@synthesize extraCargo = extra_cargo;
 
 
 /* This is used for e.g. displaying the HUD icon */
@@ -3982,47 +3834,14 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	return (float)MAX_JUMP_RANGE;
 }
 
-- (float) afterburnerFactor
-{
-	return afterburner_speed_factor;
-}
-
-
-- (float) afterburnerRate
-{
-	return afterburner_rate;
-}
-
-
-- (void) setAfterburnerFactor:(GLfloat)new
-{
-	afterburner_speed_factor = new;
-}
-
-
-- (void) setAfterburnerRate:(GLfloat)new
-{
-	afterburner_rate = new;
-}
-
-
-- (float) maxThrust
-{
-	return max_thrust;
-}
-
-
-- (void) setMaxThrust:(GLfloat)new
-{
-	max_thrust = new;
-}
-
-
-- (float) thrust
+@synthesize afterburnerFactor = afterburner_speed_factor;
+@synthesize afterburnerRate = afterburner_rate;
+@synthesize maxThrust = max_thrust;
+	
+- (float)thrust
 {
 	return thrust;
 }
-
 
 ////////////////
 //            //
@@ -6174,17 +5993,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 }
 
-- (float) reactionTime
-{
-	return reactionTime;
-}
-
-
-- (void) setReactionTime: (float) newReactionTime
-{
-	reactionTime = newReactionTime;
-}
-
+@synthesize reactionTime;
 
 - (HPVector) calculateTargetPosition
 {
@@ -6782,24 +6591,8 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 	//[shipAI message:@"RESTART_DOCKING"];	// if docking, start over, other AIs will ignore this message
 }
 
-
-- (double) messageTime
-{
-	return messageTime;
-}
-
-
-- (void) setMessageTime:(double) value
-{
-	messageTime = value;
-}
-
-
-- (OOShipGroup *) group
-{
-	return _group;
-}
-
+@synthesize messageTime;
+@synthesize group = _group;
 
 - (void) setGroup:(OOShipGroup *)group
 {
@@ -6818,7 +6611,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 	}
 }
 
-
+@synthesize escortGroup = _escortGroup;
 - (OOShipGroup *) escortGroup
 {
 	if (_escortGroup == nil)
@@ -6891,10 +6684,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 }
 
 
-- (uint8_t) pendingEscortCount
-{
-	return _pendingEscortCount;
-}
+@synthesize pendingEscortCount = _pendingEscortCount;
 
 
 - (void) setPendingEscortCount:(uint8_t)count
@@ -6902,17 +6692,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 	_pendingEscortCount = MIN(count, _maxEscortCount);
 }
 
-
-- (uint8_t) maxEscortCount
-{
-	return _maxEscortCount;
-}
-
-
-- (void) setMaxEscortCount:(uint8_t)newCount
-{
-	_maxEscortCount = newCount;
-}
+@synthesize maxEscortCount = _maxEscortCount;
 
 
 - (Entity*) proximityAlert
@@ -6979,24 +6759,10 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 	_proximityAlert = [other weakRetain];
 }
 
-
-- (NSString *) name
-{
-	return name;
-}
-
-
-- (NSString *) shipUniqueName
-{
-	return shipUniqueName;
-}
-
-
-- (NSString *) shipClassName
-{
-	return shipClassName;
-}
-
+@synthesize name;
+@synthesize shipUniqueName;
+@synthesize shipClassName;
+@synthesize displayName;
 
 - (NSString *) displayName
 {
@@ -7035,7 +6801,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 	return scan_description;
 }
 
-
+@synthesize scanDescription = scan_description;
 - (NSString *)scanDescription
 {
 	if (scan_description != nil)
@@ -7077,42 +6843,6 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 		return desc;
 	}
 }
-
-
-- (void) setName:(NSString *)inName
-{
-	[name release];
-	name = [inName copy];
-}
-
-
-- (void) setShipUniqueName:(NSString *)inName
-{
-	[shipUniqueName release];
-	shipUniqueName = [inName copy];
-}
-
-
-- (void) setShipClassName:(NSString *)inName
-{
-	[shipClassName release];
-	shipClassName = [inName copy];
-}
-
-
-- (void) setDisplayName:(NSString *)inName
-{
-	[displayName release];
-	displayName = [inName copy];
-}
-
-
-- (void) setScanDescription:(NSString *)inName
-{
-	[scan_description release];
-	scan_description = [inName copy];
-}
-
 
 - (NSString *) identFromShip:(ShipEntity*) otherShip
 {
@@ -7341,17 +7071,7 @@ static BOOL IsBehaviourHostile(OOBehaviour behaviour)
 	return ([self hasHostileTarget] && [self primaryTarget] == entity);
 }
 
-- (GLfloat) weaponRange
-{
-	return weaponRange;
-}
-
-
-- (void) setWeaponRange: (GLfloat) value
-{
-	weaponRange = value;
-}
-
+@synthesize weaponRange;
 
 - (void) setWeaponDataFromType: (OOWeaponType) weapon_type
 {
@@ -7372,66 +7092,12 @@ static BOOL IsBehaviourHostile(OOBehaviour behaviour)
 
 }
 
-
-- (float) energyRechargeRate
-{
-	return energy_recharge_rate;
-}
-
-
-- (void) setEnergyRechargeRate:(GLfloat)new
-{
-	energy_recharge_rate = new;
-}
-
-
-- (float) weaponRechargeRate
-{
-	return weapon_recharge_rate;
-}
-
-
-- (void) setWeaponRechargeRate:(float)value
-{
-	weapon_recharge_rate = value;
-}
-
-
-- (void) setWeaponEnergy:(float)value
-{
-	weapon_damage = value;
-}
-
-
--	(OOWeaponFacing) currentWeaponFacing
-{
-	return currentWeaponFacing;
-}
-
-
-- (GLfloat) scannerRange
-{
-	return scannerRange;
-}
-
-
-- (void) setScannerRange: (GLfloat) value
-{
-	scannerRange = value;
-}
-
-
-- (Vector) reference
-{
-	return reference;
-}
-
-
-- (void) setReference:(Vector) v
-{
-	reference = v;
-}
-
+@synthesize energyRechargeRate = energy_recharge_rate;
+@synthesize weaponRechargeRate = weapon_recharge_rate;
+@synthesize weaponEnergy = weapon_damage;
+@synthesize currentWeaponFacing;
+@synthesize scannerRange;
+@synthesize reference;
 
 - (BOOL) reportAIMessages
 {
@@ -7441,7 +7107,7 @@ static BOOL IsBehaviourHostile(OOBehaviour behaviour)
 
 - (void) setReportAIMessages:(BOOL) yn
 {
-	reportAIMessages = yn;
+	reportAIMessages = !!yn;
 }
 
 
@@ -7775,30 +7441,9 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	_lastAegisLock = [lastAegisLock weakRetain];
 }
 
-
-- (OOSystemID) homeSystem
-{
-	return home_system;
-}
-
-
-- (OOSystemID) destinationSystem
-{
-	return destination_system;
-}
-
-
-- (void) setHomeSystem:(OOSystemID)s
-{
-	home_system = s;
-}
-
-
-- (void) setDestinationSystem:(OOSystemID)s
-{
-	destination_system = s;
-}
-
+@synthesize homeSystem = home_system;
+@synthesize destinationSystem = destination_system;
+	
 
 - (void) setStatus:(OOEntityStatus) stat
 {
@@ -7816,10 +7461,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 }
 
 
-- (NSArray *) crew
-{
-	return crew;
-}
+@synthesize crew;
 
 
 - (void) setCrew:(NSArray *)crewArray
@@ -7873,6 +7515,8 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 }
 
 
+@synthesize AI = shipAI;
+
 - (void) setAI:(AI *)ai
 {
 	[ai retain];
@@ -7882,12 +7526,6 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 		[shipAI autorelease];
 	}
 	shipAI = ai;
-}
-
-
-- (AI *) getAI
-{
-	return shipAI;
 }
 
 
@@ -7974,12 +7612,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	return frustration;
 }
 
-
-- (OOFuelQuantity) fuel
-{
-	return fuel;
-}
-
+@synthesize fuel;
 
 - (void) setFuel:(OOFuelQuantity) amount
 {
@@ -8227,16 +7860,8 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 }
 
 
-- (OOCommodityType) commodityType
-{
-	return commodity_type;
-}
-
-
-- (OOCargoQuantity) commodityAmount
-{
-	return commodity_amount;
-}
+@synthesize commodityType = commodity_type;
+@synthesize commodityAmount = commodity_amount;
 
 
 - (OOCargoQuantity) maxAvailableCargoSpace
@@ -8267,11 +7892,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 }
 
 
-
-- (OOCargoType) cargoType
-{
-	return cargo_type;
-}
+@synthesize cargoType = cargo_type;
 
 
 /* Note: this array probably contains some template cargo pods. Do not
@@ -8382,10 +8003,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 }
 
 
-- (OOCargoFlag) cargoFlag
-{
-	return cargo_flag;
-}
+@synthesize cargoFlag = cargo_flag;
 
 
 - (void) setCargoFlag:(OOCargoFlag) flag
@@ -8570,76 +8188,14 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 }
 
 
-- (GLfloat) flightRoll
-{
-	return flightRoll;
-}
-
-
-- (GLfloat) flightPitch
-{
-	return flightPitch;
-}
-
-
-- (GLfloat) flightYaw
-{
-	return flightYaw;
-}
-
-
-- (GLfloat) flightSpeed
-{
-	return flightSpeed;
-}
-
-
-- (GLfloat) maxFlightPitch
-{
-	return max_flight_pitch;
-}
-
-
-- (GLfloat) maxFlightSpeed
-{
-	return maxFlightSpeed;
-}
-
-
-- (GLfloat) maxFlightRoll
-{
-	return max_flight_roll;
-}
-
-
-- (GLfloat) maxFlightYaw
-{
-	return max_flight_yaw;
-}
-
-
-- (void) setMaxFlightPitch:(GLfloat)new
-{
-	max_flight_pitch = new;
-}
-
-
-- (void) setMaxFlightSpeed:(GLfloat)new
-{
-	maxFlightSpeed = new;
-}
-
-
-- (void) setMaxFlightRoll:(GLfloat)new
-{
-	max_flight_roll = new;
-}
-
-
-- (void) setMaxFlightYaw:(GLfloat)new
-{
-	max_flight_yaw = new;
-}
+@synthesize flightRoll;
+@synthesize flightPitch;
+@synthesize flightYaw;
+@synthesize flightSpeed;
+@synthesize maxFlightPitch;
+@synthesize maxFlightSpeed;
+@synthesize maxFlightRoll;
+@synthesize maxFlightYaw;
 
 
 - (GLfloat) speedFactor
@@ -8649,16 +8205,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 }
 
 
-- (GLfloat) temperature
-{
-	return ship_temperature;
-}
-
-
-- (void) setTemperature:(GLfloat) value
-{
-	ship_temperature = value;
-}
+@synthesize temperature = ship_temperature;
 
 
 - (float) randomEjectaTemperature
@@ -8686,16 +8233,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 }
 
 
-- (GLfloat) heatInsulation
-{
-	return _heatInsulation;
-}
-
-
-- (void) setHeatInsulation:(GLfloat) value
-{
-	_heatInsulation = value;
-}
+@synthesize heatInsulation = _heatInsulation;
 
 
 - (int) damage
@@ -9628,10 +9166,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 }
 
 
-- (GLint)entityPersonalityInt
-{
-	return entity_personality;
-}
+@synthesize entityPersonalityInt = entity_personality;
 
 
 - (uint32_t) randomSeedForShaders
@@ -10100,10 +9635,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 }
 
 
-- (OOBehaviour) behaviour
-{
-	return behaviour;
-}
+@synthesize behaviour;
 
 
 - (void) setBehaviour:(OOBehaviour) cond
@@ -10115,21 +9647,9 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	}
 }
 
+@synthesize destination = _destination;
+@synthesize coordinates;
 
-- (HPVector) destination
-{
-	return _destination;
-}
-
-- (HPVector) coordinates
-{
-	return coordinates;
-}
-
-- (void) setCoordinate:(HPVector) coord // The name "setCoordinates" is already used by AI scripting.
-{
-	coordinates = coord;
-}
 
 - (HPVector) distance_six: (GLfloat) dist
 {
@@ -11466,10 +10986,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 }
 
 
-- (OOTimeDelta) shotTime
-{
-	return shot_time;
-}
+@synthesize shotTime = shot_time;
 
 
 - (void) resetShotTime
@@ -11531,36 +11048,8 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 }
 
 
-- (void) setLaserColor:(OOColor *) color
-{
-	if (color)
-	{
-		[laser_color release];
-		laser_color = [color retain];
-	}
-}
-
-
-- (void) setExhaustEmissiveColor:(OOColor *) color
-{
-	if (color)
-	{
-		[exhaust_emissive_color release];
-		exhaust_emissive_color = [color retain];
-	}
-}
-
-
-- (OOColor *)laserColor
-{
-	return [[laser_color retain] autorelease];
-}
-
-
-- (OOColor *)exhaustEmissiveColor
-{
-	return [[exhaust_emissive_color retain] autorelease];
-}
+@synthesize laserColor = laser_color;
+@synthesize exhaustEmissiveColor = exhaust_emissive_color;
 
 
 - (BOOL) fireSubentityLaserShot:(double)range
@@ -12220,11 +11709,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	isMissile = !!newValue; // set the isMissile flag, used for tracking submunitions and preventing collisions at launch.
 }
 
-
-- (OOTimeDelta) missileLoadTime
-{
-	return missile_load_time;
-}
+@synthesize missileLoadTime = missile_load_time;
 
 
 - (void) setMissileLoadTime:(OOTimeDelta)newMissileLoadTime
@@ -13933,10 +13418,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 }
 
 
-- (NSDictionary *) dockingInstructions
-{
-	return dockingInstructions;
-}
+@synthesize dockingInstructions;
 
 
 - (void) broadcastThargoidDestroyed
@@ -14401,7 +13883,7 @@ static BOOL AuthorityPredicate(Entity *entity, void *parameter)
 	if ([self escortCount] != 0)  OOLog(@"dumpState.shipEntity", @"Escort count: %u", [self escortCount]);
 	OOLog(@"dumpState.shipEntity", @"Fuel: %i", fuel);
 	OOLog(@"dumpState.shipEntity", @"Fuel accumulator: %g", fuel_accumulator);
-	OOLog(@"dumpState.shipEntity", @"Missile count: %u", missiles);
+	OOLog(@"dumpState.shipEntity", @"Missile count: %lu", (unsigned long)missiles);
 	
 	if (shipAI != nil && OOLogWillDisplayMessagesInClass(@"dumpState.shipEntity.ai"))
 	{
@@ -14448,12 +13930,7 @@ static BOOL AuthorityPredicate(Entity *entity, void *parameter)
 }
 #endif
 
-
-- (OOJSScript *)script
-{
-	return script;
-}
-
+@synthesize script;
 
 - (NSDictionary *)scriptInfo
 {

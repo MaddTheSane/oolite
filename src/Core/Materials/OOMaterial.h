@@ -45,7 +45,7 @@ SOFTWARE.
 + (void) setUp;
 
 
-@property (readonly, copy) NSString *name;
+@property (readonly, copy, atomic) NSString *name;
 
 // Make this the current material.
 - (void) apply;
@@ -63,21 +63,21 @@ SOFTWARE.
 	required before using a material directly.
 */
 - (void) ensureFinishedLoading;
-@property (getter=isFinishedLoading, readonly) BOOL finishedLoading;
+@property (getter=isFinishedLoading, readonly, atomic) BOOL finishedLoading;
 
 // Only used by shader material, but defined for all materials for convenience.
 - (void) setBindingTarget:(id<OOWeakReferenceSupport>)target;
 
 // True if material wants three-component cube map texture coordinates.
-@property (readonly) BOOL wantsNormalsAsTextureCoordinates;
+@property (readonly, atomic) BOOL wantsNormalsAsTextureCoordinates;
 
 #if OO_MULTITEXTURE
 // Nasty hack: number of texture units for which the drawable should set its basic texture coordinates.
-@property (readonly) NSUInteger countOfTextureUnitsWithBaseCoordinates;
+@property (readonly, atomic) NSUInteger countOfTextureUnitsWithBaseCoordinates;
 #endif
 
 #ifndef NDEBUG
-@property (readonly, copy) NSSet *allTextures;
+@property (readonly, copy, atomic) NSSet *allTextures;
 #endif
 
 @end

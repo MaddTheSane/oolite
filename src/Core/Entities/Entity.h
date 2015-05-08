@@ -262,7 +262,7 @@ enum OOScanClass
 @property (atomic, readonly) OOMatrix transformationMatrix;
 @property (atomic, readonly) OOMatrix drawTransformationMatrix;
 
-@property (readonly) BOOL canCollide;
+@property (readonly, atomic) BOOL canCollide;
 @property GLfloat collisionRadius;
 @property (readonly, retain) NSMutableArray *collisionArray;
 
@@ -277,7 +277,7 @@ enum OOScanClass
 - (void) dumpSelfState;	// Subclasses should override this, not -dumpState, and call throught to super first.
 
 // Subclass repsonsibilities
-@property (readonly) double findCollisionRadius;
+@property (readonly, atomic) double findCollisionRadius;
 - (void) drawImmediate:(bool)immediate translucent:(bool)translucent;
 @property (atomic, readonly, getter=isVisible) BOOL visible;
 @property (atomic, readonly, getter=isInSpace) BOOL inSpace;
@@ -289,10 +289,10 @@ enum OOScanClass
 @property (nonatomic, readonly) GLfloat timeElapsedSinceSpawn;
 
 #ifndef NDEBUG
-@property (readonly, copy) NSString *descriptionForObjDumpBasic;
-@property (readonly, copy) NSString *descriptionForObjDump;
+@property (readonly, copy, atomic) NSString *descriptionForObjDumpBasic;
+@property (readonly, copy, atomic) NSString *descriptionForObjDump;
 
-@property (readonly, copy) NSSet *allTextures;
+@property (readonly, copy, atomic) NSSet *allTextures;
 #endif
 
 @end

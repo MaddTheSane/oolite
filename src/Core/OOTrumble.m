@@ -37,6 +37,9 @@ static void InitTrumbleSounds(void);
 static void PlayTrumbleIdle(void);
 static void PlayTrumbleSqueal(void);
 
+@interface OOTrumble ()
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
+@end
 
 @implementation OOTrumble
 

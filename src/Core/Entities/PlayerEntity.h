@@ -851,7 +851,7 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 
 @property (readonly, atomic) OOFuelScoopStatus dialFuelScoopStatus;
 
-@property (atomic) float fuelLeakRate;
+@property (nonatomic) float fuelLeakRate;
 
 #if OO_VARIABLE_TORUS_SPEED
 @property (readonly) GLfloat hyperspeedFactor;
@@ -865,12 +865,12 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 @property (readonly, atomic) BOOL clockAdjusting;
 - (void) addToAdjustTime:(double) seconds ;
 
-@property (readonly, copy) NSString *dial_clock;
-@property (readonly, copy) NSString *dial_clock_adjusted;
-@property (readonly, copy) NSString *dial_fpsinfo;
-@property (readonly, copy) NSString *dial_objinfo;
+@property (readonly, copy, atomic) NSString *dial_clock;
+@property (readonly, copy, atomic) NSString *dial_clock_adjusted;
+@property (readonly, copy, atomic) NSString *dial_fpsinfo;
+@property (readonly, copy, atomic) NSString *dial_objinfo;
 
-@property (readonly, copy) NSMutableArray *commLog;
+@property (readonly, retain, atomic) NSMutableArray *commLog;
 
 @property (strong, atomic) Entity *compassTarget;
 - (void) validateCompassTarget;
@@ -894,52 +894,52 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (BOOL) assignToActivePylon:(NSString *)identifierKey;
 
 - (void) clearAlertFlags;
-@property (readonly) int alertFlags;
-- (void) setAlertFlag:(int)flag to:(BOOL)value;
-@property (readonly) OOAlertCondition alertCondition;
+@property (readonly) OOAlertFlags alertFlags;
+- (void) setAlertFlag:(OOAlertFlags)flag to:(BOOL)value;
+@property (readonly, atomic) OOAlertCondition alertCondition;
 @property (readonly) OOPlayerFleeingStatus fleeingStatus;
 
 - (BOOL) mountMissile:(ShipEntity *)missile;
 - (BOOL) mountMissileWithRole:(NSString *)role;
 
-@property (readonly) OOEnergyUnitType installedEnergyUnitType;
-@property (readonly) OOEnergyUnitType energyUnitType;
+@property (readonly, atomic) OOEnergyUnitType installedEnergyUnitType;
+@property (readonly, atomic) OOEnergyUnitType energyUnitType;
 
 - (ShipEntity *) launchMine:(ShipEntity *)mine;
 
-@property (readonly) BOOL activateCloakingDevice;
+- (BOOL) activateCloakingDevice;
 - (void) deactivateCloakingDevice;
 
-@property (readonly) double scannerFuzziness;
+@property (readonly, atomic) double scannerFuzziness;
 
-@property  BOOL weaponsOnline;
+@property (atomic) BOOL weaponsOnline;
 
-@property (readonly) BOOL fireMainWeapon;
+- (BOOL) fireMainWeapon;
 
 - (OOWeaponType) weaponForFacing:(OOWeaponFacing)facing;
-@property (readonly, copy) OOWeaponType currentWeapon;
-@property (readonly) Vector currentLaserOffset;
+@property (readonly, copy, atomic) OOWeaponType currentWeapon;
+@property (readonly, atomic) Vector currentLaserOffset;
 
 - (void) rotateCargo;
 
-@property (readonly) BOOL hasSufficientFuelForJump;
+@property (readonly, atomic) BOOL hasSufficientFuelForJump;
 
 - (BOOL) witchJumpChecklist:(BOOL)isGalacticJump;
 - (void) enterGalacticWitchspace;
 - (void) setJumpType:(BOOL)isGalacticJump;
 
-@property (readonly) BOOL takeInternalDamage;
+- (BOOL) takeInternalDamage;
 
 - (BOOL) endScenario:(NSString *)key;
 
-@property (readonly, copy) NSMutableArray *roleWeights;
+@property (readonly, retain) NSMutableArray *roleWeights;
 - (void) addRoleForAggression:(ShipEntity *)victim;
 - (void) addRoleForMining;
 - (void) addRoleToPlayer:(NSString *)role;
 - (void) addRoleToPlayer:(NSString *)role inSlot:(NSUInteger)slot;
 - (void) clearRoleFromPlayer:(BOOL)includingLongRange;
 - (void) clearRolesFromPlayer:(float)chance;
-@property (readonly) NSUInteger maxPlayerRoles;
+@property (readonly, atomic) NSUInteger maxPlayerRoles;
 - (void) updateSystemMemory;
 
 - (void) loseTargetStatus;
@@ -947,25 +947,25 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (void) docked;
 
 - (void) setGuiToStatusScreen;
-@property (readonly, copy) NSArray *equipmentList;	// Each entry is an array with a string followed by a boolean indicating availability (NO = damaged).
+@property (readonly, copy, atomic) NSArray *equipmentList;	// Each entry is an array with a string followed by a boolean indicating availability (NO = damaged).
 - (NSString *) primedEquipmentName:(NSInteger)offset;
-@property (readonly) NSUInteger primedEquipmentCount;
+@property (readonly, atomic) NSUInteger primedEquipmentCount;
 - (void) activatePrimableEquipment:(NSUInteger)index withMode:(OOPrimedEquipmentMode)mode;
 @property (copy) NSString *fastEquipmentA;
 @property (copy) NSString *fastEquipmentB;
 
-@property (readonly, copy) NSArray *cargoList;
+@property (readonly, copy, atomic) NSArray *cargoList;
 //- (NSArray *) cargoListForScripting; // now in ShipEntity
-@property (readonly) unsigned int legalStatusOfCargoList;
+@property (readonly, atomic) unsigned int legalStatusOfCargoList;
 
 - (void) setGuiToSystemDataScreen;
-@property (readonly, copy) NSDictionary *markedDestinations;
+@property (readonly, copy, atomic) NSDictionary *markedDestinations;
 - (void) setGuiToLongRangeChartScreen;
 - (void) setGuiToShortRangeChartScreen;
 - (void) setGuiToChartScreenFrom: (OOGUIScreenID) oldScreen;
 - (void) setGuiToLoadSaveScreen;
 - (void) setGuiToGameOptionsScreen;
-@property (readonly) OOWeaponFacingSet availableFacings;
+@property (readonly, atomic) OOWeaponFacingSet availableFacings;
 - (void) setGuiToEquipShipScreen:(int)skip selectingFacingFor:(NSString *)eqKeyForSelectFacing;
 - (void) setGuiToEquipShipScreen:(int)skip;
 
@@ -985,7 +985,7 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (void) setGuiToMarketInfoScreen;
 - (NSArray *) applyMarketFilter:(NSArray *)goods onMarket:(OOCommodityMarket *)market;
 - (NSArray *) applyMarketSorter:(NSArray *)goods onMarket:(OOCommodityMarket *)market;
-@property (readonly, strong) OOCommodityMarket *localMarket;
+@property (readonly, strong, atomic) OOCommodityMarket *localMarket;
 
 
 - (void) setupStartScreenGui;
@@ -1011,8 +1011,8 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (void) getFined;
 - (void) adjustTradeInFactorBy:(int)value;
 @property (readonly) int tradeInFactor;
-@property (readonly) double renovationCosts;
-@property (readonly) double renovationFactor;
+@property (readonly, atomic) double renovationCosts;
+@property (readonly, atomic) double renovationFactor;
 
 
 - (void) setDefaultViewOffsets;
@@ -1022,10 +1022,10 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (void) setUpTrumbles;
 - (void) addTrumble:(OOTrumble *)papaTrumble;
 - (void) removeTrumble:(OOTrumble *)deadTrumble;
-@property (readonly) OOTrumble **trumbleArray;
+@property (readonly, atomic) OOTrumble **trumbleArray;
 @property (readonly) NSUInteger trumbleCount;
 // loading and saving trumbleCount
-@property (readonly, strong) id trumbleValue;
+@property (readonly, strong, atomic) id trumbleValue;
 - (void) setTrumbleValueFrom:(NSObject *)trumbleValue;
 
 @property  float trumbleAppetiteAccumulator;
@@ -1039,7 +1039,7 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (void) setScoopsActive;
 
 - (void) clearTargetMemory;
-@property (readonly, copy) NSMutableArray *targetMemory;
+@property (readonly, retain) NSMutableArray *targetMemory;
 - (BOOL) moveTargetMemoryBy:(int)delta;
 
 - (void) printIdentLockedOnForMissile:(BOOL)missile;
@@ -1080,8 +1080,8 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 @property (copy) NSDictionary *equipScreenBackgroundDescriptor;
 
 @property (readonly, atomic) BOOL scriptsLoaded;
-@property (readonly, copy) NSArray *worldScriptNames;
-@property (readonly, copy) NSDictionary *worldScriptsByName;
+@property (readonly, copy, atomic) NSArray *worldScriptNames;
+@property (readonly, copy, atomic) NSDictionary *worldScriptsByName;
 
 - (OOScript *) commodityScriptNamed:(NSString *)script;
 
@@ -1091,9 +1091,9 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (BOOL) doWorldEventUntilMissionScreen:(jsid)message;
 - (void) doWorldScriptEvent:(jsid)message inContext:(JSContext *)context withArguments:(jsval *)argv count:(uintN)argc timeLimit:(OOTimeDelta)limit;
 
-@property (readonly) BOOL showInfoFlag;
+@property (readonly, atomic) BOOL showInfoFlag;
 
-@property  OOGalacticHyperspaceBehaviour galacticHyperspaceBehaviour;
+@property (nonatomic) OOGalacticHyperspaceBehaviour galacticHyperspaceBehaviour;
 @property (nonatomic) NSPoint galacticHyperspaceFixedCoords;
 - (void) setGalacticHyperspaceFixedCoordsX:(unsigned char)x y:(unsigned char)y;
 
@@ -1102,11 +1102,11 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 @property (atomic) BOOL scoopOverride;
 - (void) setDockTarget:(ShipEntity *)entity;
 
-@property (readonly) BOOL clearedToDock;
-@property (getter=getDockingClearanceStatus) OODockingClearanceStatus dockingClearanceStatus;
+@property (readonly, atomic) BOOL clearedToDock;
+@property (getter=getDockingClearanceStatus, nonatomic) OODockingClearanceStatus dockingClearanceStatus;
 - (void) penaltyForUnauthorizedDocking;
 
-@property (readonly, copy) NSArray *scannedWormholes;
+@property (readonly, copy, atomic) NSArray *scannedWormholes;
 
 @property (retain) WormholeEntity *wormhole;
 - (void) addScannedWormhole:(WormholeEntity*)wormhole;
