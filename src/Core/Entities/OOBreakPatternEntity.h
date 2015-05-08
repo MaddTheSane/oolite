@@ -61,6 +61,6 @@ enum
 
 @interface Entity (OOBreakPatternEntity)
 
-- (BOOL) isBreakPattern;
+@property (getter=isBreakPattern, readonly) BOOL breakPattern;
 
 @end

@@ -37,7 +37,7 @@ MA 02110-1301, USA.
 #endif
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOStellarBodyType)
 {
 	STELLAR_TYPE_SUN,
 	STELLAR_TYPE_NORMAL_PLANET,	// Terrestrial planet with atmosphere and oceans
@@ -46,7 +46,7 @@ typedef enum
 #endif
 	STELLAR_TYPE_MOON,			// Rocky/airless planet
 	STELLAR_TYPE_MINIATURE		// Display proxy for a "normal" planet
-} OOStellarBodyType;
+};
 
 
 #define ATMOSPHERE_DEPTH		500.0

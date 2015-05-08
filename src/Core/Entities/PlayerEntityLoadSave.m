@@ -73,7 +73,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 
 #if OOLITE_USE_APPKIT_LOAD_SAVE
 
-- (BOOL) loadPlayerWithPanel;
+@property (readonly) BOOL loadPlayerWithPanel;
 - (void) savePlayerWithPanel;
 
 #endif
@@ -244,7 +244,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 
 		for (i = page*n_rows ; i < count && row < start_row + n_rows ; i++)
 		{
-			scenario = [[UNIVERSE scenarios] objectAtIndex:i];
+			scenario = [UNIVERSE scenarios][i];
 			NSString *scenarioName = [NSString stringWithFormat:@" %@ ",[scenario oo_stringForKey:@"name"]];
 			[gui setText:OOExpand(scenarioName) forRow:row];
 			[gui setKey:[NSString stringWithFormat:@"Scenario:%lu", (unsigned long)i] forRow:row];

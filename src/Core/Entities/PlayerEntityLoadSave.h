@@ -63,7 +63,7 @@ MA 02110-1301, USA.
 
 @interface PlayerEntity (LoadSave)
 
-- (BOOL) loadPlayer;	// Returns NO on immediate failure, i.e. when using an OS X modal open panel which is cancelled.
+@property (readonly) BOOL loadPlayer;	// Returns NO on immediate failure, i.e. when using an OS X modal open panel which is cancelled.
 - (void) savePlayer;
 - (void) quicksavePlayer;
 - (void) autosavePlayer;
@@ -71,7 +71,7 @@ MA 02110-1301, USA.
 - (void) setGuiToScenarioScreen:(int)page;
 - (void) addScenarioModel:(NSString *)shipKey;
 - (void) showScenarioDetails;
-- (BOOL) startScenario;
+@property (readonly) BOOL startScenario;
 
 
 #if OO_USE_CUSTOM_LOAD_SAVE

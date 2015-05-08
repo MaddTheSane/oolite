@@ -45,14 +45,14 @@ typedef struct
 @interface OOTextureGenerator: OOTextureLoader
 
 // Generators, unlike normal loaders, get to specify their own flags and other settings.
-- (uint32_t) textureOptions;	// Default: kOOTextureDefaultOptions
-- (GLfloat) anisotropy;			// Default: kOOTextureDefaultAnisotropy
-- (GLfloat) lodBias;			// Default: kOOTextureDefaultLODBias
+@property (readonly) uint32_t textureOptions;	// Default: kOOTextureDefaultOptions
+@property (readonly) GLfloat anisotropy;			// Default: kOOTextureDefaultAnisotropy
+@property (readonly) GLfloat lodBias;			// Default: kOOTextureDefaultLODBias
 
 // Key for in-memory cache; nil for no cache.
-- (NSString *) cacheKey;
+@property (readonly, copy) NSString *cacheKey;
 
 // For use by OOTexture.
-- (BOOL) enqueue;
+@property (readonly) BOOL enqueue;
 
 @end

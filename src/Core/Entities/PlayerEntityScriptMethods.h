@@ -30,32 +30,30 @@ MA 02110-1301, USA.
 
 @interface PlayerEntity (ScriptMethods)
 
-- (unsigned) score;
-- (void) setScore:(unsigned)value;
+@property  unsigned int score;
 
-- (double) creditBalance;
-- (void) setCreditBalance:(double)value;
+@property  double creditBalance;
 
-- (NSString *) dockedStationName;
-- (NSString *) dockedStationDisplayName;
-- (BOOL) dockedAtMainStation;
+@property (readonly, copy) NSString *dockedStationName;
+@property (readonly, copy) NSString *dockedStationDisplayName;
+@property (readonly) BOOL dockedAtMainStation;
 
 - (void) awardCommodityType:(NSString *)type amount:(OOCargoQuantity)amount;
 
 - (void) resetScannerZoom;
 
-- (OOGalaxyID) currentGalaxyID;
-- (OOSystemID) currentSystemID;
+@property (readonly) OOGalaxyID currentGalaxyID;
+@property (readonly) OOSystemID currentSystemID;
 
 - (void) setMissionChoice:(NSString *)newChoice;
 - (void) setMissionChoice:(NSString *)newChoice withEvent:(BOOL) withEvent;
 - (void) allowMissionInterrupt;
 
-- (OOTimeDelta) scriptTimer;
+@property (readonly) OOTimeDelta scriptTimer;
 
-- (unsigned) systemPseudoRandom100;
-- (unsigned) systemPseudoRandom256;
-- (double) systemPseudoRandomFloat;
+@property (readonly) unsigned int systemPseudoRandom100;
+@property (readonly) unsigned int systemPseudoRandom256;
+@property (readonly) double systemPseudoRandomFloat;
 
 - (NSDictionary *) passengerContractMarker:(OOSystemID)system;
 - (NSDictionary *) parcelContractMarker:(OOSystemID)system;

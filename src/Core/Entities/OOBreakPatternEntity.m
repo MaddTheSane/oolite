@@ -40,7 +40,7 @@ MA 02110-1301, USA.
 
 @implementation OOBreakPatternEntity
 
-- (id) initWithPolygonSides:(NSUInteger)sides startAngle:(float)startAngleDegrees aspectRatio:(float)aspectRatio
+- (instancetype) initWithPolygonSides:(NSUInteger)sides startAngle:(float)startAngleDegrees aspectRatio:(float)aspectRatio
 {
 	sides = MIN(MAX((NSUInteger)3, sides), (NSUInteger)kOOBreakPatternMaxSides);
 	

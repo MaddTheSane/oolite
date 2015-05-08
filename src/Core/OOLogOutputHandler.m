@@ -101,7 +101,7 @@ static BOOL DirectoryExistCreatingIfNecessary(NSString *path);
 - (void)changeFile;
 
 // Internal
-- (BOOL)startLogging;
+@property (readonly) BOOL startLogging;
 - (void)loggerThread;
 - (void)flushLog;
 
@@ -242,7 +242,7 @@ enum
 
 @implementation OOAsyncLogger
 
-- (id)init
+- (instancetype)init
 {
 	BOOL				OK = YES;
 	NSString			*logPath = nil;

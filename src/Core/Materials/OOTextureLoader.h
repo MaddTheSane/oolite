@@ -62,7 +62,7 @@ SOFTWARE.
 	size_t						_rowBytes;
 }
 
-+ (id)loaderWithPath:(NSString *)path options:(uint32_t)options;
++ (instancetype)loaderWithPath:(NSString *)path options:(uint32_t)options;
 
 /*	Convenience method to load images not destined for normal texture use.
 	Specifier is a string or a dictionary as with textures. ExtraOptions is
@@ -70,9 +70,9 @@ SOFTWARE.
 	directory to look in, typically Textures or Images. Options in the
 	specifier which are applied at the OOTexture level will be ignored.
 */
-+ (id)loaderWithTextureSpecifier:(id)specifier extraOptions:(uint32_t)extraOptions folder:(NSString *)folder;
++ (instancetype)loaderWithTextureSpecifier:(id)specifier extraOptions:(uint32_t)extraOptions folder:(NSString *)folder;
 
-- (BOOL)isReady;
+@property (getter=isReady, readonly) BOOL ready;
 
 /*	Return value indicates success. This may only be called once (subsequent
 	attempts will return failure), and only on the main thread.
@@ -85,16 +85,16 @@ SOFTWARE.
 /*	Hopefully-unique string for texture loader; analagous, but not identical,
 	to corresponding texture cacheKey.
 */
-- (NSString *) cacheKey;
+@property (readonly, copy) NSString *cacheKey;
 
 
 
 /*** Subclass interface; do not use on pain of pain. Unless you're subclassing. ***/
 
 // Subclasses shouldn't do much on init, because of the whole asynchronous thing.
-- (id)initWithPath:(NSString *)path options:(uint32_t)options;
+- (instancetype)initWithPath:(NSString *)path options:(uint32_t)options NS_DESIGNATED_INITIALIZER;
 
-- (NSString *)path;
+@property (readonly, copy) NSString *path;
 
 /*	Load data, setting up _data, _format, _width, and _height; also _rowBytes
 	if it's not _width * OOTextureComponentsForFormat(_format), and

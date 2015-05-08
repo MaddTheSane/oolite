@@ -90,17 +90,17 @@ typedef NS_ENUM(int, OOSystemLayer)
 
 - (void) importScriptedChanges:(NSDictionary *)scripted;
 - (void) importLegacyScriptedChanges:(NSDictionary *)scripted;
-- (NSDictionary *) exportScriptedChanges;
+@property (readonly, copy) NSDictionary *exportScriptedChanges;
 
 - (NSDictionary *) getPropertiesForSystemKey:(NSString *)key;
-- (NSDictionary *) getPropertiesForCurrentSystem;
+@property (getter=getPropertiesForCurrentSystem, readonly, copy) NSDictionary *propertiesForCurrentSystem;
 - (id) getProperty:(NSString *)property forSystemKey:(NSString *)key;
 - (id) getProperty:(NSString *)property forSystem:(OOSystemID)s inGalaxy:(OOGalaxyID)g;
 
 - (NSPoint) getCoordinatesForSystem:(OOSystemID)s inGalaxy:(OOGalaxyID)g;
 - (NSArray *) getNeighbourIDsForSystem:(OOSystemID)s inGalaxy:(OOGalaxyID)g;
 
-- (Random_Seed) getRandomSeedForCurrentSystem;
+@property (getter=getRandomSeedForCurrentSystem, readonly) Random_Seed randomSeedForCurrentSystem;
 - (Random_Seed) getRandomSeedForSystem:(OOSystemID)s inGalaxy:(OOGalaxyID)g;
 
 @end

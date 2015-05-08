@@ -41,7 +41,7 @@ SOFTWARE.
 
 @implementation OOOXPVerifierStage
 
-- (id)init
+- (instancetype)init
 {
 	self = [super init];
 	

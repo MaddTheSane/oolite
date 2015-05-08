@@ -33,7 +33,7 @@ MA 02110-1301, USA.
 #define OOLITE_ITUNES_SUPPORT OOLITE_MAC_OS_X
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOMusicMode)
 {
 	kOOMusicOff,
 	kOOMusicOn,
@@ -44,7 +44,7 @@ typedef enum
 #else
 	kOOMusicModeMax = kOOMusicOn
 #endif
-} OOMusicMode;
+};
 
 
 @interface OOMusicController: NSObject
@@ -76,11 +76,10 @@ typedef enum
 
 - (void) toggleDockingMusic;	// Start docking music if none playing, stop docking music if currently playing docking music.
 
-- (NSString *) playingMusic;
-- (BOOL) isPlaying;
+@property (readonly, copy) NSString *playingMusic;
+@property (getter=isPlaying, readonly) BOOL playing;
 
-- (OOMusicMode) mode;
-- (void) setMode:(OOMusicMode)mode;
+@property  OOMusicMode mode;
 
 
 @end

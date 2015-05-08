@@ -45,30 +45,29 @@ MA 02110-1301, USA.
 	BOOL						_hasBeenRun;	// Needed for one-shot timers.
 }
 
-- (id) initWithNextTime:(OOTimeAbsolute)nextTime
-			   interval:(OOTimeDelta)interval;
+- (instancetype) initWithNextTime:(OOTimeAbsolute)nextTime
+			   interval:(OOTimeDelta)interval NS_DESIGNATED_INITIALIZER;
 
 // Sets nextTime to current time + delay.
-- (id) initOneShotTimerWithDelay:(OOTimeDelta)delay;
+- (instancetype) initOneShotTimerWithDelay:(OOTimeDelta)delay;
 
 - (OOTimeAbsolute)nextTime;
 - (BOOL)setNextTime:(OOTimeAbsolute)nextTime;	// Only works when timer is not scheduled.
-- (OOTimeDelta)interval;
-- (void)setInterval:(OOTimeDelta)interval;
+@property  OOTimeDelta interval;
 
 // Subclass responsibility:
 - (void) timerFired;
 
-- (BOOL) scheduleTimer;
+@property (readonly) BOOL scheduleTimer;
 - (void) unscheduleTimer;
-- (BOOL) isScheduled;
+@property (getter=isScheduled, readonly) BOOL scheduled;
 
 
 + (void) updateTimers;
 + (void) noteGameReset;
 
 
-- (BOOL) isValidForScheduling;
+@property (getter=isValidForScheduling, readonly) BOOL validForScheduling;
 
 - (NSComparisonResult) compareByNextFireTime:(OOScriptTimer *)other;
 

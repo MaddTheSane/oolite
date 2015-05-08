@@ -64,8 +64,8 @@ enum
 @interface OOPlanetTextureGenerator (Private)
 
 - (NSString *) cacheKeyForType:(NSString *)type;
-- (OOTextureGenerator *) normalMapGenerator;	// Must be called before generator is enqueued for rendering.
-- (OOTextureGenerator *) atmosphereGenerator;	// Must be called before generator is enqueued for rendering.
+@property (readonly, strong) OOTextureGenerator *normalMapGenerator;	// Must be called before generator is enqueued for rendering.
+@property (readonly, strong) OOTextureGenerator *atmosphereGenerator;	// Must be called before generator is enqueued for rendering.
 
 #if DEBUG_DUMP_RAW
 - (void) dumpNoiseBuffer:(float *)noise;
@@ -86,7 +86,7 @@ enum
 	RANROTSeed				_seed;
 }
 
-- (id) initWithCacheKey:(NSString *)cacheKey seed:(RANROTSeed)seed;
+- (instancetype) initWithCacheKey:(NSString *)cacheKey seed:(RANROTSeed)seed NS_DESIGNATED_INITIALIZER;
 
 - (void) completeWithData:(void *)data width:(unsigned)width height:(unsigned)height;
 
@@ -102,7 +102,7 @@ enum
 	OOPlanetTextureGenerator	*_parent;
 }
 
-- (id) initWithCacheKey:(NSString *)cacheKey seed:(RANROTSeed)seed andParent:(OOPlanetTextureGenerator *)parent;
+- (instancetype) initWithCacheKey:(NSString *)cacheKey seed:(RANROTSeed)seed andParent:(OOPlanetTextureGenerator *)parent NS_DESIGNATED_INITIALIZER;
 
 - (void) completeWithData:(void *)data width:(unsigned)width height:(unsigned)height;
 
@@ -146,7 +146,7 @@ enum
 
 @implementation OOPlanetTextureGenerator
 
-- (id) initWithPlanetInfo:(NSDictionary *)planetInfo
+- (instancetype) initWithPlanetInfo:(NSDictionary *)planetInfo
 {
 	OOLog(@"texture.planet.generate",@"Initialising planetary generator");
 
@@ -161,8 +161,8 @@ enum
 		_info.seaColor = FloatRGBFromDictColor(planetInfo, @"sea_color");
 		_info.paleLandColor = FloatRGBFromDictColor(planetInfo, @"polar_land_color");
 		_info.polarSeaColor = FloatRGBFromDictColor(planetInfo, @"polar_sea_color");
-		[[planetInfo objectForKey:@"noise_map_seed"] getValue:&_info.seed];
-		if ([planetInfo objectForKey:@"cloud_alpha"])
+		[planetInfo[@"noise_map_seed"] getValue:&_info.seed];
+		if (planetInfo[@"cloud_alpha"])
 		{
 			OOLog(@"texture.planet.generate",@"Extracting atmosphere parameters");
 			// we have an atmosphere:
@@ -1173,7 +1173,7 @@ static void SetMixConstants(OOPlanetTextureGeneratorInfo *info, float temperatur
 
 @implementation OOPlanetNormalMapGenerator
 
-- (id) initWithCacheKey:(NSString *)cacheKey seed:(RANROTSeed)seed
+- (instancetype) initWithCacheKey:(NSString *)cacheKey seed:(RANROTSeed)seed
 {
 	// AllowCubeMap not used yet but might be in future
 	if ((self = [super initWithPath:[NSString stringWithFormat:@"OOPlanetNormalTexture@%p", self] options:kOOTextureAllowCubeMap]))
@@ -1250,7 +1250,7 @@ static void SetMixConstants(OOPlanetTextureGeneratorInfo *info, float temperatur
 
 @implementation OOPlanetAtmosphereGenerator
 
-- (id) initWithCacheKey:(NSString *)cacheKey seed:(RANROTSeed)seed andParent:(OOPlanetTextureGenerator *)parent
+- (instancetype) initWithCacheKey:(NSString *)cacheKey seed:(RANROTSeed)seed andParent:(OOPlanetTextureGenerator *)parent
 {
 	OOLog(@"texture.planet.generate",@"Initialising atmosphere generator %@",cacheKey);
 	// AllowCubeMap not used yet but might be in future

@@ -49,7 +49,7 @@ const char* ooliteStandardMatrixUniforms[] =
 
 @implementation OOOpenGLMatrixStack
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -81,7 +81,7 @@ const char* ooliteStandardMatrixUniforms[] =
 	return matrix;
 }
 
-- (unsigned int) stackCount
+- (NSUInteger) stackCount
 {
 	return [stack count];
 }
@@ -128,7 +128,7 @@ const char* ooliteStandardMatrixUniforms[] =
 
 @implementation OOOpenGLMatrixManager
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -233,7 +233,7 @@ const char* ooliteStandardMatrixUniforms[] =
 	return matrices[OOLITE_GL_MATRIX_MODELVIEW];
 }
 
-- (unsigned int) countModelView
+- (NSUInteger) countModelView
 {
 	return [modelViewStack stackCount];
 }
@@ -424,20 +424,16 @@ const char* ooliteStandardMatrixUniforms[] =
 			if (i == OOLITE_GL_MATRIX_NORMAL)
 			{
 				[locationSet addObject:
-					[NSArray arrayWithObjects:
-						[NSNumber numberWithInt: location],
-						[NSNumber numberWithInt: i],
-						@"mat3",
-						nil]];
+					@[@(location),
+						@(i),
+						@"mat3"]];
 			}
 			else
 			{
 				[locationSet addObject:
-					[NSArray arrayWithObjects:
-						[NSNumber numberWithInt: location],
-						[NSNumber numberWithInt: i],
-						@"mat4",
-						nil]];
+					@[@(location),
+						@(i),
+						@"mat4"]];
 			}
 		}
 	}

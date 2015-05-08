@@ -38,7 +38,7 @@ static JSClass sTimerClass;
 
 @interface OOJSTimer (Private)
 
-- (id) initWithDelay:(OOTimeAbsolute)delay
+- (instancetype) initWithDelay:(OOTimeAbsolute)delay
 			interval:(OOTimeDelta)interval
 			 context:(JSContext *)context
 			function:(jsval)function
@@ -49,7 +49,7 @@ static JSClass sTimerClass;
 
 @implementation OOJSTimer
 
-- (id) initWithDelay:(OOTimeAbsolute)delay
+- (instancetype) initWithDelay:(OOTimeAbsolute)delay
 			interval:(OOTimeDelta)interval
 			 context:(JSContext *)context
 			function:(jsval)function

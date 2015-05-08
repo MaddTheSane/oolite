@@ -77,7 +77,7 @@
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -90,7 +90,7 @@
 }
 
 
-- (id) initAsAtmosphere
+- (instancetype) initAsAtmosphere
 {
 	if ((self = [self init]))
 	{

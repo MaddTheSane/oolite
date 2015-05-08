@@ -63,7 +63,7 @@ MA 02110-1301, USA.
 
 + (OOJavaScriptEngine *) sharedEngine;
 
-- (JSObject *) globalObject;
+@property (readonly) JSObject *globalObject;
 
 - (void) runMissionCallback;
 
@@ -84,21 +84,18 @@ MA 02110-1301, USA.
 
 - (void) garbageCollectionOpportunity:(BOOL)force;
 
-- (BOOL) showErrorLocations;
-- (void) setShowErrorLocations:(BOOL)value;
+@property  BOOL showErrorLocations;
 
-- (JSClass *) objectClass;
-- (JSClass *) stringClass;
-- (JSClass *) arrayClass;
-- (JSClass *) numberClass;
-- (JSClass *) booleanClass;
+@property (readonly) JSClass *objectClass;
+@property (readonly) JSClass *stringClass;
+@property (readonly) JSClass *arrayClass;
+@property (readonly) JSClass *numberClass;
+@property (readonly) JSClass *booleanClass;
 
 #ifndef NDEBUG
-- (BOOL) dumpStackForErrors;
-- (void) setDumpStackForErrors:(BOOL)value;
+@property  BOOL dumpStackForErrors;
 
-- (BOOL) dumpStackForWarnings;
-- (void) setDumpStackForWarnings:(BOOL)value;
+@property  BOOL dumpStackForWarnings;
 
 // Install handler for JS "debugger" statment.
 - (void) enableDebuggerStatement;
@@ -216,9 +213,9 @@ OOINLINE jsval OOJSValueFromBOOL(int b)
 	
 	See comments for -descriptionComponents in OOCocoa.h.
 */
-- (NSString *) oo_jsDescription;
+@property (readonly, copy) NSString *oo_jsDescription;
 - (NSString *) oo_jsDescriptionWithClassName:(NSString *)className;
-- (NSString *) oo_jsClassName;
+@property (readonly, copy) NSString *oo_jsClassName;
 
 /*	oo_clearJSSelf:
 	This is called by OOJSObjectWrapperFinalize() when a JS object wrapper is
@@ -264,11 +261,11 @@ JSObject *OOJSObjectFromNativeObject(JSContext *context, id object);
 	jsval					_val;
 }
 
-+ (id) valueWithJSValue:(jsval)value inContext:(JSContext *)context;
-+ (id) valueWithJSObject:(JSObject *)object inContext:(JSContext *)context;
++ (instancetype) valueWithJSValue:(jsval)value inContext:(JSContext *)context;
++ (instancetype) valueWithJSObject:(JSObject *)object inContext:(JSContext *)context;
 
-- (id) initWithJSValue:(jsval)value inContext:(JSContext *)context;
-- (id) initWithJSObject:(JSObject *)object inContext:(JSContext *)context;
+- (instancetype) initWithJSValue:(jsval)value inContext:(JSContext *)context NS_DESIGNATED_INITIALIZER;
+- (instancetype) initWithJSObject:(JSObject *)object inContext:(JSContext *)context;
 
 @end
 
@@ -329,7 +326,7 @@ jsid OOJSIDFromString(NSString *string);
 + (NSString *) concatenationOfStringsFromJavaScriptValues:(jsval *)values count:(size_t)count separator:(NSString *)separator inContext:(JSContext *)context;
 
 // Add escape codes for string so that it's a valid JavaScript literal (if you put "" or '' around it).
-- (NSString *) escapedForJavaScriptLiteral;
+@property (readonly, copy) NSString *escapedForJavaScriptLiteral;
 
 @end
 

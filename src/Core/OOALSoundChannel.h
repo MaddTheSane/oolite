@@ -55,8 +55,7 @@ SOFTWARE.
 - (void) setDelegate:(id)delegate;
 
 // Unretained pointer used to maintain simple stack
-- (OOSoundChannel *) next;
-- (void) setNext:(OOSoundChannel *)next;
+@property (strong) OOSoundChannel *next;
 
 // set sound position relative to listener
 - (void) setPosition:(Vector) vector;
@@ -64,7 +63,7 @@ SOFTWARE.
 - (BOOL) playSound:(OOSound *)sound looped:(BOOL)loop;
 - (void)stop;
 
-- (OOSound *)sound;
+@property (readonly, strong) OOSound *sound;
 
 @end
 

@@ -160,7 +160,7 @@ static NSArray *ArrayOfExtensions(NSString *extensionString)
 
 @implementation OOOpenGLExtensionManager
 
-- (id)init
+- (instancetype)init
 {
 	self = [super init];
 	if (self != nil)

@@ -30,7 +30,7 @@ MA 02110-1301, USA.
 - (void) destroySound;
 
 // Interface sounds; only one at a time
-- (BOOL) isBeeping;
+@property (getter=isBeeping, readonly) BOOL beeping;
 - (void) playIdentOn;
 - (void) playIdentOff;
 - (void) playIdentLockedOn;

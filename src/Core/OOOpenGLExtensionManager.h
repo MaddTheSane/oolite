@@ -153,31 +153,31 @@ SOFTWARE.
 
 - (BOOL)haveExtension:(NSString *)extension;
 
-- (BOOL)shadersSupported;
+@property (readonly) BOOL shadersSupported;
 - (OOGraphicsDetail)defaultDetailLevel;
-- (OOGraphicsDetail)maximumDetailLevel;
-- (GLint)textureImageUnitCount;			// Fragment shader sampler count limit. Does not apply to fixed function multitexturing. (GL_MAX_TEXTURE_IMAGE_UNITS_ARB)
+@property (readonly) OOGraphicsDetail maximumDetailLevel;
+@property (readonly) GLint textureImageUnitCount;			// Fragment shader sampler count limit. Does not apply to fixed function multitexturing. (GL_MAX_TEXTURE_IMAGE_UNITS_ARB)
 
-- (BOOL)vboSupported;					// Vertex buffer objects
-- (BOOL)fboSupported;					// Frame buffer objects
-- (BOOL)textureCombinersSupported;
-- (GLint)textureUnitCount;				// Fixed function multitexture limit, does not apply to shaders. (GL_MAX_TEXTURE_UNITS_ARB)
+@property (readonly) BOOL vboSupported;					// Vertex buffer objects
+@property (readonly) BOOL fboSupported;					// Frame buffer objects
+@property (readonly) BOOL textureCombinersSupported;
+@property (readonly) GLint textureUnitCount;				// Fixed function multitexture limit, does not apply to shaders. (GL_MAX_TEXTURE_UNITS_ARB)
 
-- (NSUInteger)majorVersionNumber;
-- (NSUInteger)minorVersionNumber;
-- (NSUInteger)releaseVersionNumber;
+@property (readonly) NSUInteger majorVersionNumber;
+@property (readonly) NSUInteger minorVersionNumber;
+@property (readonly) NSUInteger releaseVersionNumber;
 - (void)getVersionMajor:(unsigned *)outMajor minor:(unsigned *)outMinor release:(unsigned *)outRelease;
 - (BOOL) versionIsAtLeastMajor:(unsigned)maj minor:(unsigned)min;
 
-- (NSString *) vendorString;
-- (NSString *) rendererString;
+@property (readonly, copy) NSString *vendorString;
+@property (readonly, copy) NSString *rendererString;
 
 //	GL_POINT_SMOOTH is slow or non-functional on some GPUs.
-- (BOOL) usePointSmoothing;
-- (BOOL) useLineSmoothing;
+@property (readonly) BOOL usePointSmoothing;
+@property (readonly) BOOL useLineSmoothing;
 
 // Using vertex shader for dust transformation is counterproductive on systems which run vertex shaders on the CPU.
-- (BOOL) useDustShader;
+@property (readonly) BOOL useDustShader;
 
 @end
 

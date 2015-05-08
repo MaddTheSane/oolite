@@ -54,14 +54,13 @@ enum
 }
 
 + (id) exhaustForShip:(ShipEntity *)ship withDefinition:(NSArray *)definition andScale:(float)scale;
-- (id) initForShip:(ShipEntity *)ship withDefinition:(NSArray *)definition andScale:(float)scale;
+- (instancetype) initForShip:(ShipEntity *)ship withDefinition:(NSArray *)definition andScale:(float)scale NS_DESIGNATED_INITIALIZER;
 
 - (void) resetPlume;
 
-- (Vector) scale;
-- (void) setScale:(Vector)scale;
+@property  Vector scale;
 
-- (OOTexture *) texture;
+@property (readonly, strong) OOTexture *texture;
 
 + (void) setUpTexture;
 + (OOTexture *) plumeTexture;
@@ -72,6 +71,6 @@ enum
 
 @interface Entity (OOExhaustPlume)
 
-- (BOOL)isExhaust;
+@property (getter=isExhaust, readonly) BOOL exhaust;
 
 @end

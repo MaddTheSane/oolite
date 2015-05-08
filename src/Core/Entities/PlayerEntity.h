@@ -54,19 +54,19 @@ MA 02110-1301, USA.
 
 #define ENTRY(label, value) label,
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOGUIScreenID)
 {
 	#include "OOGUIScreenID.tbl"
-} OOGUIScreenID;
+};
 
 #define GALACTIC_HYPERSPACE_ENTRY(label, value) GALACTIC_HYPERSPACE_##label = value,
 
-typedef enum
+typedef NS_ENUM(int, OOGalacticHyperspaceBehaviour)
 {
 	#include "OOGalacticHyperspaceBehaviour.tbl"
 	
 	GALACTIC_HYPERSPACE_MAX					= GALACTIC_HYPERSPACE_BEHAVIOUR_FIXED_COORDINATES
-} OOGalacticHyperspaceBehaviour;
+};
 
 #undef ENTRY
 #undef GALACTIC_HYPERSPACE_ENTRY
@@ -79,27 +79,27 @@ enum
 	kOOGalacticHyperspaceBehaviourDefault	= GALACTIC_HYPERSPACE_BEHAVIOUR_UNKNOWN
 };
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOPrimedEquipmentMode)
 {
 	OOPRIMEDEQUIP_ACTIVATED,
 	OOPRIMEDEQUIP_MODE
-} OOPrimedEquipmentMode;
+};
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOSpeechSettings)
 {
 	OOSPEECHSETTINGS_OFF = 0,
 	OOSPEECHSETTINGS_COMMS = 1,
 	OOSPEECHSETTINGS_ALL = 2
-} OOSpeechSettings;
+};
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOLongRangeChartMode)
 {
 	OOLRC_MODE_NORMAL = 0,
 	OOLRC_MODE_ECONOMY = 1,
 	OOLRC_MODE_GOVERNMENT = 2,
 	OOLRC_MODE_TECHLEVEL = 3
-} OOLongRangeChartMode;
+};
 
 // When fully zoomed in, chart shows area of galaxy that's 64x64 galaxy units.
 #define CHART_WIDTH_AT_MAX_ZOOM		64.0
@@ -210,17 +210,17 @@ enum
 #endif
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOFuelScoopStatus)
 {
 	// Exposed to shaders.
 	SCOOP_STATUS_NOT_INSTALLED			= 0,
 	SCOOP_STATUS_FULL_HOLD,
 	SCOOP_STATUS_OKAY,
 	SCOOP_STATUS_ACTIVE
-} OOFuelScoopStatus;
+};
 
 
-enum
+typedef NS_OPTIONS(uint16_t, OOAlertFlags)
 {
 	ALERT_FLAG_DOCKED				= 0x010,
 	ALERT_FLAG_MASS_LOCK			= 0x020,
@@ -230,29 +230,28 @@ enum
 	ALERT_FLAG_ENERGY				= 0x100,
 	ALERT_FLAG_HOSTILES				= 0x200
 };
-typedef uint16_t OOAlertFlags;
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOMissileStatus)
 {
 	// Exposed to shaders.
 	MISSILE_STATUS_SAFE,
 	MISSILE_STATUS_ARMED,
 	MISSILE_STATUS_TARGET_LOCKED
-} OOMissileStatus;
+};
 
 
-typedef enum
+typedef NS_ENUM(int, OOPlayerFleeingStatus)
 {
 	PLAYER_FLEEING_UNLIKELY = -1,
 	PLAYER_FLEEING_NONE = 0,
 	PLAYER_FLEEING_MAYBE = 1,
 	PLAYER_FLEEING_CARGO = 2,
 	PLAYER_FLEEING_LIKELY = 3
-} OOPlayerFleeingStatus;
+};
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOMarketFilterMode)
 {
 	MARKET_FILTER_MODE_OFF = 0,
 	MARKET_FILTER_MODE_TRADE = 1,
@@ -263,10 +262,10 @@ typedef enum
 
 
 	MARKET_FILTER_MODE_MAX = 5 // always equal to highest real mode
-} OOMarketFilterMode;
+};
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 {
 	MARKET_SORTER_MODE_OFF = 0,
 	MARKET_SORTER_MODE_ALPHA = 1,
@@ -276,7 +275,7 @@ typedef enum
 	MARKET_SORTER_MODE_UNIT = 5,
 
 	MARKET_SORTER_MODE_MAX = 5 // always equal to highest real mode
-} OOMarketSorterMode;
+};
 
 
 #define ECM_ENERGY_DRAIN_FACTOR			20.0f
@@ -753,7 +752,7 @@ typedef enum
 - (void) loadCargoPodsForType:(OOCommodityType)type fromManifest:(OOCommodityMarket *) manifest;
 - (void) loadCargoPodsForType:(OOCommodityType)type amount:(OOCargoQuantity) quantity;
 
-- (OOCreditsQuantity) deciCredits;
+@property (readonly) OOCreditsQuantity deciCredits;
 
 @property int random_factor;
 @property (readonly) OOGalaxyID galaxyNumber;
@@ -770,21 +769,20 @@ typedef enum
 @property (readonly, atomic) OOSystemID nextHopTargetSystemID;
 
 
-- (NSDictionary *) commanderDataDictionary;
+@property (readonly, copy, atomic) NSDictionary *commanderDataDictionary;
 - (BOOL)setCommanderDataFromDictionary:(NSDictionary *) dict;
 
 - (void) doBookkeeping:(double) delta_t;
 - (BOOL) isValidTarget:(Entity*)target;
 
-- (BOOL) massLocked;
-- (BOOL) atHyperspeed;
+@property (readonly, atomic) BOOL massLocked;
+@property (readonly, atomic) BOOL atHyperspeed;
 
 @property (atomic) float occlusionLevel;
 
 - (void) setDockedAtMainStation;
-- (StationEntity *) dockedStation;
+@property (strong, atomic) StationEntity *dockedStation;
 // Dumb setter; callers are responsible for sanity.
-- (void) setDockedStation:(StationEntity *)station;
 
 
 - (BOOL) engageAutopilotToStation:(StationEntity *)stationForDocking;
@@ -792,10 +790,9 @@ typedef enum
 
 - (void) resetAutopilotAI;
 
-- (void) setTargetDockStationTo:(StationEntity *) value;
-- (StationEntity *) getTargetDockStation;
+@property (getter=getTargetDockStation, setter=setTargetDockStationTo:, readwrite, retain) StationEntity *targetDockStation;
 
-- (HeadUpDisplay *) hud;
+@property (readonly, strong) HeadUpDisplay *hud;
 - (BOOL) switchHudTo:(NSString *)hudFileName;
 - (void) resetHud;
 
@@ -805,100 +802,90 @@ typedef enum
 - (void) setDialCustom:(id)value forKey:(NSString *)key;
 
 
-- (NSArray *) multiFunctionDisplayList;
+@property (readonly, copy, atomic) NSArray *multiFunctionDisplayList;
 - (NSString *) multiFunctionText:(NSUInteger) index;
 - (void) setMultiFunctionText:(NSString *)text forKey:(NSString *)key;
 - (BOOL) setMultiFunctionDisplay:(NSUInteger) index toKey:(NSString *)key;
 - (void) cycleMultiFunctionDisplay:(NSUInteger) index;
 - (void) selectNextMultiFunctionDisplay;
-- (NSUInteger) activeMFD;
+@property (readonly) NSUInteger activeMFD;
 
-- (void) setShowDemoShips:(BOOL) value;
-- (BOOL) showDemoShips;
+@property (atomic) BOOL showDemoShips;
 
-- (GLfloat) forwardShieldLevel;
-- (GLfloat) aftShieldLevel;
-- (GLfloat) baseMass;
+@property (nonatomic) GLfloat forwardShieldLevel;
+@property (nonatomic) GLfloat aftShieldLevel;
+@property (readonly, atomic) GLfloat baseMass;
 
-- (void) setForwardShieldLevel:(GLfloat)level;
-- (void) setAftShieldLevel:(GLfloat)level;
 
-- (float) forwardShieldRechargeRate;
-- (float) aftShieldRechargeRate;
+@property (nonatomic) float forwardShieldRechargeRate;
+@property (nonatomic) float aftShieldRechargeRate;
 
 - (void) setMaxForwardShieldLevel:(float)new;
 - (void) setMaxAftShieldLevel:(float)new;
-- (void) setForwardShieldRechargeRate:(float)new;
-- (void) setAftShieldRechargeRate:(float)new;
 
 // return keyconfig.plist settings for scripting
-- (NSDictionary *) keyConfig;
-- (BOOL) isMouseControlOn;
+@property (readonly, copy) NSDictionary *keyConfig;
+@property (getter=isMouseControlOn, readonly, atomic) BOOL mouseControlOn;
 
-- (GLfloat) dialRoll;
-- (GLfloat) dialPitch;
-- (GLfloat) dialYaw;
-- (GLfloat) dialSpeed;
-- (GLfloat) dialHyperSpeed;
+@property (readonly, atomic) GLfloat dialRoll;
+@property (readonly, atomic) GLfloat dialPitch;
+@property (readonly, atomic) GLfloat dialYaw;
+@property (readonly, atomic) GLfloat dialSpeed;
+@property (readonly, atomic) GLfloat dialHyperSpeed;
 
 - (void) currentWeaponStats;
 
-- (GLfloat) dialForwardShield;
-- (GLfloat) dialAftShield;
+@property (readonly, atomic) GLfloat dialForwardShield;
+@property (readonly, atomic) GLfloat dialAftShield;
 
-- (GLfloat) dialEnergy;
-- (GLfloat) dialMaxEnergy;
+@property (readonly, atomic) GLfloat dialEnergy;
+@property (readonly, atomic) GLfloat dialMaxEnergy;
 
-- (GLfloat) dialFuel;
-- (GLfloat) dialHyperRange;
+@property (readonly, atomic) GLfloat dialFuel;
+@property (readonly, atomic) GLfloat dialHyperRange;
 
-- (GLfloat) dialAltitude;
+@property (readonly, atomic) GLfloat dialAltitude;
 
-- (unsigned) countMissiles;
-- (OOMissileStatus) dialMissileStatus;
+@property (readonly, atomic) unsigned int countMissiles;
+@property (readonly, atomic) OOMissileStatus dialMissileStatus;
 
-- (OOFuelScoopStatus) dialFuelScoopStatus;
+@property (readonly, atomic) OOFuelScoopStatus dialFuelScoopStatus;
 
-- (float) fuelLeakRate;
-- (void) setFuelLeakRate:(float)value;
+@property (atomic) float fuelLeakRate;
 
 #if OO_VARIABLE_TORUS_SPEED
-- (GLfloat) hyperspeedFactor;
+@property (readonly) GLfloat hyperspeedFactor;
 #endif
-- (BOOL) injectorsEngaged;
-- (BOOL) hyperspeedEngaged;
+@property (readonly, atomic) BOOL injectorsEngaged;
+@property (readonly, atomic) BOOL hyperspeedEngaged;
 
 
-- (double) clockTime;			// Note that this is not an OOTimeAbsolute
-- (double) clockTimeAdjusted;	// Note that this is not an OOTimeAbsolute
-- (BOOL) clockAdjusting;
+@property (readonly) double clockTime;			// Note that this is not an OOTimeAbsolute
+@property (readonly, atomic) double clockTimeAdjusted;	// Note that this is not an OOTimeAbsolute
+@property (readonly, atomic) BOOL clockAdjusting;
 - (void) addToAdjustTime:(double) seconds ;
 
-- (NSString *) dial_clock;
-- (NSString *) dial_clock_adjusted;
-- (NSString *) dial_fpsinfo;
-- (NSString *) dial_objinfo;
+@property (readonly, copy) NSString *dial_clock;
+@property (readonly, copy) NSString *dial_clock_adjusted;
+@property (readonly, copy) NSString *dial_fpsinfo;
+@property (readonly, copy) NSString *dial_objinfo;
 
-- (NSMutableArray *) commLog;
+@property (readonly, copy) NSMutableArray *commLog;
 
-- (Entity *) compassTarget;
-- (void) setCompassTarget:(Entity *)value;
+@property (strong, atomic) Entity *compassTarget;
 - (void) validateCompassTarget;
 
-- (NSString *) compassTargetLabel;
+@property (readonly, copy, atomic) NSString *compassTargetLabel;
 
-- (OOCompassMode) compassMode;
-- (void) setCompassMode:(OOCompassMode)value;
+@property  OOCompassMode compassMode;
 - (void) setPrevCompassMode;
 - (void) setNextCompassMode;
 
-- (NSUInteger) activeMissile;
-- (void) setActiveMissile:(NSUInteger)value;
-- (NSUInteger) dialMaxMissiles;
-- (BOOL) dialIdentEngaged;
-- (void) setDialIdentEngaged:(BOOL)newValue;
-- (NSString *) specialCargo;
-- (NSString *) dialTargetName;
+@property  NSUInteger activeMissile;
+@property (readonly, atomic) NSUInteger dialMaxMissiles;
+@property (atomic) BOOL dialIdentEngaged;
+@property (readonly, copy) NSString *specialCargo;
+@property (readonly, copy, atomic) NSString *dialTargetName;
 - (ShipEntity *) missileForPylon:(NSUInteger)value;
 - (void) safeAllMissiles;
 - (void) selectNextMissile;
@@ -907,53 +894,52 @@ typedef enum
 - (BOOL) assignToActivePylon:(NSString *)identifierKey;
 
 - (void) clearAlertFlags;
-- (int) alertFlags;
+@property (readonly) int alertFlags;
 - (void) setAlertFlag:(int)flag to:(BOOL)value;
-- (OOAlertCondition) alertCondition;
-- (OOPlayerFleeingStatus) fleeingStatus;
+@property (readonly) OOAlertCondition alertCondition;
+@property (readonly) OOPlayerFleeingStatus fleeingStatus;
 
 - (BOOL) mountMissile:(ShipEntity *)missile;
 - (BOOL) mountMissileWithRole:(NSString *)role;
 
-- (OOEnergyUnitType) installedEnergyUnitType;
-- (OOEnergyUnitType) energyUnitType;
+@property (readonly) OOEnergyUnitType installedEnergyUnitType;
+@property (readonly) OOEnergyUnitType energyUnitType;
 
 - (ShipEntity *) launchMine:(ShipEntity *)mine;
 
-- (BOOL) activateCloakingDevice;
+@property (readonly) BOOL activateCloakingDevice;
 - (void) deactivateCloakingDevice;
 
-- (double) scannerFuzziness;
+@property (readonly) double scannerFuzziness;
 
-- (BOOL) weaponsOnline;
-- (void) setWeaponsOnline:(BOOL)newValue;
+@property  BOOL weaponsOnline;
 
-- (BOOL) fireMainWeapon;
+@property (readonly) BOOL fireMainWeapon;
 
 - (OOWeaponType) weaponForFacing:(OOWeaponFacing)facing;
-- (OOWeaponType) currentWeapon;
-- (Vector) currentLaserOffset;
+@property (readonly, copy) OOWeaponType currentWeapon;
+@property (readonly) Vector currentLaserOffset;
 
 - (void) rotateCargo;
 
-- (BOOL) hasSufficientFuelForJump;
+@property (readonly) BOOL hasSufficientFuelForJump;
 
 - (BOOL) witchJumpChecklist:(BOOL)isGalacticJump;
 - (void) enterGalacticWitchspace;
 - (void) setJumpType:(BOOL)isGalacticJump;
 
-- (BOOL) takeInternalDamage;
+@property (readonly) BOOL takeInternalDamage;
 
 - (BOOL) endScenario:(NSString *)key;
 
-- (NSMutableArray *) roleWeights;
+@property (readonly, copy) NSMutableArray *roleWeights;
 - (void) addRoleForAggression:(ShipEntity *)victim;
 - (void) addRoleForMining;
 - (void) addRoleToPlayer:(NSString *)role;
 - (void) addRoleToPlayer:(NSString *)role inSlot:(NSUInteger)slot;
 - (void) clearRoleFromPlayer:(BOOL)includingLongRange;
 - (void) clearRolesFromPlayer:(float)chance;
-- (NSUInteger) maxPlayerRoles;
+@property (readonly) NSUInteger maxPlayerRoles;
 - (void) updateSystemMemory;
 
 - (void) loseTargetStatus;
@@ -961,27 +947,25 @@ typedef enum
 - (void) docked;
 
 - (void) setGuiToStatusScreen;
-- (NSArray *) equipmentList;	// Each entry is an array with a string followed by a boolean indicating availability (NO = damaged).
+@property (readonly, copy) NSArray *equipmentList;	// Each entry is an array with a string followed by a boolean indicating availability (NO = damaged).
 - (NSString *) primedEquipmentName:(NSInteger)offset;
-- (NSUInteger) primedEquipmentCount;
+@property (readonly) NSUInteger primedEquipmentCount;
 - (void) activatePrimableEquipment:(NSUInteger)index withMode:(OOPrimedEquipmentMode)mode;
-- (NSString *) fastEquipmentA;
-- (NSString *) fastEquipmentB;
-- (void) setFastEquipmentA:(NSString *)eqKey;
-- (void) setFastEquipmentB:(NSString *)eqKey;
+@property (copy) NSString *fastEquipmentA;
+@property (copy) NSString *fastEquipmentB;
 
-- (NSArray *) cargoList;
+@property (readonly, copy) NSArray *cargoList;
 //- (NSArray *) cargoListForScripting; // now in ShipEntity
-- (unsigned) legalStatusOfCargoList;
+@property (readonly) unsigned int legalStatusOfCargoList;
 
 - (void) setGuiToSystemDataScreen;
-- (NSDictionary *) markedDestinations;
+@property (readonly, copy) NSDictionary *markedDestinations;
 - (void) setGuiToLongRangeChartScreen;
 - (void) setGuiToShortRangeChartScreen;
 - (void) setGuiToChartScreenFrom: (OOGUIScreenID) oldScreen;
 - (void) setGuiToLoadSaveScreen;
 - (void) setGuiToGameOptionsScreen;
-- (OOWeaponFacingSet) availableFacings;
+@property (readonly) OOWeaponFacingSet availableFacings;
 - (void) setGuiToEquipShipScreen:(int)skip selectingFacingFor:(NSString *)eqKeyForSelectFacing;
 - (void) setGuiToEquipShipScreen:(int)skip;
 
@@ -1001,7 +985,7 @@ typedef enum
 - (void) setGuiToMarketInfoScreen;
 - (NSArray *) applyMarketFilter:(NSArray *)goods onMarket:(OOCommodityMarket *)market;
 - (NSArray *) applyMarketSorter:(NSArray *)goods onMarket:(OOCommodityMarket *)market;
-- (OOCommodityMarket *) localMarket;
+@property (readonly, strong) OOCommodityMarket *localMarket;
 
 
 - (void) setupStartScreenGui;
@@ -1013,39 +997,38 @@ typedef enum
 - (void) noteGUIDidChangeFrom:(OOGUIScreenID)fromScreen to:(OOGUIScreenID)toScreen;
 - (void) noteViewDidChangeFrom:(OOViewID)fromView toView:(OOViewID)toView;
 
-- (OOGUIScreenID) guiScreen;
+@property (readonly) OOGUIScreenID guiScreen;
 
 - (void) buySelectedItem;
 
 - (BOOL) tryBuyingCommodity:(OOCommodityType)type all:(BOOL)all;
 - (BOOL) trySellingCommodity:(OOCommodityType)type all:(BOOL)all;
 
-- (OOSpeechSettings) isSpeechOn;
+@property (getter=isSpeechOn, readonly) OOSpeechSettings speechOn;
 
 - (void) addEquipmentFromCollection:(id)equipment;	// equipment may be an array, a set, a dictionary whose values are all YES, or a string.
  
 - (void) getFined;
 - (void) adjustTradeInFactorBy:(int)value;
-- (int) tradeInFactor;
-- (double) renovationCosts;
-- (double) renovationFactor;
+@property (readonly) int tradeInFactor;
+@property (readonly) double renovationCosts;
+@property (readonly) double renovationFactor;
 
 
 - (void) setDefaultViewOffsets;
 - (void) setDefaultCustomViews;
-- (Vector) weaponViewOffset;
+@property (readonly, atomic) Vector weaponViewOffset;
 
 - (void) setUpTrumbles;
 - (void) addTrumble:(OOTrumble *)papaTrumble;
 - (void) removeTrumble:(OOTrumble *)deadTrumble;
-- (OOTrumble **) trumbleArray;
-- (NSUInteger) trumbleCount;
+@property (readonly) OOTrumble **trumbleArray;
+@property (readonly) NSUInteger trumbleCount;
 // loading and saving trumbleCount
-- (id) trumbleValue;
+@property (readonly, strong) id trumbleValue;
 - (void) setTrumbleValueFrom:(NSObject *)trumbleValue;
 
-- (float) trumbleAppetiteAccumulator;
-- (void) setTrumbleAppetiteAccumulator:(float)value;
+@property  float trumbleAppetiteAccumulator;
 
 - (void) mungChecksumWithNSString:(NSString *)str;
 
@@ -1056,7 +1039,7 @@ typedef enum
 - (void) setScoopsActive;
 
 - (void) clearTargetMemory;
-- (NSMutableArray *) targetMemory;
+@property (readonly, copy) NSMutableArray *targetMemory;
 - (BOOL) moveTargetMemoryBy:(int)delta;
 
 - (void) printIdentLockedOnForMissile:(BOOL)missile;
@@ -1066,22 +1049,22 @@ typedef enum
 /* GILES custom viewpoints */
 
 // custom view points
-- (Quaternion)customViewQuaternion;
-- (OOMatrix)customViewMatrix;
-- (Vector)customViewOffset;
-- (Vector)customViewForwardVector;
-- (Vector)customViewUpVector;
-- (Vector)customViewRightVector;
-- (NSString *)customViewDescription;
+@property (readonly) Quaternion customViewQuaternion;
+@property (readonly) OOMatrix customViewMatrix;
+@property (readonly) Vector customViewOffset;
+@property (readonly) Vector customViewForwardVector;
+@property (readonly) Vector customViewUpVector;
+@property (readonly) Vector customViewRightVector;
+@property (readonly, copy) NSString *customViewDescription;
 - (void)resetCustomView;
 - (void)setCustomViewDataFromDictionary:(NSDictionary*) viewDict withScaling:(BOOL)withScaling;
-- (HPVector) viewpointPosition;
-- (HPVector) breakPatternPosition;
-- (Vector) viewpointOffset;
-- (Vector) viewpointOffsetAft;
-- (Vector) viewpointOffsetForward;
-- (Vector) viewpointOffsetPort;
-- (Vector) viewpointOffsetStarboard;
+@property (readonly, atomic) HPVector viewpointPosition;
+@property (readonly, atomic) HPVector breakPatternPosition;
+@property (readonly, atomic) Vector viewpointOffset;
+@property (readonly) Vector viewpointOffsetAft;
+@property (readonly) Vector viewpointOffsetForward;
+@property (readonly) Vector viewpointOffsetPort;
+@property (readonly) Vector viewpointOffsetStarboard;
 
 
 @property (copy) NSDictionary *missionOverlayDescriptor;
@@ -1097,8 +1080,8 @@ typedef enum
 @property (copy) NSDictionary *equipScreenBackgroundDescriptor;
 
 @property (readonly, atomic) BOOL scriptsLoaded;
-- (NSArray *) worldScriptNames;
-- (NSDictionary *) worldScriptsByName;
+@property (readonly, copy) NSArray *worldScriptNames;
+@property (readonly, copy) NSDictionary *worldScriptsByName;
 
 - (OOScript *) commodityScriptNamed:(NSString *)script;
 
@@ -1108,10 +1091,9 @@ typedef enum
 - (BOOL) doWorldEventUntilMissionScreen:(jsid)message;
 - (void) doWorldScriptEvent:(jsid)message inContext:(JSContext *)context withArguments:(jsval *)argv count:(uintN)argc timeLimit:(OOTimeDelta)limit;
 
-- (BOOL)showInfoFlag;
+@property (readonly) BOOL showInfoFlag;
 
-- (void) setGalacticHyperspaceBehaviour:(OOGalacticHyperspaceBehaviour) galacticHyperspaceBehaviour;
-- (OOGalacticHyperspaceBehaviour) galacticHyperspaceBehaviour;
+@property  OOGalacticHyperspaceBehaviour galacticHyperspaceBehaviour;
 @property (nonatomic) NSPoint galacticHyperspaceFixedCoords;
 - (void) setGalacticHyperspaceFixedCoordsX:(unsigned char)x y:(unsigned char)y;
 
@@ -1120,12 +1102,11 @@ typedef enum
 @property (atomic) BOOL scoopOverride;
 - (void) setDockTarget:(ShipEntity *)entity;
 
-- (BOOL) clearedToDock;
-- (void) setDockingClearanceStatus:(OODockingClearanceStatus) newValue;
-- (OODockingClearanceStatus) getDockingClearanceStatus;
+@property (readonly) BOOL clearedToDock;
+@property (getter=getDockingClearanceStatus) OODockingClearanceStatus dockingClearanceStatus;
 - (void) penaltyForUnauthorizedDocking;
 
-- (NSArray *) scannedWormholes;
+@property (readonly, copy) NSArray *scannedWormholes;
 
 @property (retain) WormholeEntity *wormhole;
 - (void) addScannedWormhole:(WormholeEntity*)wormhole;
@@ -1134,7 +1115,7 @@ typedef enum
 - (NSString *)markerKey:(NSDictionary*)marker;
 - (void) addMissionDestinationMarker:(NSDictionary *)marker;
 - (BOOL) removeMissionDestinationMarker:(NSDictionary *)marker;
-- (NSMutableDictionary*) getMissionDestinations;
+@property (getter=getMissionDestinations, readonly, copy) NSMutableDictionary *missionDestinations;
 
 - (void) setLastShot:(OOLaserShotEntity *)shot;
 
@@ -1145,7 +1126,7 @@ typedef enum
 /* Fractional expression of amount of entry inside a planet's atmosphere. 0.0f is out of atmosphere,
    1.0f is fully in and is normally associated with the point of ship destruct due to altitude.
 */
-- (GLfloat) insideAtmosphereFraction;
+@property (readonly) GLfloat insideAtmosphereFraction;
 
 @end
 

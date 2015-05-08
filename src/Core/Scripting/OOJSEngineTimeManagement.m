@@ -289,21 +289,21 @@ static OOHighResTimeValue		sProfilerStartTime;
 - (void) setExtensionTime:(double)value;
 - (void) setProfileEntries:(NSArray *)value;
 
-- (NSDictionary *) propertyListRepresentation;
+@property (readonly, copy) NSDictionary *propertyListRepresentation;
 
 @end
 
 
 @interface OOTimeProfileEntry (Private)
 
-- (id) initWithCName:(const char *)name;
+- (instancetype) initWithCName:(const char *)name;
 #ifdef MOZ_TRACE_JSCALLS
-- (id) initWithJSFunction:(JSFunction *)function context:(JSContext *)context;
+- (instancetype) initWithJSFunction:(JSFunction *)function context:(JSContext *)context;
 #endif
 
 - (void) addSampleWithTotalTime:(OOTimeDelta)totalTime selfTime:(OOTimeDelta)selfTime;
 
-- (NSDictionary *) propertyListRepresentation;
+@property (readonly, copy) NSDictionary *propertyListRepresentation;
 
 @end
 
@@ -781,7 +781,7 @@ static void UpdateProfileForFrame(OOHighResTimeValue now, OOJSProfileStackFrame 
 
 @implementation OOTimeProfileEntry
 
-- (id) initWithCName:(const char *)name
+- (instancetype) initWithCName:(const char *)name
 {
 	NSAssert(sProfiling, @"Can't create profile entries while not profiling.");
 	
@@ -798,7 +798,7 @@ static void UpdateProfileForFrame(OOHighResTimeValue now, OOJSProfileStackFrame 
 
 
 #if MOZ_TRACE_JSCALLS
-- (id) initWithJSFunction:(JSFunction *)function context:(JSContext *)context
+- (instancetype) initWithJSFunction:(JSFunction *)function context:(JSContext *)context
 {
 	if ((self = [self initWithCName:NULL]))
 	{

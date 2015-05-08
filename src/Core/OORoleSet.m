@@ -34,7 +34,7 @@ SOFTWARE.
 
 @interface OORoleSet (OOPrivate)
 
-- (id)initWithRolesAndProbabilities:(NSDictionary *)dict;
+- (instancetype)initWithRolesAndProbabilities:(NSDictionary *)dict;
 
 @end
 
@@ -52,7 +52,7 @@ SOFTWARE.
 	return [[[self alloc] initWithRole:role probability:probability] autorelease];
 }
 
-- (id)initWithRoleString:(NSString *)roleString
+- (instancetype)initWithRoleString:(NSString *)roleString
 {
 	NSDictionary			*dict = nil;
 	
@@ -61,7 +61,7 @@ SOFTWARE.
 }
 
 
-- (id)initWithRole:(NSString *)role probability:(float)probability
+- (instancetype)initWithRole:(NSString *)role probability:(float)probability
 {
 	NSDictionary			*dict = nil;
 	
@@ -261,7 +261,7 @@ SOFTWARE.
 
 @implementation OORoleSet (OOPrivate)
 
-- (id)initWithRolesAndProbabilities:(NSDictionary *)dict
+- (instancetype)initWithRolesAndProbabilities:(NSDictionary *)dict
 {
 	NSEnumerator			*roleEnum = nil;
 	NSString				*role = nil;

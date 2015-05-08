@@ -56,29 +56,27 @@ MA 02110-1301, USA.
 + (AI *) currentlyRunningAI;
 + (NSString *) currentlyRunningAIDescription;
 
-- (NSString *) name;
-- (NSString *) associatedJS;
-- (NSString *) state;
+@property (readonly, copy, atomic) NSString *name;
+@property (readonly, copy, atomic) NSString *associatedJS;
+@property (copy, atomic) NSString *state;
 
 - (void) setStateMachine:(NSString *)smName withJSScript:(NSString *)script;
-- (void) setState:(NSString *)stateName;
 
 - (void) setStateMachine:(NSString *)smName afterDelay:(NSTimeInterval)delay;
 - (void) setState:(NSString *)stateName afterDelay:(NSTimeInterval)delay;
 
-- (id) initWithStateMachine:(NSString *) smName andState:(NSString *) stateName;
+- (instancetype) initWithStateMachine:(NSString *) smName andState:(NSString *) stateName;
 
-- (ShipEntity *)owner;
-- (void) setOwner:(ShipEntity *)ship;
+@property (strong, atomic) ShipEntity *owner;
 
 - (void) preserveCurrentStateMachine;
 
 - (void) restorePreviousStateMachine;
 
-- (BOOL) hasSuspendedStateMachines;
+@property (readonly, atomic) BOOL hasSuspendedStateMachines;
 - (void) exitStateMachineWithMessage:(NSString *)message;
 
-- (NSUInteger) stackDepth;
+@property (readonly, atomic) NSUInteger stackDepth;
 
 - (void) reactToMessage:(NSString *) message;
 // Immediately handle a message. This is the core dispatcher. DebugContext is a textual hint for diagnostics.
@@ -90,14 +88,12 @@ MA 02110-1301, USA.
 
 - (void) message:(NSString *) ms;
 - (void) dropMessage:(NSString *) ms;
-- (NSSet *) pendingMessages;
+@property (readonly, copy, atomic) NSSet *pendingMessages;
 - (void) debugDumpPendingMessages;
 
-- (void) setNextThinkTime:(OOTimeAbsolute) ntt;
-- (OOTimeAbsolute) nextThinkTime;
+@property (nonatomic) OOTimeAbsolute nextThinkTime;
 
-- (void) setThinkTimeInterval:(OOTimeDelta) tti;
-- (OOTimeDelta) thinkTimeInterval;
+@property OOTimeDelta thinkTimeInterval;
 
 - (void) clearStack;
 

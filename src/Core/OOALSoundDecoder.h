@@ -36,7 +36,7 @@ SOFTWARE.
 
 @interface OOALSoundDecoder: NSObject
 
-- (id)initWithPath:(NSString *)inPath;
+- (instancetype)initWithPath:(NSString *)inPath;
 + (OOALSoundDecoder *)codecWithPath:(NSString *)inPath;
 
 // Full-buffer reading.
@@ -46,15 +46,15 @@ SOFTWARE.
 - (size_t)streamToBuffer:(char *)buffer;
 
 // Returns the size of the data -readMonoCreatingBuffer:withFrameCount: will create.
-- (size_t)sizeAsBuffer;
+@property (readonly) size_t sizeAsBuffer;
 
-- (BOOL)isStereo;
+@property (getter=isStereo, readonly) BOOL stereo;
 
-- (long)sampleRate;
+@property (readonly) long sampleRate;
 
 // For streaming
 - (void) reset;
 
-- (NSString *)name;
+@property (readonly, copy) NSString *name;
 
 @end

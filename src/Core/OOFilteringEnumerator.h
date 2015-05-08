@@ -69,7 +69,7 @@ SOFTWARE.
 - (instancetype) initWithUnderlyingEnumerator:(NSEnumerator *)enumerator
 					   withSelector:(SEL)selector
 					 takingArgument:(BOOL)takesArgument
-					  argumentValue:(id)argument;
+					  argumentValue:(id)argument NS_DESIGNATED_INITIALIZER;
 
 @end
 

@@ -100,18 +100,16 @@ SOFTWARE.
 - (id)configurationValueForKey:(NSString *)key class:(Class)class defaultValue:(id)value;
 - (long long)configurationIntValueForKey:(NSString *)key defaultValue:(long long)value;
 
-- (NSArray *)configurationKeys;
+@property (readonly, copy) NSArray *configurationKeys;
 
-- (BOOL) debuggerConnected;
+@property (readonly) BOOL debuggerConnected;
 
 - (void) dumpMemoryStatistics;
-- (size_t) dumpJSMemoryStatistics;
+@property (readonly) size_t dumpJSMemoryStatistics;
 
-- (void) setTCPIgnoresDroppedPackets:(BOOL)flag;
-- (BOOL) TCPIgnoresDroppedPackets;
+@property  BOOL TCPIgnoresDroppedPackets;
 
-- (void) setUsingPlugInController:(BOOL)flag;
-- (BOOL) usingPlugInController;
+@property  BOOL usingPlugInController;
 
 #if OOLITE_GNUSTEP
 - (void) applicationWillTerminate;

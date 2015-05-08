@@ -62,20 +62,20 @@ MA 02110-1301, USA.
 
 @interface PlayerEntity (Contracts)
 
-- (NSString *) processEscapePods;		// removes pods from cargo bay and treats categories of characters carried
-- (NSString *) checkPassengerContracts;	// returns messages from any passengers whose status have changed
+@property (readonly, copy) NSString *processEscapePods;		// removes pods from cargo bay and treats categories of characters carried
+@property (readonly, copy) NSString *checkPassengerContracts;	// returns messages from any passengers whose status have changed
 
-- (NSDictionary *) reputation;
+@property (readonly, copy) NSDictionary *reputation;
 
-- (int) passengerReputation;
+@property (readonly) int passengerReputation;
 - (void) increasePassengerReputation:(unsigned)amount;
 - (void) decreasePassengerReputation:(unsigned)amount;
 
-- (int) parcelReputation;
+@property (readonly) int parcelReputation;
 - (void) increaseParcelReputation:(unsigned)amount;
 - (void) decreaseParcelReputation:(unsigned)amount;
 
-- (int) contractReputation;
+@property (readonly) int contractReputation;
 - (void) increaseContractReputation:(unsigned)amount;
 - (void) decreaseContractReputation:(unsigned)amount;
 - (OOCargoQuantity) contractedVolumeForGood:(OOCommodityType) good;
@@ -96,9 +96,9 @@ MA 02110-1301, USA.
 - (BOOL) awardContract:(unsigned)qty commodity:(NSString*)commodity start:(unsigned)start destination:(unsigned)destination eta:(double)eta fee:(double)fee premium:(double)premium;	// for js scripting.
 - (BOOL) removeContract:(NSString*)commodity destination:(unsigned)destination;	// for js scripting
 
-- (NSArray *) passengerList;
-- (NSArray *) parcelList;
-- (NSArray *) contractList;
+@property (readonly, copy) NSArray *passengerList;
+@property (readonly, copy) NSArray *parcelList;
+@property (readonly, copy) NSArray *contractList;
 - (void) setGuiToManifestScreen;
 - (void) setManifestScreenRow:(id)object inColor:(OOColor*)color forRow:(OOGUIRow)row ofRows:(OOGUIRow)max_rows andOffset:(OOGUIRow)offset inMultipage:(BOOL)multi;
 
@@ -111,11 +111,11 @@ MA 02110-1301, USA.
 
 - (void) showShipyardModel:(NSString *)shipKey shipData:(NSDictionary *)shipDict personality:(uint16_t)personality;
 - (void) showShipyardInfoForSelection;
-- (NSInteger) missingSubEntitiesAdjustment;
+@property (readonly) NSInteger missingSubEntitiesAdjustment;
 - (void) showTradeInInformationFooter;
 
 - (OOCreditsQuantity) priceForShipKey:(NSString *)key;
-- (BOOL) buySelectedShip;
+@property (readonly) BOOL buySelectedShip;
 - (BOOL) buyNamedShip:(NSString *)shipName;
 - (void) newShipCommonSetup:(NSString *)shipKey yardInfo:(NSDictionary *)ship_info baseInfo:(NSDictionary *)ship_base_dict; 
 

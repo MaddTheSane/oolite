@@ -182,7 +182,7 @@ enum OOScanClass
 @property (atomic, readonly, getter=isStation) BOOL station;
 @property (atomic, readonly, getter=isSubEntity) BOOL subEntity;
 @property (atomic, readonly, getter=isPlayer) BOOL player;
-@property (atomic, readonly, getter=isPlanet) BOOL planet;
+@property (atomic, readonly, getter=isPlanet) BOOL isPlanet;
 @property (atomic, readonly, getter=isSun) BOOL sun;
 @property (atomic, readonly, getter=isStellarObject) BOOL stellarObject;
 @property (atomic, readonly, getter=isSky) BOOL sky;
@@ -262,7 +262,7 @@ enum OOScanClass
 @property (atomic, readonly) OOMatrix transformationMatrix;
 @property (atomic, readonly) OOMatrix drawTransformationMatrix;
 
-- (BOOL) canCollide;
+@property (readonly) BOOL canCollide;
 @property GLfloat collisionRadius;
 @property (readonly, retain) NSMutableArray *collisionArray;
 
@@ -277,7 +277,7 @@ enum OOScanClass
 - (void) dumpSelfState;	// Subclasses should override this, not -dumpState, and call throught to super first.
 
 // Subclass repsonsibilities
-- (double) findCollisionRadius;
+@property (readonly) double findCollisionRadius;
 - (void) drawImmediate:(bool)immediate translucent:(bool)translucent;
 @property (atomic, readonly, getter=isVisible) BOOL visible;
 @property (atomic, readonly, getter=isInSpace) BOOL inSpace;
@@ -289,10 +289,10 @@ enum OOScanClass
 @property (nonatomic, readonly) GLfloat timeElapsedSinceSpawn;
 
 #ifndef NDEBUG
-- (NSString *) descriptionForObjDumpBasic;
-- (NSString *) descriptionForObjDump;
+@property (readonly, copy) NSString *descriptionForObjDumpBasic;
+@property (readonly, copy) NSString *descriptionForObjDump;
 
-- (NSSet *) allTextures;
+@property (readonly, copy) NSSet *allTextures;
 #endif
 
 @end

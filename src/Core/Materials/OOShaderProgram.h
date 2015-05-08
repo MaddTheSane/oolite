@@ -45,7 +45,7 @@ SOFTWARE.
 	NSArray							*standardMatrixUniformLocations;
 }
 
-+ (id) shaderProgramWithVertexShader:(NSString *)vertexShaderSource
++ (instancetype) shaderProgramWithVertexShader:(NSString *)vertexShaderSource
 					  fragmentShader:(NSString *)fragmentShaderSource
 					vertexShaderName:(NSString *)vertexShaderName
 				  fragmentShaderName:(NSString *)fragmentShaderName
@@ -54,7 +54,7 @@ SOFTWARE.
 							cacheKey:(NSString *)cacheKey;
 
 // Loads a shader from a file, caching and sharing shader program instances.
-+ (id) shaderProgramWithVertexShaderName:(NSString *)vertexShaderName
++ (instancetype) shaderProgramWithVertexShaderName:(NSString *)vertexShaderName
 					  fragmentShaderName:(NSString *)fragmentShaderName
 								  prefix:(NSString *)prefixString			// String prepended to program source (both vs and fs)
 					   attributeBindings:(NSDictionary *)attributeBindings;	// Maps vertex attribute names to "locations".
@@ -62,7 +62,7 @@ SOFTWARE.
 - (void) apply;
 + (void) applyNone;
 
-- (GLhandleARB) program;
+@property (readonly) GLhandleARB program;
 
 @end
 

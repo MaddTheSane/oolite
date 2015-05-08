@@ -43,13 +43,13 @@ MA 02110-1301, USA.
 	Flight screens have two modes, one for mouse control enabled and one for
 	mouse control disabled.
 */
-typedef enum
+typedef NS_ENUM(unsigned int, OOMouseInteractionMode)
 {
 	MOUSE_MODE_UI_SCREEN_NO_INTERACTION,
 	MOUSE_MODE_UI_SCREEN_WITH_INTERACTION,
 	MOUSE_MODE_FLIGHT_NO_MOUSE_CONTROL,
 	MOUSE_MODE_FLIGHT_WITH_MOUSE_CONTROL
-} OOMouseInteractionMode;
+};
 
 
 NSString *OOStringFromMouseInteractionMode(OOMouseInteractionMode mode);

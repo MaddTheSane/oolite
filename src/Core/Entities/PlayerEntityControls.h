@@ -32,7 +32,7 @@ MA 02110-1301, USA.
 - (void) initControls;
 
 - (void) pollControls:(double)delta_t;
-- (BOOL) handleGUIUpDownArrowKeys;
+@property (readonly) BOOL handleGUIUpDownArrowKeys;
 - (void) clearPlanetSearchString;
 - (void) targetNewSystem:(int) direction;
 - (void) switchToMainView;

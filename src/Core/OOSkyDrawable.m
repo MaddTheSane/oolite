@@ -84,13 +84,13 @@ enum
 
 + (void)addQuads:(OOSkyQuadDesc *)quads count:(unsigned)count toArray:(NSMutableArray *)ioArray;
 
-- (id)initWithQuadsWithTexture:(OOTexture *)texture inArray:(OOSkyQuadDesc *)array count:(unsigned)totalCount;
+- (instancetype)initWithQuadsWithTexture:(OOTexture *)texture inArray:(OOSkyQuadDesc *)array count:(unsigned)totalCount NS_DESIGNATED_INITIALIZER;
 
 - (void)render;
 
 #ifndef NDEBUG
-- (size_t) totalSize;
-- (OOTexture *) texture;
+@property (readonly) size_t totalSize;
+@property (readonly, strong) OOTexture *texture;
 #endif
 
 @end
@@ -129,7 +129,7 @@ static OOColor *SaturatedColorInRange(OOColor *color1, OOColor *color2, BOOL hue
 
 @implementation OOSkyDrawable
 
-- (id)initWithColor1:(OOColor *)color1
+- (instancetype)initWithColor1:(OOColor *)color1
 			  Color2:(OOColor *)color2
 			  Color3:(OOColor *)color3
 			  Color4:(OOColor *)color4
@@ -543,7 +543,7 @@ static OOColor *DebugColor(Vector orientation)
 }
 
 
-- (id)initWithQuadsWithTexture:(OOTexture *)texture inArray:(OOSkyQuadDesc *)array count:(unsigned)totalCount
+- (instancetype)initWithQuadsWithTexture:(OOTexture *)texture inArray:(OOSkyQuadDesc *)array count:(unsigned)totalCount
 {
 	BOOL					OK = YES;
 	unsigned				i, j, vertexCount;

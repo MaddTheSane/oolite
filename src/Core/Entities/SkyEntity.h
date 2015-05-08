@@ -34,9 +34,9 @@ MA 02110-1301, USA.
 	OOColor					*skyColor;
 }
 
-- (id) initWithColors:(OOColor *)col1 :(OOColor *)col2 andSystemInfo:(NSDictionary *)systemInfo;
+- (instancetype) initWithColors:(OOColor *)col1 :(OOColor *)col2 andSystemInfo:(NSDictionary *)systemInfo NS_DESIGNATED_INITIALIZER;
 - (BOOL) changeProperty:(NSString *)key withDictionary:(NSDictionary*) dict;
 
-- (OOColor *)skyColor;
+@property (readonly, copy) OOColor *skyColor;
 
 @end

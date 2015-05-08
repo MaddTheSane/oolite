@@ -65,7 +65,7 @@ static NSString * const	kWeightsKey = @"weights";
 @interface OOProbabilitySet (OOPrivate)
 
 // Designated initializer. This must be used by subclasses, since init is overriden for public use.
-- (id) initPriv;
+- (instancetype) initPriv;
 
 @end
 
@@ -84,7 +84,7 @@ static NSString * const	kWeightsKey = @"weights";
 	float				_weight;
 }
 
-- (id) initWithObject:(id)object weight:(float)weight;
+- (instancetype) initWithObject:(id)object weight:(float)weight NS_DESIGNATED_INITIALIZER;
 
 @end
 
@@ -108,7 +108,7 @@ static NSString * const	kWeightsKey = @"weights";
 	float				_sumOfWeights;
 }
 
-- (id) initPrivWithObjectArray:(NSMutableArray *)objects weightsArray:(NSMutableArray *)weights sum:(float)sumOfWeights;
+- (instancetype) initPrivWithObjectArray:(NSMutableArray *)objects weightsArray:(NSMutableArray *)weights sum:(float)sumOfWeights NS_DESIGNATED_INITIALIZER;
 
 @end
 
@@ -120,7 +120,7 @@ static NSString * const	kWeightsKey = @"weights";
 	NSUInteger			_index;
 }
 
-- (id) initWithEnumerable:(id<OOProbabilitySetEnumerable>)enumerable;
+- (instancetype) initWithEnumerable:(id<OOProbabilitySetEnumerable>)enumerable NS_DESIGNATED_INITIALIZER;
 
 @end
 
@@ -132,32 +132,32 @@ static void ThrowAbstractionViolationException(id obj)  GCC_ATTR((noreturn));
 
 // Abstract class just tosses allocations over to concrete class, and throws exception if you try to use it directly.
 
-+ (id) probabilitySet
++ (instancetype) probabilitySet
 {
 	return [[OOEmptyProbabilitySet singleton] autorelease];
 }
 
 
-+ (id) probabilitySetWithObjects:(id *)objects weights:(float *)weights count:(NSUInteger)count
++ (instancetype) probabilitySetWithObjects:(id *)objects weights:(float *)weights count:(NSUInteger)count
 {
 	return [[[self alloc] initWithObjects:objects weights:weights count:count] autorelease];
 }
 
 
-+ (id) probabilitySetWithPropertyListRepresentation:(NSDictionary *)plist
++ (instancetype) probabilitySetWithPropertyListRepresentation:(NSDictionary *)plist
 {
 	return [[[self alloc] initWithPropertyListRepresentation:plist] autorelease];
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	[self release];
 	return [OOEmptyProbabilitySet singleton];
 }
 
 
-- (id) initWithObjects:(id *)objects weights:(float *)weights count:(NSUInteger)count
+- (instancetype) initWithObjects:(id *)objects weights:(float *)weights count:(NSUInteger)count
 {
 	NSZone *zone = [self zone];
 	DESTROY(self);
@@ -179,7 +179,7 @@ static void ThrowAbstractionViolationException(id obj)  GCC_ATTR((noreturn));
 }
 
 
-- (id) initWithPropertyListRepresentation:(NSDictionary *)plist
+- (instancetype) initWithPropertyListRepresentation:(NSDictionary *)plist
 {
 	NSArray					*objects = nil;
 	NSArray					*weights = nil;
@@ -234,7 +234,7 @@ static void ThrowAbstractionViolationException(id obj)  GCC_ATTR((noreturn));
 }
 
 
-- (id) initPriv
+- (instancetype) initPriv
 {
 	return [super init];
 }
@@ -440,7 +440,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 
 @implementation OOSingleObjectProbabilitySet: OOProbabilitySet
 
-- (id) initWithObject:(id)object weight:(float)weight
+- (instancetype) initWithObject:(id)object weight:(float)weight
 {
 	if (object == nil)
 	{
@@ -514,7 +514,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 
 @implementation OOConcreteProbabilitySet
 
-- (id) initWithObjects:(id *)objects weights:(float *)weights count:(NSUInteger)count
+- (instancetype) initWithObjects:(id *)objects weights:(float *)weights count:(NSUInteger)count
 {
 	NSUInteger				i = 0;
 	float					cuWeight = 0.0f;
@@ -718,13 +718,13 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 
 @implementation OOMutableProbabilitySet
 
-+ (id) probabilitySet
++ (instancetype) probabilitySet
 {
 	return [[[OOConcreteMutableProbabilitySet alloc] initPriv] autorelease];
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	NSZone *zone = [self zone];
 	[self release];
@@ -732,7 +732,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 }
 
 
-- (id) initWithObjects:(id *)objects weights:(float *)weights count:(NSUInteger)count
+- (instancetype) initWithObjects:(id *)objects weights:(float *)weights count:(NSUInteger)count
 {
 	NSZone *zone = [self zone];
 	[self release];
@@ -740,7 +740,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 }
 
 
-- (id) initWithPropertyListRepresentation:(NSDictionary *)plist
+- (instancetype) initWithPropertyListRepresentation:(NSDictionary *)plist
 {
 	NSZone *zone = [self zone];
 	[self release];
@@ -770,7 +770,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 
 @implementation OOConcreteMutableProbabilitySet
 
-- (id) initPriv
+- (instancetype) initPriv
 {
 	if ((self = [super initPriv]))
 	{
@@ -783,7 +783,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 
 
 // For internal use by mutableCopy
-- (id) initPrivWithObjectArray:(NSMutableArray *)objects weightsArray:(NSMutableArray *)weights sum:(float)sumOfWeights
+- (instancetype) initPrivWithObjectArray:(NSMutableArray *)objects weightsArray:(NSMutableArray *)weights sum:(float)sumOfWeights
 {
 	assert(objects != nil && weights != nil && [objects count] == [weights count] && sumOfWeights >= 0.0f);
 	
@@ -798,7 +798,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 }
 
 
-- (id) initWithObjects:(id *)objects weights:(float *)weights count:(NSUInteger)count
+- (instancetype) initWithObjects:(id *)objects weights:(float *)weights count:(NSUInteger)count
 {
 	NSUInteger				i = 0;
 	
@@ -822,7 +822,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 }
 
 
-- (id) initWithPropertyListRepresentation:(NSDictionary *)plist
+- (instancetype) initWithPropertyListRepresentation:(NSDictionary *)plist
 {
 	BOOL					OK = YES;
 	NSArray					*objects = nil;
@@ -1030,7 +1030,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 
 @implementation OOProbabilitySetEnumerator
 
-- (id) initWithEnumerable:(id<OOProbabilitySetEnumerable>)enumerable
+- (instancetype) initWithEnumerable:(id<OOProbabilitySetEnumerable>)enumerable
 {
 	if ((self = [super init]))
 	{

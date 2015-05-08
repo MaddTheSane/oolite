@@ -41,6 +41,6 @@ SOFTWARE.
 
 - (void) playLooped:(BOOL)looped;
 - (void) stop;
-- (BOOL) isPlaying;
+@property (readonly, atomic, getter=isPlaying) BOOL playing;
 
 @end

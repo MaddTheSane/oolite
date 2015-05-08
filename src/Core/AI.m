@@ -87,17 +87,17 @@ extern void GenerateGraphVizForAIStateMachine(NSDictionary *stateMachine, NSStri
 	NSString      *_jsScript;
 }
 
-- (id) initWithStateMachine:(NSDictionary *)stateMachine
+- (instancetype) initWithStateMachine:(NSDictionary *)stateMachine
 					   name:(NSString *)name
 					  state:(NSString *)state
 			pendingMessages:(NSSet *)pendingMessages
-									 jsScript:(NSString *)script;
+									 jsScript:(NSString *)script NS_DESIGNATED_INITIALIZER;
 
-- (NSDictionary *) stateMachine;
-- (NSString *) name;
-- (NSString *) state;
-- (NSSet *) pendingMessages;
-- (NSString *) jsScript;
+@property (readonly, copy) NSDictionary *stateMachine;
+@property (readonly, copy) NSString *name;
+@property (readonly, copy) NSString *state;
+@property (readonly, copy) NSSet *pendingMessages;
+@property (readonly, copy) NSString *jsScript;
 
 @end
 
@@ -123,7 +123,7 @@ extern void GenerateGraphVizForAIStateMachine(NSDictionary *stateMachine, NSStri
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -137,7 +137,7 @@ extern void GenerateGraphVizForAIStateMachine(NSDictionary *stateMachine, NSStri
 }
 
 
-- (id) initWithStateMachine:(NSString *)smName andState:(NSString *)stateName
+- (instancetype) initWithStateMachine:(NSString *)smName andState:(NSString *)stateName
 {
 	if ((self = [self init]))
 	{
@@ -177,7 +177,7 @@ extern void GenerateGraphVizForAIStateMachine(NSDictionary *stateMachine, NSStri
 
 - (NSString *) shortDescriptionComponents
 {
-	return [NSString stringWithFormat:@"%@:%@ / %@", stateMachineName, currentState, [stateMachine objectForKey:@"jsScript"]];
+	return [NSString stringWithFormat:@"%@:%@ / %@", stateMachineName, currentState, stateMachine[@"jsScript"]];
 }
 
 
@@ -658,11 +658,7 @@ static AIStackElement *sStack = NULL;
 	OOLog(@"ai.debug.pendingMessages", @"Pending messages for AI %@: %@", [self descriptionComponents], displayMessages);
 }
 
-
-- (void) setNextThinkTime:(OOTimeAbsolute) ntt
-{
-	nextThinkTime = ntt;
-}
+@synthesize nextThinkTime;
 
 
 - (OOTimeAbsolute) nextThinkTime
@@ -674,16 +670,7 @@ static AIStackElement *sStack = NULL;
 }
 
 
-- (void) setThinkTimeInterval:(OOTimeDelta) tti
-{
-	thinkTimeInterval = tti;
-}
-
-
-- (OOTimeDelta) thinkTimeInterval
-{
-	return thinkTimeInterval;
-}
+@synthesize thinkTimeInterval;
 
 
 - (void) clearStack
@@ -994,7 +981,7 @@ static AIStackElement *sStack = NULL;
 
 @implementation OOPreservedAIStateMachine
 
-- (id) initWithStateMachine:(NSDictionary *)stateMachine
+- (instancetype) initWithStateMachine:(NSDictionary *)stateMachine
 					   name:(NSString *)name
 					  state:(NSString *)state
 			pendingMessages:(NSSet *)pendingMessages
@@ -1025,32 +1012,11 @@ static AIStackElement *sStack = NULL;
 }
 
 
-- (NSDictionary *) stateMachine
-{
-	return _stateMachine;
-}
+@synthesize stateMachine = _stateMachine;
+@synthesize name = _name;
+@synthesize state = _state;
+@synthesize pendingMessages = _pendingMessages;
+@synthesize jsScript = _jsScript;
 
-
-- (NSString *) name
-{
-	return _name;
-}
-
-
-- (NSString *) state
-{
-	return _state;
-}
-
-
-- (NSSet *) pendingMessages
-{
-	return _pendingMessages;
-}
-
-- (NSString *) jsScript
-{
-	return _jsScript;
-}
 
 @end

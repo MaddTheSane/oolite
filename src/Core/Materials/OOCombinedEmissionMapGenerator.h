@@ -62,7 +62,7 @@ SOFTWARE.
 #endif
 }
 
-- (id) initWithEmissionMapSpec:(NSDictionary *)emissionMapSpec
+- (instancetype) initWithEmissionMapSpec:(NSDictionary *)emissionMapSpec
 				 emissionColor:(OOColor *)emissionColor
 					diffuseMap:(OOTexture *)diffuseMap
 				  diffuseColor:(OOColor *)diffuseColor
@@ -70,7 +70,7 @@ SOFTWARE.
 			 illuminationColor:(OOColor *)illuminationColor
 			  optionsSpecifier:(NSDictionary *)spec;
 
-- (id) initWithEmissionAndIlluminationMapSpec:(NSDictionary *)emissionAndIlluminationMapSpec
+- (instancetype) initWithEmissionAndIlluminationMapSpec:(NSDictionary *)emissionAndIlluminationMapSpec
 								   diffuseMap:(OOTexture *)diffuseMap
 								 diffuseColor:(OOColor *)diffuseColor
 								emissionColor:(OOColor *)emissionColor

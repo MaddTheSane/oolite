@@ -51,7 +51,7 @@ static OOTexture *sBlobTexture = nil;
 
 @implementation OOLightParticleEntity
 
-- (id) initWithDiameter:(float)diameter
+- (instancetype) initWithDiameter:(float)diameter
 {
 	if ((self = [super init]))
 	{

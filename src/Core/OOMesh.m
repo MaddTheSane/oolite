@@ -73,12 +73,12 @@ enum
 };
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOMeshNormalMode)
 {
 	kNormalModePerFace,
 	kNormalModeSmooth,
 	kNormalModeExplicit
-} OOMeshNormalMode;
+};
 
 
 static NSString * const kOOLogMeshDataNotFound				= @"mesh.load.failed.fileNotFound";
@@ -129,7 +129,7 @@ static NSUInteger VFRGetFaceAtIndex(VertexFaceRef *vfr, NSUInteger index);
 
 @interface OOMesh (Private) <NSMutableCopying, OOGraphicsResetClient>
 
-- (id)initWithName:(NSString *)name
+- (instancetype)initWithName:(NSString *)name
 		  cacheKey:(NSString *)cacheKey
 materialDictionary:(NSDictionary *)materialDict
  shadersDictionary:(NSDictionary *)shadersDict
@@ -146,12 +146,12 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)object
 
 - (void) deleteDisplayLists;
 
-- (NSDictionary*) modelData;
+@property (readonly, copy) NSDictionary *modelData;
 - (BOOL) setModelFromModelData:(NSDictionary*) dict name:(NSString *)fileName;
 
 - (void) getNormal:(Vector *)outNormal andTangent:(Vector *)outTangent forVertex:(OOMeshVertexCount)v_index inSmoothGroup:(OOMeshSmoothGroup)smoothGroup;
 
-- (BOOL) setUpVertexArrays;
+@property (readonly) BOOL setUpVertexArrays;
 
 - (void) calculateBoundingVolumes;
 
@@ -163,7 +163,7 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)object
 
 // Manage set of objects we need to hang on to, particularly NSDatas owning buffers.
 - (void) setRetainedObject:(id)object forKey:(NSString *)key;
-- (void *) allocateBytesWithSize:(size_t)size count:(NSUInteger)count key:(NSString *)key;
+- (void *) allocateBytesWithSize:(size_t)size count:(NSUInteger)count key:(NSString *)key NS_RETURNS_INNER_POINTER;
 
 // Allocate all per-vertex/per-face buffers.
 - (BOOL) allocateVertexBuffersWithCount:(NSUInteger)count;
@@ -280,7 +280,7 @@ static BOOL IsPerVertexNormalMode(OOMeshNormalMode mode)
 }
 
 
-- (id)init
+- (instancetype)init
 {
 	self = [super init];
 	if (self == nil)  return nil;
@@ -842,7 +842,7 @@ static NSString *NormalModeDescription(OOMeshNormalMode mode)
 
 @implementation OOMesh (Private)
 
-- (id)initWithName:(NSString *)name
+- (instancetype)initWithName:(NSString *)name
 		  cacheKey:(NSString *)cacheKey
 materialDictionary:(NSDictionary *)materialDict
  shadersDictionary:(NSDictionary *)shadersDict

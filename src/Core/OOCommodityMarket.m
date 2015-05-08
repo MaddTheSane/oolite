@@ -33,7 +33,7 @@ static NSComparisonResult goodsSorter(id a, id b, void *context);
 
 @implementation OOCommodityMarket
 
-- (id) init
+- (instancetype) init
 {
 	self = [super init];
 	if (self == nil)  return nil;
@@ -63,7 +63,7 @@ static NSComparisonResult goodsSorter(id a, id b, void *context);
 - (void) setGood:(OOCommodityType)key withInfo:(NSDictionary *)info
 {
 	NSMutableDictionary *definition = [NSMutableDictionary dictionaryWithDictionary:info];
-	[_commodityList setObject:definition forKey:key];
+	_commodityList[key] = definition;
 	DESTROY(_sortedKeys); // reset
 }
 
@@ -150,7 +150,7 @@ static NSComparisonResult goodsSorter(id a, id b, void *context);
 	{
 		return NO;
 	}
-	[definition setObject:comment forKey:kOOCommodityComment];
+	definition[kOOCommodityComment] = comment;
 	return YES;
 }
 
@@ -162,7 +162,7 @@ static NSComparisonResult goodsSorter(id a, id b, void *context);
 	{
 		return NO;
 	}
-	[definition setObject:comment forKey:kOOCommodityShortComment];
+	definition[kOOCommodityShortComment] = comment;
 	return YES;
 }
 
@@ -292,7 +292,7 @@ static NSComparisonResult goodsSorter(id a, id b, void *context);
 	OOCommodityType good = nil;
 	foreach (good, [self goods])
 	{
-		[amounts addObject:[NSArray arrayWithObjects:good,[NSNumber numberWithUnsignedInt:[self quantityForGood:good]],nil]];
+		[amounts addObject:@[good,@([self quantityForGood:good])]];
 	}
 	return [NSArray arrayWithArray:amounts];
 }
@@ -351,7 +351,7 @@ static NSComparisonResult goodsSorter(id a, id b, void *context);
 	OOCommodityType good = nil;
 	foreach (good, [self goods])
 	{
-		[amounts addObject:[NSArray arrayWithObjects:good,[NSNumber numberWithUnsignedInt:[self quantityForGood:good]],[NSNumber numberWithUnsignedInt:[self priceForGood:good]],nil]];
+		[amounts addObject:@[good,@([self quantityForGood:good]),[NSNumber numberWithUnsignedInt:[self priceForGood:good]]]];
 	}
 	return [NSArray arrayWithArray:amounts];
 }

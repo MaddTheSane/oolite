@@ -118,7 +118,7 @@ static void APIENTRY ErrorCallback(GLenum error, void *polygonData);
 
 @implementation OOPolygonSprite
 
-- (id) initWithDataArray:(NSArray *)dataArray outlineWidth:(GLfloat)outlineWidth name:(NSString *)name
+- (instancetype) initWithDataArray:(NSArray *)dataArray outlineWidth:(GLfloat)outlineWidth name:(NSString *)name
 {
 	if ((self = [super init]))
 	{

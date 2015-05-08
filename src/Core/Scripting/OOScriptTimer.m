@@ -38,7 +38,7 @@ static NSMutableArray	*sDeferredTimers;
 
 @implementation OOScriptTimer
 
-- (id) initWithNextTime:(OOTimeAbsolute)nextTime
+- (instancetype) initWithNextTime:(OOTimeAbsolute)nextTime
 			   interval:(OOTimeDelta)interval
 {
 	OOTimeAbsolute			now;
@@ -67,7 +67,7 @@ static NSMutableArray	*sDeferredTimers;
 }
 
 	// Sets nextTime to current time + delay.
-- (id) initOneShotTimerWithDelay:(OOTimeDelta)delay
+- (instancetype) initOneShotTimerWithDelay:(OOTimeDelta)delay
 {
 	return [self initWithNextTime:[UNIVERSE getTime] + delay interval:-1.0];
 }

@@ -142,7 +142,7 @@ static GLfloat calcFuelChargeRate (GLfloat myMass)
 - (BOOL) setUpOneSubentity:(NSDictionary *) subentDict;
 - (BOOL) setUpOneFlasher:(NSDictionary *) subentDict;
 
-- (Entity<OOStellarBody> *) lastAegisLock;
+@property (readonly, strong) Entity<OOStellarBody> *lastAegisLock;
 
 - (void) addSubEntity:(Entity<OOSubEntity> *) subent;
 
@@ -163,7 +163,7 @@ static GLfloat calcFuelChargeRate (GLfloat myMass)
 
 - (void) noteFrustration:(NSString *)context;
 
-- (BOOL) cloakPassive;
+@property (readonly) BOOL cloakPassive;
 
 @end
 
@@ -173,7 +173,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 
 @implementation ShipEntity
 
-- (id) init
+- (instancetype) init
 {
 	/*	-init used to set up a bunch of defaults that were different from
 		those in -reinit and -setUpShipFromDictionary:. However, it seems that
@@ -184,14 +184,14 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 }
 
 
-- (id) initBypassForPlayer
+- (instancetype) initBypassForPlayer
 {
 	return [super init];
 }
 
 
 // Designated initializer
-- (id)initWithKey:(NSString *)key definition:(NSDictionary *)dict
+- (instancetype)initWithKey:(NSString *)key definition:(NSDictionary *)dict
 {
 	OOJS_PROFILE_ENTER
 	
@@ -408,7 +408,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	if (octree)  mass = (GLfloat)(density * 20.0 * [octree volume]);
 	
 	DESTROY(default_laser_color);
-	default_laser_color = [[OOColor brightColorWithDescription:[shipDict objectForKey:@"laser_color"]] retain];
+	default_laser_color = [[OOColor brightColorWithDescription:shipDict[@"laser_color"]] retain];
 	
 	if (default_laser_color == nil) 
 	{
@@ -424,7 +424,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	defaultExhaustEmissiveColorComponents.g = 0.9f;
 	defaultExhaustEmissiveColorComponents.b = 1.0f;
 	defaultExhaustEmissiveColorComponents.a = 0.9f;
-	OOColor *color = [OOColor brightColorWithDescription:[shipDict objectForKey:@"exhaust_emissive_color"]];
+	OOColor *color = [OOColor brightColorWithDescription:shipDict[@"exhaust_emissive_color"]];
 	if (color == nil)  color = [OOColor colorWithRGBAComponents:defaultExhaustEmissiveColorComponents];
 	[self setExhaustEmissiveColor:color];
 	
@@ -6531,7 +6531,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 {
 	DESTROY(scanner_display_color_hostile1);
 	
-	if (color == nil)  color = [OOColor colorWithDescription:[[self shipInfoDictionary] objectForKey:@"scanner_hostile_display_color1"]];
+	if (color == nil)  color = [OOColor colorWithDescription:[self shipInfoDictionary][@"scanner_hostile_display_color1"]];
 	scanner_display_color_hostile1 = [color retain];
 }
 
@@ -6540,7 +6540,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 {
 	DESTROY(scanner_display_color_hostile2);
 	
-	if (color == nil)  color = [OOColor colorWithDescription:[[self shipInfoDictionary] objectForKey:@"scanner_hostile_display_color2"]];
+	if (color == nil)  color = [OOColor colorWithDescription:[self shipInfoDictionary][@"scanner_hostile_display_color2"]];
 	scanner_display_color_hostile2 = [color retain];
 }
 
@@ -7928,7 +7928,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 			OOStandardsDeprecated([NSString stringWithFormat:@"The launch_actions ship key is deprecated on %@.",[self displayName]]);
 			if (!OOEnforceStandards()) 
 			{
-				[properties setObject:actions forKey:@"legacy_launchActions"];	
+				properties[@"legacy_launchActions"] = actions;	
 			}
 		}
 
@@ -7938,7 +7938,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 			OOStandardsDeprecated([NSString stringWithFormat:@"The script_actions ship key is deprecated on %@.",[self displayName]]);
 			if (!OOEnforceStandards()) 
 			{
-				[properties setObject:actions forKey:@"legacy_scriptActions"];	
+				properties[@"legacy_scriptActions"] = actions;	
 			}
 		}
 
@@ -7948,7 +7948,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 			OOStandardsDeprecated([NSString stringWithFormat:@"The death_actions ship key is deprecated on %@.",[self displayName]]);
 			if (!OOEnforceStandards()) 
 			{
-				[properties setObject:actions forKey:@"legacy_deathActions"];	
+				properties[@"legacy_deathActions"] = actions;	
 			}
 		}
 
@@ -7958,7 +7958,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 			OOStandardsDeprecated([NSString stringWithFormat:@"The setup_actions ship key is deprecated on %@.",[self displayName]]);
 			if (!OOEnforceStandards()) 
 			{
-				[properties setObject:actions forKey:@"legacy_setupActions"];	
+				properties[@"legacy_setupActions"] = actions;	
 			}
 		}
 		
@@ -8307,7 +8307,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 		if (quantityInHold[i] > 0)
 		{
 			NSMutableDictionary	*commodity = [NSMutableDictionary dictionaryWithCapacity:4];
-			good = [goods objectAtIndex:i];
+			good = goods[i];
 			// commodity, quantity - keep consistency between .manifest and .contracts
 			commodity[@"commodity"] = good;
 			commodity[@"quantity"] = @(quantityInHold[i]);
@@ -8362,7 +8362,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	// iterate downwards to be safe removing during iteration
 	while (amount > 0)
 	{
-		if ([[[cargo objectAtIndex:i] commodityType] isEqualToString:commodity])
+		if ([[cargo[i] commodityType] isEqualToString:commodity])
 		{
 			amount--;
 			[cargo removeObjectAtIndex:i];
@@ -12402,16 +12402,16 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	{
 		if (preferred == nil)
 		{
-			jetto = [[[cargo objectAtIndex:0] retain] autorelease];
+			jetto = [[cargo[0] retain] autorelease];
 		}
 		else
 		{
 			BOOL found = NO;
 			for (i=0;i<[cargo count];i++)
 			{
-				if ([[[cargo objectAtIndex:i] commodityType] isEqualToString:preferred])
+				if ([[cargo[i] commodityType] isEqualToString:preferred])
 				{
-					jetto = [[[cargo objectAtIndex:i] retain] autorelease];
+					jetto = [[cargo[i] retain] autorelease];
 					found = YES;
 					break;
 				}
@@ -12419,7 +12419,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 			if (found == NO)
 			{
 				// dump anything
-				jetto = [[[cargo objectAtIndex:0] retain] autorelease];
+				jetto = [[cargo[0] retain] autorelease];
 				i = 0;
 			}
 		}

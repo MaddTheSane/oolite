@@ -64,7 +64,7 @@ static OOTexture *sPlumeTexture = nil;
 }
 
 
-- (id) initForShip:(ShipEntity *)ship withDefinition:(NSArray *)definition andScale:(float)scaleFactor
+- (instancetype) initForShip:(ShipEntity *)ship withDefinition:(NSArray *)definition andScale:(float)scaleFactor
 {
 	if ([definition count] == 0)
 	{

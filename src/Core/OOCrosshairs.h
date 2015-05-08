@@ -39,10 +39,10 @@ SOFTWARE.
 	GLfloat						*_data;
 }
 
-- (id) initWithPoints:(NSArray *)points
+- (instancetype) initWithPoints:(NSArray *)points
 				scale:(GLfloat)scale
 				color:(OOColor *)color
-		 overallAlpha:(GLfloat)alpha;
+		 overallAlpha:(GLfloat)alpha NS_DESIGNATED_INITIALIZER;
 
 - (void) render;
 

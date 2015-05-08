@@ -104,11 +104,9 @@ MA 02110-1301, USA.
 
 - (void) applicationDidFinishLaunching:(NSNotification *)notification;
 
-- (BOOL) isGamePaused;
-- (void) setGamePaused:(BOOL)value;
+@property (nonatomic, getter=isGamePaused) BOOL gamePaused;
 
-- (OOMouseInteractionMode) mouseInteractionMode;
-- (void) setMouseInteractionMode:(OOMouseInteractionMode)mode;
+@property (nonatomic) OOMouseInteractionMode mouseInteractionMode;
 - (void) setMouseInteractionModeForFlight;	// Chooses mouse control mode appropriately.
 - (void) setMouseInteractionModeForUIWithMouseInteraction:(BOOL)interaction;
 
@@ -125,11 +123,9 @@ MA 02110-1301, USA.
 - (void) exitAppWithContext:(NSString *)context;
 - (void) exitAppCommandQ;
 
-- (NSString *) playerFileToLoad;
-- (void) setPlayerFileToLoad:(NSString *)filename;
+@property (copy, nonatomic) NSString *playerFileToLoad;
 
-- (NSString *) playerFileDirectory;
-- (void) setPlayerFileDirectory:(NSString *)filename;
+@property (copy, atomic) NSString *playerFileDirectory;
 
 - (void) loadPlayerIfRequired;
 
@@ -146,8 +142,7 @@ MA 02110-1301, USA.
 - (void) startAnimationTimer;
 - (void) stopAnimationTimer;
 
-- (MyOpenGLView *) gameView;
-- (void) setGameView:(MyOpenGLView *)view;
+@property (nonatomic, strong) MyOpenGLView *gameView;
 
 - (void)windowDidResize:(NSNotification *)aNotification;
 
@@ -169,12 +164,12 @@ MA 02110-1301, USA.
 #endif
 
 - (void) exitFullScreenMode;	// FIXME: should be setFullScreenMode:NO
-- (BOOL) inFullScreenMode;
+@property (readonly) BOOL inFullScreenMode;
 
 - (BOOL) setDisplayWidth:(unsigned int) d_width Height:(unsigned int)d_height Refresh:(unsigned int) d_refresh;
 - (NSDictionary *) findDisplayModeForWidth:(unsigned int)d_width Height:(unsigned int) d_height Refresh:(unsigned int) d_refresh;
-- (NSArray *) displayModes;
-- (NSUInteger) indexOfCurrentDisplayMode;
+@property (readonly, copy) NSArray *displayModes;
+@property (readonly) NSUInteger indexOfCurrentDisplayMode;
 
 - (void) pauseFullScreenModeToPerform:(SEL) selector onTarget:(id) target;
 

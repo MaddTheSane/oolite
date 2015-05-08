@@ -87,14 +87,14 @@ static BOOL sIsSoundOK = NO;
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	if (!sIsSetUp)  [OOSound setUp];
 	return [super init];
 }
 
 
-- (id) initWithContentsOfFile:(NSString *)path
+- (instancetype) initWithContentsOfFile:(NSString *)path
 {
 	[self release];
 	if (!sIsSetUp && ![OOSound setUp])  return nil;
@@ -130,7 +130,7 @@ static BOOL sIsSoundOK = NO;
 
 }
 
-- (id)initWithDecoder:(OOALSoundDecoder *)inDecoder
+- (instancetype)initWithDecoder:(OOALSoundDecoder *)inDecoder
 {
 	[self release];
 	return nil;

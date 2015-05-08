@@ -43,7 +43,7 @@ static NSString * const kStageName	= @"Testing textures and images";
 
 @implementation OOTextureVerifierStage
 
-- (id)init
+- (instancetype)init
 {
 	self = [super init];
 	if (self != nil)

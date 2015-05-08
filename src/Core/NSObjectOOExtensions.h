@@ -35,7 +35,7 @@ SOFTWARE.
 #ifndef NDEBUG
 
 + (size_t) oo_instanceSize;
-- (size_t) oo_objectSize;
+@property (readonly) size_t oo_objectSize;
 
 #endif
 

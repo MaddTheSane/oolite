@@ -50,17 +50,14 @@ OUT OF OR
 }
 
 + (instancetype) sourceWithSound:(OOSound *)inSound;
-- (id) initWithSound:(OOSound *)inSound;
+- (instancetype) initWithSound:(OOSound *)inSound;
 
 // These options should be set before playing. Effect of setting them while playing is undefined.
-- (OOSound *) sound;
-- (void )setSound:(OOSound *)inSound;
-- (BOOL) loop;
-- (void) setLoop:(BOOL)inLoop;
-- (uint8_t) repeatCount;
-- (void) setRepeatCount:(uint8_t)inCount;
+@property (strong) OOSound *sound;
+@property  BOOL loop;
+@property  uint8_t repeatCount;
 
-- (BOOL) isPlaying;
+@property (getter=isPlaying, readonly) BOOL playing;
 - (void) play;
 - (void) playOrRepeat;
 - (void) stop;
@@ -73,12 +70,9 @@ OUT OF OR
 - (void) playOrRepeatSound:(OOSound *)inSound;
 
 // Positional audio attributes are used in this implementation
-- (void) setPositional:(BOOL)inPositional;
-- (BOOL) positional;
-- (void) setPosition:(Vector)inPosition;
-- (Vector) position;
-- (void) setGain:(float)gain;
-- (float) gain;
+@property  BOOL positional;
+@property  Vector position;
+@property  float gain;
 
 // *Advanced* positional audio attributes are ignored in this implementation
 - (void) setVelocity:(Vector)inVelocity;

@@ -41,7 +41,7 @@ SOFTWARE.
 
 @implementation OOSoundChannel
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{

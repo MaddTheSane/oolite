@@ -41,7 +41,7 @@ static OOBasicMaterial *sDefaultMaterial = nil;
 
 @implementation OOBasicMaterial
 
-- (id)initWithName:(NSString *)name
+- (instancetype)initWithName:(NSString *)name
 {
 	self = [super init];
 	if (EXPECT_NOT(self == nil))  return nil;
@@ -57,7 +57,7 @@ static OOBasicMaterial *sDefaultMaterial = nil;
 }
 
 
-- (id)initWithName:(NSString *)name configuration:(NSDictionary *)configuration
+- (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration
 {
 	id					colorDesc = nil;
 	int					specularExponent;

@@ -43,7 +43,7 @@ static NSString * const kCacheName			= @"sanitized legacy scripts";
 
 + (NSArray *)scriptsFromDictionaryOfScripts:(NSDictionary *)dictionary filePath:(NSString *)filePath;
 + (NSArray *) loadCachedScripts:(NSDictionary *)cachedScripts;
-- (id)initWithName:(NSString *)name scriptArray:(NSArray *)script metadata:(NSDictionary *)metadata;
+- (instancetype)initWithName:(NSString *)name scriptArray:(NSArray *)script metadata:(NSDictionary *)metadata;
 
 @end
 
@@ -191,7 +191,7 @@ static NSString * const kCacheName			= @"sanitized legacy scripts";
 }
 
 
-- (id)initWithName:(NSString *)name scriptArray:(NSArray *)script metadata:(NSDictionary *)metadata
+- (instancetype)initWithName:(NSString *)name scriptArray:(NSArray *)script metadata:(NSDictionary *)metadata
 {
 	self = [super init];
 	if (self != nil)

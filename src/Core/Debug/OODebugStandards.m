@@ -46,7 +46,7 @@ void OOStandardsInternal(NSString *type, NSString *message);
 
 static BOOL sSetup = NO;
 
-typedef enum {
+typedef NS_ENUM(unsigned int, OOStandardsEnforcement) {
 // do nothing (equivalent to release build)
 	STANDARDS_ENFORCEMENT_OFF = 0,
 // warn in log but otherwise do nothing
@@ -55,7 +55,7 @@ typedef enum {
 	STANDARDS_ENFORCEMENT_ENFORCE,
 // note in log, then exit if deprecated or error condition occurs
 	STANDARDS_ENFORCEMENT_QUIT
-} OOStandardsEnforcement;
+};
 
 static OOStandardsEnforcement sEnforcement = STANDARDS_ENFORCEMENT_WARN;
 

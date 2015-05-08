@@ -52,21 +52,21 @@ SOFTWARE.
 
 // Note: -init is equivalent to -initWithComparator:@selector(compare:)
 + (instancetype) queueWithComparator:(SEL)comparator;
-- (instancetype) initWithComparator:(SEL)comparator;
+- (instancetype) initWithComparator:(SEL)comparator NS_DESIGNATED_INITIALIZER;
 
 - (void) addObject:(id)object;			// May throw NSInvalidArgumentException or NSMallocException.
 - (void) removeObject:(id)object;		// Uses comparator (looking for NSOrderedEqual) to find object. Note: relatively expensive.
 - (void) removeExactObject:(id)object;	// Uses pointer comparison to find object. Note: still relatively expensive.
 
-- (NSUInteger) count;
+@property (readonly) NSUInteger count;
 
-- (id) nextObject;
-- (id) peekAtNextObject;				// Returns next object without removing it.
+@property (readonly, strong) id nextObject;
+@property (readonly, strong) id peekAtNextObject;				// Returns next object without removing it.
 - (void) removeNextObject;
 
 - (void) addObjects:(id)collection;		// collection must respond to -nextObject, or implement -objectEnumerator to return something that implements -nextObject -- such as an NSEnumerator.
 
-- (NSArray *) sortedObjects;			// Returns the objects in -nextObject order and empties the heap. To get the objects without emptying the heap, copy the priority queue first.
-- (NSEnumerator *) objectEnumerator;	// Enumerator which pulls objects off the heap until it's empty. Note however that the queue itself behaves like an enumerator, as -nextObject has similar semantics (except that the enumerator's -nextObject can never start returning objects after it returns nil).
+@property (readonly, copy) NSArray *sortedObjects;			// Returns the objects in -nextObject order and empties the heap. To get the objects without emptying the heap, copy the priority queue first.
+@property (readonly, strong) NSEnumerator *objectEnumerator;	// Enumerator which pulls objects off the heap until it's empty. Note however that the queue itself behaves like an enumerator, as -nextObject has similar semantics (except that the enumerator's -nextObject can never start returning objects after it returns nil).
 
 @end

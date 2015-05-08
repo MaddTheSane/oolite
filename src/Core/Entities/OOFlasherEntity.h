@@ -46,22 +46,18 @@ MA 02110-1301, USA.
 }
 
 + (instancetype) flasherWithDictionary:(NSDictionary *)dictionary;
-- (id) initWithDictionary:(NSDictionary *)dictionary;
+- (instancetype) initWithDictionary:(NSDictionary *)dictionary NS_DESIGNATED_INITIALIZER;
 
-- (BOOL) isActive;
-- (void) setActive:(BOOL)active;
+@property (getter=isActive) BOOL active;
 
-- (OOColor *) color;
+@property (readonly, copy) OOColor *color;
 // setColor is defined by superclass
 
-- (float) frequency;
-- (void) setFrequency:(float)frequency;
+@property  float frequency;
 
-- (float) phase;
-- (void) setPhase:(float)phase;
+@property  float phase;
 
-- (float) fraction;
-- (void) setFraction:(float)fraction;
+@property  float fraction;
 
 
 @end
@@ -69,7 +65,7 @@ MA 02110-1301, USA.
 
 @interface Entity (OOFlasherEntityExtensions)
 
-- (BOOL) isFlasher;
+@property (getter=isFlasher, readonly) BOOL flasher;
 
 @end
 

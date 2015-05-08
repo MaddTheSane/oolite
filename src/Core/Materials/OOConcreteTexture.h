@@ -75,13 +75,13 @@ SOFTWARE.
 #endif
 }
 
-- (id) initWithLoader:(OOTextureLoader *)loader
+- (instancetype) initWithLoader:(OOTextureLoader *)loader
 				  key:(NSString *)key
 			  options:(uint32_t)options
 		   anisotropy:(GLfloat)anisotropy
-			  lodBias:(GLfloat)lodBias;
+			  lodBias:(GLfloat)lodBias NS_DESIGNATED_INITIALIZER;
 
-- (id)initWithPath:(NSString *)path
+- (instancetype)initWithPath:(NSString *)path
 			   key:(NSString *)key
 		   options:(uint32_t)options
 		anisotropy:(float)anisotropy

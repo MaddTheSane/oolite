@@ -69,7 +69,7 @@ static unsigned				sCacheMisses = 0;
 
 @implementation OOEncodingConverter
 
-- (id) initWithEncoding:(NSStringEncoding)encoding substitutions:(NSDictionary *)substitutions
+- (instancetype) initWithEncoding:(NSStringEncoding)encoding substitutions:(NSDictionary *)substitutions
 {
 	self = [super init];
 	if (self != nil)
@@ -93,7 +93,7 @@ static unsigned				sCacheMisses = 0;
 }
 
 
-- (id) initWithFontPList:(NSDictionary *)fontPList
+- (instancetype) initWithFontPList:(NSDictionary *)fontPList
 {
 	return [self initWithEncoding:EncodingFromString([fontPList oo_stringForKey:@"encoding"]) substitutions:[fontPList oo_dictionaryForKey:@"substitutions"]];
 }

@@ -43,7 +43,7 @@ MA 02110-1301, USA.
 // Hidden interface
 @interface WormholeEntity (Private)
 
--(id) init;
+-(instancetype) init;
 
 @end
 
@@ -53,7 +53,7 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 
 @implementation WormholeEntity (Private)
 
--(id) init
+-(instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -237,17 +237,8 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 	}
 }
 
-
-- (BOOL) withMisjump
-{
-	return _misjump;
-}
-
-
-- (GLfloat) misjumpRange
-{
-	return _misjumpRange;
-}
+@synthesize withMisjump = _misjump;
+@synthesize misjumpRange = _misjumpRange;
 
 
 - (BOOL) suckInShip:(ShipEntity *) ship
@@ -499,62 +490,16 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 	hasExitPosition = YES;
 }
 
-- (OOSystemID) origin
-{
-	return origin;
-}
-
-- (OOSystemID) destination
-{
-	return destination;
-}
-
-- (NSPoint) originCoordinates
-{
-	return originCoords;
-}
-
-- (NSPoint) destinationCoordinates
-{
-	return destinationCoords;
-}
-
-- (double) exitSpeed
-{
-	return exit_speed;
-}
-
-
-- (void) setExitSpeed:(double) speed
-{
-	exit_speed = speed;
-}
-
-
-- (double) expiryTime
-{
-	return expiry_time;
-}
-
-- (double) arrivalTime
-{
-	return arrival_time;
-}
-
-- (double) estimatedArrivalTime
-{
-	return estimated_arrival_time;
-}
-
-- (double) travelTime
-{
-	return travel_time;
-}
-
-- (double) scanTime
-{
-	return scan_time;
-}
+@synthesize origin;
+@synthesize destination;
+@synthesize originCoordinates;
+@synthesize destinationCoordinates;
+@synthesize exitSpeed = exit_speed;
+@synthesize expiryTime = expiry_time;
+@synthesize arrivalTime = arrival_time;
+@synthesize estimatedArrivalTime = estimated_arrival_time;
+@synthesize travelTime = travel_time;
+@synthesize scanTime = scan_time;
 
 - (BOOL) isScanned
 {
@@ -571,19 +516,11 @@ static void DrawWormholeCorona(GLfloat inner_radius, GLfloat outer_radius, int s
 	// else we previously scanned this wormhole
 }
 
-- (WORMHOLE_SCANINFO) scanInfo
-{
-	return scan_info;
-}
-
-- (void) setScanInfo:(WORMHOLE_SCANINFO)p_scanInfo
-{
-	scan_info = p_scanInfo;
-}
+@synthesize scanInfo = scan_info;
 
 - (NSArray*) shipsInTransit
 {
-	return shipsInTransit;
+	return [NSArray arrayWithArray:shipsInTransit];
 }
 
 - (void) dealloc

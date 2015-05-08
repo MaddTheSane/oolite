@@ -231,7 +231,7 @@ OOINLINE void AddTriangle(GeometryData *data, Triangle tri)
 
 @implementation OOMeshToOctreeConverter
 
-- (id) initWithCapacity:(NSUInteger)capacity
+- (instancetype) initWithCapacity:(NSUInteger)capacity
 {
 	NSParameterAssert(capacity < UINT32_MAX);
 	if (capacity == 0)  capacity = 1;	// Happens for models with no faces.

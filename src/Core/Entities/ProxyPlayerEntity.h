@@ -53,32 +53,25 @@ MA 02110-1301, USA.
 - (void) copyValuesFromPlayer:(PlayerEntity *)player;
 
 // Default: NO
-- (BOOL) massLocked;
-- (void) setMassLocked:(BOOL)value;
+@property  BOOL massLocked;
 
 // Default: NO
-- (BOOL) atHyperspeed;
-- (void) setAtHyperspeed:(BOOL)value;
+@property  BOOL atHyperspeed;
 
 // Default: MISSILE_STATUS_SAFE
-- (OOMissileStatus) dialMissileStatus;
-- (void) setDialMissileStatus:(OOMissileStatus)value;
+@property  OOMissileStatus dialMissileStatus;
 
 // Default: SCOOP_STATUS_NOT_INSTALLED or SCOOP_STATUS_OKAY depending on equipment.
-- (OOFuelScoopStatus) dialFuelScoopStatus;
-- (void) setDialFuelScoopStatus:(OOFuelScoopStatus)value;
+@property  OOFuelScoopStatus dialFuelScoopStatus;
 
 // Default: COMPASS_MODE_BASIC or COMPASS_MODE_PLANET depending on equipment.
-- (OOCompassMode) compassMode;
-- (void) setCompassMode:(OOCompassMode)value;
+@property  OOCompassMode compassMode;
 
 // Default: NO
-- (BOOL) dialIdentEngaged;
-- (void) setDialIdentEngaged:(BOOL)value;
+@property  BOOL dialIdentEngaged;
 
 // Default: ALERT_CONDITION_DOCKED
-- (OOAlertCondition) alertCondition;
-- (void) setAlertCondition:(OOAlertCondition)condition;
+@property  OOAlertCondition alertCondition;
 
 @end
 
@@ -86,6 +79,6 @@ MA 02110-1301, USA.
 @interface Entity (ProxyPlayer)
 
 // True for PlayerEntity or ProxyPlayerEntity.
-- (BOOL) isPlayerLikeShip;
+@property (getter=isPlayerLikeShip, readonly) BOOL playerLikeShip;
 
 @end

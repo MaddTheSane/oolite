@@ -2837,7 +2837,7 @@ static JSBool ShipEquipmentStatus(JSContext *context, uintN argc, jsval *vp)
 		{
 			if (asDict)
 			{
-				dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:1],@"EQUIPMENT_UNKNOWN",nil];
+				dict = @{@"EQUIPMENT_UNKNOWN": @1};
 				OOJS_RETURN_OBJECT(dict);
 			}
 			else
@@ -2853,7 +2853,7 @@ static JSBool ShipEquipmentStatus(JSContext *context, uintN argc, jsval *vp)
 
 	if (asDict)
 	{
-		dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:[thisEnt countEquipmentItem:key]],@"EQUIPMENT_OK",[NSNumber numberWithInt:[thisEnt countEquipmentItem:[key stringByAppendingString:@"_DAMAGED"]]],@"EQUIPMENT_DAMAGED",nil];
+		dict = @{@"EQUIPMENT_OK": [NSNumber numberWithInt:[thisEnt countEquipmentItem:key]],@"EQUIPMENT_DAMAGED": [NSNumber numberWithInt:[thisEnt countEquipmentItem:[key stringByAppendingString:@"_DAMAGED"]]]};
 		OOJS_RETURN_OBJECT(dict);
 	}
 	else
@@ -3025,7 +3025,7 @@ static JSBool ShipSetCrew(JSContext *context, uintN argc, jsval *vp)
 		{
 			crewDefinition = OOJSNativeObjectFromJSObject(context, JSVAL_TO_OBJECT(OOJS_ARGV[0]));
 			OOCharacter *crew = [OOCharacter characterWithDictionary:crewDefinition];
-			[thisEnt setCrew:[NSArray arrayWithObject:crew]];
+			[thisEnt setCrew:@[crew]];
 		}
 	}
 	else

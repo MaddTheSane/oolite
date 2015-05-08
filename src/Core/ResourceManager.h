@@ -31,12 +31,12 @@ MA 02110-1301, USA.
 @class OOSound, OOMusic, OOSystemDescriptionManager;
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOResourceMergeMode)
 {
 	MERGE_NONE,		// Just use the last file in search order.
 	MERGE_BASIC,	// Merge files by adding the top-level items of each file.
 	MERGE_SMART		// Merge files by merging the top-level elements of each file (second-order merge, but not recursive)
-} OOResourceMergeMode;
+};
 
 /* 'All' doesn't quite mean 'all' - OXPs with the tag
  * "oolite-scenario-only" will only be loaded if required by a

@@ -38,7 +38,7 @@ SOFTWARE.
 
 @implementation OOMultiTextureMaterial
 
-- (id)initWithName:(NSString *)name configuration:(NSDictionary *)configuration
+- (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration
 {
 	if (![[OOOpenGLExtensionManager sharedManager] textureCombinersSupported])
 	{

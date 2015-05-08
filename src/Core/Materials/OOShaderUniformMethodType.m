@@ -80,22 +80,22 @@ OOShaderUniformType OOShaderUniformTypeFromMethodSignature(NSMethodSignature *si
 
 @interface OOShaderUniformTypeMethodSignatureTemplateClass: NSObject
 
-- (float)floatMethod;
-- (double)doubleMethod;
-- (signed char)signedCharMethod;
-- (unsigned char)unsignedCharMethod;
-- (signed short)signedShortMethod;
-- (unsigned short)unsignedShortMethod;
-- (signed int)signedIntMethod;
-- (unsigned int)unsignedIntMethod;
-- (signed long)signedLongMethod;
-- (unsigned long)unsignedLongMethod;
-- (Vector)vectorMethod;
-- (HPVector)hpvectorMethod;
-- (Quaternion)quaternionMethod;
-- (OOMatrix)matrixMethod;
-- (NSPoint)pointMethod;
-- (id)idMethod;
+@property (readonly) float floatMethod;
+@property (readonly) double doubleMethod;
+@property (readonly) signed char signedCharMethod;
+@property (readonly) unsigned char unsignedCharMethod;
+@property (readonly) short signedShortMethod;
+@property (readonly) unsigned short unsignedShortMethod;
+@property (readonly) int signedIntMethod;
+@property (readonly) unsigned int unsignedIntMethod;
+@property (readonly) long signedLongMethod;
+@property (readonly) unsigned long unsignedLongMethod;
+@property (readonly) Vector vectorMethod;
+@property (readonly) HPVector hpvectorMethod;
+@property (readonly) Quaternion quaternionMethod;
+@property (readonly) OOMatrix matrixMethod;
+@property (readonly) NSPoint pointMethod;
+@property (readonly, strong) id idMethod;
 
 @end
 

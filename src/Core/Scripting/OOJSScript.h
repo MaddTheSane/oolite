@@ -41,9 +41,9 @@ static NSString * const kLocalManifestProperty = @"oolite_manifest_identifier";
 	OOWeakReference		*weakSelf;
 }
 
-+ (id) scriptWithPath:(NSString *)path properties:(NSDictionary *)properties;
++ (instancetype) scriptWithPath:(NSString *)path properties:(NSDictionary *)properties;
 
-- (id) initWithPath:(NSString *)path properties:(NSDictionary *)properties;
+- (instancetype) initWithPath:(NSString *)path properties:(NSDictionary *)properties NS_DESIGNATED_INITIALIZER;
 
 + (OOJSScript *) currentlyRunningScript;
 + (NSArray *) scriptStack;

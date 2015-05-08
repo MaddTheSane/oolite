@@ -55,7 +55,7 @@ MA 02110-1301, USA.
 	Deserialize an octree from cache representation.
 	(To make a new octree, build it with OOOctreeBuilder.)
 */
-- (id) initWithDictionary:(NSDictionary *)dictionary;
+- (instancetype) initWithDictionary:(NSDictionary *)dictionary;
 
 - (Octree *) octreeScaledBy:(GLfloat)factor;
 
@@ -71,13 +71,13 @@ MA 02110-1301, USA.
 
 - (NSDictionary *) dictionaryRepresentation;
 
-- (GLfloat) volume;
+@property (readonly, atomic) GLfloat volume;
 
-- (Vector) randomPoint;
+@property (readonly, atomic) Vector randomPoint;
 
 
 #ifndef NDEBUG
-- (size_t) totalSize;
+@property (readonly, atomic) size_t totalSize;
 #endif
 
 @end

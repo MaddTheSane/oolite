@@ -34,7 +34,7 @@ void InitOOJSFlasher(JSContext *context, JSObject *global);
 @interface OOFlasherEntity (OOJavaScriptExtensions)
 
 - (void)getJSClass:(JSClass **)outClass andPrototype:(JSObject **)outPrototype;
-- (NSString *) oo_jsClassName;
-- (BOOL) isVisibleToScripts;
+@property (readonly, copy) NSString *oo_jsClassName;
+@property (getter=isVisibleToScripts, readonly) BOOL visibleToScripts;
 
 @end

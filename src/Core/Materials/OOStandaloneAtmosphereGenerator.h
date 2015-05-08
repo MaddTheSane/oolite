@@ -63,7 +63,7 @@ typedef struct OOStandaloneAtmosphereGeneratorInfo
 }
 
 
-- (id) initWithPlanetInfo:(NSDictionary *)planetInfo;
+- (instancetype) initWithPlanetInfo:(NSDictionary *)planetInfo NS_DESIGNATED_INITIALIZER;
 
 + (OOTexture *) planetTextureWithInfo:(NSDictionary *)planetInfo;
 + (BOOL) generateAtmosphereTexture:(OOTexture **)texture withInfo:(NSDictionary *)planetInfo;

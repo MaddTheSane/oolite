@@ -51,7 +51,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject);
 
 @interface OOShaderProgram (OOPrivate)
 
-- (id)initWithVertexShaderSource:(NSString *)vertexSource
+- (instancetype)initWithVertexShaderSource:(NSString *)vertexSource
 			fragmentShaderSource:(NSString *)fragmentSource
 					prefixString:(NSString *)prefixString
 					  vertexName:(NSString *)vertexName
@@ -67,7 +67,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject);
 
 @implementation OOShaderProgram
 
-+ (id) shaderProgramWithVertexShader:(NSString *)vertexShaderSource
++ (instancetype) shaderProgramWithVertexShader:(NSString *)vertexShaderSource
 					  fragmentShader:(NSString *)fragmentShaderSource
 					vertexShaderName:(NSString *)vertexShaderName
 				  fragmentShaderName:(NSString *)fragmentShaderName
@@ -107,7 +107,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject);
 }
 
 
-+ (id)shaderProgramWithVertexShaderName:(NSString *)vertexShaderName
++ (instancetype)shaderProgramWithVertexShaderName:(NSString *)vertexShaderName
 					 fragmentShaderName:(NSString *)fragmentShaderName
 								 prefix:(NSString *)prefixString
 					  attributeBindings:(NSDictionary *)attributeBindings
@@ -286,7 +286,7 @@ static BOOL ValidateShaderObject(GLhandleARB object, NSString *name)
 
 @implementation OOShaderProgram (OOPrivate)
 
-- (id)initWithVertexShaderSource:(NSString *)vertexSource
+- (instancetype)initWithVertexShaderSource:(NSString *)vertexSource
 			fragmentShaderSource:(NSString *)fragmentSource
 					prefixString:(NSString *)prefixString
 					  vertexName:(NSString *)vertexName

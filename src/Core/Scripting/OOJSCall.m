@@ -38,7 +38,7 @@ MA 02110-1301, USA.
 #import "OOJSQuaternion.h"
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, MethodType)
 {
 	kMethodTypeInvalid				= kOOShaderUniformTypeInvalid,
 	
@@ -61,7 +61,7 @@ typedef enum
 	kMethodTypeObjectObject,
 	kMethodTypeVoidVoid,
 	kMethodTypeVoidObject
-} MethodType;
+};
 
 
 static MethodType GetMethodType(id object, SEL selector);

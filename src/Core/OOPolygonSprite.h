@@ -58,7 +58,7 @@ SOFTWARE.
 	the vertices.
 	Name is used for debugging only.
 */
-- (id) initWithDataArray:(NSArray *)dataArray outlineWidth:(GLfloat)outlineWidth name:(NSString *)name;
+- (instancetype) initWithDataArray:(NSArray *)dataArray outlineWidth:(GLfloat)outlineWidth name:(NSString *)name NS_DESIGNATED_INITIALIZER;
 
 - (void) drawFilled;
 - (void) drawOutline;

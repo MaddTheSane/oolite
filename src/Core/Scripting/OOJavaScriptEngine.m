@@ -119,7 +119,7 @@ NSString * const kOOJavaScriptEngineDidResetNotification = @"org.aegidian.oolite
 
 @interface OOJavaScriptEngine (Private)
 
-- (BOOL) lookUpStandardClassPointers;
+@property (readonly) BOOL lookUpStandardClassPointers;
 - (void) registerStandardObjectConverters;
 
 - (void) createMainThreadContext;
@@ -255,7 +255,7 @@ static void ReportJSError(JSContext *context, const char *message, JSErrorReport
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	NSAssert(sSharedEngine == nil, @"Attempt to create multiple OOJavaScriptEngines.");
 	
@@ -477,10 +477,7 @@ static void ReportJSError(JSContext *context, const char *message, JSErrorReport
 }
 
 
-- (JSObject *) globalObject
-{
-	return _globalObject;
-}
+@synthesize globalObject = _globalObject;
 
 
 - (BOOL) callJSFunction:(jsval)function
@@ -538,46 +535,22 @@ static void ReportJSError(JSContext *context, const char *message, JSErrorReport
 }
 
 
-- (BOOL) showErrorLocations
-{
-	return _showErrorLocations;
-}
+@synthesize showErrorLocations = _showErrorLocations;
 
 
-- (void) setShowErrorLocations:(BOOL)value
-{
-	_showErrorLocations = !!value;
-}
+@synthesize objectClass = _objectClass;
 
 
-- (JSClass *) objectClass
-{
-	return _objectClass;
-}
+@synthesize stringClass = _stringClass;
 
 
-- (JSClass *) stringClass
-{
-	return _stringClass;
-}
+@synthesize arrayClass = _arrayClass;
 
 
-- (JSClass *) arrayClass
-{
-	return _arrayClass;
-}
+@synthesize numberClass = _numberClass;
 
 
-- (JSClass *) numberClass
-{
-	return _numberClass;
-}
-
-
-- (JSClass *) booleanClass
-{
-	return _booleanClass;
-}
+@synthesize booleanClass = _booleanClass;
 
 
 - (BOOL) lookUpStandardClassPointers
@@ -629,28 +602,10 @@ static JSTrapStatus DebuggerHook(JSContext *context, JSScript *script, jsbytecod
 }
 
 
-- (BOOL) dumpStackForErrors
-{
-	return _dumpStackForErrors;
-}
+@synthesize dumpStackForErrors = _dumpStackForErrors;
 
 
-- (void) setDumpStackForErrors:(BOOL)value
-{
-	_dumpStackForErrors = !!value;
-}
-
-
-- (BOOL) dumpStackForWarnings
-{
-	return _dumpStackForWarnings;
-}
-
-
-- (void) setDumpStackForWarnings:(BOOL)value
-{
-	_dumpStackForWarnings = !!value;
-}
+@synthesize dumpStackForWarnings = _dumpStackForWarnings;
 
 
 - (void) enableDebuggerStatement
@@ -1305,7 +1260,7 @@ static JSObject *JSObjectFromNSDictionary(JSContext *context, NSDictionary *dict
 					// GCC before 4.7 seems to have problems with this
 					// bit if the object is a weakref, causing crashes
 					// in docking code.
-					id tmp = [dictionary objectForKey:key];
+					id tmp = dictionary[key];
 					if ([tmp respondsToSelector:@selector(weakRefUnderlyingObject)])
 					{
 						tmp = [tmp weakRefUnderlyingObject];
@@ -1447,7 +1402,7 @@ JSObject *OOJSObjectFromNativeObject(JSContext *context, id object)
 
 @implementation OOJSValue
 
-+ (id) valueWithJSValue:(jsval)value inContext:(JSContext *)context
++ (instancetype) valueWithJSValue:(jsval)value inContext:(JSContext *)context
 {
 	OOJS_PROFILE_ENTER
 	
@@ -1457,7 +1412,7 @@ JSObject *OOJSObjectFromNativeObject(JSContext *context, id object)
 }
 
 
-+ (id) valueWithJSObject:(JSObject *)object inContext:(JSContext *)context
++ (instancetype) valueWithJSObject:(JSObject *)object inContext:(JSContext *)context
 {
 	OOJS_PROFILE_ENTER
 	
@@ -1467,7 +1422,7 @@ JSObject *OOJSObjectFromNativeObject(JSContext *context, id object)
 }
 
 
-- (id) initWithJSValue:(jsval)value inContext:(JSContext *)context
+- (instancetype) initWithJSValue:(jsval)value inContext:(JSContext *)context
 {
 	OOJS_PROFILE_ENTER
 	
@@ -1500,7 +1455,7 @@ JSObject *OOJSObjectFromNativeObject(JSContext *context, id object)
 }
 
 
-- (id) initWithJSObject:(JSObject *)object inContext:(JSContext *)context
+- (instancetype) initWithJSObject:(JSObject *)object inContext:(JSContext *)context
 {
 	return [self initWithJSValue:OBJECT_TO_JSVAL(object) inContext:context];
 }

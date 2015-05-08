@@ -241,10 +241,10 @@ Random_Seed OOStringExpanderDefaultRandomSeed(void);
 
 // OO_CAST_PARAMETER() boils down to one of these.
 static inline id OOCastParamObject(id object) { return object; }
-static inline id OOCastParamSignedInteger(long long value) { return [NSNumber numberWithLongLong:value]; }
-static inline id OOCastParamUnsignedInteger(unsigned long long value) { return [NSNumber numberWithUnsignedLongLong:value]; }
-static inline id OOCastParamFloat(float value) { return [NSNumber numberWithFloat:value]; }
-static inline id OOCastParamDouble(double value) { return [NSNumber numberWithDouble:value]; }
+static inline id OOCastParamSignedInteger(long long value) { return @(value); }
+static inline id OOCastParamUnsignedInteger(unsigned long long value) { return @(value); }
+static inline id OOCastParamFloat(float value) { return @(value); }
+static inline id OOCastParamDouble(double value) { return @(value); }
 
 
 /*

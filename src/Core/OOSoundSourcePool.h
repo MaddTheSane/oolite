@@ -50,7 +50,7 @@ SOFTWARE.
 }
 
 + (instancetype) poolWithCount:(uint8_t)count minRepeatTime:(OOTimeDelta)minRepeat;
-- (id) initWithCount:(uint8_t)count minRepeatTime:(OOTimeDelta)minRepeat;
+- (instancetype) initWithCount:(uint8_t)count minRepeatTime:(OOTimeDelta)minRepeat NS_DESIGNATED_INITIALIZER;
 
 - (void) playSoundWithKey:(NSString *)key
 				 priority:(float)priority

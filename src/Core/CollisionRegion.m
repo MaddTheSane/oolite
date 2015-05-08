@@ -46,7 +46,7 @@ static BOOL positionIsWithinBorders(HPVector position, CollisionRegion *region);
 static int crid_counter = 1;
 
 
-- (id) init	// Designated initializer.
+- (instancetype) init	// Designated initializer.
 {
 	if ((self = [super init]))
 	{
@@ -64,7 +64,7 @@ static int crid_counter = 1;
 }
 
 
-- (id) initAsUniverse
+- (instancetype) initAsUniverse
 {
 	if ((self = [self init]))
 	{
@@ -74,7 +74,7 @@ static int crid_counter = 1;
 }
 
 
-- (id) initAtLocation:(HPVector)locn withRadius:(GLfloat)rad withinRegion:(CollisionRegion *)otherRegion
+- (instancetype) initAtLocation:(HPVector)locn withRadius:(GLfloat)rad withinRegion:(CollisionRegion *)otherRegion
 {
 	if ((self = [self init]))
 	{

@@ -30,7 +30,7 @@ MA 02110-1301, USA.
 @class OOScript;
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOComparisonType)
 {
 	COMPARISON_EQUAL,
 	COMPARISON_NOTEQUAL,
@@ -38,10 +38,10 @@ typedef enum
 	COMPARISON_GREATERTHAN,
 	COMPARISON_ONEOF,
 	COMPARISON_UNDEFINED
-} OOComparisonType;
+};
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOOperationType)
 {
 	OP_STRING,
 	OP_NUMBER,
@@ -51,15 +51,14 @@ typedef enum
 	OP_FALSE,
 	
 	OP_INVALID	// Must be last.
-} OOOperationType;
+};
 
 
 @interface PlayerEntity (Scripting)
 
 - (void) checkScript;
 
-- (void) setScriptTarget:(ShipEntity *)ship;
-- (ShipEntity*) scriptTarget;
+@property (strong) ShipEntity *scriptTarget;
 
 - (void) runScriptActions:(NSArray *)sanitizedActions withContextName:(NSString *)contextName forTarget:(ShipEntity *)target;
 - (void) runUnsanitizedScriptActions:(NSArray *)unsanitizedActions allowingAIMethods:(BOOL)allowAIMethods withContextName:(NSString *)contextName forTarget:(ShipEntity *)target;
@@ -67,7 +66,7 @@ typedef enum
 // Test (sanitized) legacy script conditions array.
 - (BOOL) scriptTestConditions:(NSArray *)array;
 
-- (NSDictionary*) missionVariables;
+@property (readonly, copy) NSDictionary *missionVariables;
 
 - (NSString *)missionVariableForKey:(NSString *)key;
 - (void)setMissionVariable:(NSString *)value forKey:(NSString *)key;
@@ -78,58 +77,58 @@ typedef enum
 
 /*-----------------------------------------------------*/
 
-- (NSString *) mission_string;
-- (NSString *) status_string;
-- (NSString *) gui_screen_string;
-- (NSNumber *) galaxy_number;
-- (NSNumber *) planet_number;
-- (NSNumber *) score_number;
-- (NSNumber *) credits_number;
-- (NSNumber *) scriptTimer_number;
-- (NSNumber *) shipsFound_number;
+@property (readonly, copy) NSString *mission_string;
+@property (readonly, copy) NSString *status_string;
+@property (readonly, copy) NSString *gui_screen_string;
+@property (readonly, copy) NSNumber *galaxy_number;
+@property (readonly, copy) NSNumber *planet_number;
+@property (readonly, copy) NSNumber *score_number;
+@property (readonly, copy) NSNumber *credits_number;
+@property (readonly, copy) NSNumber *scriptTimer_number;
+@property (readonly, copy) NSNumber *shipsFound_number;
 
-- (NSNumber *) d100_number;
-- (NSNumber *) pseudoFixedD100_number;
-- (NSNumber *) d256_number;
-- (NSNumber *) pseudoFixedD256_number;
+@property (readonly, copy) NSNumber *d100_number;
+@property (readonly, copy) NSNumber *pseudoFixedD100_number;
+@property (readonly, copy) NSNumber *d256_number;
+@property (readonly, copy) NSNumber *pseudoFixedD256_number;
 
-- (NSNumber *) clock_number;			// returns the game time in seconds
-- (NSNumber *) clock_secs_number;		// returns the game time in seconds
-- (NSNumber *) clock_mins_number;		// returns the game time in minutes
-- (NSNumber *) clock_hours_number;		// returns the game time in hours
-- (NSNumber *) clock_days_number;		// returns the game time in days
+@property (readonly, copy) NSNumber *clock_number;			// returns the game time in seconds
+@property (readonly, copy) NSNumber *clock_secs_number;		// returns the game time in seconds
+@property (readonly, copy) NSNumber *clock_mins_number;		// returns the game time in minutes
+@property (readonly, copy) NSNumber *clock_hours_number;		// returns the game time in hours
+@property (readonly, copy) NSNumber *clock_days_number;		// returns the game time in days
 
-- (NSNumber *) fuelLevel_number;		// returns the fuel level in LY
+@property (readonly, copy) NSNumber *fuelLevel_number;		// returns the fuel level in LY
 
-- (NSString *) dockedAtMainStation_bool;
-- (NSString *) foundEquipment_bool;
+@property (readonly, copy) NSString *dockedAtMainStation_bool;
+@property (readonly, copy) NSString *foundEquipment_bool;
 
-- (NSString *) sunWillGoNova_bool;		// returns whether the sun is going to go nova
-- (NSString *) sunGoneNova_bool;		// returns whether the sun has gone nova
+@property (readonly, copy) NSString *sunWillGoNova_bool;		// returns whether the sun is going to go nova
+@property (readonly, copy) NSString *sunGoneNova_bool;		// returns whether the sun has gone nova
 
-- (NSString *) missionChoice_string;	// returns nil or the key for the chosen option
+@property (readonly, copy) NSString *missionChoice_string;	// returns nil or the key for the chosen option
 
-- (NSNumber *) dockedTechLevel_number;
-- (NSString *) dockedStationName_string;	// returns 'NONE' if the player isn't docked, [station name] if it is, 'UNKNOWN' otherwise
+@property (readonly, copy) NSNumber *dockedTechLevel_number;
+@property (readonly, copy) NSString *dockedStationName_string;	// returns 'NONE' if the player isn't docked, [station name] if it is, 'UNKNOWN' otherwise
 
-- (NSNumber *) systemGovernment_number;
-- (NSString *) systemGovernment_string;
-- (NSNumber *) systemEconomy_number;
-- (NSString *) systemEconomy_string;
-- (NSNumber *) systemTechLevel_number;
-- (NSNumber *) systemPopulation_number;
-- (NSNumber *) systemProductivity_number;
+@property (readonly, copy) NSNumber *systemGovernment_number;
+@property (readonly, copy) NSString *systemGovernment_string;
+@property (readonly, copy) NSNumber *systemEconomy_number;
+@property (readonly, copy) NSString *systemEconomy_string;
+@property (readonly, copy) NSNumber *systemTechLevel_number;
+@property (readonly, copy) NSNumber *systemPopulation_number;
+@property (readonly, copy) NSNumber *systemProductivity_number;
 
-- (NSString *) commanderName_string;
-- (NSString *) commanderRank_string;
-- (NSString *) commanderShip_string;
-- (NSString *) commanderShipDisplayName_string;
-- (NSString *) commanderLegalStatus_string;
-- (NSNumber *) commanderLegalStatus_number;
+@property (readonly, copy) NSString *commanderName_string;
+@property (readonly, copy) NSString *commanderRank_string;
+@property (readonly, copy) NSString *commanderShip_string;
+@property (readonly, copy) NSString *commanderShipDisplayName_string;
+@property (readonly, copy) NSString *commanderLegalStatus_string;
+@property (readonly, copy) NSNumber *commanderLegalStatus_number;
 
 /*-----------------------------------------------------*/
 
-- (NSArray *) missionsList;
+@property (readonly, copy) NSArray *missionsList;
 
 - (void) setMissionDescription:(NSString *)textKey;
 - (void) clearMissionDescription;
@@ -216,11 +215,10 @@ typedef enum
 - (void) showShipModel:(NSString *)shipKey;
 - (void) setMissionMusic:(NSString *)value;
 
-- (NSString *)missionTitle;
-- (void) setMissionTitle:(NSString *)value;
+@property (copy) NSString *missionTitle;
 
 - (void) setFuelLeak: (NSString *)value;
-- (NSNumber *)fuelLeakRate_number;
+@property (readonly, copy) NSNumber *fuelLeakRate_number;
 - (void) setSunNovaIn: (NSString *)time_value;
 - (void) launchFromStation;
 - (void) blowUpStation;
@@ -250,8 +248,7 @@ typedef enum
 /*-----------------------------------------------------*/
 
 - (void) clearMissionScreenID;
-- (void) setMissionScreenID:(NSString *)msid;
-- (NSString *) missionScreenID;
+@property (copy) NSString *missionScreenID;
 - (void) setGuiToMissionScreen;
 - (void) refreshMissionScreenTextEntry;
 - (void) setGuiToMissionScreenWithCallback:(BOOL) callback;

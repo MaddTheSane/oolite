@@ -47,10 +47,9 @@ SOFTWARE.
 }
 
 + (instancetype)verifierWithSchema:(NSDictionary *)schema;
-- (id)initWithSchema:(NSDictionary *)schema;
+- (instancetype)initWithSchema:(NSDictionary *)schema NS_DESIGNATED_INITIALIZER;
 
-- (void)setDelegate:(id)delegate;
-- (id)delegate;
+@property (assign) id delegate;
 
 - (BOOL)verifyPropertyList:(id)plist named:(NSString *)name;
 
@@ -110,7 +109,7 @@ extern NSString * const kUndefinedMacroErrorKey;		// Set for kPListErrorSchemaUn
 
 // All plist verifier errors have a short error description in their -localizedFailureReason.
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOPListSchemaVerifierErrorCode)
 {
 	kPListErrorNone,
 	kPListErrorInternal,				// PList verifier did something dumb.
@@ -147,7 +146,7 @@ typedef enum
 	kPListErrorSchemaBadComparator,		// String comparision requirement value (requiredPrefix etc.) is not a string.
 	
 	kPListErrorLastErrorCode
-} OOPListSchemaVerifierErrorCode;
+};
 
 
 OOINLINE BOOL OOPlistErrorIsSchemaError(OOPListSchemaVerifierErrorCode error)
@@ -158,13 +157,13 @@ OOINLINE BOOL OOPlistErrorIsSchemaError(OOPListSchemaVerifierErrorCode error)
 
 @interface NSError (OOPListSchemaVerifierConveniences)
 
-- (NSArray *)plistKeyPath;
-- (NSString *)plistKeyPathDescription;	// Result of calling +[OOPListSchemaVerifier descriptionForKeyPath:] on kPListKeyPathErrorKey.
+@property (readonly, copy) NSArray *plistKeyPath;
+@property (readonly, copy) NSString *plistKeyPathDescription;	// Result of calling +[OOPListSchemaVerifier descriptionForKeyPath:] on kPListKeyPathErrorKey.
 
-- (NSSet *)missingRequiredKeys;
+@property (readonly, copy) NSSet *missingRequiredKeys;
 
-- (Class)expectedClass;
-- (NSString *)expectedClassName;
+@property (readonly, strong) Class expectedClass;
+@property (readonly, copy) NSString *expectedClassName;
 
 @end
 

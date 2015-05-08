@@ -46,22 +46,21 @@ MA 02110-1301, USA.
 }
 
 - (instancetype) init;
-- (instancetype) initWithName:(NSString *)name;
+- (instancetype) initWithName:(NSString *)name NS_DESIGNATED_INITIALIZER;
 + (instancetype) groupWithName:(NSString *)name;
 + (instancetype) groupWithName:(NSString *)name leader:(ShipEntity *)leader;
 
 @property (nonatomic, copy) NSString *name;
 
-- (ShipEntity *) leader;
-- (void) setLeader:(ShipEntity *)leader;
+@property (strong) ShipEntity *leader;
 
-- (NSEnumerator *) objectEnumerator;
-- (NSEnumerator *) mutationSafeEnumerator;	// Enumerate over contents at time this is called, even if actual group is mutated.
+@property (readonly, strong) NSEnumerator *objectEnumerator;
+@property (readonly, strong) NSEnumerator *mutationSafeEnumerator;	// Enumerate over contents at time this is called, even if actual group is mutated.
 
-- (NSSet *) members;
-- (NSArray *) memberArray;	// arbitrary order
-- (NSSet *) membersExcludingLeader;
-- (NSArray *) memberArrayExcludingLeader;	// arbitrary order
+@property (readonly, copy) NSSet *members;
+@property (readonly, copy) NSArray *memberArray;	// arbitrary order
+@property (readonly, copy) NSSet *membersExcludingLeader;
+@property (readonly, copy) NSArray *memberArrayExcludingLeader;	// arbitrary order
 
 - (BOOL) containsShip:(ShipEntity *)ship;
 - (BOOL) addShip:(ShipEntity *)ship;

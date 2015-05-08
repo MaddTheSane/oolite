@@ -29,36 +29,36 @@ MA 02110-1301, USA.
 #include "OOCocoa.h"
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OORouteType)
 {
 	OPTIMIZED_BY_NONE,
 	OPTIMIZED_BY_JUMPS,
 	OPTIMIZED_BY_TIME
-} OORouteType;
+};
 
 
 #define ENTRY(label, value) label,
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOViewID)
 {
 	#include "OOViewID.tbl"
 		
 	kOOViewIDDefault = VIEW_NONE
-} OOViewID;
+};
 
 #undef ENTRY
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOAegisStatus)
 {
 	AEGIS_NONE,
 	AEGIS_CLOSE_TO_ANY_PLANET,
 	AEGIS_CLOSE_TO_MAIN_PLANET,
 	AEGIS_IN_DOCKING_RANGE
-} OOAegisStatus;
+};
 
 
-typedef enum
+typedef NS_ENUM(int, OOCargoType)
 {
 	CARGO_NOT_CARGO					= -1,
 	CARGO_SLAVES					= 3,
@@ -68,7 +68,7 @@ typedef enum
 	CARGO_RANDOM					= 100,
 	CARGO_SCRIPTED_ITEM				= 200,
 	CARGO_CHARACTER					= 300
-} OOCargoType;
+};
 
 /*
 enum
@@ -98,7 +98,7 @@ typedef NSInteger OOCommodityType;
 */
 typedef NSString* OOCommodityType;
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOCargoFlag)
 {
 	CARGO_FLAG_NONE					= 400,
 	CARGO_FLAG_FULL_PLENTIFUL		= 501,
@@ -109,18 +109,18 @@ typedef enum
 	CARGO_FLAG_FULL_UNIFORM			= 510,
 	CARGO_FLAG_CANISTERS			= 600,
 	CARGO_FLAG_FULL_PASSENGERS		= 700
-} OOCargoFlag;
+};
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOMassUnit)
 {
 	UNITS_TONS,
 	UNITS_KILOGRAMS,
 	UNITS_GRAMS
-} OOMassUnit;
+};
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOEnergyUnitType)
 {
 	ENERGY_UNIT_NONE,
 	ENERGY_UNIT_NORMAL_DAMAGED,
@@ -129,15 +129,15 @@ typedef enum
 	OLD_ENERGY_UNIT_NAVAL			= 20,
 	ENERGY_UNIT_NORMAL				= 8,
 	ENERGY_UNIT_NAVAL				= 16
-} OOEnergyUnitType;
+};
 
 
 #define ENTRY(label, value) label = value,
 
-typedef enum
+typedef NS_ENUM(int, OOCompassMode)
 {
 	#include "OOCompassMode.tbl"
-} OOCompassMode;
+};
 
 enum
 {
@@ -146,24 +146,24 @@ enum
 
 #undef ENTRY
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOLegalStatusReason)
 {
 #define DIFF_STRING_ENTRY(label, string) label,
 	#include "OOLegalStatusReason.tbl"
 #undef DIFF_STRING_ENTRY
 	
 	kOOLegalStatusReasonDefault = kOOLegalStatusReasonUnknown
-} OOLegalStatusReason;
+};
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OODockingClearanceStatus)
 {
 	DOCKING_CLEARANCE_STATUS_NONE,
 	DOCKING_CLEARANCE_STATUS_NOT_REQUIRED,
 	DOCKING_CLEARANCE_STATUS_REQUESTED,
 	DOCKING_CLEARANCE_STATUS_GRANTED,
 	DOCKING_CLEARANCE_STATUS_TIMING_OUT,
-} OODockingClearanceStatus;
+};
 
 
 typedef uint32_t	OOCargoQuantity;
@@ -217,7 +217,7 @@ typedef double OOTimeAbsolute;
 typedef double OOTimeDelta;
 
 
-typedef enum
+typedef NS_OPTIONS(unsigned int, OOWeaponFacing)
 {
 	WEAPON_FACING_FORWARD				= 1,
 	WEAPON_FACING_AFT					= 2,
@@ -225,14 +225,14 @@ typedef enum
 	WEAPON_FACING_STARBOARD				= 8,
 	
 	WEAPON_FACING_NONE					= 0
-} OOWeaponFacing;
+};
 
 typedef uint8_t OOWeaponFacingSet;	// May have multiple bits set.
 
 #define VALID_WEAPON_FACINGS			(WEAPON_FACING_NONE | WEAPON_FACING_FORWARD | WEAPON_FACING_AFT | WEAPON_FACING_PORT | WEAPON_FACING_STARBOARD)
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOGraphicsDetail)
 {
 	DETAIL_LEVEL_MINIMUM		= 0,
 	DETAIL_LEVEL_NORMAL			= 1,
@@ -242,4 +242,4 @@ typedef enum
 
 
 	DETAIL_LEVEL_MAXIMUM		= 3
-} OOGraphicsDetail;
+};

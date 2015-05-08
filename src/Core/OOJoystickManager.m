@@ -71,7 +71,7 @@ static id sSharedStickHandler = nil;
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -215,33 +215,31 @@ static id sSharedStickHandler = nil;
 	
 	profile = [self getProfileForAxis: axis];
 	if (!profile) return;
-	[dict setObject: [NSNumber numberWithDouble: [profile deadzone]] forKey: @"Deadzone"];
+	dict[@"Deadzone"] = @([profile deadzone]);
 	if ([profile isKindOfClass: [OOJoystickStandardAxisProfile class]])
 	{
 		standard_profile = (OOJoystickStandardAxisProfile *) profile;
-		[dict setObject: @"Standard" forKey: @"Type"];
-		[dict setObject: [NSNumber numberWithDouble: [standard_profile power]] forKey: @"Power"];
-		[dict setObject: [NSNumber numberWithDouble: [standard_profile parameter]] forKey: @"Parameter"];
+		dict[@"Type"] = @"Standard";
+		dict[@"Power"] = @([standard_profile power]);
+		dict[@"Parameter"] = @([standard_profile parameter]);
 	}
 	else if ([profile isKindOfClass: [OOJoystickSplineAxisProfile class]])
 	{
 		spline_profile = (OOJoystickSplineAxisProfile *) profile;
-		[dict setObject: @"Spline" forKey: @"Type"];
+		dict[@"Type"] = @"Spline";
 		controlPoints = [NSArray arrayWithArray: [spline_profile controlPoints]];
 		points = [[NSMutableArray alloc] initWithCapacity: [controlPoints count]];
 		for (i = 0; i < [controlPoints count]; i++)
 		{
-			point = [[controlPoints objectAtIndex: i] pointValue];
-			[points addObject: [NSArray arrayWithObjects:
-				[NSNumber numberWithFloat: point.x],
-				[NSNumber numberWithFloat: point.y],
-				nil ]];
+			point = [controlPoints[i] pointValue];
+			[points addObject: @[[NSNumber numberWithFloat: point.x],
+				[NSNumber numberWithFloat: point.y]]];
 		}
-		[dict setObject: points forKey: @"ControlPoints"];
+		dict[@"ControlPoints"] = points;
 	}
 	else
 	{
-		[dict setObject: @"Standard" forKey: @"Type"];
+		dict[@"Type"] = @"Standard";
 	}
 	if (axis == AXIS_ROLL)
 	{
@@ -284,29 +282,29 @@ static id sSharedStickHandler = nil;
 		return;
 	}
 
-	NSString *type = [dict objectForKey: @"Type"];
+	NSString *type = dict[@"Type"];
 	if ([type isEqualToString: @"Standard"])
 	{
 		standard_profile = [[OOJoystickStandardAxisProfile alloc] init];
-		[standard_profile setDeadzone: [[dict objectForKey: @"Deadzone"] doubleValue]];
-		[standard_profile setPower: [[dict objectForKey: @"Power"] doubleValue]];
-		[standard_profile setParameter: [[dict objectForKey: @"Parameter"] doubleValue]];
+		[standard_profile setDeadzone: [dict[@"Deadzone"] doubleValue]];
+		[standard_profile setPower: [dict[@"Power"] doubleValue]];
+		[standard_profile setParameter: [dict[@"Parameter"] doubleValue]];
 		[self setProfile: [standard_profile autorelease] forAxis: axis];
 	}
 	else if([type isEqualToString: @"Spline"])
 	{
 		spline_profile = [[OOJoystickSplineAxisProfile alloc] init];
-		[spline_profile setDeadzone: [[dict objectForKey: @"Deadzone"] doubleValue]];
-		NSArray *points = [dict objectForKey: @"ControlPoints"], *pointArray;
+		[spline_profile setDeadzone: [dict[@"Deadzone"] doubleValue]];
+		NSArray *points = dict[@"ControlPoints"], *pointArray;
 		NSPoint point;
 		NSUInteger i;
 
 		for (i = 0; i < [points count]; i++)
 		{
-			pointArray = [points objectAtIndex: i];
+			pointArray = points[i];
 			if ([pointArray count] >= 2)
 			{
-				point = NSMakePoint([[pointArray objectAtIndex: 0] floatValue], [[pointArray objectAtIndex: 1] floatValue]);
+				point = NSMakePoint([pointArray[0] floatValue], [pointArray[1] floatValue]);
 				[spline_profile addControl: point];
 			}
 		}

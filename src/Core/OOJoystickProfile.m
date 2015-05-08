@@ -38,35 +38,35 @@ MA 02110-1301, USA.
 	double a[4];
 }
 
-- (id) init;
+- (instancetype) init NS_DESIGNATED_INITIALIZER;
 
 // Linear spline from left point to right point.  Returns nil if right.x - left.x <= 0.0.
-- (id) initWithData: (NSPoint) left right: (NSPoint) right;
+- (instancetype) initWithData: (NSPoint) left right: (NSPoint) right NS_DESIGNATED_INITIALIZER;
 
 // Quadratic spline from left point to right point, with gradient specified at left.  returns nil if right.x - left.x <= 0.0.
-- (id) initWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft;
+- (instancetype) initWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft NS_DESIGNATED_INITIALIZER;
 
 // Quadratic spline from left point to right point, with gradient specified at right.  returns nil if right.x - left.x <= 0.0.
-- (id) initWithData: (NSPoint) left right: (NSPoint) right gradientright: (double) gradientright;
+- (instancetype) initWithData: (NSPoint) left right: (NSPoint) right gradientright: (double) gradientright NS_DESIGNATED_INITIALIZER;
 
 // Cubic spline from left point to right point, with gradients specified at end points.  returns nil if right.x - left.x <= 0.0.
-- (id) initWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft gradientright: (double) gradientright;
+- (instancetype) initWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft gradientright: (double) gradientright NS_DESIGNATED_INITIALIZER;
 
 // Linear spline from left point to right point.  Returns nil if right.x - left.x <= 0.0.
-+ (id) segmentWithData: (NSPoint) left right: (NSPoint) right;
++ (instancetype) segmentWithData: (NSPoint) left right: (NSPoint) right;
 
 // Quadratic spline from left point to right point, with gradient specified at left.  returns nil if right.x - left.x <= 0.0.
-+ (id) segmentWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft;
++ (instancetype) segmentWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft;
 
 // Quadratic spline from left point to right point, with gradient specified at right.  returns nil if right.x - left.x <= 0.0.
-+ (id) segmentWithData: (NSPoint) left right: (NSPoint) right gradientright: (double) gradientright;
++ (instancetype) segmentWithData: (NSPoint) left right: (NSPoint) right gradientright: (double) gradientright;
 
 // Cubic spline from left point to right point, with gradients specified at end points.  returns nil if right.x - left.x <= 0.0.
-+ (id) segmentWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft gradientright: (double) gradientright;
++ (instancetype) segmentWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft gradientright: (double) gradientright;
 
 - (id) copyWithZone: (NSZone *) zone;
-- (double) start;
-- (double) end;
+@property (readonly) double start;
+@property (readonly) double end;
 - (double) value: (double) t;
 - (double) gradient: (double) t;
 
@@ -76,14 +76,14 @@ MA 02110-1301, USA.
 
 // Create the segments from the control points.  If there's a problem, e.g. control points not in order or overlapping,
 // leave segments as they are and return NO.  Otherwise return YES.
-- (BOOL) makeSegments;
+@property (readonly) BOOL makeSegments;
 
 @end
 
 
 @implementation OOJoystickAxisProfile
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -127,7 +127,7 @@ MA 02110-1301, USA.
 
 @implementation OOJoystickStandardAxisProfile
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -193,7 +193,7 @@ MA 02110-1301, USA.
 
 @implementation OOJoystickSplineSegment
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -219,7 +219,7 @@ MA 02110-1301, USA.
 	return copy;
 }
 
-- (id) initWithData: (NSPoint) left right: (NSPoint) right
+- (instancetype) initWithData: (NSPoint) left right: (NSPoint) right
 {
 	double dx = right.x - left.x;
 	if (dx <= 0.0)
@@ -238,7 +238,7 @@ MA 02110-1301, USA.
 	return self;
 }
 
-- (id) initWithData:(NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft
+- (instancetype) initWithData:(NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft
 {
 	double dx = right.x - left.x;
 	if (dx <= 0.0)
@@ -256,7 +256,7 @@ MA 02110-1301, USA.
 	return self;
 }
 
-- (id) initWithData: (NSPoint) left right: (NSPoint) right gradientright: (double) gradientright
+- (instancetype) initWithData: (NSPoint) left right: (NSPoint) right gradientright: (double) gradientright
 {
 	double dx = right.x - left.x;
 	if (dx <= 0.0)
@@ -274,7 +274,7 @@ MA 02110-1301, USA.
 	return self;
 }
 
-- (id) initWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft gradientright: (double) gradientright
+- (instancetype) initWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft gradientright: (double) gradientright
 {
 	double dx = right.x - left.x;
 	if (dx <= 0.0)
@@ -293,28 +293,28 @@ MA 02110-1301, USA.
 	return self;
 }
 
-+ (id) segmentWithData: (NSPoint) left right: (NSPoint) right
++ (instancetype) segmentWithData: (NSPoint) left right: (NSPoint) right
 {
 	OOJoystickSplineSegment *segment = [[OOJoystickSplineSegment alloc] initWithData: left right:right];
 	return [segment autorelease];
 }
 
 
-+ (id) segmentWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft
++ (instancetype) segmentWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft
 {
 	OOJoystickSplineSegment *segment = [[OOJoystickSplineSegment alloc] initWithData: left right:right gradientleft:gradientleft];
 	return [segment autorelease];
 }
 
 
-+ (id) segmentWithData: (NSPoint) left right: (NSPoint) right gradientright: (double) gradientright
++ (instancetype) segmentWithData: (NSPoint) left right: (NSPoint) right gradientright: (double) gradientright
 {
 	OOJoystickSplineSegment *segment = [[OOJoystickSplineSegment alloc] initWithData: left right:right gradientright:gradientright];
 	return [segment autorelease];
 }
 
 
-+ (id) segmentWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft gradientright: (double) gradientright
++ (instancetype) segmentWithData: (NSPoint) left right: (NSPoint) right gradientleft: (double) gradientleft gradientright: (double) gradientright
 {
 	OOJoystickSplineSegment *segment = [[OOJoystickSplineSegment alloc] initWithData: left right:right gradientleft:gradientleft gradientright:gradientright];
 	return [segment autorelease];
@@ -347,7 +347,7 @@ MA 02110-1301, USA.
 
 @implementation OOJoystickSplineAxisProfile
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -391,7 +391,7 @@ MA 02110-1301, USA.
 	{
 		if (i < [controlPoints count])
 		{
-			right = [[controlPoints objectAtIndex: i] pointValue];
+			right = [controlPoints[i] pointValue];
 		}
 		else
 		{
@@ -403,7 +403,7 @@ MA 02110-1301, USA.
 			{
 				return -1;
 			}
-			[controlPoints replaceObjectAtIndex: i - 1 withObject: [NSValue valueWithPoint: point]];
+			controlPoints[i - 1] = [NSValue valueWithPoint: point];
 			[self makeSegments];
 			return i - 1;
 		}
@@ -433,7 +433,7 @@ MA 02110-1301, USA.
 	}
 	else
 	{
-		point = [[controlPoints objectAtIndex: index] pointValue];
+		point = [controlPoints[index] pointValue];
 	}
 	return point;
 }
@@ -471,7 +471,7 @@ MA 02110-1301, USA.
 	else
 	{
 		gradientleft = 1.0;
-		right = [[controlPoints objectAtIndex: 0] pointValue];
+		right = [controlPoints[0] pointValue];
 		for (i = 0; i < [controlPoints count]; i++)
 		{
 			next = [self pointAtIndex: i + 1];
@@ -548,7 +548,7 @@ MA 02110-1301, USA.
 	}
 	else
 	{
-		left = [[controlPoints objectAtIndex: (index-1)] pointValue];
+		left = [controlPoints[(index-1)] pointValue];
 	}
 	if (index == (NSInteger)[controlPoints count] - 1)
 	{
@@ -557,7 +557,7 @@ MA 02110-1301, USA.
 	}
 	else
 	{
-		right = [[controlPoints objectAtIndex: (index+1)] pointValue];
+		right = [controlPoints[(index+1)] pointValue];
 	}
 	// preserve order of control points - if we attempt to move this control point beyond
 	// either of its neighbours, move it back inside.  Also keep neighbours a distance of at least SPLINE_POINT_MIN_SPACING apart
@@ -577,7 +577,7 @@ MA 02110-1301, USA.
 			point.x = (left.x + right.x)/2;
 		}
 	}
-	[controlPoints replaceObjectAtIndex: index withObject: [NSValue valueWithPoint: point]];
+	controlPoints[index] = [NSValue valueWithPoint: point];
 	[self makeSegments];
 	return;
 }
@@ -599,7 +599,7 @@ MA 02110-1301, USA.
 	}
 	for (i = 0; i < [segments count]; i++)
 	{
-		segment = [segments objectAtIndex: i];
+		segment = segments[i];
 		if ([segment end] > x)
 		{
 			return sign * OOClamp_0_1_d([segment value:x]);
@@ -614,7 +614,7 @@ MA 02110-1301, USA.
 	OOJoystickSplineSegment *segment;
 	for (i = 0; i < [segments count]; i++)
 	{
-		segment = [segments objectAtIndex: i];
+		segment = segments[i];
 		if ([segment end] > x)
 		{
 			return [segment gradient:x];

@@ -48,12 +48,12 @@ static NSString * const kExplosionTexture		= @"texture";
 
 
 @interface OOExplosionCloudEntity (OOPrivate)
-- (id) initExplosionCloudWithEntity:(Entity *)entity size:(float)size andSettings:(NSDictionary *)settings;
+- (instancetype) initExplosionCloudWithEntity:(Entity *)entity size:(float)size andSettings:(NSDictionary *)settings;
 @end 
 
 @implementation OOExplosionCloudEntity
 
-- (id) initExplosionCloudWithEntity:(Entity *)entity size:(float)size andSettings:(NSDictionary *)settings
+- (instancetype) initExplosionCloudWithEntity:(Entity *)entity size:(float)size andSettings:(NSDictionary *)settings
 {
 	unsigned i;
 	unsigned maxCount = [UNIVERSE detailLevel] <= DETAIL_LEVEL_SHADERS ? 10 : 25;
@@ -61,7 +61,7 @@ static NSString * const kExplosionTexture		= @"texture";
 	Vector vel = [entity velocity];
 
 	if (settings == nil) {
-		_settings = [[NSDictionary dictionary] retain];
+		_settings = [@{} retain];
 	} else {
 		_settings = [settings retain];
 	}

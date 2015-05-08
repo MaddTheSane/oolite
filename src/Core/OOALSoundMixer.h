@@ -51,11 +51,11 @@ enum
 }
 
 // Singleton accessor
-+ (id) sharedMixer;
++ (OOSoundMixer*) sharedMixer;
 
 - (void) update;
 
-- (OOSoundChannel *) popChannel;
+@property (readonly, strong) OOSoundChannel *popChannel;
 - (void) pushChannel:(OOSoundChannel *)channel;
 
 @end

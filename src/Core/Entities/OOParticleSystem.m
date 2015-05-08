@@ -38,7 +38,7 @@ MA 02110-1301, USA.
 
 @implementation OOParticleSystem
 
-- (id) init
+- (instancetype) init
 {
 	[self release];
 	return nil;
@@ -48,7 +48,7 @@ MA 02110-1301, USA.
 /*	Initialize shared aspects of the fragburst entities.
 	Also stashes generated particle speeds in _particleSize[] array.
 */
-- (id) initWithPosition:(HPVector)pos
+- (instancetype) initWithPosition:(HPVector)pos
 			   velocity:(Vector)vel
 				  count:(unsigned)count
 			   minSpeed:(float)minSpeed
@@ -260,7 +260,7 @@ do { \
 
 @implementation OOSmallFragmentBurstEntity: OOParticleSystem
 
-- (id) initFragmentBurstFrom:(HPVector)fragPosition velocity:(Vector)fragVelocity size:(GLfloat)size
+- (instancetype) initFragmentBurstFrom:(HPVector)fragPosition velocity:(Vector)fragVelocity size:(GLfloat)size
 {
 	enum
 	{
@@ -319,7 +319,7 @@ do { \
 
 @implementation OOBigFragmentBurstEntity: OOParticleSystem
 
-- (id) initFragmentBurstFrom:(HPVector)fragPosition velocity:(Vector)fragVelocity size:(GLfloat)size
+- (instancetype) initFragmentBurstFrom:(HPVector)fragPosition velocity:(Vector)fragVelocity size:(GLfloat)size
 {
 	float minSpeed = 1.0f + size * 0.5f;
 	float maxSpeed = minSpeed * 4.0f;

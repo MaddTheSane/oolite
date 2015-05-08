@@ -52,11 +52,11 @@ enum
 	NSMutableArray	*stack;
 }
 
-- (id) init;
+- (instancetype) init NS_DESIGNATED_INITIALIZER;
 - (void) dealloc;
 - (void) push: (OOMatrix) matrix;
 - (OOMatrix) pop;
-- (unsigned int) stackCount;
+@property (readonly, atomic) NSUInteger stackCount;
 
 @end
 
@@ -69,7 +69,7 @@ enum
 	OOOpenGLMatrixStack	*projectionStack;
 }
 
-- (id) init;
+- (instancetype) init NS_DESIGNATED_INITIALIZER;
 - (void) dealloc;
 - (void) loadModelView: (OOMatrix) matrix;
 - (void) resetModelView;
@@ -80,8 +80,8 @@ enum
 - (void) lookAtWithEye: (Vector) eye center: (Vector) center up: (Vector) up; 
 - (void) pushModelView;
 - (OOMatrix) popModelView;
-- (OOMatrix) getModelView;
-- (unsigned int) countModelView;
+@property (getter=getModelView, readonly, atomic) OOMatrix modelView;
+@property (readonly, atomic) NSUInteger countModelView;
 - (void) syncModelView;
 - (void) loadProjection: (OOMatrix) matrix;
 - (void) multProjection: (OOMatrix) matrix;
@@ -94,7 +94,7 @@ enum
 - (void) resetProjection;
 - (void) pushProjection;
 - (OOMatrix) popProjection;
-- (OOMatrix) getProjection;
+@property (getter=getProjection, readonly, atomic) OOMatrix projection;
 - (void) syncProjection;
 - (OOMatrix) getMatrix: (int) which;
 - (NSArray*) standardMatrixUniformLocations: (GLuint) program;

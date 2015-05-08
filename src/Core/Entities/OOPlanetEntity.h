@@ -61,31 +61,29 @@ MA 02110-1301, USA.
 	NSString				*_name;
 }
 
-- (id) initAsMainPlanetForSystem:(OOSystemID)s;
+- (instancetype) initAsMainPlanetForSystem:(OOSystemID)s;
 
-- (id) initFromDictionary:(NSDictionary *)dict withAtmosphere:(BOOL)atmosphere andSeed:(Random_Seed)seed forSystem:(OOSystemID)systemID;
+- (instancetype) initFromDictionary:(NSDictionary *)dict withAtmosphere:(BOOL)atmosphere andSeed:(Random_Seed)seed forSystem:(OOSystemID)systemID;
 
-- (instancetype) miniatureVersion;
+@property (readonly, strong) id miniatureVersion;
 
-- (double) rotationalVelocity;
-- (void) setRotationalVelocity:(double) v;
+@property  double rotationalVelocity;
 
-- (BOOL) planetHasStation;
+@property (readonly) BOOL planetHasStation;
 - (void) launchShuttle;
 - (void) welcomeShuttle:(ShipEntity *)shuttle;
 
-- (BOOL) hasAtmosphere;
+@property (readonly) BOOL hasAtmosphere;
 
 // FIXME: need material model.
-- (NSString *) textureFileName;
-- (void) setTextureFileName:(NSString *)textureName;
+@property (copy) NSString *textureFileName;
 
 - (BOOL) setUpPlanetFromTexture:(NSString *)fileName;
 
-- (OOMaterial *) material;
-- (OOMaterial *) atmosphereMaterial;
+@property (readonly, strong) OOMaterial *material;
+@property (readonly, strong) OOMaterial *atmosphereMaterial;
 
-- (BOOL) isFinishedLoading;
+@property (getter=isFinishedLoading, readonly) BOOL finishedLoading;
 
 @end
 

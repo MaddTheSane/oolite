@@ -280,39 +280,32 @@ MA 02110-1301, USA.
 
 }
 
-- (id) initWithDictionary:(NSDictionary *)hudinfo;
-- (id) initWithDictionary:(NSDictionary *)hudinfo inFile:(NSString *)hudFileName;
+- (instancetype) initWithDictionary:(NSDictionary *)hudinfo;
+- (instancetype) initWithDictionary:(NSDictionary *)hudinfo inFile:(NSString *)hudFileName NS_DESIGNATED_INITIALIZER;
 
 - (void) resetGuis:(NSDictionary *)info;
 
-- (NSString *) hudName;
-- (void) setHudName:(NSString *)newHudName;
+@property (nonatomic, copy) NSString *hudName;
 
-- (GLfloat) scannerZoom;
-- (void) setScannerZoom:(GLfloat)value;
+@property  GLfloat scannerZoom;
 
-- (GLfloat) overallAlpha;
-- (void) setOverallAlpha:(GLfloat)newAlphaValue;
+@property (nonatomic) GLfloat overallAlpha;
 
-- (BOOL) reticleTargetSensitive;
-- (void) setReticleTargetSensitive:(BOOL)newReticleTargetSensitiveValue;
-- (NSMutableDictionary *) propertiesReticleTargetSensitive;
+@property  BOOL reticleTargetSensitive;
+@property (readonly, retain) NSMutableDictionary *propertiesReticleTargetSensitive;
 
-- (BOOL) isHidden;
-- (void) setHidden:(BOOL)newValue;
+@property (getter=isHidden) BOOL hidden;
 
-- (BOOL) allowBigGui;
+@property (readonly, atomic) BOOL allowBigGui;
 
 - (BOOL) hasHidden:(NSString *)selectorName;
 - (void) setHiddenSelector:(NSString *)selectorName hidden:(BOOL)hide;
 - (void) clearHiddenSelectors;
 
-- (BOOL) isCompassActive;
-- (void) setCompassActive:(BOOL)newValue;
+@property (getter=isCompassActive) BOOL compassActive;
 
-- (BOOL) isUpdating;
-- (void) setDeferredHudName:(NSString *)newDeferredHudName;
-- (NSString *) deferredHudName;
+@property (getter=isUpdating, readonly) BOOL updating;
+@property (copy) NSString *deferredHudName;
 - (NSString *) crosshairDefinition;
 - (BOOL) setCrosshairDefinition:(NSString *)newDefinition;
 
@@ -320,21 +313,18 @@ MA 02110-1301, USA.
 - (void) addDial:(NSDictionary *)info;
 - (void) addMFD:(NSDictionary *)info;
 
-- (NSUInteger) mfdCount;
+@property (readonly, atomic) NSUInteger mfdCount;
 
 - (void) renderHUD;
 
 - (void) refreshLastTransmitter;
 
-- (void) setLineWidth:(GLfloat)value;
-- (GLfloat) lineWidth;
+@property  GLfloat lineWidth;
 
 + (Vector) nonlinearScannerScale:(Vector) V Zoom:(GLfloat) zoom Scale:(double) scale;
-- (BOOL) nonlinearScanner;
-- (void) setNonlinearScanner: (BOOL)newValue;
+@property  BOOL nonlinearScanner;
 
-- (BOOL) scannerUltraZoom;
-- (void) setScannerUltraZoom: (BOOL)newValue;
+@property  BOOL scannerUltraZoom;
 
 @end
 
@@ -342,10 +332,10 @@ MA 02110-1301, USA.
 @interface NSString (OODisplayEncoding)
 
 // Return a C string in the 8-bit encoding used for display.
-- (const char *) cStringUsingOoliteEncoding;
+@property (readonly) const char *cStringUsingOoliteEncoding;
 
 // Return a C string in the 8-bit encoding used for display, with substitutions performed.
-- (const char *) cStringUsingOoliteEncodingAndRemapping;
+@property (readonly) const char *cStringUsingOoliteEncodingAndRemapping;
 
 @end
 

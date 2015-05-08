@@ -36,7 +36,7 @@ SOFTWARE.
 #import "OOHPVector.h"
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOShaderUniformType)
 {
 	kOOShaderUniformTypeInvalid,			// Not valid for bindings or constants
 	
@@ -60,7 +60,7 @@ typedef enum
 	kOOShaderUniformTypeObject,				// Binding only
 	
 	kOOShaderUniformTypeCount				// Not valid for bindings or constants
-} OOShaderUniformType;
+};
 
 
 OOShaderUniformType OOShaderUniformTypeFromMethodSignature(NSMethodSignature *signature);

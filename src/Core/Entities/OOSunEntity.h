@@ -78,19 +78,19 @@ MA 02110-1301, USA.
 	NSString				*_name;
 }
 
-- (id) initSunWithColor:(OOColor*)sun_color andDictionary:(NSDictionary*) dict;
+- (instancetype) initSunWithColor:(OOColor*)sun_color andDictionary:(NSDictionary*) dict NS_DESIGNATED_INITIALIZER;
 - (BOOL) setSunColor:(OOColor*)sun_color;
 - (BOOL) changeSunProperty:(NSString *)key withDictionary:(NSDictionary*) dict;
 
-- (OOStellarBodyType) planetType;
+@property (readonly) OOStellarBodyType planetType;
 
 - (void) getDiffuseComponents:(GLfloat[4])components;
 - (void) getSpecularComponents:(GLfloat[4])components;
 
 - (void) setRadius:(GLfloat) rad andCorona:(GLfloat)corona;
 
-- (BOOL) willGoNova;
-- (BOOL) goneNova;
+@property (readonly) BOOL willGoNova;
+@property (readonly) BOOL goneNova;
 - (void) setGoingNova:(BOOL) yesno inTime:(double)interval;
 
 - (void) drawStarGlare;

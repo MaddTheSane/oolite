@@ -33,14 +33,14 @@ This code is hereby placed in the public domain.
 }
 
 - (instancetype) init;
-- (instancetype) initWithCapacity:(NSUInteger)capacity;				// As with Foundation collections, capacity is only a hint.
+- (instancetype) initWithCapacity:(NSUInteger)capacity NS_DESIGNATED_INITIALIZER;				// As with Foundation collections, capacity is only a hint.
 
 + (instancetype) set;
 + (instancetype) setWithCapacity:(NSUInteger)capacity;
 
 @property (atomic, readonly) NSUInteger count;
 - (BOOL) containsObject:(id<OOWeakReferenceSupport>)object;
-- (NSEnumerator *) objectEnumerator;
+@property (readonly, strong) NSEnumerator *objectEnumerator;
 
 - (void) addObject:(id<OOWeakReferenceSupport>)object;		// Unlike NSSet, adding nil fails silently.
 - (void) removeObject:(id<OOWeakReferenceSupport>)object;	// Like NSSet, does not complain if object is not already a member.
@@ -50,7 +50,7 @@ This code is hereby placed in the public domain.
 - (void) makeObjectsPerformSelector:(SEL)selector;
 - (void) makeObjectsPerformSelector:(SEL)selector withObject:(id)argument;
 
-- (NSArray *) allObjects;
+@property (readonly, copy) NSArray *allObjects;
 
 - (void) removeAllObjects;
 

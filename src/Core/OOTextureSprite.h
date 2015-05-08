@@ -40,10 +40,10 @@ MA 02110-1301, USA.
 }
 
 
-- (id) initWithTexture:(OOTexture *)texture;
-- (id) initWithTexture:(OOTexture *)texture size:(NSSize)spriteSize;
+- (instancetype) initWithTexture:(OOTexture *)texture;
+- (instancetype) initWithTexture:(OOTexture *)texture size:(NSSize)spriteSize NS_DESIGNATED_INITIALIZER;
 
-- (NSSize) size;
+@property (readonly) NSSize size;
 
 - (void) blitToX:(float)x Y:(float)y Z:(float)z alpha:(float)a;
 - (void) blitCentredToX:(float)x Y:(float)y Z:(float)z alpha:(float)a;

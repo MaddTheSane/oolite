@@ -46,7 +46,6 @@ MA 02110-1301, USA.
 	OODrawable				*drawable;
 }
 
-- (OODrawable *)drawable;
-- (void)setDrawable:(OODrawable *)drawable;
+@property (strong) OODrawable *drawable;
 
 @end

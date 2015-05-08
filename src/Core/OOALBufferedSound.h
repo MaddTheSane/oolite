@@ -37,7 +37,7 @@ SOFTWARE.
 	BOOL				_stereo;
 }
 
-- (id)initWithDecoder:(OOALSoundDecoder *)inDecoder;
+- (instancetype)initWithDecoder:(OOALSoundDecoder *)inDecoder NS_DESIGNATED_INITIALIZER;
 
 
 @end

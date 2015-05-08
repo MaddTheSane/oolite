@@ -174,8 +174,8 @@ enum
 
 - (NSArray *) crosshairDefinitionForWeaponType:(OOWeaponType)weapon;
 
-- (BOOL) checkPlayerInFlight;
-- (BOOL) checkPlayerInSystemFlight;
+@property (readonly) BOOL checkPlayerInFlight;
+@property (readonly) BOOL checkPlayerInSystemFlight;
 
 @end
 
@@ -212,13 +212,13 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 }
 
 
-- (id) initWithDictionary:(NSDictionary *)hudinfo
+- (instancetype) initWithDictionary:(NSDictionary *)hudinfo
 {
 	return [self initWithDictionary:hudinfo inFile:nil];
 }
 
 
-- (id) initWithDictionary:(NSDictionary *)hudinfo inFile:(NSString *)hudFileName
+- (instancetype) initWithDictionary:(NSDictionary *)hudinfo inFile:(NSString *)hudFileName
 {
 	unsigned		i;
 	BOOL			isCompassToBeDrawn = NO;
@@ -480,10 +480,7 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 }
 
 
-- (NSString *) hudName
-{
-	return hudName;
-}
+@synthesize hudName;
 
 
 - (void) setHudName:(NSString *)newHudName
@@ -495,22 +492,10 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 	}
 }
 
-
-- (GLfloat) scannerZoom
-{
-	return scanner_zoom;
-}
+@synthesize scannerZoom = scanner_zoom;
 
 
-- (void) setScannerZoom:(GLfloat)value
-{
-	scanner_zoom = value;
-}
-
-- (GLfloat) overallAlpha
-{
-	return overallAlpha;
-}
+@synthesize overallAlpha;
 
 
 - (void) setOverallAlpha:(GLfloat) newAlphaValue
@@ -519,34 +504,13 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 }
 
 
-- (BOOL) reticleTargetSensitive
-{
-	return reticleTargetSensitive;
-}
+@synthesize reticleTargetSensitive;
 
 
-- (void) setReticleTargetSensitive:(BOOL) newReticleTargetSensitiveValue
-{
-	reticleTargetSensitive = !!newReticleTargetSensitiveValue; // ensure YES or NO.
-}
+@synthesize propertiesReticleTargetSensitive;
 
 
-- (NSMutableDictionary *) propertiesReticleTargetSensitive
-{
-	return propertiesReticleTargetSensitive;
-}
-
-
-- (BOOL) isHidden
-{
-	return hudHidden;
-}
-
-
-- (void) setHidden:(BOOL)newValue
-{
-	hudHidden = !!newValue;	// ensure YES or NO
-}
+@synthesize hidden = hudHidden;
 
 
 - (BOOL) allowBigGui
@@ -584,35 +548,13 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 }
 
 
-- (BOOL) isCompassActive
-{
-	return _compassActive;
-}
+@synthesize compassActive = _compassActive;
 
 
-- (void) setCompassActive:(BOOL)newValue
-{
-	_compassActive = !!newValue;
-}
+@synthesize updating = hudUpdating;
 
 
-- (BOOL) isUpdating
-{
-	return hudUpdating;
-}
-
-
-- (void) setDeferredHudName:(NSString *)newDeferredHudName
-{
-	[deferredHudName release];
-	deferredHudName = [newDeferredHudName copy];
-}
-
-
-- (NSString *) deferredHudName
-{
-	return deferredHudName;
-}
+@synthesize deferredHudName;
 
 
 - (void) addLegend:(NSDictionary *)info
@@ -1051,7 +993,7 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 		return;
 	}
 
-	if (EXPECT_NOT([self hasHidden:[sCurrentDrawItem objectAtIndex:WIDGET_SELECTOR_NAME]]))
+	if (EXPECT_NOT([self hasHidden:sCurrentDrawItem[WIDGET_SELECTOR_NAME]]))
 	{
 		return;
 	}
@@ -1396,28 +1338,10 @@ static void prefetchData(NSDictionary *info, struct CachedInfo *data)
 }
 
 
-- (BOOL) nonlinearScanner
-{
-	return nonlinear_scanner;
-}
+@synthesize nonlinearScanner = nonlinear_scanner;
 
 
-- (void) setNonlinearScanner: (BOOL) newValue
-{
-	nonlinear_scanner = !!newValue;
-}
-
-
-- (BOOL) scannerUltraZoom
-{
-	return scanner_ultra_zoom;
-}
-
-
-- (void) setScannerUltraZoom: (BOOL) newValue
-{
-	scanner_ultra_zoom = !!newValue;
-}
+@synthesize scannerUltraZoom = scanner_ultra_zoom;
 
 
 - (void) refreshLastTransmitter
@@ -1730,7 +1654,7 @@ OOINLINE void SetCompassBlipColor(GLfloat relativeZ, GLfloat alpha)
 	GLfloat				ds = OOClamp_0_1_f([PLAYER dialCustomFloat:[info oo_stringForKey:CUSTOM_DIAL_KEY]]);
 	struct CachedInfo	cached;
 	
-	[(NSValue *)[sCurrentDrawItem objectAtIndex:WIDGET_CACHE] getValue:&cached];
+	[(NSValue *)sCurrentDrawItem[WIDGET_CACHE] getValue:&cached];
 	
 	x = useDefined(cached.x, 0) + [[UNIVERSE gameView] x_offset] * cached.x0;
 	y = useDefined(cached.y, 0) + [[UNIVERSE gameView] y_offset] * cached.y0;
@@ -1772,7 +1696,7 @@ OOINLINE void SetCompassBlipColor(GLfloat relativeZ, GLfloat alpha)
 	NSString			*text = [PLAYER dialCustomString:[info oo_stringForKey:CUSTOM_DIAL_KEY]];
 	struct CachedInfo	cached;
 	
-	[(NSValue *)[sCurrentDrawItem objectAtIndex:WIDGET_CACHE] getValue:&cached];
+	[(NSValue *)sCurrentDrawItem[WIDGET_CACHE] getValue:&cached];
 	
 	x = useDefined(cached.x, 0) + [[UNIVERSE gameView] x_offset] * cached.x0;
 	y = useDefined(cached.y, 0) + [[UNIVERSE gameView] y_offset] * cached.y0;
@@ -1805,7 +1729,7 @@ OOINLINE void SetCompassBlipColor(GLfloat relativeZ, GLfloat alpha)
 
 	struct CachedInfo	cached;
 	
-	[(NSValue *)[sCurrentDrawItem objectAtIndex:WIDGET_CACHE] getValue:&cached];
+	[(NSValue *)sCurrentDrawItem[WIDGET_CACHE] getValue:&cached];
 	
 	x = useDefined(cached.x, 0) + [[UNIVERSE gameView] x_offset] * cached.x0;
 	y = useDefined(cached.y, 0) + [[UNIVERSE gameView] y_offset] * cached.y0;
@@ -1834,7 +1758,7 @@ OOINLINE void SetCompassBlipColor(GLfloat relativeZ, GLfloat alpha)
 
 	struct CachedInfo	cached;
 	
-	[(NSValue *)[sCurrentDrawItem objectAtIndex:WIDGET_CACHE] getValue:&cached];
+	[(NSValue *)sCurrentDrawItem[WIDGET_CACHE] getValue:&cached];
 	
 	x = useDefined(cached.x, 0) + [[UNIVERSE gameView] x_offset] * cached.x0;
 	y = useDefined(cached.y, 0) + [[UNIVERSE gameView] y_offset] * cached.y0;
@@ -1868,7 +1792,7 @@ OOINLINE void SetCompassBlipColor(GLfloat relativeZ, GLfloat alpha)
 
 	struct CachedInfo	cached;
 	
-	[(NSValue *)[sCurrentDrawItem objectAtIndex:WIDGET_CACHE] getValue:&cached];
+	[(NSValue *)sCurrentDrawItem[WIDGET_CACHE] getValue:&cached];
 	
 	x = useDefined(cached.x, 0) + [[UNIVERSE gameView] x_offset] * cached.x0;
 	y = useDefined(cached.y, 0) + [[UNIVERSE gameView] y_offset] * cached.y0;
@@ -2265,7 +2189,7 @@ OOINLINE void SetCompassBlipColor(GLfloat relativeZ, GLfloat alpha)
 
 	struct CachedInfo	cached;
 
-	[(NSValue *)[sCurrentDrawItem objectAtIndex:WIDGET_CACHE] getValue:&cached];
+	[(NSValue *)sCurrentDrawItem[WIDGET_CACHE] getValue:&cached];
 	
 	x = useDefined(cached.x, WITCHDEST_CENTRE_X) + [[UNIVERSE gameView] x_offset] * cached.x0;
 	y = useDefined(cached.y, WITCHDEST_CENTRE_Y) + [[UNIVERSE gameView] y_offset] * cached.y0;
@@ -3168,7 +3092,7 @@ static OOPolygonSprite *IconForMissileRole(NSString *role)
 - (void) drawSurround:(NSDictionary *)info
 {
 	GLfloat	itemColor[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
-	id		colorDesc = [info objectForKey:COLOR_KEY];
+	id		colorDesc = info[COLOR_KEY];
 	if (colorDesc != nil)
 	{
 		OOColor *color = [OOColor colorWithDescription:colorDesc];
@@ -3221,7 +3145,7 @@ static OOPolygonSprite *IconForMissileRole(NSString *role)
 	GLfloat alpha = [info oo_nonNegativeFloatForKey:ALPHA_KEY defaultValue:1.0f] * overallAlpha;
 	
 	GLfloat mfd_color[4] =		{0.0, 1.0, 0.0, 0.9*alpha};
-	OOColor *mfdcol = [OOColor colorWithDescription:[info objectForKey:COLOR_KEY]];
+	OOColor *mfdcol = [OOColor colorWithDescription:info[COLOR_KEY]];
 	if (mfdcol != nil) 
 	{
 		[mfdcol getRed:&mfd_color[0] green:&mfd_color[1] blue:&mfd_color[2] alpha:&mfd_color[3]];
@@ -4235,16 +4159,7 @@ static void DrawSpecialOval(GLfloat x, GLfloat y, GLfloat z, NSSize siz, GLfloat
 }
 
 
-- (void) setLineWidth:(GLfloat) value
-{
-	lineWidth = value;
-}
-
-
-- (GLfloat) lineWidth
-{
-	return lineWidth;
-}
+@synthesize lineWidth;
 
 @end
 

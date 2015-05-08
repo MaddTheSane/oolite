@@ -57,7 +57,7 @@ MA 02110-1301, USA.
 
 @interface OOOXPVerifier(OOTextureVerifierStage)
 
-- (OOTextureVerifierStage *)textureVerifierStage;
+@property (readonly, strong) OOTextureVerifierStage *textureVerifierStage;
 
 @end
 

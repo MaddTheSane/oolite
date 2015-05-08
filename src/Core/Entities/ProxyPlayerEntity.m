@@ -33,7 +33,7 @@ MA 02110-1301, USA.
 @synthesize dialForwardShield = _dialForwardShield;
 @synthesize fuelLeakRate = _fuelLeakRate;
 
-- (id)initWithKey:(NSString *)key definition:(NSDictionary *)dict
+- (instancetype)initWithKey:(NSString *)key definition:(NSDictionary *)dict
 {
 	self = [super initWithKey:key definition:dict];
 	if (self != nil)

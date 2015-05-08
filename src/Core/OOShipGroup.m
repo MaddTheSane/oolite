@@ -54,9 +54,9 @@ enum
 	BOOL					_considerCleanup, _cleanupNeeded;
 }
 
-- (id) initWithShipGroup:(OOShipGroup *)group;
+- (instancetype) initWithShipGroup:(OOShipGroup *)group NS_DESIGNATED_INITIALIZER;
 
-- (NSUInteger) index;
+@property (readonly) NSUInteger index;
 - (void) setPerformCleanup:(BOOL)flag;
 
 @end
@@ -67,7 +67,7 @@ enum
 - (BOOL) resizeTo:(NSUInteger)newCapacity;
 - (void) cleanUp;
 
-- (NSUInteger) updateCount;
+@property (readonly) NSUInteger updateCount;
 
 @end
 
@@ -77,13 +77,13 @@ static id ShipGroupIterate(OOShipGroupEnumerator *enumerator);
 
 @implementation OOShipGroup
 
-- (id) init
+- (instancetype) init
 {
 	return [self initWithName:nil];
 }
 
 
-- (id) initWithName:(NSString *)name
+- (instancetype) initWithName:(NSString *)name
 {
 	if ((self = [super init]))
 	{
@@ -557,7 +557,7 @@ static id ShipGroupIterate(OOShipGroupEnumerator *enumerator)
 
 @implementation OOShipGroupEnumerator
 
-- (id) initWithShipGroup:(OOShipGroup *)group
+- (instancetype) initWithShipGroup:(OOShipGroup *)group
 {
 	assert(group != nil);
 	

@@ -35,7 +35,7 @@ MA 02110-1301, USA.
 
 @implementation OOQuiriumCascadeEntity
 
-- (id) initQuiriumCascadeFromShip:(ShipEntity *)ship
+- (instancetype) initQuiriumCascadeFromShip:(ShipEntity *)ship
 {
 	if (ship == nil)
 	{

@@ -38,7 +38,7 @@ MA 02110-1301, USA.
 
 @property (nonatomic, readwrite, setter=setOriginSystem:) OOSystemID planetIDOfOrigin;
 
-- (Random_Seed)genSeed;
+@property (readonly) Random_Seed genSeed;
 
 @end
 
@@ -75,7 +75,7 @@ MA 02110-1301, USA.
 }
 
 
-- (id) initWithGenSeed:(Random_Seed)characterSeed andOriginalSystem:(OOSystemID)system
+- (instancetype) initWithGenSeed:(Random_Seed)characterSeed andOriginalSystem:(OOSystemID)system
 {
 	if ((self = [super init]))
 	{
@@ -89,7 +89,7 @@ MA 02110-1301, USA.
 }
 
 
-- (id) initWithRole:(NSString *)role andOriginalSystem:(OOSystemID)system
+- (instancetype) initWithRole:(NSString *)role andOriginalSystem:(OOSystemID)system
 {
 	Random_Seed seed;
 	make_pseudo_random_seed(&seed);
@@ -346,14 +346,12 @@ MA 02110-1301, USA.
 
 - (NSDictionary *) infoForScripting
 {
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-		  [self name], @"name",
-		  [self shortDescription], @"description",
-		  [self species], @"species",
-		  [NSNumber numberWithInt:[self legalStatus]], @"legalStatus",
-		  @([self insuranceCredits]), @"insuranceCredits",
-		  [NSNumber numberWithInt:[self planetIDOfOrigin]], @"homeSystem",
-		  nil];
+	return @{@"name": [self name],
+		  @"description": [self shortDescription],
+		  @"species": [self species],
+		  @"legalStatus": @([self legalStatus]),
+		  @"insuranceCredits": @([self insuranceCredits]),
+		  @"homeSystem": [NSNumber numberWithInt:[self planetIDOfOrigin]]};
 }
 
 

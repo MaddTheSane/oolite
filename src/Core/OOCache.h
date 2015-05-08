@@ -63,28 +63,25 @@ enum
 	BOOL					dirty;
 }
 
-- (id)init;
-- (id)initWithPList:(id)pList;
-- (id)pListRepresentation;
+- (instancetype)init;
+- (instancetype)initWithPList:(id)pList NS_DESIGNATED_INITIALIZER;
+@property (readonly, strong, atomic) id pListRepresentation;
 
 - (id)objectForKey:(id)key;
 - (void)setObject:(id)value forKey:(id)key;
 - (void)removeObjectForKey:(id)key;
 
-- (void)setPruneThreshold:(unsigned)threshold;
-- (unsigned)pruneThreshold;
+@property (nonatomic) unsigned int pruneThreshold;
 
-- (void)setAutoPrune:(BOOL)flag;
-- (BOOL)autoPrune;
+@property (nonatomic) BOOL autoPrune;
 
 - (void)prune;
 
-- (BOOL)dirty;
+@property (readonly, atomic) BOOL dirty;
 - (void)markClean;
 
-- (NSString *)name;
-- (void)setName:(NSString *)name;
+@property (copy, atomic) NSString *name;
 
-- (NSArray *) objectsByAge;
+@property (readonly, copy, atomic) NSArray *objectsByAge;
 
 @end

@@ -38,14 +38,14 @@ SOFTWARE.
 - (void)registerDependency:(OOOXPVerifierStage *)dependency;
 - (void)dependencyRegistrationComplete;
 
-- (BOOL)canRun;
+@property (readonly) BOOL canRun;
 
 - (void)performRun;
 - (void)noteSkipped;
 
 // These return sets of stages set up by -registerDependency, wheras -dependencies/dependents return sets of names.
-- (NSSet *)resolvedDependencies;
-- (NSSet *)resolvedDependents;
+@property (readonly, copy) NSSet *resolvedDependencies;
+@property (readonly, copy) NSSet *resolvedDependents;
 
 @end
 

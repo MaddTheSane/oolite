@@ -33,7 +33,7 @@ SOFTWARE.
 
 @implementation OOSingleTextureMaterial
 
-- (id)initWithName:(NSString *)name configuration:(NSDictionary *)configuration
+- (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration
 {
 	id					texSpec = nil;
 	
@@ -52,7 +52,7 @@ SOFTWARE.
 }
 
 
-- (id) initWithName:(NSString *)name texture:(OOTexture *)texture configuration:(NSDictionary *)configuration
+- (instancetype) initWithName:(NSString *)name texture:(OOTexture *)texture configuration:(NSDictionary *)configuration
 {
 	if (name != nil && texture != nil)
 	{

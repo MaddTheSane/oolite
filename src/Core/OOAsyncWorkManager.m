@@ -44,7 +44,7 @@ static OOAsyncWorkManager *sSingleton = nil;
 
 @interface NSThread (MethodsThatMayExistDependingOnSystem)
 
-- (BOOL) isMainThread;
+@property (getter=isMainThread, readonly) BOOL mainThread;
 + (BOOL) isMainThread;
 
 @end
@@ -222,7 +222,7 @@ static void InitAsyncWorkManager(void)
 @implementation OOAsyncWorkManagerInternal
 
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -412,7 +412,7 @@ enum
 #endif
 
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{

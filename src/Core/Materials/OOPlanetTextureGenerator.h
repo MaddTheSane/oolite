@@ -85,7 +85,7 @@ typedef struct OOPlanetTextureGeneratorInfo
 }
 
 
-- (id) initWithPlanetInfo:(NSDictionary *)planetInfo;
+- (instancetype) initWithPlanetInfo:(NSDictionary *)planetInfo NS_DESIGNATED_INITIALIZER;
 
 + (OOTexture *) planetTextureWithInfo:(NSDictionary *)planetInfo;
 + (BOOL) generatePlanetTexture:(OOTexture **)texture andAtmosphere:(OOTexture **)atmosphere withInfo:(NSDictionary *)planetInfo;

@@ -30,7 +30,7 @@ MA 02110-1301, USA.
 
 @implementation OOJSPopulatorDefinition
 
-- (id) init {
+- (instancetype) init {
 	_callback = JSVAL_VOID;
 	_callbackThis = NULL;
 

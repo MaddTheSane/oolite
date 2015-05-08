@@ -422,12 +422,12 @@ MA 02110-1301, USA.
 	//
 	[[ship getAI] message:@"HOLD_POSITION"];
 	
-	if (![nextCoords objectForKey:@"hold_message_given"])
+	if (!nextCoords[@"hold_message_given"])
 	{
 		// COMM-CHATTER
 		[UNIVERSE clearPreviousMessage];
 		[self sendExpandedMessage: @"[station-hold-position]" toShip: ship];
-		[nextCoords setObject:@"YES" forKey:@"hold_message_given"];
+		nextCoords[@"hold_message_given"] = @"YES";
 	}
 
 	return OOMakeDockingInstructions(station, ship->position, 0, 100, @"HOLD_POSITION", nil, NO, -1);
@@ -1166,7 +1166,7 @@ MA 02110-1301, USA.
 }
 
 
-- (id)initWithKey:(NSString *)key definition:(NSDictionary *)dict
+- (instancetype)initWithKey:(NSString *)key definition:(NSDictionary *)dict
 {
 	OOJS_PROFILE_ENTER
 	
@@ -1241,7 +1241,7 @@ MA 02110-1301, USA.
 	
 	if (([launchQueue count] > 0)&&([shipsOnApproach count] == 0)&&[self dockingCorridorIsEmpty])
 	{
-		ShipEntity *se=(ShipEntity *)[launchQueue objectAtIndex:0];
+		ShipEntity *se=(ShipEntity *)launchQueue[0];
 		// check to make sure ship has not been destroyed in queue by script
 		if ([se status] == STATUS_DOCKED)
 		{

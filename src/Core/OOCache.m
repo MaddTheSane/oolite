@@ -182,13 +182,13 @@ static void CacheCheckIntegrity(OOCacheImpl *cache, NSString *context);
 }
 
 
-- (id)init
+- (instancetype)init
 {
 	return [self initWithPList:nil];
 }
 
 
-- (id)initWithPList:(id)pList
+- (instancetype)initWithPList:(id)pList
 {
 	BOOL					OK = YES;
 	
@@ -280,10 +280,7 @@ static void CacheCheckIntegrity(OOCacheImpl *cache, NSString *context);
 }
 
 
-- (unsigned)pruneThreshold
-{
-	return pruneThreshold;
-}
+@synthesize pruneThreshold;
 
 
 - (void)setAutoPrune:(BOOL)flag
@@ -297,10 +294,7 @@ static void CacheCheckIntegrity(OOCacheImpl *cache, NSString *context);
 }
 
 
-- (BOOL)autoPrune
-{
-	return autoPrune;
-}
+@synthesize autoPrune;
 
 
 - (void)prune

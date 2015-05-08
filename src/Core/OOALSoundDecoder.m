@@ -53,14 +53,14 @@ static int OOCloseOXZVorbis (void *datasource);
 	unzFile					uf;
 }
 
-- (NSDictionary *)comments;
+@property (readonly, copy) NSDictionary *comments;
 
 @end
 
 
 @implementation OOALSoundDecoder
 
-- (id)initWithPath:(NSString *)inPath
+- (instancetype)initWithPath:(NSString *)inPath
 {
 	[self release];
 	self = nil;
@@ -133,7 +133,7 @@ static int OOCloseOXZVorbis (void *datasource);
 
 @implementation OOALSoundVorbisCodec
 
-- (id)initWithPath:(NSString *)path
+- (instancetype)initWithPath:(NSString *)path
 {
 	if ((self = [super init]))
 	{

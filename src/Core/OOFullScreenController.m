@@ -29,7 +29,7 @@ MA 02110-1301, USA.
 
 @implementation OOFullScreenController
 
-- (id) initWithGameView:(MyOpenGLView *)view
+- (instancetype) initWithGameView:(MyOpenGLView *)view
 {
 	if ((self = [super init]))
 	{

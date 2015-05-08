@@ -51,7 +51,7 @@ MA 02110-1301, USA.
 	NSInteger double_click_control_point;
 }
 
-- (id) init;
+- (instancetype) init NS_DESIGNATED_INITIALIZER;
 - (void) dealloc;
 - (void) startGui: (GuiDisplayGen *) gui_display_gen;
 - (void) mouseDown: (NSPoint) position;

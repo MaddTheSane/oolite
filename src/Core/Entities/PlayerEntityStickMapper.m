@@ -32,7 +32,7 @@ MA 02110-1301, USA.
 @interface PlayerEntity (StickMapperInternal)
 
 - (void) removeFunction:(int)selFunctionIdx;
-- (NSArray *)stickFunctionList;
+@property (readonly, copy) NSArray *stickFunctionList;
 - (void)displayFunctionList:(GuiDisplayGen *)gui
 					   skip:(NSUInteger) skip;
 - (NSString *)describeStickDict:(NSDictionary *)stickDict;
@@ -72,7 +72,7 @@ MA 02110-1301, USA.
 			   forRow:i + GUI_ROW_STICKNAME];
 	}
 
-	[gui setArray: [NSArray arrayWithObjects: DESC(@"stickmapper-profile"), nil] forRow: GUI_ROW_STICKPROFILE];
+	[gui setArray: @[DESC(@"stickmapper-profile")] forRow: GUI_ROW_STICKPROFILE];
 	[gui setKey: GUI_KEY_OK forRow: GUI_ROW_STICKPROFILE];
 	[self displayFunctionList:gui skip:skip];
 	

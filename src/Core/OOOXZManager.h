@@ -30,16 +30,16 @@ MA 02110-1301, USA.
 #import "OOTypes.h"
 #import "GuiDisplayGen.h"
 
-typedef enum {
+typedef NS_ENUM(unsigned int, OXZDownloadStatus) {
 	OXZ_DOWNLOAD_NONE = 0,
 	OXZ_DOWNLOAD_STARTED = 1,
 	OXZ_DOWNLOAD_RECEIVING = 2,
 	OXZ_DOWNLOAD_COMPLETE = 10,
 	OXZ_DOWNLOAD_ERROR = 99
-} OXZDownloadStatus;
+};
 
 
-typedef enum {
+typedef NS_ENUM(unsigned int, OXZInterfaceState) {
 	OXZ_STATE_NODATA,
 	OXZ_STATE_MAIN,
 	OXZ_STATE_UPDATING,
@@ -54,7 +54,7 @@ typedef enum {
 	OXZ_STATE_SETFILTER,
 	OXZ_STATE_EXTRACT,
 	OXZ_STATE_EXTRACTDONE
-} OXZInterfaceState;
+};
 
 
 @interface OOOXZManager : NSObject
@@ -88,18 +88,18 @@ typedef enum {
 
 + (OOOXZManager *) sharedManager;
 
-- (NSString *) installPath;
+@property (readonly, copy) NSString *installPath;
 
-- (BOOL) updateManifests;
-- (BOOL) cancelUpdate;
+@property (readonly) BOOL updateManifests;
+@property (readonly) BOOL cancelUpdate;
 
-- (NSArray *) manifests;
-- (NSArray *) managedOXZs;
+@property (readonly, copy) NSArray *manifests;
+@property (readonly, copy) NSArray *managedOXZs;
 
 - (void) gui;
-- (BOOL) isRestarting;
-- (BOOL) isAcceptingTextInput;
-- (BOOL) isAcceptingGUIInput;
+@property (getter=isRestarting, readonly) BOOL restarting;
+@property (getter=isAcceptingTextInput, readonly) BOOL acceptingTextInput;
+@property (getter=isAcceptingGUIInput, readonly) BOOL acceptingGUIInput;
 
 - (void) processSelection;
 - (void) processTextInput:(NSString *)input;
@@ -107,8 +107,8 @@ typedef enum {
 - (void) processFilterKey;
 - (void) processShowInfoKey;
 - (void) processExtractKey;
-- (OOGUIRow) showInstallOptions;
-- (OOGUIRow) showRemoveOptions;
+@property (readonly) OOGUIRow showInstallOptions;
+@property (readonly) OOGUIRow showRemoveOptions;
 - (void) showOptionsUpdate;
 - (void) showOptionsPrev;
 - (void) showOptionsNext;

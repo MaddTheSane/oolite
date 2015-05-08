@@ -55,12 +55,11 @@ typedef struct
 - (void) drawOctreeFromLocation:(uint32_t)loc :(GLfloat)scale :(Vector)offset;
 - (void) drawOctreeCollisionFromLocation:(uint32_t)loc :(GLfloat)scale :(Vector)offset;
 
-- (BOOL) hasCollision;
-- (void) setHasCollision:(BOOL)value;
+@property  BOOL hasCollision;
 
 #endif
 
-- (Octree_details) octreeDetails;
+@property (readonly) Octree_details octreeDetails;
 
 @end
 
@@ -77,7 +76,7 @@ static BOOL	isHitByOctree(Octree_details axialDetails, Octree_details otherDetai
 
 @implementation Octree
 
-- (id) init
+- (instancetype) init
 {
 	// -init makes no sense, since octrees are immutable.
 	[self release];
@@ -87,7 +86,7 @@ static BOOL	isHitByOctree(Octree_details axialDetails, Octree_details otherDetai
 
 
 // Designated initializer.
-- (id) initWithData:(NSData *)data
+- (instancetype) initWithData:(NSData *)data
 			 radius:(GLfloat)radius
 {
 	if ((self = [super init]))
@@ -113,7 +112,7 @@ static BOOL	isHitByOctree(Octree_details axialDetails, Octree_details otherDetai
 }
 
 
-- (id) initWithDictionary:(NSDictionary *)dict
+- (instancetype) initWithDictionary:(NSDictionary *)dict
 {
 	NSData *data = dict[@"octree"];
 	if (![data isKindOfClass:[NSData class]] || ([data length] % sizeof (int)) != 0)
@@ -820,7 +819,7 @@ OOINLINE void InsertNode(OOOctreeBuilder *self, int value)
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{

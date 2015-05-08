@@ -39,13 +39,13 @@ MA 02110-1301, USA.
 }
 
 
-- (id) initFromShip:(ShipEntity *)ship;
+- (instancetype) initFromShip:(ShipEntity *)ship NS_DESIGNATED_INITIALIZER;
 
 @end
 
 
 @interface Entity (OOECMBlastEntity)
 
-- (BOOL) isECMBlast;
+@property (getter=isECMBlast, readonly) BOOL ECMBlast;
 
 @end

@@ -34,7 +34,7 @@ MA 02110-1301, USA.
 
 @class ShipEntity, Universe;
 
-typedef enum
+typedef NS_ENUM(unsigned int, WORMHOLE_SCANINFO)
 {
 	WH_SCANINFO_NONE = 0,
 	WH_SCANINFO_SCANNED,
@@ -42,7 +42,7 @@ typedef enum
 	WH_SCANINFO_ARRIVAL_TIME,
 	WH_SCANINFO_DESTINATION,
 	WH_SCANINFO_SHIP,
-} WORMHOLE_SCANINFO;
+};
 
 @interface WormholeEntity: Entity
 {
@@ -80,35 +80,33 @@ typedef enum
 - (void) disgorgeShips;
 - (void) setExitPosition:(HPVector)pos;
 
-- (OOSystemID) origin;
-- (OOSystemID) destination;
-- (NSPoint) originCoordinates;
-- (NSPoint) destinationCoordinates;
+@property (readonly) OOSystemID origin;
+@property (readonly) OOSystemID destination;
+@property (readonly) NSPoint originCoordinates;
+@property (readonly) NSPoint destinationCoordinates;
 
 - (void) setMisjump;	// Flags up a wormhole as 'misjumpy'
 - (void) setMisjumpWithRange:(GLfloat)range;	// Flags up a wormhole as 'misjumpy'
-- (BOOL) withMisjump;
-- (GLfloat) misjumpRange;
+@property (readonly) BOOL withMisjump;
+@property (readonly, nonatomic) GLfloat misjumpRange;
 
-- (double) exitSpeed;	// exit speed from this wormhole
-- (void) setExitSpeed:(double) speed;	// set exit speed from this wormhole
+@property  double exitSpeed;	// exit speed from this wormhole	// set exit speed from this wormhole
 
-- (double) expiryTime;	// Time at which the wormholes entrance closes
-- (double) arrivalTime;	// Time at which the wormholes exit opens
-- (double) estimatedArrivalTime;	// Time when wormhole should open (different from arrival_time for misjump wormholes)
-- (double) travelTime;	// Time needed for a ship to traverse the wormhole
-- (double) scanTime;	// Time when wormhole was scanned
+@property (readonly) double expiryTime;	// Time at which the wormholes entrance closes
+@property (readonly) double arrivalTime;	// Time at which the wormholes exit opens
+@property (readonly) double estimatedArrivalTime;	// Time when wormhole should open (different from arrival_time for misjump wormholes)
+@property (readonly) double travelTime;	// Time needed for a ship to traverse the wormhole
+@property (readonly) double scanTime;	// Time when wormhole was scanned
 - (void) setScannedAt:(double)time;
 - (void) setContainsPlayer:(BOOL)val; // mark the wormhole as waiting for player exit
 
-- (BOOL) isScanned;		// True if the wormhole has been scanned by the player
-- (WORMHOLE_SCANINFO) scanInfo; // Stage of scanning
-- (void)setScanInfo:(WORMHOLE_SCANINFO) scanInfo;
+@property (getter=isScanned, readonly, atomic) BOOL scanned;		// True if the wormhole has been scanned by the player
+@property  WORMHOLE_SCANINFO scanInfo; // Stage of scanning
 
-- (NSArray*) shipsInTransit;
+@property (readonly, copy, atomic) NSArray *shipsInTransit;
 
 - (NSString *) identFromShip:(ShipEntity*) ship;
 
-- (NSDictionary *)getDict;
+@property (getter=getDict, readonly, copy, atomic) NSDictionary *dict;
 
 @end

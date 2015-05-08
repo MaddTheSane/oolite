@@ -77,7 +77,7 @@ static BOOL CheckNameConflict(NSString *lcName, NSDictionary *directoryCases, NS
 
 - (NSDictionary *)scanDirectory:(NSString *)path;
 - (void)checkPListFormat:(NSPropertyListFormat)format file:(NSString *)file folder:(NSString *)folder;
-- (NSSet *)constructReadMeNames;
+@property (readonly, copy) NSSet *constructReadMeNames;
 
 @end
 

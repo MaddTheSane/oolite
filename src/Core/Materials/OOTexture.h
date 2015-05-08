@@ -40,7 +40,9 @@ SOFTWARE.
 @class OOTextureLoader, OOTextureGenerator;
 
 
-enum
+
+
+typedef NS_OPTIONS(uint32_t, OOTextureFlags)
 {
 	kOOTextureMinFilterDefault		= 0x000000UL,
 	kOOTextureMinFilterNearest		= 0x000001UL,
@@ -92,9 +94,6 @@ enum
 };
 
 
-typedef uint32_t OOTextureFlags;
-
-
 #define kOOTextureDefaultAnisotropy		0.5
 #define kOOTextureDefaultLODBias		-0.25
 
@@ -126,7 +125,7 @@ typedef OOPixMapFormat OOTextureDataFormat;
 	This method may change; +textureWithConfiguration is generally more
 	appropriate. 
 */
-+ (id) textureWithName:(NSString *)name
++ (instancetype) textureWithName:(NSString *)name
 			  inFolder:(NSString *)directory
 			   options:(OOTextureFlags)options
 			anisotropy:(GLfloat)anisotropy
@@ -138,7 +137,7 @@ typedef OOPixMapFormat OOTextureDataFormat;
 					   anisotropy:kOOTextureDefaultAnisotropy
 						  lodBias:kOOTextureDefaultLODBias
 */
-+ (id) textureWithName:(NSString *)name
++ (instancetype) textureWithName:(NSString *)name
 			  inFolder:(NSString*)directory;
 
 /*	Load a texure, looking in Textures directories, using configuration
@@ -157,8 +156,8 @@ typedef OOPixMapFormat OOTextureDataFormat;
 		texture_LOD_bias	(real)
 		extract_channel		(string, one of "r", "g", "b", "a")
  */
-+ (id) textureWithConfiguration:(id)configuration;
-+ (id) textureWithConfiguration:(id)configuration extraOptions:(OOTextureFlags)extraOptions;
++ (instancetype) textureWithConfiguration:(id)configuration;
++ (instancetype) textureWithConfiguration:(id)configuration extraOptions:(OOTextureFlags)extraOptions;
 
 /*	Return the "null texture", a texture object representing an empty texture.
 	Applying the null texture is equivalent to calling [OOTexture applyNone].
@@ -167,7 +166,7 @@ typedef OOPixMapFormat OOTextureDataFormat;
 
 /*	Load a texture from a generator.
 */
-+ (id) textureWithGenerator:(OOTextureGenerator *)generator;
++ (instancetype) textureWithGenerator:(OOTextureGenerator *)generator;
 
 
 /*	Bind the texture to the current texture unit.
@@ -186,34 +185,34 @@ typedef OOPixMapFormat OOTextureDataFormat;
 	-ensureFinishedLoading does, so -ensureFinishedLoading is still required
 	before using the texture in a display list.
 */
-- (BOOL) isFinishedLoading;
+@property (getter=isFinishedLoading, readonly) BOOL finishedLoading;
 
-- (NSString *) cacheKey;
+@property (readonly, copy) NSString *cacheKey;
 
 /*	Dimensions in pixels.
 	This will block until loading is completed.
 */
-- (NSSize) dimensions;
+@property (readonly) NSSize dimensions;
 
 /*	Original file dimensions in pixels.
 	This will block until loading is completed.
 */
-- (NSSize) originalDimensions;
+@property (readonly) NSSize originalDimensions;
 
 /*	Check whether texture is mip-mapped.
 	This will block until loading is completed.
 */
-- (BOOL) isMipMapped;
+@property (getter=isMipMapped, readonly) BOOL mipMapped;
 
 /*	Create a new pixmap with a copy of the texture data. The caller is
 	responsible for free()ing the resulting buffer.
 */
-- (OOPixMap) copyPixMapRepresentation;
+@property (readonly) OOPixMap copyPixMapRepresentation;
 
 /*	Identify special texture types.
 */
-- (BOOL) isRectangleTexture;
-- (BOOL) isCubeMap;
+@property (getter=isRectangleTexture, readonly) BOOL rectangleTexture;
+@property (getter=isCubeMap, readonly) BOOL cubeMap;
 
 
 /*	Dimensions in texture coordinates.
@@ -240,12 +239,12 @@ typedef OOPixMapFormat OOTextureDataFormat;
 	support this in future, but this shouldn’t affect the interface, only
 	avoid the scaling-to-power-of-two stage.
 */
-- (NSSize) texCoordsScale;
+@property (readonly) NSSize texCoordsScale;
 
 /*	OpenGL texture name.
 	Not reccomended, but required for legacy TextureStore.
 */
-- (GLint) glTextureName;
+@property (readonly) GLint glTextureName;
 
 //	Forget all cached textures so new texture objects will reload.
 + (void) clearCache;
@@ -259,9 +258,9 @@ typedef OOPixMapFormat OOTextureDataFormat;
 + (NSArray *) cachedTexturesByAge;
 + (NSSet *) allTextures;
 
-- (size_t) dataSize;
+@property (readonly) size_t dataSize;
 
-- (NSString *) name;
+@property (readonly, copy) NSString *name;
 #endif
 
 @end

@@ -131,7 +131,7 @@ static NSString *sGlobalTraceContext = nil;
 
 @implementation OOTexture
 
-+ (id)textureWithName:(NSString *)name
++ (instancetype)textureWithName:(NSString *)name
 			 inFolder:(NSString*)directory
 			  options:(OOTextureFlags)options
 		   anisotropy:(GLfloat)anisotropy
@@ -178,7 +178,7 @@ static NSString *sGlobalTraceContext = nil;
 }
 
 
-+ (id)textureWithName:(NSString *)name
++ (instancetype)textureWithName:(NSString *)name
 			 inFolder:(NSString*)directory
 {
 	return [self textureWithName:name
@@ -189,13 +189,13 @@ static NSString *sGlobalTraceContext = nil;
 }
 
 
-+ (id)textureWithConfiguration:(id)configuration
++ (instancetype)textureWithConfiguration:(id)configuration
 {
 	return [self textureWithConfiguration:configuration extraOptions:0];
 }
 
 
-+ (id) textureWithConfiguration:(id)configuration extraOptions:(OOTextureFlags)extraOptions
++ (instancetype) textureWithConfiguration:(id)configuration extraOptions:(OOTextureFlags)extraOptions
 {
 	NSString				*name = nil;
 	OOTextureFlags			options = 0;
@@ -214,7 +214,7 @@ static NSString *sGlobalTraceContext = nil;
 }
 
 
-+ (id) textureWithGenerator:(OOTextureGenerator *)generator
++ (instancetype) textureWithGenerator:(OOTextureGenerator *)generator
 {
 	if (generator == nil)  return nil;
 	
@@ -240,7 +240,7 @@ static NSString *sGlobalTraceContext = nil;
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{

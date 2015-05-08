@@ -56,7 +56,7 @@ SOFTWARE.
 		emission	{ 0.0, 0.0, 0.0, 1.0 }
 		shininess	0
 */
-- (id)initWithName:(NSString *)name;
+- (instancetype)initWithName:(NSString *)name NS_DESIGNATED_INITIALIZER;
 
 /*	Initialize with dictionary. Accepted keys:
 		diffuse		colour description
@@ -68,16 +68,13 @@ SOFTWARE.
 	"Colour description" refers to anything +[OOColor colorWithDescription:]
 	will accept.
 */
-- (id)initWithName:(NSString *)name configuration:(NSDictionary *)configuration;
+- (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration;
 
-- (OOColor *)diffuseColor;
-- (void)setDiffuseColor:(OOColor *)color;
+@property (copy) OOColor *diffuseColor;
 - (void)setAmbientAndDiffuseColor:(OOColor *)color;
-- (OOColor *)specularColor;
-- (void)setSpecularColor:(OOColor *)color;
-- (OOColor *)ambientColor;
-- (void)setAmbientColor:(OOColor *)color;
-- (OOColor *)emmisionColor;
+@property (copy) OOColor *specularColor;
+@property (copy) OOColor *ambientColor;
+@property (readonly, copy) OOColor *emmisionColor;
 - (void)setEmissionColor:(OOColor *)color;
 
 - (void)getDiffuseComponents:(GLfloat[4])outComponents;
@@ -96,13 +93,12 @@ SOFTWARE.
 - (void)setAmbientRed:(GLfloat)r green:(GLfloat)g blue:(GLfloat)b alpha:(GLfloat)a;
 - (void)setEmissionRed:(GLfloat)r green:(GLfloat)g blue:(GLfloat)b alpha:(GLfloat)a;
 
-- (uint8_t)shininess;
-- (void)setShininess:(uint8_t)value;	// Clamped to [0, 128]
+@property  uint8_t shininess;	// Clamped to [0, 128]
 
 
 /*	For subclasses: return true to permit specular settings, false to deny
 	them. By default, this is ![UNIVERSE reducedDetail].
 */
-- (BOOL) permitSpecular;
+@property (readonly) BOOL permitSpecular;
 
 @end

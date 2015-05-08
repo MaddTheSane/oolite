@@ -44,12 +44,12 @@ SOFTWARE.
 	NSDictionary				*_substitutions;
 }
 
-- (id) initWithEncoding:(NSStringEncoding)encoding substitutions:(NSDictionary *)substitutions;
-- (id) initWithFontPList:(NSDictionary *)fontPList;
+- (instancetype) initWithEncoding:(NSStringEncoding)encoding substitutions:(NSDictionary *)substitutions NS_DESIGNATED_INITIALIZER;
+- (instancetype) initWithFontPList:(NSDictionary *)fontPList;
 
 - (NSData *) convertString:(NSString *)string;
 
-- (NSStringEncoding) encoding;
+@property (readonly) NSStringEncoding encoding;
 
 @end
 

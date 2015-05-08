@@ -17,7 +17,7 @@ This code is hereby placed in the public domain.
 	NSEnumerator			*_enumerator;
 }
 
-- (id) initWithEnumerator:(NSEnumerator *)enumerator;
+- (instancetype) initWithEnumerator:(NSEnumerator *)enumerator NS_DESIGNATED_INITIALIZER;
 
 + (instancetype) enumeratorWithCollection:(id)collection;	// Collection must implement -objectEnumerator
 
@@ -33,13 +33,13 @@ This code is hereby placed in the public domain.
 
 @implementation OOWeakSet
 
-- (id) init
+- (instancetype) init
 {
 	return [self initWithCapacity:0];
 }
 
 
-- (id) initWithCapacity:(NSUInteger)capacity
+- (instancetype) initWithCapacity:(NSUInteger)capacity
 {
 	if ((self = [super init]))
 	{
@@ -270,7 +270,7 @@ This code is hereby placed in the public domain.
 
 @implementation OOWeakRefUnpackingEnumerator
 
-- (id) initWithEnumerator:(NSEnumerator *)enumerator
+- (instancetype) initWithEnumerator:(NSEnumerator *)enumerator
 {
 	if (enumerator == nil)
 	{

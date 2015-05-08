@@ -87,71 +87,71 @@ SOFTWARE.
 
 + (OOEquipmentType *) equipmentTypeWithIdentifier:(NSString *)identifier;
 
-- (NSString *) identifier;
-- (NSString *) damagedIdentifier;
-- (NSString *) name;			// localized
-- (NSString *) descriptiveText;	// localized
-- (OOTechLevelID) techLevel;
-- (OOCreditsQuantity) price;	// Tenths of credits
+@property (readonly, copy) NSString *identifier;
+@property (readonly, copy) NSString *damagedIdentifier;
+@property (readonly, copy) NSString *name;			// localized
+@property (readonly, copy) NSString *descriptiveText;	// localized
+@property (readonly) OOTechLevelID techLevel;
+@property (readonly) OOCreditsQuantity price;	// Tenths of credits
 
-- (BOOL) isAvailableToAll;
-- (BOOL) requiresEmptyPylon;
-- (BOOL) requiresMountedPylon;
-- (BOOL) requiresCleanLegalRecord;
-- (BOOL) requiresNonCleanLegalRecord;
-- (BOOL) requiresFreePassengerBerth;
-- (BOOL) requiresFullFuel;
-- (BOOL) requiresNonFullFuel;
-- (BOOL) isPrimaryWeapon;
-- (BOOL) isMissileOrMine;
-- (BOOL) isPortableBetweenShips;
+@property (getter=isAvailableToAll, readonly) BOOL availableToAll;
+@property (readonly) BOOL requiresEmptyPylon;
+@property (readonly) BOOL requiresMountedPylon;
+@property (readonly) BOOL requiresCleanLegalRecord;
+@property (readonly) BOOL requiresNonCleanLegalRecord;
+@property (readonly) BOOL requiresFreePassengerBerth;
+@property (readonly) BOOL requiresFullFuel;
+@property (readonly) BOOL requiresNonFullFuel;
+@property (getter=isPrimaryWeapon, readonly) BOOL primaryWeapon;
+@property (getter=isMissileOrMine, readonly) BOOL missileOrMine;
+@property (getter=isPortableBetweenShips, readonly) BOOL portableBetweenShips;
 
-- (BOOL) canCarryMultiple;
-- (GLfloat) damageProbability;
-- (BOOL) canBeDamaged;
-- (BOOL) isVisible;				// Visible in UI?
+@property (readonly) BOOL canCarryMultiple;
+@property (readonly) GLfloat damageProbability;
+@property (readonly) BOOL canBeDamaged;
+@property (getter=isVisible, readonly) BOOL visible;				// Visible in UI?
 
-- (BOOL) isAvailableToPlayer;
-- (BOOL) isAvailableToNPCs;
+@property (getter=isAvailableToPlayer, readonly) BOOL availableToPlayer;
+@property (getter=isAvailableToNPCs, readonly) BOOL availableToNPCs;
 
-- (OOCargoQuantity) requiredCargoSpace;
-- (NSSet *) requiresEquipment;		// Set of equipment identifiers; all items required
-- (NSSet *) requiresAnyEquipment;	// Set of equipment identifiers; any item required
-- (NSSet *) incompatibleEquipment;	// Set of equipment identifiers; all items prohibited
+@property (readonly) OOCargoQuantity requiredCargoSpace;
+@property (readonly, copy) NSSet *requiresEquipment;		// Set of equipment identifiers; all items required
+@property (readonly, copy) NSSet *requiresAnyEquipment;	// Set of equipment identifiers; any item required
+@property (readonly, copy) NSSet *incompatibleEquipment;	// Set of equipment identifiers; all items prohibited
 
 // FIXME: should have general mechanism to handle scripts or legacy conditions.
-- (NSArray *) conditions;
+@property (readonly, copy) NSArray *conditions;
 
-- (NSString *) conditionScript;
+@property (readonly, copy) NSString *conditionScript;
 
-- (NSDictionary *) scriptInfo;
-- (NSString *) scriptName;
+@property (readonly, copy) NSDictionary *scriptInfo;
+@property (readonly, copy) NSString *scriptName;
 
-- (BOOL) fastAffinityDefensive;
-- (BOOL) fastAffinityOffensive;
+@property (readonly) BOOL fastAffinityDefensive;
+@property (readonly) BOOL fastAffinityOffensive;
 
-- (NSUInteger) installTime;
-- (NSUInteger) repairTime;
+@property (readonly) NSUInteger installTime;
+@property (readonly) NSUInteger repairTime;
 
-- (NSArray *) providesForScripting;
+@property (readonly, copy) NSArray *providesForScripting;
 - (BOOL) provides:(NSString *)key;
 
 // weapon properties
-- (BOOL) isTurretLaser;
-- (BOOL) isMiningLaser;
-- (GLfloat) weaponRange;
-- (GLfloat) weaponEnergyUse;
-- (GLfloat) weaponDamage;
-- (GLfloat) weaponRechargeRate;
-- (GLfloat) weaponShotTemperature;
-- (GLfloat) weaponThreatAssessment;
-- (OOColor *) weaponColor;
+@property (getter=isTurretLaser, readonly) BOOL turretLaser;
+@property (getter=isMiningLaser, readonly) BOOL miningLaser;
+@property (readonly) GLfloat weaponRange;
+@property (readonly) GLfloat weaponEnergyUse;
+@property (readonly) GLfloat weaponDamage;
+@property (readonly) GLfloat weaponRechargeRate;
+@property (readonly) GLfloat weaponShotTemperature;
+@property (readonly) GLfloat weaponThreatAssessment;
+@property (readonly, copy) OOColor *weaponColor;
 
 @end
 
 
 @interface OOEquipmentType (Conveniences)
 
-- (OOTechLevelID) effectiveTechLevel;
+@property (readonly) OOTechLevelID effectiveTechLevel;
 
 @end

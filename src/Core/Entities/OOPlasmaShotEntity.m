@@ -43,7 +43,7 @@ MA 02110-1301, USA.
 
 @implementation OOPlasmaShotEntity
 
-- (id) initWithPosition:(HPVector)inPosition
+- (instancetype) initWithPosition:(HPVector)inPosition
 			   velocity:(Vector)inVelocity
 				 energy:(float)inEnergy
 			   duration:(OOTimeDelta)duration

@@ -273,7 +273,7 @@ enum {
 	and -oo_jsDescription will wrap them like this:
 		[oo_jsClassName descriptionComponents]
 */
-- (NSString *)descriptionComponents;
+@property (readonly, copy) NSString *descriptionComponents;
 
 
 /*	A lot of Oolite's -description implementations are rather long, and many
@@ -281,8 +281,8 @@ enum {
 	alternative, while -shortDescriptionComponents provides a
 	-descriptionComponents-like mechanism to simplify implementation.
 */
-- (NSString *) shortDescription;
-- (NSString *) shortDescriptionComponents;
+@property (readonly, copy) NSString *shortDescription;
+@property (readonly, copy) NSString *shortDescriptionComponents;
 
 @end
 
@@ -362,7 +362,7 @@ enum {
 	to reduce differences between different build environments.
 */
 @interface NSEnumerator (OOForEachSupport)
-- (NSEnumerator *) objectEnumerator;
+@property (readonly, strong) NSEnumerator *objectEnumerator;
 @end
 
 

@@ -40,7 +40,7 @@ static NSMutableSet *sPlayingSoundSources;
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	self = [super init];
 	if (!self) return nil;
@@ -52,7 +52,7 @@ static NSMutableSet *sPlayingSoundSources;
 }
 
 
-- (id) initWithSound:(OOSound *)inSound
+- (instancetype) initWithSound:(OOSound *)inSound
 {
 	self = [self init];
 	if (!self) return nil;

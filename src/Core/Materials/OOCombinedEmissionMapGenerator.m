@@ -44,7 +44,7 @@ static void ScaleToMatch(OOPixMap *pmA, OOPixMap *pmB);
 
 @interface OOCombinedEmissionMapGenerator (Private)
 
-- (id) initWithEmissionMapSpec:(NSDictionary *)emissionMapSpec
+- (instancetype) initWithEmissionMapSpec:(NSDictionary *)emissionMapSpec
 				 emissionColor:(OOColor *)emissionColor
 					diffuseMap:(OOTexture *)diffuseMap
 				  diffuseColor:(OOColor *)diffuseColor
@@ -53,14 +53,14 @@ static void ScaleToMatch(OOPixMap *pmA, OOPixMap *pmB);
 				 isCombinedMap:(BOOL)isCombinedMap
 			  optionsSpecifier:(NSDictionary *)spec;
 
-- (NSString *)constructCacheKey;
+@property (readonly, copy) NSString *constructCacheKey;
 
 @end
 
 
 @implementation OOCombinedEmissionMapGenerator
 
-- (id) initWithEmissionMapSpec:(NSDictionary *)emissionMapSpec
+- (instancetype) initWithEmissionMapSpec:(NSDictionary *)emissionMapSpec
 				 emissionColor:(OOColor *)emissionColor
 					diffuseMap:(OOTexture *)diffuseMap
 				  diffuseColor:(OOColor *)diffuseColor
@@ -79,7 +79,7 @@ static void ScaleToMatch(OOPixMap *pmA, OOPixMap *pmB);
 }
 
 
-- (id) initWithEmissionAndIlluminationMapSpec:(NSDictionary *)emissionAndIlluminationMapSpec
+- (instancetype) initWithEmissionAndIlluminationMapSpec:(NSDictionary *)emissionAndIlluminationMapSpec
 								   diffuseMap:(OOTexture *)diffuseMap
 								 diffuseColor:(OOColor *)diffuseColor
 								emissionColor:(OOColor *)emissionColor
@@ -97,7 +97,7 @@ static void ScaleToMatch(OOPixMap *pmA, OOPixMap *pmB);
 }
 
 
-- (id) initWithEmissionMapSpec:(NSDictionary *)emissionMapSpec
+- (instancetype) initWithEmissionMapSpec:(NSDictionary *)emissionMapSpec
 				 emissionColor:(OOColor *)emissionColor
 					diffuseMap:(OOTexture *)diffuseMap
 				  diffuseColor:(OOColor *)diffuseColor

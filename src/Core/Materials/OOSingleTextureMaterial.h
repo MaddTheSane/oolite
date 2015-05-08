@@ -46,9 +46,9 @@ SOFTWARE.
 	If the found OOTexture config dictionary contains a "name" key, it will be
 	used in preference to the name parameter.
 */
-- (id)initWithName:(NSString *)name configuration:(NSDictionary *)configuration;
+- (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration;
 
 // Designated initializer
-- (id) initWithName:(NSString *)name texture:(OOTexture *)texture configuration:(NSDictionary *)configuration;
+- (instancetype) initWithName:(NSString *)name texture:(OOTexture *)texture configuration:(NSDictionary *)configuration NS_DESIGNATED_INITIALIZER;
 
 @end

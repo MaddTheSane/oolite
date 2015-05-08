@@ -59,7 +59,7 @@ typedef struct OOSoundSourcePoolElement
 }
 
 
-- (id) initWithCount:(uint8_t)count minRepeatTime:(OOTimeDelta)minRepeat
+- (instancetype) initWithCount:(uint8_t)count minRepeatTime:(OOTimeDelta)minRepeat
 {
 	if ((self = [super init]))
 	{

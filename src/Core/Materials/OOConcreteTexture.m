@@ -60,10 +60,10 @@
 - (void) uploadTextureCubeMapDataWithMipMap:(BOOL)mipMap format:(OOTextureDataFormat)format;
 #endif
 
-- (GLenum) glTextureTarget;
+@property (readonly) GLenum glTextureTarget;
 
 #if OOTEXTURE_RELOADABLE
-- (BOOL) isReloadable;
+@property (getter=isReloadable, readonly) BOOL reloadable;
 #endif
 
 @end
@@ -74,7 +74,7 @@ static BOOL DecodeFormat(OOTextureDataFormat format, uint32_t options, GLenum *o
 
 @implementation OOConcreteTexture
 
-- (id) initWithLoader:(OOTextureLoader *)loader
+- (instancetype) initWithLoader:(OOTextureLoader *)loader
 				  key:(NSString *)key
 			  options:(uint32_t)options
 		   anisotropy:(GLfloat)anisotropy
@@ -114,7 +114,7 @@ static BOOL DecodeFormat(OOTextureDataFormat format, uint32_t options, GLenum *o
 }
 
 
-- (id)initWithPath:(NSString *)path
+- (instancetype)initWithPath:(NSString *)path
 			   key:(NSString *)key
 		   options:(uint32_t)options
 		anisotropy:(float)anisotropy

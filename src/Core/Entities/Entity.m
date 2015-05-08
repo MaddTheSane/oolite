@@ -66,7 +66,7 @@ static NSString * const kOOLogEntityVerificationError		= @"entity.linkedList.ver
 @implementation Entity
 @synthesize sessionID = _sessionID;
 
-- (id) init
+- (instancetype) init
 {
 	self = [super init];
 	if (EXPECT_NOT(self == nil))  return nil;

@@ -37,7 +37,7 @@ static OOSoundMixer *sSingleton = nil;
 
 @implementation OOSoundMixer
 
-+ (id) sharedMixer
++ (OOSoundMixer*) sharedMixer
 {
 	if (nil == sSingleton)
 	{
@@ -47,7 +47,7 @@ static OOSoundMixer *sSingleton = nil;
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	BOOL						OK = YES;
 	uint32_t					idx = 0, count = kMixerGeneralChannels;

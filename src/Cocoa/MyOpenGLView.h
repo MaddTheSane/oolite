@@ -151,7 +151,7 @@ extern int debug;
 
 - (void) setStringInput: (enum StringInput) value;
 - (void) allowStringInput: (BOOL) value;
-- (enum StringInput) allowingStringInput;
+@property (readonly, atomic) enum StringInput allowingStringInput;
 @property (atomic, copy) NSString *typedString;
 - (void) resetTypedString;
 
@@ -166,7 +166,7 @@ extern int debug;
 
 - (void) initialiseGLWithSize:(NSSize) v_size;
 
-- (NSData *)pixelFormatAttributes;
+@property (readonly, copy) NSData *pixelFormatAttributes;
 
 - (void) drawRect:(NSRect)rect;
 - (void) updateScreen;
@@ -182,25 +182,25 @@ extern int debug;
 - (void) clearKeys;
 - (void) clearMouse;
 - (void) clearKey: (int)theKey;
-- (BOOL) isAlphabetKeyDown;
+@property (getter=isAlphabetKeyDown, readonly) BOOL alphabetKeyDown;
 - (void) supressKeysUntilKeyUp; // DJS
 - (BOOL) isDown: (int) key;
 @property (atomic, readonly, getter=isOptDown) BOOL optDown;
 @property (atomic, readonly, getter=isCtrlDown) BOOL ctrlDown;
 @property (atomic, readonly, getter=isCommandDown) BOOL commandDown;
 @property (atomic, readonly, getter=isShiftDown) BOOL shiftDown;
-- (int) numKeys;
-- (MouseWheelStatus) mouseWheelState;
+@property (readonly, atomic) int numKeys;
+@property (readonly, atomic) MouseWheelStatus mouseWheelState;
 
 // Command-key combinations need special handling.
-@property (atomic, readonly, getter=isCommandQDown) BOOL commandQDown;
-@property (atomic, readonly, getter=isCommandFDown) BOOL commandFDown;
+@property (readonly, getter=isCommandQDown) BOOL commandQDown;
+@property (readonly, getter=isCommandFDown) BOOL commandFDown;
 - (void) clearCommandF;
 
 // Check current state of shift key rather than relying on last event.
 + (BOOL)pollShiftKey;
 
-- (OOOpenGLMatrixManager *) getOpenGLMatrixManager;
+@property (getter=getOpenGLMatrixManager, readonly, strong) OOOpenGLMatrixManager *openGLMatrixManager;
 
 #ifndef NDEBUG
 // General image-dumping methods.

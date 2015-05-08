@@ -49,7 +49,7 @@ static OOSoundSource	*sMusicSource = nil;
 	[super dealloc];
 }
 
-- (id)initWithContentsOfFile:(NSString *)inPath
+- (instancetype)initWithContentsOfFile:(NSString *)inPath
 {
 	self = [super init];
 	if (nil != self)

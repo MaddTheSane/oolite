@@ -33,10 +33,10 @@ MA 02110-1301, USA.
 	GLfloat				_duration, _timeRemaining;
 }
 
-- (id) initWithPosition:(HPVector)position
+- (instancetype) initWithPosition:(HPVector)position
 			   velocity:(Vector)velocity
 			   duration:(OOTimeDelta)duration
 				   size:(float)size
-				  color:(OOColor *)color;
+				  color:(OOColor *)color NS_DESIGNATED_INITIALIZER;
 
 @end

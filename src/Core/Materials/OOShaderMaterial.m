@@ -95,7 +95,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 }
 
 
-- (id) initWithName:(NSString *)name
+- (instancetype) initWithName:(NSString *)name
 	  configuration:(NSDictionary *)configuration
 			 macros:(NSDictionary *)macros
 	  bindingTarget:(id<OOWeakReferenceSupport>)target

@@ -76,8 +76,8 @@ SOFTWARE.
 
 
 //	All other methods are for use by verifier stages.
-- (NSString *)oxpPath;
-- (NSString *)oxpDisplayName;
+@property (readonly, copy) NSString *oxpPath;
+@property (readonly, copy) NSString *oxpDisplayName;
 
 - (id)stageWithName:(NSString *)name;
 

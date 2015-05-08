@@ -45,7 +45,7 @@ MA 02110-1301, USA.
 
 @implementation OOECMBlastEntity
 
-- (id) initFromShip:(ShipEntity *)ship
+- (instancetype) initFromShip:(ShipEntity *)ship
 {
 	if (ship == nil)
 	{

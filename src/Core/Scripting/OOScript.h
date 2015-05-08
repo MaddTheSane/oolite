@@ -56,12 +56,12 @@ MA 02110-1301, USA.
 //  As above, but load from the "AIs" directory
 + (id)jsAIScriptFromFileNamed:(NSString *)fileName properties:(NSDictionary *)properties;
 
-- (NSString *)name;
-- (NSString *)scriptDescription;
-- (NSString *)version;
-- (NSString *)displayName;	// "name version" if version is defined, otherwise just "name".
+@property (readonly, copy, nonatomic) NSString *name;
+@property (readonly, copy, nonatomic) NSString *scriptDescription;
+@property (readonly, copy, nonatomic) NSString *version;
+@property (readonly, copy, nonatomic) NSString *displayName;	// "name version" if version is defined, otherwise just "name".
 
-- (BOOL) requiresTickle;
+@property (readonly, atomic) BOOL requiresTickle;
 - (void)runWithTarget:(Entity *)target;
 
 @end

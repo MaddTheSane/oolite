@@ -44,21 +44,21 @@ SOFTWARE.
 + (instancetype) roleSetWithString:(NSString *)roleString;
 + (instancetype) roleSetWithRole:(NSString *)role probability:(float)probability;
 
-- (id)initWithRoleString:(NSString *)roleString;
-- (id)initWithRole:(NSString *)role probability:(float)probability;
+- (instancetype)initWithRoleString:(NSString *)roleString;
+- (instancetype)initWithRole:(NSString *)role probability:(float)probability;
 
-- (NSString *)roleString;
+@property (readonly, copy) NSString *roleString;
 
 - (BOOL)hasRole:(NSString *)role;
 - (float)probabilityForRole:(NSString *)role;
 - (BOOL)intersectsSet:(id)set;	// set may be an OORoleSet or an NSSet.
 
-- (NSSet *)roles;
-- (NSArray *)sortedRoles;
-- (NSDictionary *)rolesAndProbabilities;
+@property (readonly, copy) NSSet *roles;
+@property (readonly, copy) NSArray *sortedRoles;
+@property (readonly, copy) NSDictionary *rolesAndProbabilities;
 
 // Returns a random role, taking probabilities into account.
-- (NSString *)anyRole;
+@property (readonly, copy) NSString *anyRole;
 
 	// Creating modified copies of role sets:
 - (id)roleSetWithAddedRole:(NSString *)role probability:(float)probability;

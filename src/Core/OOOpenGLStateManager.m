@@ -50,12 +50,12 @@ MA 02110-1301, USA.
 */
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, StateFlag)
 {
 	kStateFalse = false,
 	kStateTrue = true,
 	kStateMaybe
-} StateFlag;
+};
 
 
 typedef struct

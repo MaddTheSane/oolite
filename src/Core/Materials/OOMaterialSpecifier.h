@@ -35,29 +35,29 @@ SOFTWARE.
 //	Convenience methods to extract properties from material dictionaries.
 @interface NSDictionary (OOMateralProperties)
 
-- (OOColor *) oo_diffuseColor;
-- (OOColor *) oo_ambientColor;
-- (OOColor *) oo_specularColor;
-- (OOColor *) oo_specularModulateColor;
-- (OOColor *) oo_emissionColor;
-- (OOColor *) oo_emissionModulateColor;
-- (OOColor *) oo_illuminationModulateColor;
+@property (readonly, copy) OOColor *oo_diffuseColor;
+@property (readonly, copy) OOColor *oo_ambientColor;
+@property (readonly, copy) OOColor *oo_specularColor;
+@property (readonly, copy) OOColor *oo_specularModulateColor;
+@property (readonly, copy) OOColor *oo_emissionColor;
+@property (readonly, copy) OOColor *oo_emissionModulateColor;
+@property (readonly, copy) OOColor *oo_illuminationModulateColor;
 
 - (NSDictionary *) oo_diffuseMapSpecifierWithDefaultName:(NSString *)name;
-- (NSDictionary *) oo_combinedSpecularMapSpecifier;
-- (NSDictionary *) oo_specularColorMapSpecifier;
-- (NSDictionary *) oo_specularExponentMapSpecifier;
-- (NSDictionary *) oo_normalMapSpecifier;
-- (NSDictionary *) oo_parallaxMapSpecifier;
-- (NSDictionary *) oo_normalAndParallaxMapSpecifier;
-- (NSDictionary *) oo_emissionMapSpecifier;
-- (NSDictionary *) oo_illuminationMapSpecifier;
-- (NSDictionary *) oo_emissionAndIlluminationMapSpecifier;
+@property (readonly, copy) NSDictionary *oo_combinedSpecularMapSpecifier;
+@property (readonly, copy) NSDictionary *oo_specularColorMapSpecifier;
+@property (readonly, copy) NSDictionary *oo_specularExponentMapSpecifier;
+@property (readonly, copy) NSDictionary *oo_normalMapSpecifier;
+@property (readonly, copy) NSDictionary *oo_parallaxMapSpecifier;
+@property (readonly, copy) NSDictionary *oo_normalAndParallaxMapSpecifier;
+@property (readonly, copy) NSDictionary *oo_emissionMapSpecifier;
+@property (readonly, copy) NSDictionary *oo_illuminationMapSpecifier;
+@property (readonly, copy) NSDictionary *oo_emissionAndIlluminationMapSpecifier;
 
-- (float) oo_parallaxScale;
-- (float) oo_parallaxBias;
+@property (readonly) float oo_parallaxScale;
+@property (readonly) float oo_parallaxBias;
 
-- (int) oo_specularExponent;
+@property (readonly) int oo_specularExponent;
 
 @end
 

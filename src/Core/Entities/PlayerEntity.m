@@ -155,8 +155,8 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 - (void) witchEnd;
 
 // Jump distance/cost calculations for selected target.
-- (double) hyperspaceJumpDistance;
-- (OOFuelQuantity) fuelRequiredForJump;
+@property (readonly) double hyperspaceJumpDistance;
+@property (readonly) OOFuelQuantity fuelRequiredForJump;
 
 - (void) noteCompassLostTarget;
 
@@ -168,7 +168,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 
 @interface ShipEntity (Hax)
 
-- (id) initBypassForPlayer;
+- (instancetype) initBypassForPlayer;
 
 @end
 
@@ -480,28 +480,12 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	[self calculateCurrentCargo];	// work out the correct value for current_cargo
 }
 
-
-- (OOCreditsQuantity) deciCredits
-{
-	return credits;
-}
-
-
+@synthesize deciCredits = credits;
 @synthesize random_factor = market_rnd;
-
-
 @synthesize galaxyNumber = galaxy_number;
-
-
 @synthesize galaxy_coordinates;
-
-
 @synthesize cursor_coordinates;
-
-
 @synthesize chart_centre_coordinates;
-
-
 @synthesize chart_zoom;
 
 
@@ -648,9 +632,9 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	//unsigned 	passenger_space = [[OOEquipmentType equipmentTypeWithIdentifier:@"EQ_PASSENGER_BERTH"] requiredCargoSpace];
 	//if (passenger_space == 0) passenger_space = PASSENGER_BERTH_SPACE;
 	
-	[result setObject:gal_id		forKey:@"galaxy_id"];
-	[result setObject:sys_id	forKey:@"system_id"];
-	[result setObject:tgt_id	forKey:@"target_id"];
+	result[@"galaxy_id"] = gal_id;
+	result[@"system_id"] = sys_id;
+	result[@"target_id"] = tgt_id;
 	result[@"chart_zoom"]		= @(saved_chart_zoom);
 	result[@"chart_ana_mode"]	= @(ANA_mode);
 	result[@"chart_colour_mode"] = @(longRangeChartMode);
@@ -659,11 +643,11 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	if (found_system_id >= 0)
 	{
 		NSString *found_id = [NSString stringWithFormat:@"%d", found_system_id];
-		[result setObject:found_id	forKey:@"found_system_id"];
+		result[@"found_system_id"] = found_id;
 	}
 	
 	// Write the name of the current system. Useful for looking up saved game information and for overlapping systems.
-	[result setObject:[UNIVERSE getSystemName:[self currentSystemID]] forKey:@"current_system_name"];
+	result[@"current_system_name"] = [UNIVERSE getSystemName:[self currentSystemID]];
 	
 	result[@"player_name"] = [self commanderName];
 	result[@"player_save_name"] = [self lastsaveName];
@@ -686,21 +670,21 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	
 	if (forward_weapon_type != nil)
 	{
-		[result setObject:[forward_weapon_type identifier]	forKey:@"forward_weapon"];
+		result[@"forward_weapon"] = [forward_weapon_type identifier];
 	}
 	if (aft_weapon_type != nil)
 	{
-		[result setObject:[aft_weapon_type identifier]		forKey:@"aft_weapon"];
+		result[@"aft_weapon"] = [aft_weapon_type identifier];
 	}
 	if (port_weapon_type != nil)
 	{
-		[result setObject:[port_weapon_type identifier]		forKey:@"port_weapon"];
+		result[@"port_weapon"] = [port_weapon_type identifier];
 	}
 	if (starboard_weapon_type != nil)
 	{
-		[result setObject:[starboard_weapon_type identifier]	forKey:@"starboard_weapon"];
+		result[@"starboard_weapon"] = [starboard_weapon_type identifier];
 	}
-	[result setObject:[self serializeShipSubEntities] forKey:@"subentities_status"];
+	result[@"subentities_status"] = [self serializeShipSubEntities];
 	if (hud != nil && [hud nonlinearScanner])
 	{
 		[result oo_setFloat: [hud scannerZoom] forKey:@"ship_scanner_zoom"];
@@ -708,7 +692,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	
 	[result oo_setInteger:max_cargo + PASSENGER_BERTH_SPACE * max_passengers	forKey:@"max_cargo"];
 	
-	[result setObject:[shipCommodityData savePlayerAmounts]		forKey:@"shipCommodityData"];
+	result[@"shipCommodityData"] = [shipCommodityData savePlayerAmounts];
 	
 	
 	NSMutableArray *missileRoles = [NSMutableArray arrayWithCapacity:max_missiles];
@@ -829,12 +813,12 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	[result oo_setUnsignedInteger:_customViewIndex forKey:@"custom_view_index"];
 
 	//local market for main station
-	if ([[UNIVERSE station] localMarket])  [result setObject:[[[UNIVERSE station] localMarket] saveStationAmounts] forKey:@"localMarket"];
+	if ([[UNIVERSE station] localMarket])  result[@"localMarket"] = [[[UNIVERSE station] localMarket] saveStationAmounts];
 
 	// Scenario restriction on OXZs
-	[result setObject:[UNIVERSE useAddOns] forKey:@"scenario_restriction"];
+	result[@"scenario_restriction"] = [UNIVERSE useAddOns];
 
-	[result setObject:[[UNIVERSE systemManager] exportScriptedChanges] forKey:@"scripted_planetinfo_overrides"];
+	result[@"scripted_planetinfo_overrides"] = [[UNIVERSE systemManager] exportScriptedChanges];
 
 	// trumble information
 	result[@"trumbles"] = [self trumbleValue];
@@ -1015,7 +999,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		chart_focus_coordinates = cursor_coordinates;
 
 		// calculate system ID, target ID
-		if ([dict objectForKey:@"current_system_name"])
+		if (dict[@"current_system_name"])
 		{
 			system_id = [UNIVERSE findSystemFromName:[dict oo_stringForKey:@"current_system_name"]];
 		}
@@ -1027,7 +1011,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		}
 		// and current_system_name and target_system_name
 		// were introduced at different times, too
-		if ([dict objectForKey:@"target_system_name"])
+		if (dict[@"target_system_name"])
 		{
 			target_system_id = [UNIVERSE findSystemFromName:[dict oo_stringForKey:@"target_system_name"]];
 		}
@@ -1137,12 +1121,12 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	{
 		contractInfo = [[[contracts oo_dictionaryAtIndex:i] mutableCopy] autorelease];
 		// if the trade good ID is an int
-		if ([[contractInfo objectForKey:CARGO_KEY_TYPE] isKindOfClass:[NSNumber class]])
+		if ([contractInfo[CARGO_KEY_TYPE] isKindOfClass:[NSNumber class]])
 		{
 			// look it up, and replace with a string
 			NSUInteger legacy_type = [contractInfo oo_unsignedIntegerForKey:CARGO_KEY_TYPE];
-			[contractInfo setObject:[OOCommodities legacyCommodityType:legacy_type] forKey:CARGO_KEY_TYPE];
-			[contracts replaceObjectAtIndex:i withObject:[[contractInfo copy] autorelease]];
+			contractInfo[CARGO_KEY_TYPE] = [OOCommodities legacyCommodityType:legacy_type];
+			contracts[i] = [[contractInfo copy] autorelease];
 		}
 		else
 		{
@@ -1508,7 +1492,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	JavaScript environment to set up OpenGL, and we need OpenGL set up to load
 	ships.
 */
-- (id) init
+- (instancetype) init
 {
 	NSAssert(gOOPlayer == nil, @"Expected only one PlayerEntity to exist at a time.");
 	return [super initBypassForPlayer];
@@ -1518,7 +1502,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 - (void) deferredInit
 {
 	NSAssert(gOOPlayer == self, @"Expected only one PlayerEntity to exist at a time.");
-	NSAssert([super initWithKey:PLAYER_SHIP_DESC definition:[NSDictionary dictionary]] == self, @"PlayerEntity requires -[ShipEntity initWithKey:definition:] to return unmodified self.");
+	NSAssert([super initWithKey:PLAYER_SHIP_DESC definition:@{}] == self, @"PlayerEntity requires -[ShipEntity initWithKey:definition:] to return unmodified self.");
 
 	maxFieldOfView = MAX_FOV;
 #if OO_FOV_INFLIGHT_CONTROL_ENABLED
@@ -3287,10 +3271,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 
 
 #if OO_VARIABLE_TORUS_SPEED
-- (GLfloat) hyperspeedFactor
-{
-	return hyperspeedFactor;
-}
+@synthesize hyperspeedFactor;
 #endif
 
 
@@ -3616,7 +3597,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	[ship setPitch: M_PI/25.0];
 	if([ship pendingEscortCount] > 0) [ship setPendingEscortCount:0];
 	[ship setAITo: @"nullAI.plist"];
-	id subEntStatus = [shipData objectForKey:@"subentities_status"];
+	id subEntStatus = shipData[@"subentities_status"];
 	// show missing subentities if there's a subentities_status key
 	if (subEntStatus != nil) [ship deserializeShipSubEntitiesFrom:(NSString *)subEntStatus];
 	[UNIVERSE addEntity: ship];
@@ -3908,25 +3889,10 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (Vector) viewpointOffsetAft
-{
-	return aftViewOffset;
-}
-
-- (Vector) viewpointOffsetForward
-{
-	return forwardViewOffset;
-}
-
-- (Vector) viewpointOffsetPort
-{
-	return portViewOffset;
-}
-
-- (Vector) viewpointOffsetStarboard
-{
-	return starboardViewOffset;
-}
+@synthesize viewpointOffsetAft = aftViewOffset;
+@synthesize viewpointOffsetForward = forwardViewOffset;
+@synthesize viewpointOffsetPort = portViewOffset;
+@synthesize viewpointOffsetStarboard = starboardViewOffset;
 
 
 /* TODO post 1.78: profiling suggests this gets called often enough
@@ -4013,22 +3979,8 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (void) setTargetDockStationTo:(StationEntity *) value
-{
-	targetDockStation = value;
-}
-
-
-- (StationEntity *) getTargetDockStation
-{
-	return targetDockStation;
-}
-
-
-- (HeadUpDisplay *) hud
-{
-	return hud;
-}
+@synthesize targetDockStation = targetDockStation;
+@synthesize hud;
 
 
 - (void) resetHud
@@ -4091,7 +4043,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		{
 			if ([savedMFDs count] > i)
 			{
-				[multiFunctionDisplaySettings addObject:[savedMFDs objectAtIndex:i]];
+				[multiFunctionDisplaySettings addObject:savedMFDs[i]];
 			}
 			else
 			{
@@ -4118,13 +4070,13 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 
 - (OOColor *) dialCustomColor:(NSString *)dialKey
 {
-	return [OOColor colorWithDescription:[customDialSettings objectForKey:dialKey]];
+	return [OOColor colorWithDescription:customDialSettings[dialKey]];
 }
 
 
 - (void) setDialCustom:(id)value forKey:(NSString *)dialKey
 {
-	[customDialSettings setObject:value forKey:dialKey];
+	customDialSettings[dialKey] = value;
 }
 
 
@@ -4140,30 +4092,6 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (float) maxForwardShieldLevel
-{
-	return max_forward_shield;
-}
-
-
-- (float) maxAftShieldLevel
-{
-	return max_aft_shield;
-}
-
-
-- (float) forwardShieldRechargeRate
-{
-	return forward_shield_recharge_rate;
-}
-
-
-- (float) aftShieldRechargeRate
-{
-	return aft_shield_recharge_rate;
-}
-
-
 - (void) setMaxForwardShieldLevel:(float)new
 {
 	max_forward_shield = new;
@@ -4176,46 +4104,26 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (void) setForwardShieldRechargeRate:(float)new
-{
-	forward_shield_recharge_rate = new;
-}
+@synthesize maxForwardShieldLevel = max_forward_shield;
+@synthesize maxAftShieldLevel = max_aft_shield;
+@synthesize forwardShieldRechargeRate = forward_shield_recharge_rate;
+@synthesize aftShieldRechargeRate = aft_shield_recharge_rate;
 
-
-- (void) setAftShieldRechargeRate:(float)new
-{
-	aft_shield_recharge_rate = new;
-}
-
-
-- (GLfloat) forwardShieldLevel
-{
-	return forward_shield;
-}
-
-
-- (GLfloat) aftShieldLevel
-{
-	return aft_shield;
-}
-
+@synthesize forwardShieldLevel = forward_shield;
+@synthesize aftShieldLevel = aft_shield;
 
 - (void) setForwardShieldLevel:(GLfloat)level
 {
-	forward_shield = OOClamp_0_max_f(level, [self maxForwardShieldLevel]);
+	forward_shield = OOClamp_0_max_f(level, self.maxForwardShieldLevel);
 }
 
 
 - (void) setAftShieldLevel:(GLfloat)level
 {
-	aft_shield = OOClamp_0_max_f(level, [self maxAftShieldLevel]);
+	aft_shield = OOClamp_0_max_f(level, self.maxAftShieldLevel);
 }
 
-
-- (NSDictionary *) keyConfig
-{
-	return keyconfig_settings;
-}
+@synthesize keyConfig = keyconfig_settings;
 
 
 - (BOOL) isMouseControlOn
@@ -4378,10 +4286,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (double) clockTime
-{
-	return ship_clock;
-}
+@synthesize clockTime = ship_clock;
 
 
 - (double) clockTimeAdjusted
@@ -4487,11 +4392,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	}
 }
 
-
-- (float) fuelLeakRate
-{
-	return fuel_leak_rate;
-}
+@synthesize fuelLeakRate = fuel_leak_rate;
 
 
 - (void) setFuelLeakRate:(float)value
@@ -4788,17 +4689,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	return @"";
 }
 
-
-- (OOCompassMode) compassMode
-{
-	return compassMode;
-}
-
-
-- (void) setCompassMode:(OOCompassMode) value
-{
-	compassMode = value;
-}
+@synthesize compassMode;
 
 
 - (void) setPrevCompassMode
@@ -4932,16 +4823,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (NSUInteger) activeMissile
-{
-	return activeMissile;
-}
-
-
-- (void) setActiveMissile:(NSUInteger)value
-{
-	activeMissile = value;
-}
+@synthesize activeMissile;
 
 
 - (NSUInteger) dialMaxMissiles
@@ -4962,10 +4844,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (NSString *) specialCargo
-{
-	return specialCargo;
-}
+@synthesize specialCargo;
 
 
 - (NSString *) dialTargetName
@@ -4991,7 +4870,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 
 - (NSArray *) multiFunctionDisplayList
 {
-	return multiFunctionDisplaySettings;
+	return [NSArray arrayWithArray:multiFunctionDisplaySettings];
 }
 
 
@@ -5093,10 +4972,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (NSUInteger) activeMFD
-{
-	return activeMFD;
-}
+@synthesize activeMFD;
 
 
 - (ShipEntity *) missileForPylon:(NSUInteger)value
@@ -7459,14 +7335,14 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 					// only one installed display normally
 					if (count == 1)
 					{
-						[quip2 addObject:[NSArray arrayWithObjects:[eqType name], [NSNumber numberWithBool:YES], nil]];
+						[quip2 addObject:@[[eqType name], @YES]];
 					}
 					// display plural form
 					else
 					{
 						NSString *equipmentName = [eqType name];
 						alldesc = OOExpandKey(@"equipment-plural", count, equipmentName);
-						[quip2 addObject:[NSArray arrayWithObjects:alldesc, [NSNumber numberWithBool:YES], nil]];
+						[quip2 addObject:@[alldesc, @YES]];
 					}
 				}
 				// all broken, only one installed
@@ -7475,11 +7351,11 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 					desc = [NSString stringWithFormat:DESC(@"equipment-@-not-available"), [eqType name]];
 					if (prioritiseDamaged)
 					{
-						[quip1 addObject:[NSArray arrayWithObjects:desc, [NSNumber numberWithBool:NO], nil]];
+						[quip1 addObject:@[desc, @NO]];
 					}
 					else
 					{
-						[quip2 addObject:[NSArray arrayWithObjects:desc, [NSNumber numberWithBool:NO], nil]];
+						[quip2 addObject:@[desc, @NO]];
 					}
 				}
 				// some broken, multiple installed
@@ -7489,11 +7365,11 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 					alldesc = OOExpandKey(@"equipment-plural-some-na", okcount, count, equipmentName);
 					if (prioritiseDamaged)
 					{
-						[quip1 addObject:[NSArray arrayWithObjects:alldesc, [NSNumber numberWithBool:NO], nil]];
+						[quip1 addObject:@[alldesc, @NO]];
 					}
 					else
 					{
-						[quip2 addObject:[NSArray arrayWithObjects:alldesc, [NSNumber numberWithBool:NO], nil]];
+						[quip2 addObject:@[alldesc, @NO]];
 					}
 				}
 			}
@@ -7510,12 +7386,12 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 					
 					if (prioritiseDamaged) 
 					{
-						[quip1 addObject:[NSArray arrayWithObjects:desc, [NSNumber numberWithBool:NO], nil]];
+						[quip1 addObject:@[desc, @NO]];
 					} 
 					else
 					{
 						// just add in to the normal array
-						[quip2 addObject:[NSArray arrayWithObjects:desc, [NSNumber numberWithBool:NO], nil]];
+						[quip2 addObject:@[desc, @NO]];
 					}
 				}
 			}
@@ -7774,12 +7650,12 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		
 		OOSystemID 	planet = [dict oo_intForKey:CONTRACT_KEY_DESTINATION];
 		NSString 	*planetName = [UNIVERSE getSystemName:planet];
-		[contract setObject:@(planet) forKey:CONTRACT_KEY_DESTINATION];
-		[contract setObject:planetName forKey:@"destinationName"];
+		contract[CONTRACT_KEY_DESTINATION] = @(planet);
+		contract[@"destinationName"] = planetName;
 		planet = [dict oo_intForKey:CONTRACT_KEY_START];
 		planetName = [UNIVERSE getSystemName: planet];
-		[contract setObject:@(planet) forKey:CONTRACT_KEY_START];
-		[contract setObject:planetName forKey:@"startName"];
+		contract[CONTRACT_KEY_START] = @(planet);
+		contract[@"startName"] = planetName;
 		
 		int 		dest_eta = [dict oo_doubleForKey:CONTRACT_KEY_ARRIVAL_TIME] - ship_clock;
 		contract[@"eta"] = @(dest_eta);
@@ -7878,45 +7754,32 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		}
 		
 		NSArray *populationDescLines = [populationDesc componentsSeparatedByString:@"\n"];
-		NSString *populationDesc1 = [populationDescLines objectAtIndex:0];
+		NSString *populationDesc1 = populationDescLines[0];
 		NSString *populationDesc2 = [populationDescLines lastObject];
 		
-		[gui setArray:[NSArray arrayWithObjects:
-					   OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-eco"),
-					   economy_desc,
-					   nil]
+		[gui setArray:@[OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-eco"),
+					   economy_desc]
 			   forRow:1];
-		[gui setArray:[NSArray arrayWithObjects:
-					   OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-govt"),
-					   government_desc,
-					   nil]
+		[gui setArray:@[OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-govt"),
+					   government_desc]
 			   forRow:3];
-		[gui setArray:[NSArray arrayWithObjects:
-					   OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-tl"),
-					   OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-tl-value", techLevel),
-					   nil]
+		[gui setArray:@[OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-tl"),
+					   OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-tl-value", techLevel)]
 			   forRow:5];
-		[gui setArray:[NSArray arrayWithObjects:
-					   OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-pop"),
-					   populationDesc1,
-					   nil]
+		[gui setArray:@[OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-pop"),
+					   populationDesc1]
 			   forRow:7];
-		[gui setArray:[NSArray arrayWithObjects:@"",
-					   populationDesc2,
-					   nil]
+		[gui setArray:@[@"",
+					   populationDesc2]
 			   forRow:8];
-		[gui setArray:[NSArray arrayWithObjects:
-					   OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-prod"),
+		[gui setArray:@[OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-prod"),
 					   @"",
-					   OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-prod-value", productivity),
-					   nil]
+					   OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-prod-value", productivity)]
 			   forRow:10];
-		[gui setArray:[NSArray arrayWithObjects:
-					   OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-radius"),
+		[gui setArray:@[OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-radius"),
 					   @"",
 					   OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-radius-value",
-										   radius),
-					   nil]
+										   radius)]
 			   forRow:12];
 		
 		OOGUIRow i = [gui addLongText:system_desc startingAtRow:15 align:GUI_ALIGN_LEFT];
@@ -8764,7 +8627,7 @@ static NSString *last_outfitting_key=nil;
 						if (displayRow)	// Always true for the first pass. The first pass is used to display the name of the weapon being purchased.
 						{
 							[gui setKey:eqKey forRow:row];
-							[gui setArray:[NSArray arrayWithObjects:desc, (facing_count > 0 ? priceString : (NSString *)@""), timeString, nil] forRow:row];
+							[gui setArray:@[desc, (facing_count > 0 ? priceString : (NSString *)@""), timeString] forRow:row];
 							row++;
 						}
 						facing_count++;
@@ -8774,7 +8637,7 @@ static NSString *last_outfitting_key=nil;
 				{
 					// Normal equipment list.
 					[gui setKey:eqKey forRow:row];
-					[gui setArray:[NSArray arrayWithObjects:desc, priceString, timeString, nil] forRow:row];
+					[gui setArray:@[desc, priceString, timeString] forRow:row];
 					row++;
 				}
 			}
@@ -8783,7 +8646,7 @@ static NSString *last_outfitting_key=nil;
 			{
 				// just overwrite the last item :-)
 				[gui setColor:[gui colorFromSetting:kGuiEquipmentScrollColor defaultValue:[OOColor greenColor]] forRow:row-1];
-				[gui setArray:[NSArray arrayWithObjects:DESC(@"gui-more"), @"", @" --> ", nil] forRow:row - 1];
+				[gui setArray:@[DESC(@"gui-more"), @"", @" --> "] forRow:row - 1];
 				[gui setKey:[NSString stringWithFormat:@"More:%d", i - 1] forRow:row - 1];
 			}
 			
@@ -9288,8 +9151,7 @@ static NSString *last_outfitting_key=nil;
 	tab_stops[5] = 455;
 	[gui setTabStops:tab_stops];
 
-	NSArray *keys = [NSArray arrayWithObjects:
-		 @"key_roll_left",@"key_pitch_forward",@"key_yaw_left",
+	NSArray *keys = @[@"key_roll_left",@"key_pitch_forward",@"key_yaw_left",
 		 @"key_roll_right",@"key_pitch_back",@"key_yaw_right",
 		 @"key_increase_speed",@"key_decrease_speed",@"key_inject_fuel",
 		 @"key_mouse_control",@"",@"",
@@ -9319,8 +9181,7 @@ static NSString *last_outfitting_key=nil;
 #else
 		 @"",@"",@"",
 #endif
-		 @"key_pausebutton",@"key_show_fps",@"key_hud_toggle",
-		nil];
+		 @"key_pausebutton",@"key_show_fps",@"key_hud_toggle"];
 
 	OOGUIRow row = 0;
 	ct = [keys count];
@@ -10124,10 +9985,10 @@ static NSString *last_outfitting_key=nil;
 	[gui setTabStops:tab_stops];
 	
 	[gui setColor:[gui colorFromSetting:kGuiMarketHeadingColor defaultValue:[OOColor greenColor]] forRow:GUI_ROW_MARKET_KEY];
-	[gui setArray:[NSArray arrayWithObjects: DESC(@"commodity-column-title"), OOPadStringToEms(DESC(@"price-column-title"),3.5),
-						   OOPadStringToEms(DESC(@"for-sale-column-title"),3.75), OOPadStringToEms(DESC(@"in-hold-column-title"),5.75), DESC(@"oolite-legality-column-title"), DESC(@"oolite-extras-column-title"), nil] forRow:GUI_ROW_MARKET_KEY];
-	[gui setArray:[NSArray arrayWithObjects: DESC(@"commodity-column-title"), DESC(@"oolite-extras-column-title"), OOPadStringToEms(DESC(@"price-column-title"),3.5),
-						   OOPadStringToEms(DESC(@"for-sale-column-title"),3.75), OOPadStringToEms(DESC(@"in-hold-column-title"),5.75), DESC(@"oolite-legality-column-title"), nil] forRow:GUI_ROW_MARKET_KEY];
+	[gui setArray:@[DESC(@"commodity-column-title"), OOPadStringToEms(DESC(@"price-column-title"),3.5),
+						   OOPadStringToEms(DESC(@"for-sale-column-title"),3.75), OOPadStringToEms(DESC(@"in-hold-column-title"),5.75), DESC(@"oolite-legality-column-title"), DESC(@"oolite-extras-column-title")] forRow:GUI_ROW_MARKET_KEY];
+	[gui setArray:@[DESC(@"commodity-column-title"), DESC(@"oolite-extras-column-title"), OOPadStringToEms(DESC(@"price-column-title"),3.5),
+						   OOPadStringToEms(DESC(@"for-sale-column-title"),3.75), OOPadStringToEms(DESC(@"in-hold-column-title"),5.75), DESC(@"oolite-legality-column-title")] forRow:GUI_ROW_MARKET_KEY];
 
 }
 
@@ -10184,7 +10045,7 @@ static NSString *last_outfitting_key=nil;
 
 	[gui setKey:good forRow:row];
 	[gui setColor:[gui colorFromSetting:kGuiMarketCommodityColor defaultValue:nil] forRow:row];
-	[gui setArray:[NSArray arrayWithObjects: desc, extradesc, price, units_available, units_owned, legaldesc,  nil] forRow:row++];
+	[gui setArray:@[desc, extradesc, price, units_available, units_owned, legaldesc] forRow:row++];
 
 }
 
@@ -10250,7 +10111,7 @@ static NSString *last_outfitting_key=nil;
 	}
 	for (NSUInteger i = 0; i < [cargo count]; i++)
 	{
-		ShipEntity *container = [cargo objectAtIndex:i];
+		ShipEntity *container = cargo[i];
 		NSUInteger goodsIndex = [goods indexOfObject:[container commodityType]];
 		// can happen with filters
 		if (goodsIndex != NSNotFound)
@@ -10358,7 +10219,7 @@ static NSString *last_outfitting_key=nil;
 				}
 				[gui setKey:@">>>" forRow:GUI_ROW_MARKET_LAST];
 				[gui setColor:[gui colorFromSetting:kGuiMarketScrollColor defaultValue:[OOColor greenColor]] forRow:GUI_ROW_MARKET_LAST];
-				[gui setArray:[NSArray arrayWithObjects:DESC(@"gui-more"), @"", @"", @"", @" --> ", nil] forRow:GUI_ROW_MARKET_LAST];
+				[gui setArray:@[DESC(@"gui-more"), @"", @"", @"", @" --> "] forRow:GUI_ROW_MARKET_LAST];
 			}
 			if (marketOffset > 0)
 			{
@@ -10368,7 +10229,7 @@ static NSString *last_outfitting_key=nil;
 				}
 				[gui setKey:@"<<<" forRow:GUI_ROW_MARKET_START];
 				[gui setColor:[gui colorFromSetting:kGuiMarketScrollColor defaultValue:[OOColor greenColor]] forRow:GUI_ROW_MARKET_START];
-				[gui setArray:[NSArray arrayWithObjects:DESC(@"gui-back"), @"", @"", @"", @" <-- ", nil] forRow:GUI_ROW_MARKET_START];
+				[gui setArray:@[DESC(@"gui-back"), @"", @"", @"", @" <-- "] forRow:GUI_ROW_MARKET_START];
 			}
 		}
 		else
@@ -10389,7 +10250,7 @@ static NSString *last_outfitting_key=nil;
 			NSString *filterText = OOExpandKey(@"oolite-market-filter-line", filterMode);
 			NSString *sortMode = OOExpandKey(OOExpand(@"oolite-market-sorter-[marketSorterMode]", marketSorterMode));
 			NSString *sorterText = OOExpandKey(@"oolite-market-sorter-line", sortMode);
-			[gui setArray:[NSArray arrayWithObjects:filterText, @"", sorterText, nil] forRow:GUI_ROW_MARKET_END];
+			[gui setArray:@[filterText, @"", sorterText] forRow:GUI_ROW_MARKET_END];
 		}
 		[gui setColor:[gui colorFromSetting:kGuiMarketFilterInfoColor defaultValue:[OOColor greenColor]] forRow:GUI_ROW_MARKET_END];
 
@@ -10446,7 +10307,7 @@ static NSString *last_outfitting_key=nil;
 	}
 	for (i = 0; i < [cargo count]; i++)
 	{
-		ShipEntity *container = [cargo objectAtIndex:i];
+		ShipEntity *container = cargo[i];
 		j = [goods indexOfObject:[container commodityType]];
 		quantityInHold[j] += [container commodityAmount];
 	}
@@ -10617,7 +10478,7 @@ static NSString *last_outfitting_key=nil;
 	
 	if ([UNIVERSE autoSave])  [UNIVERSE setAutoSaveNow:YES];
 	
-	[self doScriptEvent:OOJSID("playerBoughtCargo") withArguments:[NSArray arrayWithObjects:index, [NSNumber numberWithInt:purchase], [NSNumber numberWithUnsignedLongLong:pricePerUnit], nil]];
+	[self doScriptEvent:OOJSID("playerBoughtCargo") withArguments:@[index, @(purchase), @(pricePerUnit)]];
 	if ([localMarket exportLegalityForGood:index] > 0)
 	{
 		roleWeightFlags[@"bought-illegal"] = @1;
@@ -10680,7 +10541,7 @@ static NSString *last_outfitting_key=nil;
 	
 	if ([UNIVERSE autoSave]) [UNIVERSE setAutoSaveNow:YES];
 	
-	[self doScriptEvent:OOJSID("playerSoldCargo") withArguments:[NSArray arrayWithObjects:index, [NSNumber numberWithInt:sell], [NSNumber numberWithInt: pricePerUnit], nil]];
+	[self doScriptEvent:OOJSID("playerSoldCargo") withArguments:@[index, @(sell), @(pricePerUnit)]];
 	
 	return YES;
 }
@@ -11727,7 +11588,7 @@ static NSString *last_outfitting_key=nil;
 		return nil;
 	}
 	OOScript *cscript = nil;
-	if ((cscript = [commodityScripts objectForKey:scriptName]))
+	if ((cscript = commodityScripts[scriptName]))
 	{
 		return cscript;
 	}
@@ -11735,7 +11596,7 @@ static NSString *last_outfitting_key=nil;
 	if (cscript != nil)
 	{
 		// storing it in here retains it
-		[commodityScripts setObject:cscript forKey:scriptName];
+		commodityScripts[scriptName] = cscript;
 	}
 	else
 	{

@@ -104,7 +104,7 @@ SOFTWARE.
 
 @interface OOOXPVerifier(OOFileScannerVerifierStage)
 
-- (OOFileScannerVerifierStage *)fileScannerStage;
+@property (readonly, strong) OOFileScannerVerifierStage *fileScannerStage;
 
 @end
 

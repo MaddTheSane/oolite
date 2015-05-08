@@ -32,10 +32,10 @@ MA 02110-1301, USA.
 	OOTimeDelta					_duration;
 }
 
-- (id) initWithPosition:(HPVector)position
+- (instancetype) initWithPosition:(HPVector)position
 			   velocity:(Vector)velocity
 				 energy:(float)energy
 			   duration:(OOTimeDelta)duration
-				  color:(OOColor *)color;
+				  color:(OOColor *)color NS_DESIGNATED_INITIALIZER;
 
 @end

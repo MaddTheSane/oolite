@@ -38,7 +38,7 @@ SOFTWARE.
 @class OOShaderProgram, OOTexture;
 
 
-enum
+typedef NS_OPTIONS(uint16_t, OOUniformConvertOptions)
 {
 	// Conversion settings for uniform bindings
 	kOOUniformConvertClamp			= 0x0001U,
@@ -48,7 +48,6 @@ enum
 	
 	kOOUniformConvertDefaults		= kOOUniformConvertToMatrix | kOOUniformBindToSuperTarget
 };
-typedef uint16_t OOUniformConvertOptions;
 
 
 @interface OOShaderMaterial: OOBasicMaterial
@@ -93,10 +92,10 @@ typedef uint16_t OOUniformConvertOptions;
 								 macros:(NSDictionary *)macros
 						  bindingTarget:(id<OOWeakReferenceSupport>)target;
 
-- (id) initWithName:(NSString *)name
+- (instancetype) initWithName:(NSString *)name
 	  configuration:(NSDictionary *)configuration
 			 macros:(NSDictionary *)macros
-	  bindingTarget:(id<OOWeakReferenceSupport>)target;
+	  bindingTarget:(id<OOWeakReferenceSupport>)target NS_DESIGNATED_INITIALIZER;
 
 /*	Bind a uniform to a property of an object.
 	
@@ -162,7 +161,7 @@ typedef uint16_t OOUniformConvertOptions;
 /*	Informal protocol for objects to "forward" their shader bindings up a
 	hierarchy (for instance, subentities to parent entities).
 */
-- (id<OOWeakReferenceSupport>) superShaderBindingTarget;
+@property (readonly, strong) id<OOWeakReferenceSupport> superShaderBindingTarget;
 
 @end
 
@@ -188,7 +187,7 @@ BOOL OOUniformBindingPermitted(NSString *propertyName, id bindingTarget);
 
 @interface NSObject (OOShaderMaterialTargetOptional)
 
-- (uint32_t) randomSeedForShaders;
+@property (readonly) uint32_t randomSeedForShaders;
 
 @end
 

@@ -58,7 +58,7 @@ typedef BOOL (*BoolReturnWithParamMsgSend)(id, SEL, id);
 			autorelease];
 }
 
-- (id) initWithUnderlyingEnumerator:(NSEnumerator *)enumerator
+- (instancetype) initWithUnderlyingEnumerator:(NSEnumerator *)enumerator
 					   withSelector:(SEL)selector
 					 takingArgument:(BOOL)takesArgument
 					  argumentValue:(id)argument

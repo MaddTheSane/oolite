@@ -28,7 +28,7 @@ MA 02110-1301, USA.
 
 @implementation OOExcludeObjectEnumerator
 
-- (id) initWithEnumerator:(NSEnumerator *)enumerator
+- (instancetype) initWithEnumerator:(NSEnumerator *)enumerator
 		  excludingObject:(id)object
 {
 	if ((self = [super init]))
@@ -50,7 +50,7 @@ MA 02110-1301, USA.
 }
 
 
-+ (id) enumeratorWithEnumerator:(NSEnumerator *)enumerator
++ (instancetype) enumeratorWithEnumerator:(NSEnumerator *)enumerator
 				excludingObject:(id)object
 {
 	if (object == nil)  return enumerator;

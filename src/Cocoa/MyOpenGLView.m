@@ -78,7 +78,7 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 
 @implementation MyOpenGLView
 
-- (id) initWithFrame:(NSRect)frameRect
+- (instancetype) initWithFrame:(NSRect)frameRect
 {
 #ifndef NDEBUG
 	if (NSZombieEnabled)
@@ -180,6 +180,7 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 		allowingStringInput = gvStringInputNo;
 	}
 }
+
 
 - (enum StringInput) allowingStringInput
 {
@@ -322,10 +323,7 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 }
 
 
-- (NSData *)pixelFormatAttributes
-{
-	return _pixelFormatAttributes;
-}
+@synthesize pixelFormatAttributes = _pixelFormatAttributes;
 
 
 #ifdef MAC_OS_X_VERSION_10_7	// If building against 10.7 SDK, where relevant symbols are defined...
@@ -879,10 +877,7 @@ FAIL:
 }
 
 
-- (BOOL) isAlphabetKeyDown
-{
-	return isAlphabetKeyDown = NO;
-}
+@synthesize alphabetKeyDown = isAlphabetKeyDown;
 
 // DJS: When entering submenus in the gui, it is not helpful if the
 // key down that brought you into the submenu is still registered
@@ -951,16 +946,10 @@ FAIL:
 }
 
 
-- (BOOL) isCommandQDown
-{
-	return commandQ;
-}
+@synthesize commandQDown = commandQ;
 
 
-- (BOOL) isCommandFDown
-{
-	return commandF;
-}
+@synthesize commandFDown = commandF;
 
 
 - (void) clearCommandF
@@ -979,10 +968,7 @@ FAIL:
 	return KEYMAP_GET(map, 56) || KEYMAP_GET(map, 60);	// Left shift or right shift -- although 60 shouldn't occur.
 }
 
-- (OOOpenGLMatrixManager *) getOpenGLMatrixManager
-{
-	return matrixManager;
-}
+@synthesize openGLMatrixManager = matrixManager;
 
 #ifndef NDEBUG
 // General image-dumping method.

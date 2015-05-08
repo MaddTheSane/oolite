@@ -85,10 +85,10 @@ static OOCacheManager *sSingleton = nil;
 - (void)loadCache;
 - (void)write;
 - (void)clear;
-- (BOOL)dirty;
+@property (readonly) BOOL dirty;
 - (void)markClean;
 
-- (NSDictionary *)loadDict;
+@property (readonly, copy) NSDictionary *loadDict;
 - (BOOL)writeDict:(NSDictionary *)inDict;
 
 - (void)buildCachesFromDictionary:(NSDictionary *)inDict;
@@ -113,7 +113,7 @@ static OOCacheManager *sSingleton = nil;
 	NSDictionary			*_cacheContents;
 }
 
-- (id) initWithCacheContents:(NSDictionary *)cacheContents;
+- (instancetype) initWithCacheContents:(NSDictionary *)cacheContents NS_DESIGNATED_INITIALIZER;
 
 @end
 #endif
@@ -121,7 +121,7 @@ static OOCacheManager *sSingleton = nil;
 
 @implementation OOCacheManager
 
-- (id)init
+- (instancetype)init
 {
 	self = [super init];
 	if (self != nil)
@@ -308,7 +308,7 @@ static OOCacheManager *sSingleton = nil;
 		~/Library/Caches has the particular advantage of not being indexed by
 		Spotlight or backed up by Time Machine.
 	*/
-	NSString *cachePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+	NSString *cachePath = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)[0];
 	if (![self directoryExists:cachePath create:create]) return nil;
 
 #if !OOLITE_MAC_OS_X
@@ -705,7 +705,7 @@ static OOCacheManager *sSingleton = nil;
 #if WRITE_ASYNC
 @implementation OOAsyncCacheWriter
 
-- (id) initWithCacheContents:(NSDictionary *)cacheContents
+- (instancetype) initWithCacheContents:(NSDictionary *)cacheContents
 {
 	if ((self = [super init]))
 	{

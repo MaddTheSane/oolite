@@ -31,7 +31,7 @@ SOFTWARE.
 
 @implementation OOPixMapTextureLoader
 
-- (id) initWithPixMap:(OOPixMap)pixMap textureOptions:(uint32_t)options freeWhenDone:(BOOL)freeWhenDone
+- (instancetype) initWithPixMap:(OOPixMap)pixMap textureOptions:(uint32_t)options freeWhenDone:(BOOL)freeWhenDone
 {
 	if ((self = [super initWithPath:[NSString stringWithFormat:@"OOPixMap@%p", self] options:options]))
 	{

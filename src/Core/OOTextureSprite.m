@@ -30,13 +30,13 @@ MA 02110-1301, USA.
 
 @implementation OOTextureSprite
 
-- (id)initWithTexture:(OOTexture *)inTexture
+- (instancetype)initWithTexture:(OOTexture *)inTexture
 {
 	return [self initWithTexture:inTexture size:[inTexture originalDimensions]];
 }
 
 
-- (id)initWithTexture:(OOTexture *)inTexture size:(NSSize)spriteSize
+- (instancetype)initWithTexture:(OOTexture *)inTexture size:(NSSize)spriteSize
 {
 	if (inTexture == nil)
 	{

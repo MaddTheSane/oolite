@@ -46,9 +46,9 @@ SOFTWARE.
 	NSUInteger			_unitsUsed;
 }
 
-- (id)initWithName:(NSString *)name configuration:(NSDictionary *)configuration;
+- (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration NS_DESIGNATED_INITIALIZER;
 
-- (NSUInteger) textureUnitCount;
+@property (readonly) NSUInteger textureUnitCount;
 
 @end
 

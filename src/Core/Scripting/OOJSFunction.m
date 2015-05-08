@@ -30,7 +30,7 @@ MA 02110-1301, USA.
 
 @implementation OOJSFunction
 
-- (id) initWithFunction:(JSFunction *)function context:(JSContext *)context
+- (instancetype) initWithFunction:(JSFunction *)function context:(JSContext *)context
 {
 	NSParameterAssert(context != NULL);
 	
@@ -56,7 +56,7 @@ MA 02110-1301, USA.
 }
 
 
-- (id) initWithName:(NSString *)name
+- (instancetype) initWithName:(NSString *)name
 			  scope:(JSObject *)scope
 			   code:(NSString *)code
 	  argumentCount:(NSUInteger)argCount

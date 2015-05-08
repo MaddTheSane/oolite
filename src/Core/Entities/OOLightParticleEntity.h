@@ -30,17 +30,16 @@ MA 02110-1301, USA.
 @class OOTexture, OOColor;
 
 
-@interface OOLightParticleEntity: Entity
+@interface OOLightParticleEntity: Entity 
 {
 @protected
 	GLfloat					_colorComponents[4];
 	float					_diameter;
 }
 
-- (id) initWithDiameter:(float)diameter;
+- (instancetype) initWithDiameter:(float)diameter NS_DESIGNATED_INITIALIZER;
 
-- (float) diameter;
-- (void) setDiameter:(float)diameter;
+@property  float diameter;
 
 - (void) setColor:(OOColor *)color;
 - (void) setColor:(OOColor *)color alpha:(GLfloat)alpha;
@@ -50,7 +49,7 @@ MA 02110-1301, USA.
 	OOLightParticleEntity assumes the texture is twice as big as the nominal
 	size of the particle (with a black border for anti-aliasing purposes).
 */
-- (OOTexture *) texture;
+@property (readonly, strong) OOTexture *texture;
 
 + (void) setUpTexture;
 + (OOTexture *) defaultParticleTexture;

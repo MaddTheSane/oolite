@@ -73,7 +73,7 @@ static BOOL					sHaveSetUp = NO;
 
 @implementation OOTextureLoader
 
-+ (id)loaderWithPath:(NSString *)inPath options:(uint32_t)options
++ (instancetype)loaderWithPath:(NSString *)inPath options:(uint32_t)options
 {
 	NSString				*extension = nil;
 	id						result = nil;
@@ -104,7 +104,7 @@ static BOOL					sHaveSetUp = NO;
 }
 
 
-+ (id)loaderWithTextureSpecifier:(id)specifier extraOptions:(uint32_t)extraOptions folder:(NSString *)folder
++ (instancetype)loaderWithTextureSpecifier:(id)specifier extraOptions:(uint32_t)extraOptions folder:(NSString *)folder
 {
 	NSString		*name = nil;
 	NSString		*path = nil;
@@ -127,7 +127,7 @@ static BOOL					sHaveSetUp = NO;
 }
 
 
-- (id)initWithPath:(NSString *)inPath options:(uint32_t)options
+- (instancetype)initWithPath:(NSString *)inPath options:(uint32_t)options
 {
 	self = [super init];
 	if (self == nil)  return nil;

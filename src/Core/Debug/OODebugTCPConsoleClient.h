@@ -33,7 +33,7 @@ SOFTWARE.
 @class OODebugMonitor;
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOTCPClientConnectionStatus)
 {
 	kOOTCPClientNotConnected,
 	kOOTCPClientStartedConnectionStage1,
@@ -41,7 +41,7 @@ typedef enum
 	kOOTCPClientConnected,
 	kOOTCPClientConnectionRefused,
 	kOOTCPClientDisconnected
-} OOTCPClientConnectionStatus;
+};
 
 
 @interface OODebugTCPConsoleClient: NSObject <OODebuggerInterface>
@@ -55,8 +55,8 @@ typedef enum
 	struct OOTCPStreamDecoder	*_decoder;
 }
 
-- (id) initWithAddress:(NSString *)address	// Pass nil for localhost
-				  port:(uint16_t)port;		// Pass 0 for default port
+- (instancetype) initWithAddress:(NSString *)address	// Pass nil for localhost
+				  port:(uint16_t)port NS_DESIGNATED_INITIALIZER;		// Pass 0 for default port
 
 @end
 

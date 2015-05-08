@@ -67,9 +67,9 @@
 #ifndef NDEBUG
 @interface StationEntity (mwDebug)
 
-- (NSArray *) dbgGetShipsOnApproach;
-- (NSArray *) dbgGetIdLocks;
-- (NSString *) dbgDumpIdLocks;
+@property (readonly, copy) NSArray *dbgGetShipsOnApproach;
+@property (readonly, copy) NSArray *dbgGetIdLocks;
+@property (readonly, copy) NSString *dbgDumpIdLocks;
 @end
 #endif
 
@@ -82,29 +82,9 @@
 	return [self isExplicitlyUnpiloted] || [self isHulk];
 }
 
-
-- (OOTechLevelID) equivalentTechLevel
-{
-	return equivalentTechLevel;
-}
-
-
-- (void) setEquivalentTechLevel:(OOTechLevelID) value
-{
-	equivalentTechLevel = value;
-}
-
-
-- (Vector) virtualPortDimensions
-{
-	return port_dimensions;
-}
-
-
-- (DockEntity*) playerReservedDock
-{
-	return player_reserved_dock;
-}
+@synthesize equivalentTechLevel;
+@synthesize virtualPortDimensions;
+@synthesize playerReservedDock = player_reserved_dock;
 
 
 - (HPVector) beaconPosition
@@ -117,28 +97,10 @@
 }
 
 
-- (float) equipmentPriceFactor
-{
-	return equipmentPriceFactor;
-}
-
-
-- (OOCargoQuantity) marketCapacity
-{
-	return marketCapacity;
-}
-
-
-- (NSArray *) marketDefinition
-{
-	return marketDefinition;
-}
-
-
-- (NSString *) marketScriptName
-{
-	return marketScriptName;
-}
+@synthesize equipmentPriceFactor;
+@synthesize marketCapacity;
+@synthesize marketDefinition;
+@synthesize marketScriptName;
 
 
 - (BOOL) marketMonitored
@@ -236,10 +198,7 @@
 }
 
 
-- (NSMutableDictionary *) localInterfaces
-{
-	return localInterfaces;
-}
+@synthesize localInterfaces;
 
 
 - (void) setInterfaceDefinition:(OOJSInterfaceDefinition *)definition forKey:(NSString *)key
@@ -619,7 +578,7 @@ NSDictionary *OOMakeDockingInstructions(StationEntity *station, HPVector coords,
 
 //////////////////////////////////////////////// from superclass
 
-- (id)initWithKey:(NSString *)key definition:(NSDictionary *)dict
+- (instancetype)initWithKey:(NSString *)key definition:(NSDictionary *)dict
 {
 	OOJS_PROFILE_ENTER
 	
@@ -674,9 +633,9 @@ NSDictionary *OOMakeDockingInstructions(StationEntity *station, HPVector coords,
 			NSArray* tokens = [portDimensionsStr componentsSeparatedByString:@"x"];
 			if ([tokens count] == 3)
 			{
-				port_dimensions = make_vector([[tokens objectAtIndex:0] floatValue],
-											  [[tokens objectAtIndex:1] floatValue],
-											  [[tokens objectAtIndex:2] floatValue]);
+				port_dimensions = make_vector([tokens[0] floatValue],
+											  [tokens[1] floatValue],
+											  [tokens[2] floatValue]);
 			}
 		}
 	}
@@ -1348,23 +1307,8 @@ NSDictionary *OOMakeDockingInstructions(StationEntity *station, HPVector coords,
 }
 
 
-- (NSString *) allegiance
-{
-	return allegiance;
-}
-
-
-- (void) setAllegiance:(NSString *)newAllegiance
-{
-	[allegiance release];
-	allegiance = [newAllegiance copy];
-}
-
-
-- (OOStationAlertLevel) alertLevel
-{
-	return alertLevel;
-}
+@synthesize allegiance;
+@synthesize alertLevel;
 
 
 - (void) setAlertLevel:(OOStationAlertLevel)level signallingScript:(BOOL)signallingScript

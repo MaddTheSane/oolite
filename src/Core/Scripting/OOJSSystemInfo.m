@@ -122,15 +122,15 @@ static JSFunctionSpec sSystemInfoStaticMethods[] =
 	NSString				*_planetKey;
 }
 
-- (id) initWithGalaxy:(OOGalaxyID)galaxy system:(OOSystemID)system;
+- (instancetype) initWithGalaxy:(OOGalaxyID)galaxy system:(OOSystemID)system NS_DESIGNATED_INITIALIZER;
 
 - (id) valueForKey:(NSString *)key;
 - (void) setValue:(id)value forKey:(NSString *)key;
 
-- (NSArray *) allKeys;
+@property (readonly, copy) NSArray *allKeys;
 
-- (OOGalaxyID) galaxy;
-- (OOSystemID) system;
+@property (readonly) OOGalaxyID galaxy;
+@property (readonly) OOSystemID system;
 //- (Random_Seed) systemSeed;
 
 @end
@@ -141,14 +141,14 @@ DEFINE_JS_OBJECT_GETTER(JSSystemInfoGetSystemInfo, &sSystemInfoClass, sSystemInf
 
 @implementation OOSystemInfo
 
-- (id) init
+- (instancetype) init
 {
 	[self release];
 	return nil;
 }
 
 
-- (id) initWithGalaxy:(OOGalaxyID)galaxy system:(OOSystemID)system
+- (instancetype) initWithGalaxy:(OOGalaxyID)galaxy system:(OOSystemID)system
 {
 	if (galaxy > kOOMaximumGalaxyID || system > kOOMaximumSystemID || system < kOOMinimumSystemID)
 	{

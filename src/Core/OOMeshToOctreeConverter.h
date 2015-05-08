@@ -51,7 +51,7 @@ enum
 	}					_data;
 }
 
-- (id) initWithCapacity:(NSUInteger)capacity;
+- (instancetype) initWithCapacity:(NSUInteger)capacity NS_DESIGNATED_INITIALIZER;
 + (instancetype) converterWithCapacity:(NSUInteger)capacity;
 
 - (void) addTriangle:(Triangle)tri;

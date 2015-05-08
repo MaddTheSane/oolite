@@ -52,7 +52,7 @@ SOFTWARE.
 
 @implementation OOCrosshairs
 
-- (id) initWithPoints:(NSArray *)points
+- (instancetype) initWithPoints:(NSArray *)points
 				scale:(GLfloat)scale
 				color:(OOColor *)color
 		 overallAlpha:(GLfloat)alpha

@@ -37,8 +37,8 @@ MA 02110-1301, USA.
 	NSString					*_name;
 }
 
-- (id) initWithFunction:(JSFunction *)function context:(JSContext *)context;
-- (id) initWithName:(NSString *)name
+- (instancetype) initWithFunction:(JSFunction *)function context:(JSContext *)context NS_DESIGNATED_INITIALIZER;
+- (instancetype) initWithName:(NSString *)name
 			  scope:(JSObject *)scope		// may be NULL, in which case global object is used.
 			   code:(NSString *)code		// full JS code for function, including function declaration.
 	  argumentCount:(NSUInteger)argCount
@@ -47,9 +47,9 @@ MA 02110-1301, USA.
 		 lineNumber:(NSUInteger)lineNumber
 			context:(JSContext *)context;	// may be NULL. If not null, must be in a request.
 
-- (NSString *) name;
-- (JSFunction *) function;
-- (jsval) functionValue;
+@property (readonly, copy) NSString *name;
+@property (readonly) JSFunction *function;
+@property (readonly) jsval functionValue;
 
 // Raw evaluation. Context may not be NULL and must be in a request.
 - (BOOL) evaluateWithContext:(JSContext *)context

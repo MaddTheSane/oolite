@@ -42,6 +42,6 @@ MA 02110-1301, USA.
 
 @interface Entity (OOQuiriumCascadeExtensions)
 
-- (BOOL) isCascadeWeapon;
+@property (getter=isCascadeWeapon, readonly) BOOL cascadeWeapon;
 
 @end

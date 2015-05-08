@@ -44,7 +44,7 @@ SOFTWARE.
 	GLint					_displayListName;
 }
 
-- (id)initWithColor1:(OOColor *)color1
+- (instancetype)initWithColor1:(OOColor *)color1
 			  Color2:(OOColor *)color2
 			  Color3:(OOColor *)color3
 			  Color4:(OOColor *)color4
@@ -53,6 +53,6 @@ SOFTWARE.
 	    nebulaHueFix:(BOOL)nebulaHueFix
 	   clusterFactor:(float)nebulaClusterFactor
 			   alpha:(float)nebulaAlpha
-			   scale:(float)nebulaScale;
+			   scale:(float)nebulaScale NS_DESIGNATED_INITIALIZER;
 
 @end

@@ -111,19 +111,19 @@ static NSString *FormatFloat(double value);
 #endif
 }
 
-- (id) initWithMaterialConfiguration:(NSDictionary *)configuration
+- (instancetype) initWithMaterialConfiguration:(NSDictionary *)configuration
 						 materialKey:(NSString *)materialKey
-						  entityName:(NSString *)name;
+						  entityName:(NSString *)name NS_DESIGNATED_INITIALIZER;
 
-- (BOOL) run;
+@property (readonly) BOOL run;
 
-- (NSString *) vertexShader;
-- (NSString *) fragmentShader;
-- (NSArray *) textureSpecifications;
-- (NSDictionary *) uniformSpecifications;
+@property (readonly, copy) NSString *vertexShader;
+@property (readonly, copy) NSString *fragmentShader;
+@property (readonly, copy) NSArray *textureSpecifications;
+@property (readonly, copy) NSDictionary *uniformSpecifications;
 
-- (NSString *) materialKey;
-- (NSString *) entityName;
+@property (readonly, copy) NSString *materialKey;
+@property (readonly, copy) NSString *entityName;
 
 - (void) createTemporaries;
 - (void) destroyTemporaries;
@@ -302,7 +302,7 @@ BOOL OOSynthesizeMaterialShader(NSDictionary *configuration, NSString *materialK
 
 @implementation OODefaultShaderSynthesizer
 
-- (id) initWithMaterialConfiguration:(NSDictionary *)configuration
+- (instancetype) initWithMaterialConfiguration:(NSDictionary *)configuration
 						 materialKey:(NSString *)materialKey
 						  entityName:(NSString *)name
 {

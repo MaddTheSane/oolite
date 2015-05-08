@@ -54,7 +54,7 @@ MA 02110-1301, USA.
 
 @interface OOOXPVerifier(OOModelVerifierStage)
 
-- (OOModelVerifierStage *)modelVerifierStage;
+@property (readonly, strong) OOModelVerifierStage *modelVerifierStage;
 
 @end
 

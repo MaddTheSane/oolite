@@ -42,10 +42,9 @@ MA 02110-1301, USA.
 
 + (instancetype) waypointWithDictionary:(NSDictionary *)info;
 
-- (id) initWithDictionary:(NSDictionary *)info;
+- (instancetype) initWithDictionary:(NSDictionary *)info NS_DESIGNATED_INITIALIZER;
 
-- (BOOL) oriented;
-- (OOScalar) size;
-- (void) setSize:(OOScalar)newSize;
+@property (readonly) BOOL oriented;
+@property  OOScalar size;
 
 @end

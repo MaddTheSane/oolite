@@ -35,13 +35,13 @@ typedef uint_fast32_t		OOPixMapDimension;		// Note: dimensions are assumed to be
 #define OORoundUpToPowerOf2_PixMap OORoundUpToPowerOf2_32
 
 
-typedef enum
+typedef NS_OPTIONS(unsigned int, OOPixMapFormat)
 {
 	kOOPixMapInvalidFormat		= 0,
 	kOOPixMapGrayscale			= 1,
 	kOOPixMapGrayscaleAlpha		= 2,
 	kOOPixMapRGBA				= 4
-} OOPixMapFormat;
+};
 
 
 typedef struct OOPixMap

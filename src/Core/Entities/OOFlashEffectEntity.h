@@ -28,7 +28,7 @@ MA 02110-1301, USA.
 #import "OOLightParticleEntity.h"
 
 
-@interface OOFlashEffectEntity: OOLightParticleEntity
+@interface OOFlashEffectEntity: OOLightParticleEntity 
 {
 @private
 	float				_duration;

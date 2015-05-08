@@ -80,7 +80,7 @@ static GameController *sSharedController = nil;
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	if (sSharedController != nil)
 	{
@@ -123,10 +123,7 @@ static GameController *sSharedController = nil;
 }
 
 
-- (BOOL) isGamePaused
-{
-	return gameIsPaused;
-}
+@synthesize gamePaused = gameIsPaused;
 
 
 - (void) setGamePaused:(BOOL)value
@@ -147,10 +144,7 @@ static GameController *sSharedController = nil;
 }
 
 
-- (OOMouseInteractionMode) mouseInteractionMode
-{
-	return _mouseMode;
-}
+@synthesize mouseInteractionMode = _mouseMode;
 
 
 - (void) setMouseInteractionMode:(OOMouseInteractionMode)mode
@@ -186,11 +180,7 @@ static GameController *sSharedController = nil;
 }
 
 
-- (MyOpenGLView *) gameView
-{
-	return gameView;
-}
-
+@synthesize gameView;
 
 - (void) setGameView:(MyOpenGLView *)view
 {
@@ -859,10 +849,7 @@ static NSMutableArray *sMessageStack;
 }
 
 
-- (NSString *) playerFileToLoad
-{
-	return playerFileToLoad;
-}
+@synthesize playerFileToLoad;
 
 
 - (void) setPlayerFileToLoad:(NSString *)filename

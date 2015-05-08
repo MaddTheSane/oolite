@@ -166,7 +166,7 @@ static NSMutableDictionary *sStringCache;
 	if (sRootPaths == nil) {
 		/* Built-in data, then managed OXZs, then manually installed ones,
 		 * which may be useful for debugging/testing purposes. */
-		sRootPaths = [NSArray arrayWithObjects:[self builtInPath], [[OOOXZManager sharedManager] installPath], nil];
+		sRootPaths = @[[self builtInPath], [[OOOXZManager sharedManager] installPath]];
 		sRootPaths = [[sRootPaths arrayByAddingObjectsFromArray:[self userRootPaths]] retain];
 	}
 	return sRootPaths;
@@ -238,7 +238,7 @@ static NSMutableDictionary *sStringCache;
 	// testing actual string
 	if ([sUseAddOns isEqualToString:SCENARIO_OXP_DEFINITION_NONE])
 	{
-		return (NSArray *)[NSArray arrayWithObject:[self builtInPath]];
+		return (NSArray *)@[[self builtInPath]];
 	}
 
 	[sErrors release];
@@ -367,7 +367,7 @@ static NSMutableDictionary *sStringCache;
 	NSEnumerator *pathEnum = nil;
 
 	// folders which may contain files to be cached
-	NSArray *folders = [NSArray arrayWithObjects:@"AIs",@"Images",@"Models",@"Music",@"Scenarios",@"Scripts",@"Shaders",@"Sounds",@"Textures",nil];
+	NSArray *folders = @[@"AIs",@"Images",@"Models",@"Music",@"Scenarios",@"Scripts",@"Shaders",@"Sounds",@"Textures"];
 
 	for (pathEnum = [[ResourceManager paths] reverseObjectEnumerator]; (path = [pathEnum nextObject]); )
 	{
@@ -406,7 +406,7 @@ static NSMutableDictionary *sStringCache;
 									componentName, 512,
 									NULL, 0,
 									NULL, 0);
-			NSString *zipEntry = [NSString stringWithUTF8String:componentName];
+			NSString *zipEntry = @(componentName);
 			NSArray *pathBits = [zipEntry pathComponents];
 			if ([pathBits count] >= 2)
 			{
@@ -557,7 +557,7 @@ static NSMutableDictionary *sStringCache;
 
 + (NSDictionary *)manifestForIdentifier:(NSString *)identifier
 {
-	return [sOXPManifests objectForKey:identifier];
+	return sOXPManifests[identifier];
 }
 
 
@@ -624,7 +624,7 @@ static NSMutableDictionary *sStringCache;
 				}
 			}
 			// make up a basic manifest in relaxed mode or for base folders
-			manifest = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"__oolite.tmp.%@",path],kOOManifestIdentifier,@"1",kOOManifestVersion,@"OXP without manifest",kOOManifestTitle,@"1",kOOManifestRequiredOoliteVersion,nil];
+			manifest = @{kOOManifestIdentifier: [NSString stringWithFormat:@"__oolite.tmp.%@",path],kOOManifestVersion: @"1",kOOManifestTitle: @"OXP without manifest",kOOManifestRequiredOoliteVersion: @"1"};
 		}
 	}
 	
@@ -711,11 +711,11 @@ static NSMutableDictionary *sStringCache;
 	// ignore empty max version string rather than treating as "version 0"
 	if (maxRequired == nil || [maxRequired length] == 0)
 	{
-		return [self areRequirementsFulfilled:[NSDictionary dictionaryWithObjectsAndKeys:required, @"version", nil] forOXP:title andFile:@"manifest.plist"];
+		return [self areRequirementsFulfilled:@{@"version": required} forOXP:title andFile:@"manifest.plist"];
 	}
 	else
 	{
-		return [self areRequirementsFulfilled:[NSDictionary dictionaryWithObjectsAndKeys:required, @"version", maxRequired, @"max_version", nil] forOXP:title andFile:@"manifest.plist"];
+		return [self areRequirementsFulfilled:@{@"version": required, @"max_version": maxRequired} forOXP:title andFile:@"manifest.plist"];
 	}
 }
 
@@ -805,7 +805,7 @@ static NSMutableDictionary *sStringCache;
 		foreach (conflicting, conflicts)
 		{
 			conflictID = [conflicting oo_stringForKey:kOOManifestRelationIdentifier];
-			conflictManifest = [sOXPManifests objectForKey:conflictID];
+			conflictManifest = sOXPManifests[conflictID];
 			// if the other OXP is in the list
 			if (conflictManifest != nil)
 			{
@@ -875,7 +875,7 @@ static NSMutableDictionary *sStringCache;
 + (BOOL) manifest:(NSDictionary *)manifest HasUnmetDependency:(NSDictionary *)required logErrors:(BOOL)logErrors
 {
 	NSString		*requiredID = [required oo_stringForKey:kOOManifestRelationIdentifier];
-	NSMutableDictionary	*requiredManifest = [sOXPManifests objectForKey:requiredID];
+	NSMutableDictionary	*requiredManifest = sOXPManifests[requiredID];
 	// if the other OXP is in the list
 	BOOL requirementsMet = NO;
 	if (requiredManifest != nil)
@@ -903,7 +903,7 @@ static NSMutableDictionary *sStringCache;
 				sAllMet = NO;
 			}
 			// and push back into the requiring manifest
-			[requiredManifest setObject:reqby forKey:kOOManifestRequiredBy];
+			requiredManifest[kOOManifestRequiredBy] = reqby;
 		}
 	}
 	if (!requirementsMet)
@@ -987,7 +987,7 @@ static NSMutableDictionary *sStringCache;
 	// foreach identified add-on
 	foreach (identifier, identifiers)
 	{
-		manifest = [sOXPManifests objectForKey:identifier];
+		manifest = sOXPManifests[identifier];
 		if (manifest != nil)
 		{
 			if ([[manifest oo_arrayForKey:kOOManifestTags] containsObject:kOOManifestTagScenarioOnly])
@@ -1011,7 +1011,7 @@ static NSMutableDictionary *sStringCache;
 	// foreach identified add-on
 	foreach (identifier, identifiers)
 	{
-		manifest = [sOXPManifests objectForKey:identifier];
+		manifest = sOXPManifests[identifier];
 		if (manifest != nil)
 		{
 			if (![ResourceManager manifestAllowedByScenario:manifest])
@@ -1604,7 +1604,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 	{
 		OOStandardsDeprecated(@"pirate-victim-roles.plist is still being used.");
 	}
-	[ResourceManager mergeRoleCategories:[NSDictionary dictionaryWithObject:pirateVictims forKey:@"oolite-pirate-victim"] intoDictionary:roleCategories];
+	[ResourceManager mergeRoleCategories:@{@"oolite-pirate-victim": pirateVictims} intoDictionary:roleCategories];
 
 	return [[roleCategories copy] autorelease];
 }
@@ -1914,7 +1914,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 					foreach(script, results)
 					{
 						name = [script name];
-						if (name != nil)  [loadedScripts setObject:script forKey:name];
+						if (name != nil)  loadedScripts[name] = script;
 						else  OOLog(@"script.load.unnamed", @"Discarding anonymous script %@", script);
 					}
 				}

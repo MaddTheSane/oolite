@@ -128,7 +128,7 @@ OOINLINE NSComparisonResult PQCompare(id a, id b, SEL comparator)
 	OOPriorityQueue			*_queue;
 }
 
-- (id) initWithPriorityQueue:(OOPriorityQueue *)queue;
+- (instancetype) initWithPriorityQueue:(OOPriorityQueue *)queue NS_DESIGNATED_INITIALIZER;
 
 @end
 
@@ -141,7 +141,7 @@ OOINLINE NSComparisonResult PQCompare(id a, id b, SEL comparator)
 }
 
 
-- (id) initWithComparator:(SEL)comparator
+- (instancetype) initWithComparator:(SEL)comparator
 {
 	if (comparator == NULL)
 	{
@@ -159,7 +159,7 @@ OOINLINE NSComparisonResult PQCompare(id a, id b, SEL comparator)
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	return [self initWithComparator:@selector(compare:)];
 }
@@ -561,7 +561,7 @@ OOINLINE NSComparisonResult PQCompare(id a, id b, SEL comparator)
 
 @implementation OOPriorityQueueEnumerator
 
-- (id) initWithPriorityQueue:(OOPriorityQueue *)queue
+- (instancetype) initWithPriorityQueue:(OOPriorityQueue *)queue
 {
 	if (queue == nil)
 	{

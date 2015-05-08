@@ -64,7 +64,7 @@ enum
 
 @implementation DustEntity
 
-- (id) init
+- (instancetype) init
 {
 	int vi;
 	

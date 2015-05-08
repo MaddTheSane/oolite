@@ -100,13 +100,13 @@ OOINLINE BOOL StatusIsSendable(OOTCPClientConnectionStatus status)
 
 @implementation OODebugTCPConsoleClient
 
-- (id) init
+- (instancetype) init
 {
 	return [self initWithAddress:nil port:0];
 }
 
 
-- (id) initWithAddress:(NSString *)address port:(uint16_t)port
+- (instancetype) initWithAddress:(NSString *)address port:(uint16_t)port
 {
 	BOOL					OK = NO;
 	NSDictionary			*parameters = nil;

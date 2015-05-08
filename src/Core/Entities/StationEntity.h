@@ -31,12 +31,12 @@ MA 02110-1301, USA.
 @class OOWeakSet;
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOStationAlertLevel)
 {
 	STATION_ALERT_LEVEL_GREEN	= ALERT_CONDITION_GREEN,
 	STATION_ALERT_LEVEL_YELLOW	= ALERT_CONDITION_YELLOW,
 	STATION_ALERT_LEVEL_RED		= ALERT_CONDITION_RED
-} OOStationAlertLevel;
+};
 
 #define STATION_MAX_POLICE				8
 
@@ -112,16 +112,16 @@ typedef enum
 }
 
 
-- (OOCargoQuantity) marketCapacity;
-- (NSArray *) marketDefinition;
-- (NSString *) marketScriptName;
-- (BOOL) marketMonitored;
-- (BOOL) marketBroadcast;
+@property (readonly) OOCargoQuantity marketCapacity;
+@property (readonly, copy) NSArray *marketDefinition;
+@property (readonly, copy) NSString *marketScriptName;
+@property (readonly, atomic) BOOL marketMonitored;
+@property (readonly, atomic) BOOL marketBroadcast;
 - (OOCreditsQuantity) legalStatusOfManifest:(OOCommodityMarket *)manifest export:(BOOL)export;
 
 - (OOCommodityMarket *) localMarket;
 - (void) setLocalMarket:(NSArray *)market;
-- (NSDictionary *) localMarketForScripting;
+@property (readonly, copy, atomic) NSDictionary *localMarketForScripting;
 - (void) setPrice:(NSUInteger) price forCommodity:(OOCommodityType) commodity;
 - (void) setQuantity:(NSUInteger) quantity forCommodity:(OOCommodityType) commodity;
 
@@ -131,32 +131,29 @@ typedef enum
 - (void) setLocalContracts:(NSArray *)market; */
 - (NSMutableArray *) localShipyard;
 - (void) setLocalShipyard:(NSArray *)market;
-- (NSMutableDictionary *) localInterfaces;
+@property (readonly, retain) NSMutableDictionary *localInterfaces;
 - (void) setInterfaceDefinition:(OOJSInterfaceDefinition *)definition forKey:(NSString *)key;
 
-- (OOCommodityMarket *) initialiseLocalMarket;
+@property (readonly, strong, atomic) OOCommodityMarket *initialiseLocalMarket;
 
-- (OOTechLevelID) equivalentTechLevel;
-- (void) setEquivalentTechLevel:(OOTechLevelID)value;
+@property  OOTechLevelID equivalentTechLevel;
 
-- (NSEnumerator *) dockSubEntityEnumerator;
-- (Vector) virtualPortDimensions;
-- (DockEntity*) playerReservedDock;
+@property (readonly, strong, atomic) NSEnumerator *dockSubEntityEnumerator;
+@property (readonly) Vector virtualPortDimensions;
+@property (readonly, strong) DockEntity *playerReservedDock;
 
-- (HPVector) beaconPosition;
+@property (readonly, atomic) HPVector beaconPosition;
 
-- (float) equipmentPriceFactor;
+@property (readonly) float equipmentPriceFactor;
 
-- (void) setPlanet:(OOPlanetEntity *)planet;
 
-- (OOPlanetEntity *) planet;
+@property (strong, atomic) OOPlanetEntity *planet;
 
-- (void) setAllegiance:(NSString *)newAllegiance;
-- (NSString *)allegiance;
+@property (copy) NSString *allegiance;
 
-- (unsigned) countOfDockedContractors;
-- (unsigned) countOfDockedPolice;
-- (unsigned) countOfDockedDefenders;
+@property (readonly, atomic) unsigned int countOfDockedContractors;
+@property (readonly, atomic) unsigned int countOfDockedPolice;
+@property (readonly, atomic) unsigned int countOfDockedDefenders;
 
 - (void) sanityCheckShipsOnApproach;
 
@@ -168,7 +165,7 @@ typedef enum
 
 - (BOOL) shipIsInDockingCorridor:(ShipEntity *)ship;
 
-- (BOOL) dockingCorridorIsEmpty;
+@property (readonly, atomic) BOOL dockingCorridorIsEmpty;
 
 - (void) clearDockingCorridor;
 
@@ -179,12 +176,12 @@ typedef enum
 
 - (void) abortDockingForShip:(ShipEntity *)ship;
 
-- (BOOL) hasMultipleDocks;
-- (BOOL) hasClearDock;
-- (BOOL) hasLaunchDock;
+@property (readonly, atomic) BOOL hasMultipleDocks;
+@property (readonly, atomic) BOOL hasClearDock;
+@property (readonly, atomic) BOOL hasLaunchDock;
 - (DockEntity *) selectDockForDocking;
-- (unsigned) currentlyInLaunchingQueues;
-- (unsigned) currentlyInDockingQueues;
+@property (readonly, atomic) unsigned int currentlyInLaunchingQueues;
+@property (readonly, atomic) unsigned int currentlyInDockingQueues;
 
 
 - (void) launchShip:(ShipEntity *)ship;
@@ -193,11 +190,10 @@ typedef enum
 
 - (void) noteDockedShip:(ShipEntity *)ship;
 
-- (BOOL) interstellarUndockingAllowed;
-- (BOOL) hasNPCTraffic;
-- (void) setHasNPCTraffic:(BOOL)flag;
+@property (readonly, atomic) BOOL interstellarUndockingAllowed;
+@property (atomic) BOOL hasNPCTraffic;
 
-- (OOStationAlertLevel) alertLevel;
+@property (readonly) OOStationAlertLevel alertLevel;
 - (void) setAlertLevel:(OOStationAlertLevel)level signallingScript:(BOOL)signallingScript;
 
 ////////////////////////////////////////////////////////////// AI methods...
@@ -205,42 +201,37 @@ typedef enum
 - (void) increaseAlertLevel;
 - (void) decreaseAlertLevel;
 
-- (NSArray *) launchPolice;
-- (ShipEntity *) launchDefenseShip;
-- (ShipEntity *) launchScavenger;
-- (ShipEntity *) launchMiner;
+@property (readonly, copy, atomic) NSArray *launchPolice;
+@property (readonly, strong, atomic) ShipEntity *launchDefenseShip;
+@property (readonly, strong, atomic) ShipEntity *launchScavenger;
+@property (readonly, strong, atomic) ShipEntity *launchMiner;
 /**Lazygun** added the following line*/
-- (ShipEntity *) launchPirateShip;
-- (ShipEntity *) launchShuttle;
-- (ShipEntity *) launchEscort;
-- (ShipEntity *) launchPatrol;
+@property (readonly, strong, atomic) ShipEntity *launchPirateShip;
+@property (readonly, strong, atomic) ShipEntity *launchShuttle;
+@property (readonly, strong, atomic) ShipEntity *launchEscort;
+@property (readonly, strong, atomic) ShipEntity *launchPatrol;
 
 - (void) launchShipWithRole:(NSString *)role;
 
 - (void) acceptPatrolReportFrom:(ShipEntity *)patrol_ship;
 
 - (NSString *) acceptDockingClearanceRequestFrom:(ShipEntity *)other;
-- (BOOL) requiresDockingClearance;
-- (void) setRequiresDockingClearance:(BOOL)newValue;
+@property (atomic) BOOL requiresDockingClearance;
 
-- (BOOL) allowsFastDocking;
-- (void) setAllowsFastDocking:(BOOL)newValue;
+@property (atomic) BOOL allowsFastDocking;
 
-- (BOOL) allowsAutoDocking;
-- (void) setAllowsAutoDocking:(BOOL)newValue;
+@property (atomic) BOOL allowsAutoDocking;
 
-- (BOOL) allowsSaving;
+@property (readonly, atomic) BOOL allowsSaving;
 // no setting this after station creation
 
-- (NSString *) marketOverrideName;
-- (BOOL) isRotatingStation;
-- (BOOL) hasShipyard;
+@property (readonly, copy, atomic) NSString *marketOverrideName;
+@property (getter=isRotatingStation, readonly, atomic) BOOL rotatingStation;
+@property (readonly, atomic) BOOL hasShipyard;
 
-- (BOOL) suppressArrivalReports;
-- (void) setSuppressArrivalReports:(BOOL)newValue;
+@property (atomic) BOOL suppressArrivalReports;
 
-- (BOOL) hasBreakPattern;
-- (void) setHasBreakPattern:(BOOL)newValue;
+@property (atomic) BOOL hasBreakPattern;
 
 
 @end

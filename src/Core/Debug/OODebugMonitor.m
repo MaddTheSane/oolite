@@ -57,7 +57,7 @@ static OODebugMonitor *sSingleton = nil;
 
 - (void)disconnectDebuggerWithMessage:(NSString *)message;
 
-- (NSDictionary *)mergedConfiguration;
+@property (readonly, copy) NSDictionary *mergedConfiguration;
 
 /*	Convert a configuration dictionary to a standard form. In particular,
 	convert all colour specifiers to RGBA arrays with values in [0, 1], and
@@ -76,7 +76,7 @@ static OODebugMonitor *sSingleton = nil;
 	NSString					*NSApplicationWillTerminateNotification = @"ApplicationWillTerminate";
 #endif
 
-- (id)init
+- (instancetype)init
 {
 	NSUserDefaults				*defaults = nil;
 	NSMutableDictionary			*config = nil;

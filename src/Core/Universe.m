@@ -213,7 +213,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void * context);
 
 - (void) setDetailLevelDirectly:(OOGraphicsDetail)value;
 
-- (NSDictionary *)demoShipData;
+@property (readonly, copy, atomic) NSDictionary *demoShipData;
 - (void) setLibraryTextForDemoShip;
 
 @end
@@ -242,7 +242,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 #define SUN_AMBIENT_INFLUENCE		0.75
 
 
-- (id) initWithGameView:(MyOpenGLView *)inGameView
+- (instancetype) initWithGameView:(MyOpenGLView *)inGameView
 {
 	OOProfilerStartMarker(@"startup");
 	
@@ -468,10 +468,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 }
 
 
-- (NSUInteger) sessionID
-{
-	return _sessionID;
-}
+@synthesize sessionID = _sessionID;
 
 
 - (BOOL) doingStartUp
@@ -490,10 +487,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 }
 
 
-- (NSString *) useAddOns
-{
-	return useAddOns;
-}
+@synthesize useAddOns;
 
 
 - (BOOL) setUseAddOns:(NSString *) newUse fromSaveGame:(BOOL) saveGame
@@ -1084,10 +1078,10 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 
 	
 	NSMutableDictionary *sun_dict = [NSMutableDictionary dictionaryWithCapacity:5];
-	[sun_dict setObject:[NSNumber numberWithDouble:sun_radius] forKey:@"sun_radius"];
-	dict_object=[systeminfo objectForKey: @"corona_shimmer"];
-	if (dict_object!=nil) [sun_dict setObject:dict_object forKey:@"corona_shimmer"];
-	dict_object=[systeminfo objectForKey: @"corona_hues"];
+	sun_dict[@"sun_radius"] = @(sun_radius);
+	dict_object=systeminfo[@"corona_shimmer"];
+	if (dict_object!=nil) sun_dict[@"corona_shimmer"] = dict_object;
+	dict_object=systeminfo[@"corona_hues"];
 	if (dict_object!=nil)
 	{
 		sun_dict[@"corona_hues"] = dict_object;
@@ -1105,10 +1099,10 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	{
 		sun_dict[@"corona_flare"] = @(defaultSunFlare);
 	}
-	dict_object=[systeminfo objectForKey:KEY_SUNNAME];
+	dict_object=systeminfo[KEY_SUNNAME];
 	if (dict_object!=nil) 
 	{
-		[sun_dict setObject:dict_object forKey:KEY_SUNNAME];
+		sun_dict[KEY_SUNNAME] = dict_object;
 	}
 #ifdef OO_DUMP_PLANETINFO
 	OOLog(@"planetinfo.record",@"corona_flare = %f",[sun_dict oo_floatForKey:@"corona_flare"]);
@@ -1304,7 +1298,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 
 - (NSDictionary *) getPopulatorSettings
 {
-	return populatorSettings;
+	return [NSDictionary dictionaryWithDictionary:populatorSettings];
 }
 
 
@@ -1321,10 +1315,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 }
 
 
-- (BOOL) deterministicPopulation
-{
-	return deterministic_population;
-}
+@synthesize deterministicPopulation = deterministic_population;
 
 
 - (void) populateSystemFromDictionariesWithSun:(OOSunEntity *)sun andPlanet:(OOPlanetEntity *)planet
@@ -1552,10 +1543,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 }
 
 
-- (float) ambientLightLevel
-{
-	return ambientLightLevel;
-}
+@synthesize ambientLightLevel;
 
 
 - (void) setLighting
@@ -2879,7 +2867,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	{
 		field3 = @"";
 	}
-	[gui setArray:[NSArray arrayWithObjects:field1,field2,field3,nil] forRow:1];
+	[gui setArray:@[field1,field2,field3] forRow:1];
 	[gui setColor:[OOColor greenColor] forRow:1];
 
 	// ship_data defaults to true for "ship" class, false for everything else
@@ -2945,7 +2933,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 		}
 	
 
-		[gui setArray:[NSArray arrayWithObjects:field1,field2,field3,nil] forRow:3];
+		[gui setArray:@[field1,field2,field3] forRow:3];
 
 		/* Row 3: recharge rate, energy banks, witchspace */
 		override = [librarySettings oo_stringForKey:kOODemoShipGenerator defaultValue:nil];
@@ -3002,7 +2990,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 		}
 
 
-		[gui setArray:[NSArray arrayWithObjects:field1,field2,field3,nil] forRow:4];
+		[gui setArray:@[field1,field2,field3] forRow:4];
 
 
 		/* Row 4: weapons, size */
@@ -3042,7 +3030,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 			field3 = OOShipLibrarySize(demo_ship);
 		}
 
-		[gui setArray:[NSArray arrayWithObjects:field1,field2,field3,nil] forRow:5];
+		[gui setArray:@[field1,field2,field3] forRow:5];
 	}
 
 	override = [librarySettings oo_stringForKey:kOODemoShipDescription defaultValue:nil];
@@ -3053,15 +3041,15 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 
 	
 	// line 19: ship categories
-	field1 = [NSString stringWithFormat:@"<-- %@",OOShipLibraryCategoryPlural([[[demo_ships objectAtIndex:((demo_ship_index+[demo_ships count]-1)%[demo_ships count])] objectAtIndex:0] oo_stringForKey:kOODemoShipClass])];
-	field2 = OOShipLibraryCategoryPlural([[[demo_ships objectAtIndex:demo_ship_index] objectAtIndex:0] oo_stringForKey:kOODemoShipClass]);
-	field3 = [NSString stringWithFormat:@"%@ -->",OOShipLibraryCategoryPlural([[[demo_ships objectAtIndex:((demo_ship_index+1)%[demo_ships count])] objectAtIndex:0] oo_stringForKey:kOODemoShipClass])];
+	field1 = [NSString stringWithFormat:@"<-- %@",OOShipLibraryCategoryPlural([demo_ships[((demo_ship_index+[demo_ships count]-1)%[demo_ships count])][0] oo_stringForKey:kOODemoShipClass])];
+	field2 = OOShipLibraryCategoryPlural([demo_ships[demo_ship_index][0] oo_stringForKey:kOODemoShipClass]);
+	field3 = [NSString stringWithFormat:@"%@ -->",OOShipLibraryCategoryPlural([demo_ships[((demo_ship_index+1)%[demo_ships count])][0] oo_stringForKey:kOODemoShipClass])];
 	
-	[gui setArray:[NSArray arrayWithObjects:field1,field2,field3,nil] forRow:19];
+	[gui setArray:@[field1,field2,field3] forRow:19];
 	[gui setColor:[OOColor greenColor] forRow:19];
 
 	// lines 21-25: ship names
-	NSArray *subList = [demo_ships objectAtIndex:demo_ship_index];
+	NSArray *subList = demo_ships[demo_ship_index];
 	NSUInteger i,start = demo_ship_subindex - (demo_ship_subindex%5);
 	NSUInteger end = start + 4;
 	if (end >= [subList count])
@@ -3073,8 +3061,8 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	field3 = @"";
 	for (i = start ; i <= end ; i++)
 	{
-		field2 = [[subList objectAtIndex:i] oo_stringForKey:kOODemoShipName];
-		[gui setArray:[NSArray arrayWithObjects:field1,field2,field3,nil] forRow:row];
+		field2 = [subList[i] oo_stringForKey:kOODemoShipName];
+		[gui setArray:@[field1,field2,field3] forRow:row];
 		if (i == demo_ship_subindex)
 		{
 			[gui setColor:[OOColor yellowColor] forRow:row];
@@ -3089,12 +3077,12 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	field2 = @"...";
 	if (start > 0)
 	{
-		[gui setArray:[NSArray arrayWithObjects:field1,field2,field3,nil] forRow:20];
+		[gui setArray:@[field1,field2,field3] forRow:20];
 		[gui setColor:[OOColor whiteColor] forRow:20];
 	}
 	if (end < [subList count]-1)
 	{
-		[gui setArray:[NSArray arrayWithObjects:field1,field2,field3,nil] forRow:26];
+		[gui setArray:@[field1,field2,field3] forRow:26];
 		[gui setColor:[OOColor whiteColor] forRow:26];
 	}
 
@@ -3104,7 +3092,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 - (void) selectIntro2Previous
 {
 	demo_stage = DEMO_SHOW_THING;
-	NSUInteger subcount = [[demo_ships objectAtIndex:demo_ship_index] count];
+	NSUInteger subcount = [demo_ships[demo_ship_index] count];
 	demo_ship_subindex = (demo_ship_subindex + subcount - 2) % subcount;
 	demo_stage_time  = universal_time - 1.0;	// force change
 }
@@ -3114,7 +3102,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 {
 	demo_stage = DEMO_SHOW_THING;
 	demo_ship_index = (demo_ship_index + [demo_ships count] - 1) % [demo_ships count];
-	demo_ship_subindex = [[demo_ships objectAtIndex:demo_ship_index] count] - 1;
+	demo_ship_subindex = [demo_ships[demo_ship_index] count] - 1;
 	demo_stage_time  = universal_time - 1.0;	// force change
 }
 
@@ -3123,7 +3111,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 {
 	demo_stage = DEMO_SHOW_THING;
  	demo_ship_index = (demo_ship_index + 1) % [demo_ships count];
-	demo_ship_subindex = [[demo_ships objectAtIndex:demo_ship_index] count] - 1;
+	demo_ship_subindex = [demo_ships[demo_ship_index] count] - 1;
 	demo_stage_time  = universal_time - 1.0;	// force change
 }
 
@@ -3213,7 +3201,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 
 - (NSArray *) planets
 {
-	return allPlanets;
+	return [NSArray arrayWithArray:allPlanets];
 }
 
 
@@ -3347,7 +3335,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 
 - (NSDictionary *) currentWaypoints
 {
-	return waypoints;
+	return [NSDictionary dictionaryWithDictionary:waypoints];
 }
 
 
@@ -3632,7 +3620,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 		if (scale != 1.0f)
 		{
 			NSMutableDictionary *mShipDict = [shipDict mutableCopy];
-			[mShipDict setObject:[NSNumber numberWithFloat:scale] forKey:@"model_scale_factor"];
+			mShipDict[@"model_scale_factor"] = @(scale);
 			shipDict = [NSDictionary dictionaryWithDictionary:mShipDict];
 			[mShipDict release];
 		}
@@ -3672,7 +3660,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 		if (scale != 1.0f)
 		{
 			NSMutableDictionary *mShipDict = [shipDict mutableCopy];
-			[mShipDict setObject:[NSNumber numberWithFloat:scale] forKey:@"model_scale_factor"];
+			mShipDict[@"model_scale_factor"] = @(scale);
 			shipDict = [NSDictionary dictionaryWithDictionary:mShipDict];
 			[mShipDict release];
 		}
@@ -3758,11 +3746,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 	return 0;
 }
 
-
-- (OOCommodities *) commodities
-{
-	return commodities;
-}
+@synthesize commodities;
 
 
 /* Converts template cargo pods to real ones */
@@ -3873,7 +3857,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 		return @[]; // empty array
 	}
 	
-	ShipEntity *container = [cargoPods objectForKey:commodity_name];
+	ShipEntity *container = cargoPods[commodity_name];
 	while (how_much > 0)
 	{
 		if (container)
@@ -4707,10 +4691,7 @@ static const OOMatrix	starboard_matrix =
 }
 
 
-- (OOMatrix) viewMatrix
-{
-	return viewMatrix;
-}
+@synthesize viewMatrix;
 
 
 - (void) drawMessage
@@ -6049,16 +6030,10 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 }
 
 
-- (OOTimeAbsolute) getTime
-{
-	return universal_time;
-}
+@synthesize time = universal_time;
 
 
-- (OOTimeDelta) getTimeDelta
-{
-	return time_delta;
-}
+@synthesize timeDelta = time_delta;
 
 
 - (void) findCollisionsAndShadows
@@ -6095,10 +6070,7 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 }
 
 
-- (OOViewID) viewDirection
-{
-	return viewDirection;
-}
+@synthesize viewDirection;
 
 
 - (void) setViewDirection:(OOViewID) vd
@@ -6525,7 +6497,7 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 								NSString		*shipName = nil;
 								NSDictionary	*shipDict = nil; */
 								
-								demo_ship_subindex = (demo_ship_subindex + 1) % [[demo_ships objectAtIndex:demo_ship_index] count];
+								demo_ship_subindex = (demo_ship_subindex + 1) % [demo_ships[demo_ship_index] count];
 								demo_ship = [self newShipWithName:[[self demoShipData] oo_stringForKey:kOODemoShipKey] usePlayerProxy:NO];
 								
 								if (demo_ship != nil)
@@ -7333,10 +7305,7 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 }
 
 
-- (OOSystemID) currentSystemID
-{
-	return systemID;
-}
+@synthesize currentSystemID = systemID;
 
 
 - (NSDictionary *) descriptions
@@ -7435,10 +7404,7 @@ static void VerifyDesc(NSString *key, id desc)
 }
 
 
-- (NSArray *) scenarios
-{
-	return _scenarios;
-}
+@synthesize scenarios = _scenarios;
 
 
 - (void) loadScenarios
@@ -7449,16 +7415,10 @@ static void VerifyDesc(NSString *key, id desc)
 }
 
 
-- (NSDictionary *) characters
-{
-	return characters;
-}
+@synthesize characters;
 
 
-- (NSDictionary *) missiontext
-{
-	return missiontext;
-}
+@synthesize missiontext;
 
 
 - (NSString *)descriptionForKey:(NSString *)key
@@ -7481,10 +7441,7 @@ static void VerifyDesc(NSString *key, id desc)
 }
 
 
-- (OOSystemDescriptionManager *) systemManager
-{
-	return systemManager;
-}
+@synthesize systemManager;
 
 
 - (NSString *) keyForPlanetOverridesForSystem:(OOSystemID) s inGalaxy:(OOGalaxyID) g
@@ -7798,11 +7755,9 @@ static void VerifyDesc(NSString *key, id desc)
 		double dist = distanceBetweenPlanetPositions(here.x, here.y, there.x, there.y);
 		if (dist <= range && (i != systemID || [self inInterstellarSpace])) // if we are in interstellar space, it's OK to include the system we (mis)jumped from
 		{
-			[result addObject: [NSDictionary dictionaryWithObjectsAndKeys:
-								@(dist), @"distance",
-								@(i), @"sysID",
-								[[self generateSystemData:i] oo_stringForKey:@"sun_gone_nova" defaultValue:@"0"], @"nova",
-								nil]];
+			[result addObject: @{@"distance": @(dist),
+								@"sysID": @(i),
+								@"nova": [[self generateSystemData:i] oo_stringForKey:@"sun_gone_nova" defaultValue:@"0"]}];
 		}
 	}
 	
@@ -8174,22 +8129,13 @@ static void VerifyDesc(NSString *key, id desc)
 }
 
 
-- (NSDictionary *) globalSettings
-{
-	return globalSettings;
-}
+@synthesize globalSettings;
 
 
-- (NSArray *) equipmentData
-{
-	return equipmentData;
-}
+@synthesize equipmentData;
 
 
-- (OOCommodityMarket *) commodityMarket
-{
-	return commodityMarket;
-}
+@synthesize commodityMarket;
 
 
 - (NSString *) timeDescription:(double) interval
@@ -8629,7 +8575,7 @@ static void VerifyDesc(NSString *key, id desc)
 							price += eqPrice;
 							fwdWeaponString = equipmentKey;
 							fwdWeapon = new_weapon;
-							[shipDict setObject:fwdWeaponString forKey:KEY_EQUIPMENT_FORWARD_WEAPON];
+							shipDict[KEY_EQUIPMENT_FORWARD_WEAPON] = fwdWeaponString;
 							weaponCustomized = YES;
 							fwdWeaponDesc = eqShortDesc;
 						}
@@ -8642,7 +8588,7 @@ static void VerifyDesc(NSString *key, id desc)
 								price += eqPrice;
 								aftWeaponString = equipmentKey;
 								aftWeapon = new_weapon;
-								[shipDict setObject:aftWeaponString forKey:KEY_EQUIPMENT_AFT_WEAPON];
+								shipDict[KEY_EQUIPMENT_AFT_WEAPON] = aftWeaponString;
 							}
 							else 
 							{
@@ -8724,17 +8670,15 @@ static void VerifyDesc(NSString *key, id desc)
 			
 			uint16_t personality = RanrotWithSeed(&personalitySeed) & ENTITY_PERSONALITY_MAX;
 			
-			NSDictionary *ship_info_dictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-				shipID,								SHIPYARD_KEY_ID,
-				ship_key,							SHIPYARD_KEY_SHIPDATA_KEY,
-				shipDict,							SHIPYARD_KEY_SHIP,
-				shortShipDescription,				KEY_SHORT_DESCRIPTION,
-				@(price),							SHIPYARD_KEY_PRICE,
-				extras,								KEY_EQUIPMENT_EXTRAS,
-				@(personality),						SHIPYARD_KEY_PERSONALITY,
-				NULL];
+			NSDictionary *ship_info_dictionary = @{SHIPYARD_KEY_ID: shipID,
+				SHIPYARD_KEY_SHIPDATA_KEY: ship_key,
+				SHIPYARD_KEY_SHIP: shipDict,
+				KEY_SHORT_DESCRIPTION: shortShipDescription,
+				SHIPYARD_KEY_PRICE: @(price),
+				KEY_EQUIPMENT_EXTRAS: extras,
+				SHIPYARD_KEY_PERSONALITY: @(personality)};
 			
-			[resultDictionary setObject:ship_info_dictionary forKey:shipID];	// should order them fairly randomly
+			resultDictionary[shipID] = ship_info_dictionary;	// should order them fairly randomly
 		}
 		
 		// next contract
@@ -9235,10 +9179,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 }
 
 
-- (BOOL) displayGUI
-{
-	return displayGUI;
-}
+@synthesize displayGUI;
 
 
 @synthesize displayFPS;
@@ -9254,16 +9195,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 @synthesize autoSave;
 
 
-- (void) setAutoSaveNow:(BOOL) value
-{
-	autoSaveNow = !!value;
-}
-
-
-- (BOOL) autoSaveNow
-{
-	return autoSaveNow;
-}
+@synthesize autoSaveNow;
 
 
 - (void) setWireframeGraphics:(BOOL) value
@@ -9316,10 +9248,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 
 }
 
-- (OOGraphicsDetail) detailLevel
-{
-	return detailLevel;
-}
+@synthesize detailLevel;
 
 
 - (BOOL) useShaders
@@ -9518,7 +9447,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 
 	[gui autorelease];
 	gui = [[GuiDisplayGen alloc] init];
-	[gui setTextColor:[OOColor colorWithDescription:[[gui userSettings] objectForKey:kGuiDefaultTextColor]]];
+	[gui setTextColor:[OOColor colorWithDescription:[gui userSettings][kGuiDefaultTextColor]]];
 
 	// message_gui and comm_log_gui defaults are set up inside [hud resetGuis:] ( via [player deferredInit], called from the code that calls this method). 
 	[message_gui autorelease];
@@ -10263,7 +10192,7 @@ static void PreloadOneSound(NSString *soundName)
 
 @implementation OOSound (OOCustomSounds)
 
-+ (id) soundWithCustomSoundKey:(NSString *)key
++ (instancetype) soundWithCustomSoundKey:(NSString *)key
 {
 	NSString *fileName = [UNIVERSE soundNameForCustomSoundKey:key];
 	if (fileName == nil)  return nil;
@@ -10271,7 +10200,7 @@ static void PreloadOneSound(NSString *soundName)
 }
 
 
-- (id) initWithCustomSoundKey:(NSString *)key
+- (instancetype) initWithCustomSoundKey:(NSString *)key
 {
 	[self release];
 	return [[OOSound soundWithCustomSoundKey:key] retain];
@@ -10282,13 +10211,13 @@ static void PreloadOneSound(NSString *soundName)
 
 @implementation OOSoundSource (OOCustomSounds)
 
-+ (id) sourceWithCustomSoundKey:(NSString *)key
++ (instancetype) sourceWithCustomSoundKey:(NSString *)key
 {
 	return [[[self alloc] initWithCustomSoundKey:key] autorelease];
 }
 
 
-- (id) initWithCustomSoundKey:(NSString *)key
+- (instancetype) initWithCustomSoundKey:(NSString *)key
 {
 	OOSound *theSound = [OOSound soundWithCustomSoundKey:key];
 	if (theSound != nil)

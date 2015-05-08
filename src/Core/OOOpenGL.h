@@ -31,14 +31,14 @@ MA 02110-1301, USA.
 #import "OOOpenGLOnly.h"
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOShaderSetting)
 {
 	// NOTE: numerical values are available to scripts.
 	SHADERS_NOT_SUPPORTED					= 0,
 	SHADERS_OFF								= 1,
 	SHADERS_SIMPLE							= 2,
 	SHADERS_FULL							= 3
-} OOShaderSetting;
+};
 
 
 #define NULL_SHADER ((GLhandleARB)0)
@@ -114,7 +114,7 @@ typedef enum
 		GL_DEPTH_WRITEMASK is off
 		GL_CULL_FACE is off
 */
-typedef enum
+typedef NS_ENUM(unsigned int, OOOpenGLStateID)
 {
 	OPENGL_STATE_OPAQUE,
 	OPENGL_STATE_TRANSLUCENT_PASS,
@@ -122,7 +122,7 @@ typedef enum
 	OPENGL_STATE_OVERLAY,
 	
 	OPENGL_STATE_INTERNAL_USE_ONLY
-} OOOpenGLStateID;
+};
 
 
 #if OO_GL_STATE_VERIFICATION

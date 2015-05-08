@@ -40,7 +40,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 
 @interface OOEquipmentType (Private)
 
-- (id) initWithInfo:(NSArray *)info;
+- (instancetype) initWithInfo:(NSArray *)info;
 
 @end
 
@@ -154,7 +154,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 }
 
 
-- (id) initWithInfo:(NSArray *)info
+- (instancetype) initWithInfo:(NSArray *)info
 {
 	BOOL				OK = YES;
 	NSDictionary		*extra = nil;
@@ -231,9 +231,9 @@ static NSDictionary		*sMissilesRegistry = nil;
 
 			_installTime = [extra oo_unsignedIntForKey:@"installation_time" defaultValue:0];
 			_repairTime = [extra oo_unsignedIntForKey:@"repair_time" defaultValue:0];
-			_provides = [[extra oo_arrayForKey:@"provides" defaultValue:[NSArray array]] retain];
+			_provides = [[extra oo_arrayForKey:@"provides" defaultValue:@[]] retain];
 
-			_weaponInfo = [[extra oo_dictionaryForKey:@"weapon_info" defaultValue:[NSDictionary dictionary]] retain];
+			_weaponInfo = [[extra oo_dictionaryForKey:@"weapon_info" defaultValue:@{}] retain];
 
 			_damageProbability = [extra oo_floatForKey:@"damage_probability" defaultValue:(_isMissileOrMine?0.0:1.0)];
 			
@@ -652,7 +652,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 
 - (OOColor *) weaponColor
 {
-	return [OOColor brightColorWithDescription:[_weaponInfo objectForKey:@"color"]];
+	return [OOColor brightColorWithDescription:_weaponInfo[@"color"]];
 }
 
 

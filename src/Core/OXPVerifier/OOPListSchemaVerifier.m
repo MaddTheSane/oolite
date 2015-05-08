@@ -232,13 +232,13 @@ VERIFY_PROTO(DelegatedType);
 
 @implementation OOPListSchemaVerifier
 
-+ (id)verifierWithSchema:(NSDictionary *)schema
++ (instancetype)verifierWithSchema:(NSDictionary *)schema
 {
 	return [[[self alloc] initWithSchema:schema] autorelease];
 }
 
 
-- (id)initWithSchema:(NSDictionary *)schema
+- (instancetype)initWithSchema:(NSDictionary *)schema
 {
 	self = [super init];
 	if (self != nil)
@@ -1346,7 +1346,7 @@ static NSError *Verify_DelegatedType(OOPListSchemaVerifier *verifier, id value, 
 	BOOL					stop = NO;
 	NSError					*error = nil;
 	
-	DebugDump(@"* delegated type: %@", [params objectForKey:@"key"]);
+	DebugDump(@"* delegated type: %@", params[@"key"]);
 	
 	baseType = params[@"baseType"];
 	if (baseType != nil)

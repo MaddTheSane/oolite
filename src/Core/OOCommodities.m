@@ -99,7 +99,7 @@ MA 02110-1301, USA.
 
 
 
-- (id) init
+- (instancetype) init
 {
 	self = [super init];
 	if (self == nil)  return nil;
@@ -147,7 +147,7 @@ MA 02110-1301, USA.
 		/* The actual capacity of the player ship is a total, not
 		 * per-good, so is managed separately through PlayerEntity */
 		[good oo_setUnsignedInteger:UINT32_MAX forKey:kOOCommodityCapacity];
-		[good setObject:commodity forKey:kOOCommodityKey];
+		good[kOOCommodityKey] = commodity;
 		
 		[market setGood:commodity withInfo:good];
 	}
@@ -166,7 +166,7 @@ MA 02110-1301, USA.
 		good = [NSMutableDictionary dictionaryWithDictionary:[_commodityLists oo_dictionaryForKey:commodity]];
 		[good oo_setUnsignedInteger:0 forKey:kOOCommodityPriceCurrent];
 		[good oo_setUnsignedInteger:0 forKey:kOOCommodityQuantityCurrent];
-		[good setObject:commodity forKey:kOOCommodityKey];
+		good[kOOCommodityKey] = commodity;
 		
 		[market setGood:commodity withInfo:good];
 	}
@@ -179,7 +179,7 @@ MA 02110-1301, USA.
 	NSMutableDictionary *definition = [NSMutableDictionary dictionaryWithDictionary:good];
 	[definition oo_setUnsignedInteger:p forKey:kOOCommodityPriceCurrent];
 	[definition oo_setUnsignedInteger:q forKey:kOOCommodityQuantityCurrent];
-	[definition setObject:key forKey:kOOCommodityKey];
+	definition[kOOCommodityKey] = key;
 	if (station != nil && ![station marketMonitored])
 	{
 		// clear legal status indicators if the market is not monitored
@@ -500,7 +500,7 @@ MA 02110-1301, USA.
 		}
 	}
 	// return a blank dictionary - default values will do the rest
-	return [NSDictionary dictionary];
+	return @{};
 }
 
 

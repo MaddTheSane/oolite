@@ -78,76 +78,62 @@
 
 }
 
-- (id)initWithKey:(NSString *)key definition:(NSDictionary *) dict;
+- (instancetype)initWithKey:(NSString *)key definition:(NSDictionary *) dict NS_DESIGNATED_INITIALIZER;
 - (BOOL) setUpVisualEffectFromDictionary:(NSDictionary *) effectDict;
 
-- (OOMesh *)mesh;
-- (void)setMesh:(OOMesh *)mesh;
+@property (strong) OOMesh *mesh;
 
-- (NSString *)effectKey;
+@property (readonly, copy) NSString *effectKey;
 
-- (GLfloat)frustumRadius;
+@property (readonly) GLfloat frustumRadius;
 
 - (void) clearSubEntities;
-- (BOOL) setUpSubEntities;
+@property (readonly) BOOL setUpSubEntities;
 - (void) removeSubEntity:(Entity<OOSubEntity> *)sub;
 - (void) setNoDrawDistance;
-- (NSArray *)subEntities;
-- (NSUInteger) subEntityCount;
-- (NSEnumerator *) visualEffectSubEntityEnumerator;
+@property (readonly, copy) NSArray *subEntities;
+@property (readonly) NSUInteger subEntityCount;
+@property (readonly, strong) NSEnumerator *visualEffectSubEntityEnumerator;
 - (BOOL) hasSubEntity:(Entity<OOSubEntity> *)sub;
 
-- (NSEnumerator *)subEntityEnumerator;
-- (NSEnumerator *)effectSubEntityEnumerator;
-- (NSEnumerator *)flasherEnumerator;
+@property (readonly, strong) NSEnumerator *subEntityEnumerator;
+@property (readonly, strong) NSEnumerator *effectSubEntityEnumerator;
+@property (readonly, strong) NSEnumerator *flasherEnumerator;
 
 - (void) orientationChanged;
-- (Vector) forwardVector;
-- (Vector) rightVector;
-- (Vector) upVector;
+@property (readonly) Vector forwardVector;
+@property (readonly) Vector rightVector;
+@property (readonly) Vector upVector;
 
-- (OOColor *)scannerDisplayColor1;
-- (OOColor *)scannerDisplayColor2;
-- (void)setScannerDisplayColor1:(OOColor *)color;
-- (void)setScannerDisplayColor2:(OOColor *)color; 
-- (GLfloat *) scannerDisplayColorForShip:(BOOL)flash :(OOColor *)scannerDisplayColor1 :(OOColor *)scannerDisplayColor2;
+@property (copy) OOColor *scannerDisplayColor1;
+@property (copy) OOColor *scannerDisplayColor2;
+- (GLfloat *) scannerDisplayColorForShip:(BOOL)flash :(OOColor *)scannerDisplayColor1 :(OOColor *)scannerDisplayColor2 NS_RETURNS_INNER_POINTER;
 
 - (void) setScript:(NSString *)script_name;
 - (OOJSScript *)script;
-- (NSDictionary *)scriptInfo;
+@property (readonly, copy) NSDictionary *scriptInfo;
 - (void) doScriptEvent:(jsid)message;
 - (void) remove;
 
-- (GLfloat) scaleMax; // used for calculating frustum cull size
-- (GLfloat) scaleX;
-- (void) setScaleX:(GLfloat)factor;
-- (GLfloat) scaleY;
-- (void) setScaleY:(GLfloat)factor;
-- (GLfloat) scaleZ;
-- (void) setScaleZ:(GLfloat)factor;
+@property (readonly) GLfloat scaleMax; // used for calculating frustum cull size
+@property  GLfloat scaleX;
+@property  GLfloat scaleY;
+@property  GLfloat scaleZ;
 
 // convenience for shaders
-- (GLfloat)hullHeatLevel;
-- (void)setHullHeatLevel:(GLfloat)value;
+@property  GLfloat hullHeatLevel;
 // shader properties
-- (GLfloat) shaderFloat1;
-- (void)setShaderFloat1:(GLfloat)value;
-- (GLfloat) shaderFloat2; 
-- (void)setShaderFloat2:(GLfloat)value;
-- (int) shaderInt1; 
-- (void)setShaderInt1:(int)value;
-- (int) shaderInt2;
-- (void)setShaderInt2:(int)value;
-- (Vector) shaderVector1; 
-- (void)setShaderVector1:(Vector)value;
-- (Vector) shaderVector2; 
-- (void)setShaderVector2:(Vector)value;
+@property  GLfloat shaderFloat1;
+@property  GLfloat shaderFloat2; 
+@property  int shaderInt1; 
+@property  int shaderInt2;
+@property  Vector shaderVector1; 
+@property  Vector shaderVector2; 
 
 
-- (BOOL) isBreakPattern;
-- (void) setIsBreakPattern:(BOOL)bp;
+@property  BOOL isBreakPattern;
 
-- (NSDictionary *)effectInfoDictionary;
+@property (readonly, copy) NSDictionary *effectInfoDictionary;
 
 
 @end

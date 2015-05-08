@@ -65,7 +65,7 @@ MA 02110-1301, USA.
 @implementation OOPlanetEntity
 
 // this is exclusively called to initialise the main planet.
-- (id) initAsMainPlanetForSystem:(OOSystemID)s
+- (instancetype) initAsMainPlanetForSystem:(OOSystemID)s
 {
 	NSMutableDictionary *planetInfo = [[UNIVERSE generateSystemData:s] mutableCopy];
 	[planetInfo autorelease];
@@ -82,7 +82,7 @@ MA 02110-1301, USA.
 static const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect starts at 10x the height of the clouds
 
 
-- (id) initFromDictionary:(NSDictionary *)dict withAtmosphere:(BOOL)atmosphere andSeed:(Random_Seed)seed forSystem:(OOSystemID)systemID
+- (instancetype) initFromDictionary:(NSDictionary *)dict withAtmosphere:(BOOL)atmosphere andSeed:(Random_Seed)seed forSystem:(OOSystemID)systemID
 {
 	if (dict == nil)  dict = @{};
 	RANROTSeed savedRanrotSeed = RANROTGetFullSeed();
@@ -126,7 +126,7 @@ static const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect 
 	planetInfo[@"land_fraction"] = @(0.01 * percent_land);
 
 	int percent_ice = [planetInfo oo_intForKey:@"percent_ice" defaultValue:5];
-	[planetInfo setObject:[NSNumber numberWithFloat:0.01 * percent_ice] forKey:@"polar_fraction"];
+	planetInfo[@"polar_fraction"] = [NSNumber numberWithFloat:0.01 * percent_ice];
 	
 	RNG_Seed savedRndSeed = currentRandomSeed();
 	
@@ -152,7 +152,7 @@ static const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect 
 		_airColor = planetInfo[@"air_color"];
 		// OOLog (@"planet.debug",@" translated air colour:%@ cloud colour:%@ polar cloud color:%@", [_airColor rgbaDescription],[(OOColor *)[planetInfo objectForKey:@"cloud_color"] rgbaDescription],[(OOColor *)[planetInfo objectForKey:@"polar_cloud_color"] rgbaDescription]);
 
-		_materialParameters = [planetInfo dictionaryWithValuesForKeys:[NSArray arrayWithObjects:@"cloud_fraction", @"air_color",  @"cloud_color", @"polar_cloud_color", @"cloud_alpha", @"land_fraction", @"land_color", @"sea_color", @"polar_land_color", @"polar_sea_color", @"noise_map_seed", @"economy", @"polar_fraction", @"isMiniature", nil]];
+		_materialParameters = [planetInfo dictionaryWithValuesForKeys:@[@"cloud_fraction", @"air_color",  @"cloud_color", @"polar_cloud_color", @"cloud_alpha", @"land_fraction", @"land_color", @"sea_color", @"polar_land_color", @"polar_sea_color", @"noise_map_seed", @"economy", @"polar_fraction", @"isMiniature"]];
 	}
 	else
 #else
@@ -321,7 +321,7 @@ static OOColor *ColorWithHSBColor(Vector c)
 		else ScanVectorFromString([sourceInfo oo_stringForKey:@"sea_hsb_color"], &seaHSB);
 		
 		// polar areas are brighter but have less colour (closer to white)
-		color = [OOColor colorWithDescription:[sourceInfo objectForKey:@"polar_land_color"]];
+		color = [OOColor colorWithDescription:sourceInfo[@"polar_land_color"]];
 		if (color != nil)
 		{
 			landPolarHSB = HSBColorWithColor(color);
@@ -331,7 +331,7 @@ static OOColor *ColorWithHSBColor(Vector c)
 			landPolarHSB = LighterHSBColor(landHSB);
 		}
 
-		color = [OOColor colorWithDescription:[sourceInfo objectForKey:@"polar_sea_color"]];
+		color = [OOColor colorWithDescription:sourceInfo[@"polar_sea_color"]];
 		if (color != nil)
 		{
 			seaPolarHSB = HSBColorWithColor(color);
@@ -377,7 +377,7 @@ static OOColor *ColorWithHSBColor(Vector c)
 }
 
 
-- (id) initAsMiniatureVersionOfPlanet:(OOPlanetEntity *)planet
+- (instancetype) initAsMiniatureVersionOfPlanet:(OOPlanetEntity *)planet
 {
 	// Nasty, nasty. I'd really prefer to have a separate entity class for this.
 	if (planet == nil)

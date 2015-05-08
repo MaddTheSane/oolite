@@ -124,14 +124,14 @@ void OOJSSetTimeLimiterLimit(OOTimeDelta limit);
 	NSArray						*_profileEntries;
 }
 
-- (double) totalTime;
-- (double) javaScriptTime;
-- (double) nativeTime;
-- (double) extensionTime;
-- (double) nonExtensionTime;
-- (double) profilerOverhead;
+@property (readonly) double totalTime;
+@property (readonly) double javaScriptTime;
+@property (readonly) double nativeTime;
+@property (readonly) double extensionTime;
+@property (readonly) double nonExtensionTime;
+@property (readonly) double profilerOverhead;
 
-- (NSArray *) profileEntries;	// Array of OOTimeProfileEntry
+@property (readonly, copy) NSArray *profileEntries;	// Array of OOTimeProfileEntry
 
 @end
 
@@ -150,17 +150,17 @@ void OOJSSetTimeLimiterLimit(OOTimeDelta limit);
 #endif
 }
 
-- (NSString *) description;
+@property (readonly, copy) NSString *description;
 
-- (NSString *) function;
-- (NSUInteger) hitCount;
-- (double) totalTimeSum;
-- (double) selfTimeSum;
-- (double) totalTimeAverage;
-- (double) selfTimeAverage;
-- (double) totalTimeMax;
-- (double) selfTimeMax;
-- (BOOL) isJavaScriptFrame;
+@property (readonly, copy) NSString *function;
+@property (readonly) NSUInteger hitCount;
+@property (readonly) double totalTimeSum;
+@property (readonly) double selfTimeSum;
+@property (readonly) double totalTimeAverage;
+@property (readonly) double selfTimeAverage;
+@property (readonly) double totalTimeMax;
+@property (readonly) double selfTimeMax;
+@property (getter=isJavaScriptFrame, readonly) BOOL javaScriptFrame;
 
 - (NSComparisonResult) compareByTotalTime:(OOTimeProfileEntry *)other;
 - (NSComparisonResult) compareByTotalTimeReverse:(OOTimeProfileEntry *)other;

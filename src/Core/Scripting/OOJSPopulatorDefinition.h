@@ -35,10 +35,8 @@ MA 02110-1301, USA.
 	OOJSScript			*_owningScript;
 }
 
-- (jsval)callback;
-- (void)setCallback:(jsval)callback;
-- (JSObject *)callbackThis;
-- (void)setCallbackThis:(JSObject *)callbackthis;
+@property  jsval callback;
+@property  JSObject *callbackThis;
 
 - (void)runCallback:(HPVector)location;
 

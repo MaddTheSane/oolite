@@ -45,7 +45,7 @@ MA 02110-1301, USA.
 	return [[[OOWaypointEntity alloc] initWithDictionary:info] autorelease];
 }
 
-- (id) initWithDictionary:(NSDictionary *)info
+- (instancetype) initWithDictionary:(NSDictionary *)info
 {
 	self = [super init];
 	if (EXPECT_NOT(self == nil))  return nil;

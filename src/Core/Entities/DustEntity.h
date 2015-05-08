@@ -52,7 +52,6 @@ MA 02110-1301, USA.
 #endif
 }
 
-- (void) setDustColor:(OOColor *) color;
-- (OOColor *) dustColor;
+@property (copy) OOColor *dustColor;
 
 @end

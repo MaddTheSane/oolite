@@ -33,7 +33,7 @@ MA 02110-1301, USA.
 @class OOColor;
 
 
-@interface OOLaserShotEntity: Entity
+@interface OOLaserShotEntity: Entity 
 {
 @private
 	GLfloat					_color[4];
@@ -49,8 +49,8 @@ MA 02110-1301, USA.
 
 - (void) setRange:(GLfloat)range;
 
-- (OOTexture *) texture1;
-- (OOTexture *) texture2;
+@property (readonly, strong) OOTexture *texture1;
+@property (readonly, strong) OOTexture *texture2;
 
 + (void) setUpTexture;
 + (OOTexture *) innerTexture;

@@ -64,7 +64,7 @@ OOINLINE BOOL RowInRange(OOGUIRow row, NSRange range)
 
 static BOOL _refreshStarChart = NO;
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -118,7 +118,7 @@ static BOOL _refreshStarChart = NO;
 }
 
 
-- (id) initWithPixelSize:(NSSize)gui_size
+- (instancetype) initWithPixelSize:(NSSize)gui_size
 				 columns:(int)gui_cols 
 					rows:(int)gui_rows 
 			   rowHeight:(int)gui_row_height
@@ -253,40 +253,22 @@ static BOOL _refreshStarChart = NO;
 }
 
 
-- (NSSize)size
-{
-	return size_in_pixels;
-}
+@synthesize size = size_in_pixels;
 
 
-- (unsigned)columns
-{
-	return n_columns;
-}
+@synthesize columns = n_columns;
 
 
-- (unsigned)rows
-{
-	return n_rows;
-}
+@synthesize rows = n_rows;
 
 
-- (unsigned)rowHeight
-{
-	return pixel_row_height;
-}
+@synthesize rowHeight = pixel_row_height;
 
 
-- (int)rowStart
-{
-	return pixel_row_start;
-}
+@synthesize rowStart = pixel_row_start;
 
 
-- (NSString *)title
-{
-	return title;
-}
+@synthesize title;
 
 
 - (void) setTitle:(NSString *)str
@@ -300,22 +282,10 @@ static BOOL _refreshStarChart = NO;
 }
 
 
-- (void) setDrawPosition:(Vector) vector
-{
-	drawPosition = vector;
-}
+@synthesize drawPosition;
 
 
-- (Vector) drawPosition
-{
-	return drawPosition;
-}
-
-
-- (NSDictionary *) userSettings
-{
-	return guiUserSettings;
-}
+@synthesize userSettings = guiUserSettings;
 
 
 - (void) fadeOutFromTime:(OOTimeAbsolute) now_time overDuration:(OOTimeDelta) duration
@@ -337,10 +307,7 @@ static BOOL _refreshStarChart = NO;
 }
 
 
-- (GLfloat) alpha
-{
-	return fade_alpha;
-}
+@synthesize alpha = fade_alpha;
 
 
 - (void) setAlpha:(GLfloat) an_alpha
@@ -376,7 +343,7 @@ static BOOL _refreshStarChart = NO;
 	
 	OOColor *col = nil;
 	if (setting != nil) {
-		col = [OOColor colorWithDescription:[guiUserSettings objectForKey:setting]];
+		col = [OOColor colorWithDescription:guiUserSettings[setting]];
 	}
 	if (col == nil) {
 		if (def != nil) {
@@ -570,16 +537,7 @@ static BOOL _refreshStarChart = NO;
 }
 
 
-- (NSRange) selectableRange
-{
-	return selectableRange;
-}
-
-
-- (void) setSelectableRange:(NSRange) range
-{
-	selectableRange = range;
-}
+@synthesize selectableRange;
 
 
 - (void) setTabStops:(OOGUITabSettings)stops
@@ -1527,7 +1485,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 				if ([text length] != 0)
 				{
 					isLeftAligned = tabStops[j] >= 0;
-					rowPosition[i].x = abs(tabStops[j]);
+					rowPosition[i].x = labs(tabStops[j]);
 					
 					// we don't want to highlight leading space(s) or narrow spaces (\037s)
 					NSString	*hilitedText = [text stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" \037"]];
@@ -1856,7 +1814,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		noNova = !nearby_systems[i].nova;
 		NSAssert1(chart_mode <= OOLRC_MODE_TECHLEVEL, @"Long range chart mode %i out of range", (int)chart_mode);
 	
-		NSArray *markers = [markedDestinations objectForKey:[NSNumber numberWithInt:i]];
+		NSArray *markers = markedDestinations[@(i)];
 		if (markers != nil)	// is marked
 		{
 			GLfloat base_size = 0.5f * blob_size + 2.5f;
@@ -2094,7 +2052,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		travelTimeLine = OOExpandKey(@"long-range-chart-est-travel-time", time);
 	}
 	
-	[self setArray:[NSArray arrayWithObjects:targetName, travelDistLine,travelTimeLine,nil] forRow:GUI_ROW_CHART_SYSTEM];
+	[self setArray:@[targetName, travelDistLine,travelTimeLine] forRow:GUI_ROW_CHART_SYSTEM];
 	[targetName release];
 
 	// draw crosshairs over current location
@@ -2378,7 +2336,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 	OOGL(GLScaledLineWidth(1.5f));
 	for (i = 0; i < 256; i++)
 	{
-		NSArray *markers = markedDestinations[[NSNumber numberWithInt:i]];
+		NSArray *markers = markedDestinations[@(i)];
 		if (markers != nil)
 		{
 			NSPoint sys_coordinates = [systemManager getCoordinatesForSystem:i inGalaxy:galaxy_id];
@@ -2547,9 +2505,9 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		OOSystemID loc;
 		for (i = 0; i < route_hops; i++)
 		{
-			loc = [[routeInfo objectForKey:@"route"] oo_intAtIndex:i];
+			loc = [routeInfo[@"route"] oo_intAtIndex:i];
 			starabs = [systemManager getCoordinatesForSystem:loc inGalaxy:g];
-			star2abs = [systemManager getCoordinatesForSystem:[[routeInfo objectForKey:@"route"] oo_intAtIndex:i+1] inGalaxy:g];
+			star2abs = [systemManager getCoordinatesForSystem:[routeInfo[@"route"] oo_intAtIndex:i+1] inGalaxy:g];
 
 			star.x = (float)(starabs.x * hscale);
 			star.y = (float)(starabs.y * vscale);
@@ -2572,7 +2530,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		// Label the destination, which was not included in the above loop.
 		if (zoom > CHART_ZOOM_SHOW_LABELS)
 		{
-			loc = [[routeInfo objectForKey:@"route"] oo_intAtIndex:i];
+			loc = [routeInfo[@"route"] oo_intAtIndex:i];
 			OODrawString([UNIVERSE systemNameIndex:loc], x + star2.x + 2.0, y + star2.y, z, NSMakeSize(10,10));
 		}
 	}

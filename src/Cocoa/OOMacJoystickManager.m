@@ -44,7 +44,7 @@ static void HandleDeviceRemovalCallback(void * inContext, IOReturn inResult, voi
 
 @implementation OOMacJoystickManager
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{

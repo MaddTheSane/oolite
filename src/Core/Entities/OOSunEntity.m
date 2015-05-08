@@ -50,7 +50,7 @@ MA 02110-1301, USA.
 @implementation OOSunEntity
 
 #ifndef NDEBUG
-- (id) init
+- (instancetype) init
 {
 	assert(0);
 	return nil;
@@ -115,7 +115,7 @@ MA 02110-1301, USA.
 }
 
 
-- (id) initSunWithColor:(OOColor *)sun_color andDictionary:(NSDictionary *) dict
+- (instancetype) initSunWithColor:(OOColor *)sun_color andDictionary:(NSDictionary *) dict
 {
 	int			i;
 	
@@ -282,9 +282,9 @@ MA 02110-1301, USA.
 				if (sky_bri == 1.0)
 				{	
 					// This sun has now gone nova!
-					[UNIVERSE setSystemDataKey:@"sun_gone_nova" value:[NSNumber numberWithBool:YES] fromManifest:@"org.oolite.oolite"];
-					[UNIVERSE setSystemDataKey:@"corona_flare" value:[NSNumber numberWithFloat:0.3] fromManifest:@"org.oolite.oolite"];
-					[UNIVERSE setSystemDataKey:@"corona_hues" value:[NSNumber numberWithFloat:0.05] fromManifest:@"org.oolite.oolite"];
+					[UNIVERSE setSystemDataKey:@"sun_gone_nova" value:@YES fromManifest:@"org.oolite.oolite"];
+					[UNIVERSE setSystemDataKey:@"corona_flare" value:@0.3f fromManifest:@"org.oolite.oolite"];
+					[UNIVERSE setSystemDataKey:@"corona_hues" value:@0.05f fromManifest:@"org.oolite.oolite"];
 					// Novas are stored under the core manifest if the
 					// player was there at the time. Default layer 2
 					// is fine.

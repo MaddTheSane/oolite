@@ -49,14 +49,14 @@ SOFTWARE.
 - (instancetype) initWithPropertyListRepresentation:(NSDictionary *)plist;
 
 // propertyListRepresentation is only valid if objects are property list objects.
-- (NSDictionary *) propertyListRepresentation;
+@property (readonly, copy) NSDictionary *propertyListRepresentation;
 
 @property (atomic, readonly) NSUInteger count;
-- (id) randomObject;
+@property (readonly, strong) id randomObject;
 
 - (float) weightForObject:(id)object;	// Returns -1 for unknown objects.
-- (float) sumOfWeights;
-- (NSArray *) allObjects;
+@property (readonly) float sumOfWeights;
+@property (readonly, copy) NSArray *allObjects;
 
 @end
 
@@ -64,7 +64,7 @@ SOFTWARE.
 @interface OOProbabilitySet (OOExtendedProbabilitySet)
 
 - (BOOL) containsObject:(id)object;
-- (NSEnumerator *) objectEnumerator;
+@property (readonly, strong) NSEnumerator *objectEnumerator;
 - (float) probabilityForObject:(id)object;	// Returns -1 for unknown objects, or a value from 0 to 1 inclusive for known objects.
 
 @end

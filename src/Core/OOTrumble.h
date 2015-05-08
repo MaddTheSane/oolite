@@ -114,8 +114,8 @@ enum trumble_mouth
 	BOOL					readyToSpawn;
 }
 
-- (id) initForPlayer:(PlayerEntity *)p1;
-- (id) initForPlayer:(PlayerEntity *)p1 digram:(NSString*) digramString;
+- (instancetype) initForPlayer:(PlayerEntity *)p1 NS_DESIGNATED_INITIALIZER;
+- (instancetype) initForPlayer:(PlayerEntity *)p1 digram:(NSString*) digramString NS_DESIGNATED_INITIALIZER;
 
 - (void) setupForPlayer:(PlayerEntity *)p1 digram:(NSString*) digramString;
 
@@ -123,13 +123,13 @@ enum trumble_mouth
 
 - (void) calcGrowthRate;
 
-- (unichar *)	digram;
-- (NSPoint)		position;
-- (NSPoint)		movement;
-- (GLfloat)		rotation;
-- (GLfloat)		size;
-- (GLfloat)		hunger;
-- (GLfloat)		discomfort;
+@property (readonly, atomic) unichar *digram;
+@property (readonly) NSPoint position;
+@property (readonly) NSPoint movement;
+@property (readonly) GLfloat rotation;
+@property (readonly) GLfloat size;
+@property (readonly) GLfloat hunger;
+@property (readonly) GLfloat discomfort;
 
 // AI methods here
 - (void) actionIdle;

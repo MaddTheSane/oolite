@@ -40,7 +40,7 @@ SOFTWARE.
 
 @interface OOShaderUniform (OOPrivate)
 
-- (id)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram;
+- (instancetype)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram;
 
 - (void)applySimple;
 - (void)applyBinding;
@@ -50,7 +50,7 @@ SOFTWARE.
 
 @implementation OOShaderUniform
 
-- (id)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram intValue:(GLint)constValue
+- (instancetype)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram intValue:(GLint)constValue
 {
 	self = [self initWithName:uniformName shaderProgram:shaderProgram];
 	if (self != nil)
@@ -63,7 +63,7 @@ SOFTWARE.
 }
 
 
-- (id)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram floatValue:(GLfloat)constValue
+- (instancetype)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram floatValue:(GLfloat)constValue
 {
 	self = [self initWithName:uniformName shaderProgram:shaderProgram];
 	if (self != nil)
@@ -76,7 +76,7 @@ SOFTWARE.
 }
 
 
-- (id)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram vectorValue:(GLfloat[4])constValue
+- (instancetype)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram vectorValue:(GLfloat[4])constValue
 {
 	self = [self initWithName:uniformName shaderProgram:shaderProgram];
 	if (self != nil)
@@ -89,7 +89,7 @@ SOFTWARE.
 }
 
 
-- (id)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram colorValue:(OOColor *)constValue
+- (instancetype)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram colorValue:(OOColor *)constValue
 {
 	if (EXPECT_NOT(constValue == nil))
 	{
@@ -111,7 +111,7 @@ SOFTWARE.
 }
 
 
-- (id)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram quaternionValue:(Quaternion)constValue asMatrix:(BOOL)asMatrix
+- (instancetype)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram quaternionValue:(Quaternion)constValue asMatrix:(BOOL)asMatrix
 {
 	self = [self initWithName:uniformName shaderProgram:shaderProgram];
 	if (self != nil)
@@ -135,7 +135,7 @@ SOFTWARE.
 }
 
 
-- (id)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram matrixValue:(OOMatrix)constValue
+- (instancetype)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram matrixValue:(OOMatrix)constValue
 {
 	self = [self initWithName:uniformName shaderProgram:shaderProgram];
 	if (self != nil)
@@ -148,7 +148,7 @@ SOFTWARE.
 }
 
 
-- (id)initWithName:(NSString *)uniformName
+- (instancetype)initWithName:(NSString *)uniformName
 	 shaderProgram:(OOShaderProgram *)shaderProgram
 	 boundToObject:(id<OOWeakReferenceSupport>)target
 		  property:(SEL)selector
@@ -403,7 +403,7 @@ SOFTWARE.
 @implementation OOShaderUniform (OOPrivate)
 
 // Designated initializer.
-- (id)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram
+- (instancetype)initWithName:(NSString *)uniformName shaderProgram:(OOShaderProgram *)shaderProgram
 {
 	BOOL					OK = YES;
 	

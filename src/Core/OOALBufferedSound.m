@@ -47,7 +47,7 @@ SOFTWARE.
 
 
 
-- (id)initWithDecoder:(OOALSoundDecoder *)inDecoder
+- (instancetype)initWithDecoder:(OOALSoundDecoder *)inDecoder
 {
 	BOOL					OK = YES;
 	

@@ -67,12 +67,12 @@ MA 02110-1301, USA.
 
 @implementation OOVisualEffectEntity
 
-- (id) init
+- (instancetype) init
 {
 	return [self initWithKey:@"" definition:nil];
 }
 
-- (id)initWithKey:(NSString *)key definition:(NSDictionary *)dict
+- (instancetype)initWithKey:(NSString *)key definition:(NSDictionary *)dict
 {
 	OOJS_PROFILE_ENTER
 	

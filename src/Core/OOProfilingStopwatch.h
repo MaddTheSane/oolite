@@ -125,12 +125,12 @@ OOTimeDelta OOHighResTimeDeltaInSeconds(OOHighResTimeValue startTime, OOHighResT
 
 - (void) start;
 - (void) stop;
-- (OOTimeDelta) currentTime;	// Returns stop time - start time if stopped, or now - start time if running.
+@property (readonly) OOTimeDelta currentTime;	// Returns stop time - start time if stopped, or now - start time if running.
 
 /*	Resets timer to zero, returning the current value. This is drift-free, i.e.
 	if it is called twice in a row while running the sum is an accurate time
 	since the timer started.
 */
-- (OOTimeDelta) reset;
+@property (readonly) OOTimeDelta reset;
 
 @end

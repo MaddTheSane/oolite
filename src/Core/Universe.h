@@ -338,14 +338,14 @@ enum
 	BOOL					_doingStartUp;
 }
 
-- (id)initWithGameView:(MyOpenGLView *)gameView;
+- (instancetype)initWithGameView:(MyOpenGLView *)gameView NS_DESIGNATED_INITIALIZER;
 
 // SessionID: a value that's incremented when the game is reset.
 @property (atomic, readonly) NSUInteger sessionID;
 
 @property (nonatomic) BOOL doProcedurallyTexturedPlanets;
 
-- (NSString *) useAddOns;
+@property (readonly, copy) NSString *useAddOns;
 - (BOOL) setUseAddOns:(NSString *)newUse fromSaveGame: (BOOL)saveGame;
 - (BOOL) setUseAddOns:(NSString *) newUse fromSaveGame:(BOOL) saveGame forceReinit:(BOOL)force;
 
@@ -356,10 +356,10 @@ enum
 /// True during initial game startup (not reset).
 @property (atomic, readonly) BOOL doingStartUp;
 
-- (NSUInteger) entityCount;
+@property (readonly, atomic) NSUInteger entityCount;
 #ifndef NDEBUG
 - (void) debugDumpEntities;
-- (NSArray *) entityList;
+@property (readonly, copy, atomic) NSArray *entityList;
 #endif
 
 - (void) pauseGame;
@@ -373,17 +373,16 @@ enum
 - (void) setUpSpace;
 - (void) populateNormalSpace;
 - (void) clearSystemPopulator;
-- (BOOL) deterministicPopulation;
+@property (readonly) BOOL deterministicPopulation;
 - (void) populateSystemFromDictionariesWithSun:(OOSunEntity *)sun andPlanet:(OOPlanetEntity *)planet;
-- (NSDictionary *) getPopulatorSettings;
+@property (getter=getPopulatorSettings, readonly, copy, atomic) NSDictionary *populatorSettings;
 - (void) setPopulatorSetting:(NSString *)key to:(NSDictionary *)setting;
 - (HPVector) locationByCode:(NSString *)code withSun:(OOSunEntity *)sun andPlanet:(OOPlanetEntity *)planet;
-- (void) setAmbientLightLevel:(float)newValue;
-- (float) ambientLightLevel;
+@property (nonatomic) float ambientLightLevel;
 - (void) setLighting;
 - (void) forceLightSwitch;
 - (void) setMainLightPosition: (Vector) sunPos;
-- (OOPlanetEntity *) setUpPlanet;
+@property (readonly, strong, atomic) OOPlanetEntity *setUpPlanet;
 
 - (void) makeSunSkimmer:(ShipEntity *) ship andSetAI:(BOOL)setAI;
 - (void) addShipWithRole:(NSString *) desc nearRouteOneAt:(double) route_fraction;
@@ -410,7 +409,7 @@ enum
 
 - (void) forceWitchspaceEntries;
 - (void) addWitchspaceJumpEffectForShip:(ShipEntity *)ship;
-- (GLfloat) safeWitchspaceExitDistance;
+@property (readonly, atomic) GLfloat safeWitchspaceExitDistance;
 
 - (void) setUpBreakPattern:(HPVector)pos orientation:(Quaternion)q forDocking:(BOOL)forDocking;
 @property BOOL witchspaceBreakPattern;
@@ -425,12 +424,12 @@ enum
 - (void) selectIntro2PreviousCategory;
 - (void) selectIntro2NextCategory;
 
-- (StationEntity *) station;
-- (OOPlanetEntity *) planet;
-- (OOSunEntity *) sun;
-- (NSArray *) planets;	// Note: does not include sun.
-- (NSArray *) stations; // includes main station
-- (NSArray *) wormholes; 
+@property (readonly, strong, atomic) StationEntity *station;
+@property (readonly, strong, atomic) OOPlanetEntity *planet;
+@property (readonly, strong, atomic) OOSunEntity *sun;
+@property (readonly, copy, atomic) NSArray *planets;	// Note: does not include sun.
+@property (readonly, copy, atomic) NSArray *stations; // includes main station
+@property (readonly, copy, atomic) NSArray *wormholes;
 - (StationEntity *) stationWithRole:(NSString *)role andPosition:(HPVector)position;
 
 // Turn main station into just another station, for blowUpStation.
@@ -444,10 +443,10 @@ enum
 - (void) setNextBeacon:(Entity <OOBeaconEntity> *) beaconShip;
 - (void) clearBeacon:(Entity <OOBeaconEntity> *) beaconShip;
 
-- (NSDictionary *) currentWaypoints;
+@property (readonly, copy, atomic) NSDictionary *currentWaypoints;
 - (void) defineWaypoint:(NSDictionary *)definition forKey:(NSString *)key;
 
-- (GLfloat *) skyClearColor;
+@property (readonly, atomic) GLfloat *skyClearColor;
 // Note: the alpha value is also air resistance!
 - (void) setSkyColorRed:(GLfloat)red green:(GLfloat)green blue:(GLfloat)blue alpha:(GLfloat)alpha;
 
@@ -472,7 +471,7 @@ enum
 
 - (OOCreditsQuantity) getEquipmentPriceForKey:(NSString *) eq_key;
 
-- (OOCommodities *) commodities;
+@property (readonly, strong) OOCommodities *commodities;
 
 - (ShipEntity *) reifyCargoPod:(ShipEntity *)cargoObj;
 - (ShipEntity *) cargoPodFromTemplate:(ShipEntity *)cargoObj;
@@ -480,7 +479,7 @@ enum
 - (NSArray *) getContainersOfCommodity:(OOCommodityType) commodity_name :(OOCargoQuantity) how_many;
 - (void) fillCargopodWithRandomCargo:(ShipEntity *)cargopod;
 
-- (NSString *) getRandomCommodity;
+@property (getter=getRandomCommodity, readonly, copy, atomic) NSString *randomCommodity;
 - (OOCargoQuantity) getRandomAmountOfCommodity:(OOCommodityType) co_type;
 
 - (NSDictionary *) commodityDataForType:(OOCommodityType)type;
@@ -488,8 +487,8 @@ enum
 - (NSString *) describeCommodity:(OOCommodityType)co_type amount:(OOCargoQuantity) co_amount;
 
 @property (retain) MyOpenGLView *gameView;
-- (GameController *) gameController;
-- (NSDictionary *) gameSettings;
+@property (readonly, strong, atomic) GameController *gameController;
+@property (readonly, copy, atomic) NSDictionary *gameSettings;
 
 - (void) useGUILightSource:(BOOL)GUILight;
 
@@ -503,7 +502,7 @@ enum
 - (void) drawWatermarkString:(NSString *)watermarkString;
 
 // Used to draw subentities. Should be getting this from camera.
-- (OOMatrix) viewMatrix;
+@property (readonly) OOMatrix viewMatrix;
 
 - (id) entityForUniversalID:(OOUniversalID)u_id;
 
@@ -522,8 +521,8 @@ enum
 - (ShipEntity *) addWreckageFrom:(ShipEntity *)ship withRole:(NSString *)wreckRole at:(HPVector)rpos scale:(GLfloat)scale lifetime:(GLfloat)lifetime;
 - (void) addLaserHitEffectsAt:(HPVector)pos against:(ShipEntity *)target damage:(float)damage color:(OOColor *)color;
 - (ShipEntity *) firstShipHitByLaserFromShip:(ShipEntity *)srcEntity inDirection:(OOWeaponFacing)direction offset:(Vector)offset gettingRangeFound:(GLfloat*)range_ptr;
-- (Entity *) firstEntityTargetedByPlayer;
-- (Entity *) firstEntityTargetedByPlayerPrecisely;
+@property (readonly, strong, atomic) Entity *firstEntityTargetedByPlayer;
+@property (readonly, strong, atomic) Entity *firstEntityTargetedByPlayerPrecisely;
 
 - (NSArray *) entitiesWithinRange:(double)range ofEntity:(Entity *)entity;
 - (unsigned) countShipsWithRole:(NSString *)role inRange:(double)range ofEntity:(Entity *)entity;
@@ -565,15 +564,14 @@ enum
 				   relativeToEntity:(Entity *)entity;
 
 
-- (OOTimeAbsolute) getTime;
-- (OOTimeDelta) getTimeDelta;
+@property (getter=getTime, readonly) OOTimeAbsolute time;
+@property (getter=getTimeDelta, readonly) OOTimeDelta timeDelta;
 
 - (void) findCollisionsAndShadows;
-- (NSString*) collisionDescription;
+@property (readonly, copy, atomic) NSString *collisionDescription;
 - (void) dumpCollisions;
 
-- (OOViewID) viewDirection;
-- (void) setViewDirection:(OOViewID)vd;
+@property (nonatomic) OOViewID viewDirection;
 - (void) enterGUIViewModeWithMouseInteraction:(BOOL)mouseInteraction;	// Use instead of setViewDirection:VIEW_GUI_DISPLAY
 
 - (NSString *) soundNameForCustomSoundKey:(NSString *)key;
@@ -594,8 +592,7 @@ enum
 - (void) update:(OOTimeDelta)delta_t;
 
 // Time Acelleration Factor. In deployment builds, this is always 1.0 and -setTimeAccelerationFactor: does nothing.
-- (double) timeAccelerationFactor;
-- (void) setTimeAccelerationFactor:(double)newTimeAccelerationFactor;
+@property (atomic) double timeAccelerationFactor;
 
 - (void) filterSortedLists;
 
@@ -606,15 +603,15 @@ enum
 
 - (void) setSystemTo:(OOSystemID) s;
 
-- (OOSystemID) currentSystemID;
+@property (readonly) OOSystemID currentSystemID;
 
-- (NSDictionary *) descriptions;
-- (NSDictionary *) characters;
-- (NSDictionary *) missiontext;
-- (NSArray *) scenarios;
+@property (readonly, copy, atomic) NSDictionary *descriptions;
+@property (readonly, copy) NSDictionary *characters;
+@property (readonly, copy) NSDictionary *missiontext;
+@property (readonly, copy) NSArray *scenarios;
 - (NSDictionary *) explosionSetting:(NSString *)explosion;
 
-- (OOSystemDescriptionManager *) systemManager;
+@property (readonly, strong) OOSystemDescriptionManager *systemManager;
 
 - (NSString *)descriptionForKey:(NSString *)key;	// String, or random item from array
 - (NSString *)descriptionForArrayKey:(NSString *)key index:(unsigned)index;	// Indexed item from array
@@ -624,7 +621,7 @@ enum
 - (NSString *) keyForInterstellarOverridesForSystems:(OOSystemID) s1 :(OOSystemID) s2 inGalaxy:(OOGalaxyID) g;
 - (NSDictionary *) generateSystemData:(OOSystemID) s;
 - (NSDictionary *) generateSystemData:(OOSystemID) s useCache:(BOOL) useCache;
-- (NSDictionary *) currentSystemData;	// Same as generateSystemData:systemSeed unless in interstellar space.
+@property (readonly, copy, atomic) NSDictionary *currentSystemData;	// Same as generateSystemData:systemSeed unless in interstellar space.
 
 @property (readonly, atomic) BOOL inInterstellarSpace;
 
@@ -651,7 +648,7 @@ enum
 - (OOSystemID) findSystemNumberAtCoords:(NSPoint) coords withGalaxy:(OOGalaxyID) gal;
 - (NSPoint) findSystemCoordinatesWithPrefix:(NSString *) p_fix;
 - (NSPoint) findSystemCoordinatesWithPrefix:(NSString *) p_fix exactMatch:(BOOL) exactMatch;
-- (BOOL*) systemsFound;
+@property (readonly, atomic) BOOL *systemsFound;
 - (NSString*) systemNameIndex:(OOSystemID) index;
 - (NSDictionary *) routeFromSystem:(OOSystemID) start toSystem:(OOSystemID) goal optimizedBy:(OORouteType) optimizeBy;
 - (NSArray *) neighboursToSystem:(OOSystemID) system_number;
@@ -659,16 +656,16 @@ enum
 - (void) preloadPlanetTexturesForSystem:(OOSystemID)system;
 - (void) preloadSounds;
 
-- (NSDictionary *) globalSettings;
+@property (readonly, copy) NSDictionary *globalSettings;
 
-- (NSArray *) equipmentData;
-- (OOCommodityMarket *) commodityMarket;
+@property (readonly, copy) NSArray *equipmentData;
+@property (readonly, strong) OOCommodityMarket *commodityMarket;
 
 - (NSString *) timeDescription:(OOTimeDelta) interval;
 - (NSString *) shortTimeDescription:(OOTimeDelta) interval;
 
 - (void) loadStationMarkets:(NSArray *)marketData;
-- (NSArray *) getStationMarkets;
+@property (getter=getStationMarkets, readonly, copy, atomic) NSArray *stationMarkets;
 
 - (NSArray *) shipsForSaleForSystem:(OOSystemID) s withTL:(OOTechLevelID) specialTL atTime:(OOTimeAbsolute) current_time;
 
@@ -698,7 +695,7 @@ enum
 - (void) resetCommsLogColor;
 
 - (void) setDisplayText:(BOOL) value;
-- (BOOL) displayGUI;
+@property (readonly) BOOL displayGUI;
 
 @property BOOL displayFPS;
 
@@ -706,9 +703,8 @@ enum
 
 @property (nonatomic) BOOL wireframeGraphics;
 
-- (BOOL) reducedDetail;
-- (void) setDetailLevel:(OOGraphicsDetail)value;
-- (OOGraphicsDetail) detailLevel;
+@property (readonly, atomic) BOOL reducedDetail;
+@property (nonatomic) OOGraphicsDetail detailLevel;
 @property (readonly, atomic) BOOL useShaders;
 
 - (void) handleOoliteException:(NSException *)ooliteException;
@@ -734,8 +730,7 @@ enum
 ////
 
 //autosave
-- (void) setAutoSaveNow:(BOOL) value;
-- (BOOL) autoSaveNow;
+@property  BOOL autoSaveNow;
 
 @property (readonly) int framesDoneThisUpdate;
 - (void) resetFramesDoneThisUpdate;

@@ -47,7 +47,7 @@ MA 02110-1301, USA.
 }
 
 
-- (id) initWithDictionary:(NSDictionary *)dictionary
+- (instancetype) initWithDictionary:(NSDictionary *)dictionary
 {
 	float size = [dictionary oo_floatForKey:@"size" defaultValue:1.0f];
 	

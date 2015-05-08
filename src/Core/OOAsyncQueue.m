@@ -80,7 +80,7 @@ OOINLINE void FreeElement(OOAsyncQueueElement *element)
 @interface OOAsyncQueue (OOPrivate)
 
 - (void)doEmptyQueueWithAcquiredLock;
-- (id)doDequeAndUnlockWithAcquiredLock;
+@property (readonly, strong) id doDequeAndUnlockWithAcquiredLock;
 - (void)recycleElementWithAcquiredLock:(OOAsyncQueueElement *)element;
 
 @end
@@ -88,7 +88,7 @@ OOINLINE void FreeElement(OOAsyncQueueElement *element)
 
 @implementation OOAsyncQueue
 
-- (id)init
+- (instancetype)init
 {
 	self = [super init];
 	if (self != nil)

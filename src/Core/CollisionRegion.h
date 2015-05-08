@@ -60,8 +60,8 @@ MA 02110-1301, USA.
 	CollisionRegion		*parentRegion;
 }
 
-- (id) initAsUniverse;
-- (id) initAtLocation:(HPVector) locn withRadius:(GLfloat) rad withinRegion:(CollisionRegion*) otherRegion;
+- (instancetype) initAsUniverse;
+- (instancetype) initAtLocation:(HPVector) locn withRadius:(GLfloat) rad withinRegion:(CollisionRegion*) otherRegion;
 
 - (void) clearSubregions;
 - (void) addSubregionAtPosition:(HPVector) pos withRadius:(GLfloat) rad;
@@ -75,9 +75,9 @@ MA 02110-1301, USA.
 - (void) findShadowedEntities;
 
 // Description for FPS HUD
-- (NSString *) collisionDescription;
+@property (readonly, copy, atomic) NSString *collisionDescription;
 
-- (NSString *) debugOut;
+@property (readonly, copy, atomic) NSString *debugOut;
 
 @end
 

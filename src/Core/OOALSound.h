@@ -35,14 +35,14 @@ SOFTWARE.
 + (void) setMasterVolume:(float) fraction;
 + (float) masterVolume;
 
-- (id) initWithContentsOfFile:(NSString *)path;
+- (instancetype) initWithContentsOfFile:(NSString *)path;
 
-- (NSString *)name;
+@property (readonly, copy, nonatomic) NSString *name;
 
 + (BOOL) isSoundOK;
 
-- (ALuint) soundBuffer;
-- (BOOL) soundIncomplete;
+@property (readonly, atomic) ALuint soundBuffer;
+@property (readonly, atomic) BOOL soundIncomplete;
 - (void) rewind;
 
 @end

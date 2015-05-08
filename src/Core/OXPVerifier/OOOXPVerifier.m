@@ -47,7 +47,7 @@ static void OpenLogFile(NSString *name);
 
 @interface OOOXPVerifier (OOPrivate)
 
-- (id)initWithPath:(NSString *)path;
+- (instancetype)initWithPath:(NSString *)path;
 - (void)run;
 
 - (void)setUpLogOverrides;
@@ -241,7 +241,7 @@ static void OpenLogFile(NSString *name);
 
 @implementation OOOXPVerifier (OOPrivate)
 
-- (id)initWithPath:(NSString *)path
+- (instancetype)initWithPath:(NSString *)path
 {
 	self = [super init];
 

@@ -46,7 +46,7 @@ static id NSNULL = nil;
 
 @implementation OOModelVerifierStage
 
-- (id)init
+- (instancetype)init
 {
 	self = [super init];
 	if (self != nil)

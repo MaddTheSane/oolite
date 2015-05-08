@@ -53,26 +53,25 @@ SOFTWARE.
 	
 	If no seed is specified, the current seed will be copied.
 */
-- (id)initWithPListName:(NSString *)plistName 
+- (instancetype)initWithPListName:(NSString *)plistName 
 				options:(uint32_t)options
 			 anisotropy:(GLfloat)anisotropy
 				lodBias:(GLfloat)lodBias;
 
-- (id)initWithPListName:(NSString *)plistName 
+- (instancetype)initWithPListName:(NSString *)plistName 
 				options:(uint32_t)options
 			 anisotropy:(GLfloat)anisotropy
 				lodBias:(GLfloat)lodBias
-				   seed:(RANROTSeed)seed;
+				   seed:(RANROTSeed)seed NS_DESIGNATED_INITIALIZER;
 
 /*	Select a texture, weighted-randomly.
 */
-- (OOTexture *)selectTexture;
+@property (readonly, strong) OOTexture *selectTexture;
 
-- (unsigned)textureCount;
+@property (readonly) unsigned int textureCount;
 
 - (void)ensureTexturesLoaded;
 
-- (RANROTSeed)seed;
-- (void)setSeed:(RANROTSeed)seed;
+@property  RANROTSeed seed;
 
 @end

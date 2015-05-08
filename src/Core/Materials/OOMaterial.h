@@ -45,7 +45,7 @@ SOFTWARE.
 + (void) setUp;
 
 
-- (NSString *) name;
+@property (readonly, copy) NSString *name;
 
 // Make this the current material.
 - (void) apply;
@@ -63,21 +63,21 @@ SOFTWARE.
 	required before using a material directly.
 */
 - (void) ensureFinishedLoading;
-- (BOOL) isFinishedLoading;
+@property (getter=isFinishedLoading, readonly) BOOL finishedLoading;
 
 // Only used by shader material, but defined for all materials for convenience.
 - (void) setBindingTarget:(id<OOWeakReferenceSupport>)target;
 
 // True if material wants three-component cube map texture coordinates.
-- (BOOL) wantsNormalsAsTextureCoordinates;
+@property (readonly) BOOL wantsNormalsAsTextureCoordinates;
 
 #if OO_MULTITEXTURE
 // Nasty hack: number of texture units for which the drawable should set its basic texture coordinates.
-- (NSUInteger) countOfTextureUnitsWithBaseCoordinates;
+@property (readonly) NSUInteger countOfTextureUnitsWithBaseCoordinates;
 #endif
 
 #ifndef NDEBUG
-- (NSSet *) allTextures;
+@property (readonly, copy) NSSet *allTextures;
 #endif
 
 @end
@@ -86,7 +86,7 @@ SOFTWARE.
 @interface OOMaterial (OOSubclassInterface)
 
 // Subclass responsibilities - don't call directly.
-- (BOOL) doApply;	// Override instead of -apply
+@property (readonly) BOOL doApply;	// Override instead of -apply
 - (void) unapplyWithNext:(OOMaterial *)next;
 
 // Call at top of dealloc

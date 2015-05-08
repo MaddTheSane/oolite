@@ -38,16 +38,11 @@ MA 02110-1301, USA.
 	NSString			*_category;
 }
 
-- (NSString *)title;
-- (void)setTitle:(NSString *)title;
-- (NSString *)category;
-- (void)setCategory:(NSString *)category;
-- (NSString *)summary;
-- (void)setSummary:(NSString *)summary;
-- (jsval)callback;
-- (void)setCallback:(jsval)callback;
-- (JSObject *)callbackThis;
-- (void)setCallbackThis:(JSObject *)callbackthis;
+@property (copy) NSString *title;
+@property (copy) NSString *category;
+@property (copy) NSString *summary;
+@property  jsval callback;
+@property  JSObject *callbackThis;
 
 - (void)runCallback:(NSString *)key;
 

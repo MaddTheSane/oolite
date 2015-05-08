@@ -42,7 +42,7 @@ SOFTWARE.
 @end
 
 
-@interface OOGraphicsResetManager: NSObject
+@interface OOGraphicsResetManager: NSObject<OOGraphicsResetClient> 
 {
 @private
 	NSMutableSet			*clients;

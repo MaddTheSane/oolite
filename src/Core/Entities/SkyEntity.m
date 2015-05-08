@@ -52,7 +52,7 @@ MA 02110-1301, USA.
 
 @implementation SkyEntity
 
-- (id) initWithColors:(OOColor *)col1 :(OOColor *)col2 andSystemInfo:(NSDictionary *)systemInfo
+- (instancetype) initWithColors:(OOColor *)col1 :(OOColor *)col2 andSystemInfo:(NSDictionary *)systemInfo
 {
 	OOSkyDrawable			*skyDrawable;
 	float					clusterChance,
@@ -153,10 +153,7 @@ MA 02110-1301, USA.
 }
 
 
-- (OOColor *) skyColor
-{
-	return skyColor;
-}
+@synthesize skyColor;
 
 
 - (BOOL) changeProperty:(NSString *)key withDictionary:(NSDictionary*)dict

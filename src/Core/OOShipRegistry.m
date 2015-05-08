@@ -147,7 +147,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 }
 
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{
@@ -503,19 +503,19 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 			OOLog(@"shipdata.load.warning",@"Unexpected class '%@' in shiplibrary.plist for '%@'",class,[key oo_stringForKey:kOODemoShipKey]);
 			class = @"ship";
 		}
-		demoClass = [demoList objectForKey:class];
+		demoClass = demoList[class];
 		if (demoClass == nil)
 		{
-			[demoList setObject:[NSMutableArray array] forKey:class];
-			demoClass = [demoList objectForKey:class];
+			demoList[class] = [NSMutableArray array];
+			demoClass = demoList[class];
 		}
 		NSMutableDictionary *demoEntry = [NSMutableDictionary dictionaryWithDictionary:key];
 		// add "name" object to dictionary from ship definition
-		[demoEntry setObject:[[self shipInfoForKey:[demoEntry oo_stringForKey:@"ship"]] oo_stringForKey:kOODemoShipName] forKey:kOODemoShipName];
+		demoEntry[kOODemoShipName] = [[self shipInfoForKey:[demoEntry oo_stringForKey:@"ship"]] oo_stringForKey:kOODemoShipName];
 		// set "class" object to standard ship if not otherwise set
 		if (![[demoEntry oo_stringForKey:kOODemoShipClass defaultValue:nil] isEqualToString:class])
 		{
-			[demoEntry setObject:class forKey:kOODemoShipClass];
+			demoEntry[kOODemoShipClass] = class;
 		}
 		[demoClass addObject:demoEntry];
 	}
@@ -523,7 +523,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 	NSString *demoClassName = nil;
 	foreach(demoClassName, demoList)
 	{
-		[[demoList objectForKey:demoClassName] sortUsingFunction:SortDemoShipsByName context:NULL];
+		[demoList[demoClassName] sortUsingFunction:SortDemoShipsByName context:NULL];
 	}
 
 	// and then sort the ship list list by class name
@@ -1097,7 +1097,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 			
 				if (conditions != nil)
 				{
-					[shipEntry setObject:conditions forKey:@"conditions"];
+					shipEntry[@"conditions"] = conditions;
 				}
 				else
 				{
@@ -1114,7 +1114,7 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 			{
 				if (hasShipyard != nil)
 				{
-					[shipEntry setObject:hasShipyard forKey:@"has_shipyard"];
+					shipEntry[@"has_shipyard"] = hasShipyard;
 				}
 				else
 				{
@@ -1143,14 +1143,14 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 			
 				if (shipyardConditions != nil)
 				{
-					[mutableShipyard setObject:shipyardConditions forKey:@"conditions"];
+					mutableShipyard[@"conditions"] = shipyardConditions;
 				}
 				else
 				{
 					[mutableShipyard removeObjectForKey:@"conditions"];
 				}
 			
-				[shipEntry setObject:mutableShipyard forKey:@"_oo_shipyard"];
+				shipEntry[@"_oo_shipyard"] = mutableShipyard;
 			}
 		}
 	}

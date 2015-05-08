@@ -62,7 +62,7 @@ static NSPoint sCircleVerts[kCircleSegments];	// holds vector coordinates for a 
 }
 
 
-- (id) initRingFromEntity:(Entity *)sourceEntity
+- (instancetype) initRingFromEntity:(Entity *)sourceEntity
 {
 	if (sourceEntity == nil)
 	{

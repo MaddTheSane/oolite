@@ -351,7 +351,7 @@ MA 02110-1301, USA.
 
 - (NSString *) keyBindingDescription:(NSString *)binding
 {
-	if ([keyconfig_settings objectForKey:binding] == nil)
+	if (keyconfig_settings[binding] == nil)
 	{
 		// no such setting
 		return nil;

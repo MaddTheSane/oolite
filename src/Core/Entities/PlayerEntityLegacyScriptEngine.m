@@ -724,17 +724,17 @@ static BOOL sRunningScript = NO;
 
 	if ([passengerManifest count] > 0)
 	{
-		[result2 addObject:[[NSArray arrayWithObject:DESC(@"manifest-passengers")] arrayByAddingObjectsFromArray:passengerManifest]];
+		[result2 addObject:[@[DESC(@"manifest-passengers")] arrayByAddingObjectsFromArray:passengerManifest]];
 	}
 
 	if ([parcelManifest count] > 0)
 	{
-		[result2 addObject:[[NSArray arrayWithObject:DESC(@"manifest-parcels")] arrayByAddingObjectsFromArray:parcelManifest]];
+		[result2 addObject:[@[DESC(@"manifest-parcels")] arrayByAddingObjectsFromArray:parcelManifest]];
 	}
 
 	if ([contractManifest count] > 0)
 	{
-		[result2 addObject:[[NSArray arrayWithObject:DESC(@"manifest-contracts")] arrayByAddingObjectsFromArray:contractManifest]];
+		[result2 addObject:[@[DESC(@"manifest-contracts")] arrayByAddingObjectsFromArray:contractManifest]];
 	}
 
 	/* For proper display, array entries need to all be after string
@@ -879,7 +879,7 @@ static BOOL sRunningScript = NO;
 		}
 	}
 
-	[mission_variables setObject:expandedList forKey:key];
+	mission_variables[key] = expandedList;
 }
 
 

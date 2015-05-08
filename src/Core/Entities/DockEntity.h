@@ -51,27 +51,24 @@ MA 02110-1301, USA.
 - (void) clear;
 
 // Docking
-- (BOOL) allowsDocking;
-- (void) setAllowsDocking:(BOOL)allow;
-- (BOOL) disallowedDockingCollides; 
-- (void) setDisallowedDockingCollides:(BOOL)ddc;
-- (NSUInteger) countOfShipsInDockingQueue;
+@property  BOOL allowsDocking;
+@property  BOOL disallowedDockingCollides; 
+@property (readonly) NSUInteger countOfShipsInDockingQueue;
 - (NSDictionary *) dockingInstructionsForShip:(ShipEntity *)ship;
 - (NSString *) canAcceptShipForDocking:(ShipEntity *)ship;
 - (BOOL) shipIsInDockingCorridor:(ShipEntity *)ship;
 - (BOOL) shipIsInDockingQueue:(ShipEntity *)ship;
 - (void) abortDockingForShip:(ShipEntity *)ship;
 - (void) abortAllDockings;
-- (BOOL) dockingCorridorIsEmpty;
+@property (readonly) BOOL dockingCorridorIsEmpty;
 - (void) clearDockingCorridor;
 - (void) autoDockShipsOnApproach;
-- (NSUInteger) pruneAndCountShipsOnApproach;
+@property (readonly) NSUInteger pruneAndCountShipsOnApproach;
 - (void) noteDockingForShip:(ShipEntity *)ship;
 
 // Launching
-- (BOOL) allowsLaunching;
-- (void) setAllowsLaunching:(BOOL)allow;
-- (NSUInteger) countOfShipsInLaunchQueue;
+@property  BOOL allowsLaunching;
+@property (readonly) NSUInteger countOfShipsInLaunchQueue;
 - (NSUInteger) countOfShipsInLaunchQueueWithPrimaryRole:(NSString *)role;
 - (BOOL) allowsLaunchingOf:(ShipEntity *)ship;
 - (void) launchShip:(ShipEntity *)ship;
@@ -80,7 +77,7 @@ MA 02110-1301, USA.
 // Geometry
 - (void) setDimensionsAndCorridor:(BOOL)docking :(BOOL)ddc :(BOOL)launching;
 - (Vector) portUpVectorForShipsBoundingBox:(BoundingBox)bb;
-- (BOOL) isOffCentre;
+@property (getter=isOffCentre, readonly) BOOL offCentre;
 - (void) setVirtual;
 
 @end

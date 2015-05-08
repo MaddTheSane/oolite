@@ -33,7 +33,7 @@ SOFTWARE.
 
 @implementation OOProfilingStopwatch
 
-- (id) init
+- (instancetype) init
 {
 	if ((self = [super init]))
 	{

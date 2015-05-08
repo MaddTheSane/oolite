@@ -109,13 +109,13 @@ static JSFunctionSpec sScriptMethods[] =
 
 @implementation OOJSScript
 
-+ (id) scriptWithPath:(NSString *)path properties:(NSDictionary *)properties
++ (instancetype) scriptWithPath:(NSString *)path properties:(NSDictionary *)properties
 {
 	return [[[self alloc] initWithPath:path properties:properties] autorelease];
 }
 
 
-- (id) initWithPath:(NSString *)path properties:(NSDictionary *)properties
+- (instancetype) initWithPath:(NSString *)path properties:(NSDictionary *)properties
 {
 	JSContext				*context = NULL;
 	NSString				*problem = nil;		// Acts as error flag.
@@ -186,7 +186,7 @@ static JSFunctionSpec sScriptMethods[] =
 		{
 			if ([key isKindOfClass:[NSString class]])
 			{
-				property = [defaultProperties objectForKey:key];
+				property = defaultProperties[key];
 				if ([key isEqualToString:kLocalManifestProperty])
 				{
 					// this must not be editable
@@ -623,22 +623,22 @@ static JSFunctionSpec sScriptMethods[] =
 	 * values are meaningless and shouldn't be used here */
 	if (manifest != nil && ![[manifest oo_stringForKey:kOOManifestIdentifier] hasPrefix:@"__oolite.tmp."])
 	{
-		if ([manifest objectForKey:kOOManifestVersion] != nil)
+		if (manifest[kOOManifestVersion] != nil)
 		{
-			[properties setObject:[manifest oo_stringForKey:kOOManifestVersion] forKey:@"version"];
+			properties[@"version"] = [manifest oo_stringForKey:kOOManifestVersion];
 		}
-		if ([manifest objectForKey:kOOManifestIdentifier] != nil)
+		if (manifest[kOOManifestIdentifier] != nil)
 		{
 			// used for system info
-			[properties setObject:[manifest oo_stringForKey:kOOManifestIdentifier] forKey:kLocalManifestProperty];
+			properties[kLocalManifestProperty] = [manifest oo_stringForKey:kOOManifestIdentifier];
 		}
-		if ([manifest objectForKey:kOOManifestAuthor] != nil)
+		if (manifest[kOOManifestAuthor] != nil)
 		{
-			[properties setObject:[manifest oo_stringForKey:kOOManifestAuthor] forKey:@"author"];
+			properties[@"author"] = [manifest oo_stringForKey:kOOManifestAuthor];
 		}
-		if ([manifest objectForKey:kOOManifestLicense] != nil)
+		if (manifest[kOOManifestLicense] != nil)
 		{
-			[properties setObject:[manifest oo_stringForKey:kOOManifestLicense] forKey:@"license"];
+			properties[@"license"] = [manifest oo_stringForKey:kOOManifestLicense];
 		}
 	}
 	return properties;

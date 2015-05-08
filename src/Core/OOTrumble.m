@@ -40,7 +40,7 @@ static void PlayTrumbleSqueal(void);
 
 @implementation OOTrumble
 
-- (id) init
+- (instancetype) init
 {
 	self = [super init];
 	
@@ -54,7 +54,7 @@ static void PlayTrumbleSqueal(void);
 	return self;
 }
 
-- (id) initForPlayer:(PlayerEntity*) p1
+- (instancetype) initForPlayer:(PlayerEntity*) p1
 {
 	self = [super init];
 	
@@ -63,7 +63,7 @@ static void PlayTrumbleSqueal(void);
 	return self;
 }
 
-- (id) initForPlayer:(PlayerEntity*) p1 digram:(NSString*) digramString
+- (instancetype) initForPlayer:(PlayerEntity*) p1 digram:(NSString*) digramString
 {
 	self = [super init];
 	
@@ -261,40 +261,24 @@ static void PlayTrumbleSqueal(void);
 }
 
 
+@synthesize position;
+
+
 - (unichar *)	digram
 {
 	return digram;
 }
 
-- (NSPoint)		position
-{
-	return position;
-}
 
-- (NSPoint)		movement
-{
-	return movement;
-}
+@synthesize rotation;
 
-- (GLfloat)		rotation
-{
-	return rotation;
-}
+@synthesize movement;
 
-- (GLfloat)		size
-{
-	return size;
-}
+@synthesize size;
 
-- (GLfloat)		hunger
-{
-	return hunger;
-}
+@synthesize hunger;
 
-- (GLfloat)		discomfort
-{
-	return discomfort;
-}
+@synthesize discomfort;
 
 
 

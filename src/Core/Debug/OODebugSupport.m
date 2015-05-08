@@ -49,7 +49,7 @@ static id sDebugPlugInController;
 
 @interface NSObject (OODebugPlugInController)
 
-- (id<OODebuggerInterface>) setUpDebugger;
+@property (readonly, strong) id<OODebuggerInterface> setUpDebugger;
 
 @end
 

@@ -43,21 +43,21 @@ MA 02110-1301, USA.
 #define MAIN_GUI_PIXEL_ROW_START	40
 
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOGUIAlignment)
 {
 	GUI_ALIGN_LEFT,
 	GUI_ALIGN_RIGHT,
 	GUI_ALIGN_CENTER
-} OOGUIAlignment;
+};
 
-typedef enum
+typedef NS_ENUM(unsigned int, OOGUIBackgroundSpecial)
 {
 	GUI_BACKGROUND_SPECIAL_NONE,
 	GUI_BACKGROUND_SPECIAL_SHORT,
 	GUI_BACKGROUND_SPECIAL_LONG,
 	GUI_BACKGROUND_SPECIAL_LONG_ANA_SHORTEST,
 	GUI_BACKGROUND_SPECIAL_LONG_ANA_QUICKEST
-} OOGUIBackgroundSpecial;
+};
 
 #define GUI_KEY_OK				@"OK"
 #define GUI_KEY_SKIP			@"SKIP-ROW"
@@ -155,7 +155,7 @@ static NSString * const kGuiDockingContinueColor	= @"docking_continue_color";
 
 
 typedef NSInteger OOGUIRow;	// -1 for none
-typedef int OOGUITabStop; // negative value = right align text
+typedef NSInteger OOGUITabStop; // negative value = right align text
 typedef OOGUITabStop OOGUITabSettings[GUI_MAX_COLUMNS];
 
 
@@ -212,13 +212,13 @@ typedef OOGUITabStop OOGUITabSettings[GUI_MAX_COLUMNS];
 	OOSystemID				foundSystem;
 }
 
-- (id) init;
-- (id) initWithPixelSize:(NSSize)gui_size
+- (instancetype) init NS_DESIGNATED_INITIALIZER;
+- (instancetype) initWithPixelSize:(NSSize)gui_size
 				 columns:(int)gui_cols 
 					rows:(int)gui_rows 
 			   rowHeight:(int)gui_row_height
 				rowStart:(int)gui_row_start
-				   title:(NSString*)gui_title;
+				   title:(NSString*)gui_title NS_DESIGNATED_INITIALIZER;
 
 - (void) resizeWithPixelSize:(NSSize)gui_size
 					 columns:(int)gui_cols
@@ -229,27 +229,22 @@ typedef OOGUITabStop OOGUITabSettings[GUI_MAX_COLUMNS];
 - (void) resizeTo:(NSSize)gui_size
   characterHeight:(int)csize
 			title:(NSString*)gui_title;
-- (NSSize)size;
-- (unsigned)columns;
-- (unsigned)rows;
-- (unsigned)rowHeight;
-- (int)rowStart;
+@property (readonly) NSSize size;
+@property (readonly) unsigned int columns;
+@property (readonly) unsigned int rows;
+@property (readonly) unsigned int rowHeight;
+@property (readonly) int rowStart;
 
-- (NSString *)title;
-- (void) setTitle:(NSString *)str;
+@property (nonatomic, copy) NSString *title;
 
-- (void) dealloc;
+@property  Vector drawPosition;
 
-- (void) setDrawPosition:(Vector) vector;
-- (Vector) drawPosition;
-
-- (NSDictionary *) userSettings;
+@property (readonly, copy) NSDictionary *userSettings;
 
 - (void) fadeOutFromTime:(OOTimeAbsolute) now_time overDuration:(OOTimeDelta) duration;
 - (void) stopFadeOuts;
 
-- (GLfloat) alpha;
-- (void) setAlpha:(GLfloat) an_alpha;
+@property (nonatomic) GLfloat alpha;
 - (void) setMaxAlpha:(GLfloat) an_alpha;
 
 - (void) setBackgroundColor:(OOColor*) color;
@@ -273,14 +268,13 @@ typedef OOGUITabStop OOGUITabSettings[GUI_MAX_COLUMNS];
 - (BOOL) setFirstSelectableRow;
 - (BOOL) setLastSelectableRow;
 - (void) setNoSelectedRow;
-- (NSString *) selectedRowText;
-- (NSString *) selectedRowKey;
+@property (readonly, copy, atomic) NSString *selectedRowText;
+@property (readonly, copy, atomic) NSString *selectedRowKey;
 
 - (void) setShowTextCursor:(BOOL) yesno;
 - (void) setCurrentRow:(OOGUIRow) value;
 
-- (NSRange) selectableRange;
-- (void) setSelectableRange:(NSRange) range;
+@property  NSRange selectableRange;
 
 - (void) setTabStops:(OOGUITabSettings)stops;
 - (void) overrideTabs:(OOGUITabSettings)stops from:(NSString *)setting length:(NSUInteger)len;
@@ -352,7 +346,7 @@ typedef OOGUITabStop OOGUITabSettings[GUI_MAX_COLUMNS];
 - (void) clearBackground;
 
 - (void) leaveLastLine;
-- (NSArray *) getLastLines;
+@property (getter=getLastLines, readonly, copy, atomic) NSArray *lastLines;
 
 - (int) drawGUI:(GLfloat) alpha drawCursor:(BOOL) drawCursor;
 - (void) drawGUIBackground;

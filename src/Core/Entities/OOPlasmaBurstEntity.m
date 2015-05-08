@@ -34,7 +34,7 @@ MA 02110-1301, USA.
 
 @implementation OOPlasmaBurstEntity
 
-- (id) initWithPosition:(HPVector)inPosition
+- (instancetype) initWithPosition:(HPVector)inPosition
 {
 	if ((self = [super initWithDiameter:kPlasmaBurstInitialSize]))
 	{

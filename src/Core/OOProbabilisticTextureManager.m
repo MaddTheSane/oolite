@@ -33,7 +33,7 @@ SOFTWARE.
 
 @implementation OOProbabilisticTextureManager
 
-- (id)initWithPListName:(NSString *)plistName 
+- (instancetype)initWithPListName:(NSString *)plistName 
 				options:(uint32_t)options
 			 anisotropy:(GLfloat)anisotropy
 				lodBias:(GLfloat)lodBias
@@ -46,7 +46,7 @@ SOFTWARE.
 }
 
 
-- (id)initWithPListName:(NSString *)plistName 
+- (instancetype)initWithPListName:(NSString *)plistName 
 				options:(uint32_t)options
 			 anisotropy:(GLfloat)anisotropy
 				lodBias:(GLfloat)lodBias

@@ -529,7 +529,7 @@ static NSString *ApplyOneOperator(NSString *string, NSString *op, NSString *para
 					 nil];
 	}
 	
-	NSString *(*operator)(NSString *string, NSString *param) = [[operators objectForKey:op] pointerValue];
+	NSString *(*operator)(NSString *string, NSString *param) = [operators[op] pointerValue];
 	if (operator != NULL)
 	{
 		return operator(string, param);

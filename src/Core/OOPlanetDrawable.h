@@ -43,21 +43,17 @@ MA 02110-1301, USA.
 + (instancetype) planetWithTextureName:(NSString *)textureName radius:(float)radius;
 + (instancetype) atmosphereWithRadius:(float)radius;
 
-- (id) initAsAtmosphere;
+- (instancetype) initAsAtmosphere;
 
-- (OOMaterial *) material;
-- (void) setMaterial:(OOMaterial *)material;
+@property (strong) OOMaterial *material;
 
-- (NSString *) textureName;
-- (void) setTextureName:(NSString *)textureName;
+@property (copy) NSString *textureName;
 
 // Radius, in game metres.
-- (float) radius;
-- (void) setRadius:(float)radius;
+@property  float radius;
 
 // Level of detail, [0..1]. Granularity is implementation-defined.
-- (float) levelOfDetail;
-- (void) setLevelOfDetail:(float)lod;
+@property  float levelOfDetail;
 - (void) calculateLevelOfDetailForViewDistance:(float)distance;
 
 // depth-buffer hack

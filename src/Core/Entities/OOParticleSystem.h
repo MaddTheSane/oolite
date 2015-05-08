@@ -56,15 +56,15 @@ enum
 /*	Initialize particle effect with particles flying out randomly.
 	Initiali _particleSize[] is equal to speed.
  */
-- (id) initWithPosition:(HPVector)position
+- (instancetype) initWithPosition:(HPVector)position
 			   velocity:(Vector)velocity
 				  count:(unsigned)count
 			   minSpeed:(float)minSpeed
 			   maxSpeed:(float)maxSpeed
 			   duration:(OOTimeDelta)duration
-			  baseColor:(GLfloat[4])baseColor;
+			  baseColor:(GLfloat[4])baseColor NS_DESIGNATED_INITIALIZER;
 
-- (OOTexture *) texture;
+@property (readonly, strong) OOTexture *texture;
 
 @end
 

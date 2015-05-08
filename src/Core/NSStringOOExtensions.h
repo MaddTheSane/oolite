@@ -57,7 +57,7 @@ MA 02110-1301, USA.
 	It implements modified djb2 (with xor rather than addition) in terms of
 	UTF-16 code elements.
 */
-- (uint32_t) oo_hash;
+@property (readonly) uint32_t oo_hash;
 
 @end
 
