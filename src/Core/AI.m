@@ -796,7 +796,6 @@ static AIStackElement *sStack = NULL;
 	OOCacheManager			*cacheMgr = [OOCacheManager sharedCache];
 	NSString				*stateKey = nil;
 	NSDictionary			*stateHandlers = nil;
-	NSAutoreleasePool		*pool = nil;
 	
 	if (![smName isEqualToString:@"nullAI.plist"])
 	{
@@ -807,7 +806,7 @@ static AIStackElement *sStack = NULL;
 	
 	if (newSM == nil)
 	{
-		pool = [[NSAutoreleasePool alloc] init];
+		@autoreleasepool {
 		OOLog(@"ai.load", @"Loading and sanitizing AI \"%@\"", smName);
 		OOLogPushIndent();
 		OOLogIndentIf(@"ai.load");
@@ -867,7 +866,7 @@ static AIStackElement *sStack = NULL;
 		}
 		
 		[newSM retain];
-		[pool release];
+		}
 		[newSM autorelease];
 	}
 	

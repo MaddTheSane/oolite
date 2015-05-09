@@ -1888,7 +1888,6 @@ static NSString *LogClassKeyRoot(NSString *key)
 	NSString					*path = nil;
 	OOScript					*script = nil;
 	NSString					*name = nil;
-	NSAutoreleasePool			*pool = nil;
 	
 	OOLog(@"script.load.world.begin", @"Loading world scripts...");
 	
@@ -1901,7 +1900,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 		// a problem.
 		if (![ResourceManager corePlist:@"world-scripts.plist" excludedAt:path])
 		{
-			pool = [[NSAutoreleasePool alloc] init];
+			@autoreleasepool{
 		
 			@try
 			{
@@ -1923,7 +1922,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 				// Ignore exception and keep loading other scripts.
 			}
 		
-			[pool release];
+			}
 		}
 	}
 	
