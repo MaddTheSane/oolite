@@ -46,11 +46,11 @@ SOFTWARE.
 
 - (BOOL)enqueue:(id)object;	// Returns NO on failure, or if object is nil.
 
-@property (readonly, strong) id dequeue;			// Blocks until the queue is non-empty.
-@property (readonly, strong) id tryDequeue;		// Returns nil if empty.
+- (id)dequeue;			// Blocks until the queue is non-empty.
+- (id)tryDequeue;		// Returns nil if empty.
 
 // Due to the asynchronous nature of the queue, these values are immediately out of date.
-@property (readonly) BOOL empty;
+@property (readonly, atomic) BOOL empty;
 @property (readonly) NSUInteger count;
 
 - (void)emptyQueue;		// Releases all elements.

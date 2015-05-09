@@ -88,31 +88,31 @@ SOFTWARE.
 + (OOEquipmentType *) equipmentTypeWithIdentifier:(NSString *)identifier;
 
 @property (readonly, copy) NSString *identifier;
-@property (readonly, copy) NSString *damagedIdentifier;
+@property (readonly, copy, atomic) NSString *damagedIdentifier;
 @property (readonly, copy) NSString *name;			// localized
 @property (readonly, copy) NSString *descriptiveText;	// localized
 @property (readonly) OOTechLevelID techLevel;
 @property (readonly) OOCreditsQuantity price;	// Tenths of credits
 
-@property (getter=isAvailableToAll, readonly) BOOL availableToAll;
-@property (readonly) BOOL requiresEmptyPylon;
-@property (readonly) BOOL requiresMountedPylon;
-@property (readonly) BOOL requiresCleanLegalRecord;
-@property (readonly) BOOL requiresNonCleanLegalRecord;
-@property (readonly) BOOL requiresFreePassengerBerth;
-@property (readonly) BOOL requiresFullFuel;
-@property (readonly) BOOL requiresNonFullFuel;
-@property (getter=isPrimaryWeapon, readonly) BOOL primaryWeapon;
-@property (getter=isMissileOrMine, readonly) BOOL missileOrMine;
-@property (getter=isPortableBetweenShips, readonly) BOOL portableBetweenShips;
+@property (atomic, getter=isAvailableToAll, readonly) BOOL availableToAll;
+@property (atomic, readonly) BOOL requiresEmptyPylon;
+@property (atomic, readonly) BOOL requiresMountedPylon;
+@property (atomic, readonly) BOOL requiresCleanLegalRecord;
+@property (atomic, readonly) BOOL requiresNonCleanLegalRecord;
+@property (atomic, readonly) BOOL requiresFreePassengerBerth;
+@property (atomic, readonly) BOOL requiresFullFuel;
+@property (atomic, readonly) BOOL requiresNonFullFuel;
+@property (atomic, getter=isPrimaryWeapon, readonly) BOOL primaryWeapon;
+@property (atomic, getter=isMissileOrMine, readonly) BOOL missileOrMine;
+@property (atomic, getter=isPortableBetweenShips, readonly) BOOL portableBetweenShips;
 
-@property (readonly) BOOL canCarryMultiple;
-@property (readonly) GLfloat damageProbability;
-@property (readonly) BOOL canBeDamaged;
-@property (getter=isVisible, readonly) BOOL visible;				// Visible in UI?
+@property (atomic, readonly) BOOL canCarryMultiple;
+@property (atomic, readonly) GLfloat damageProbability;
+@property (atomic, readonly) BOOL canBeDamaged;
+@property (atomic, getter=isVisible, readonly) BOOL visible;				// Visible in UI?
 
-@property (getter=isAvailableToPlayer, readonly) BOOL availableToPlayer;
-@property (getter=isAvailableToNPCs, readonly) BOOL availableToNPCs;
+@property (atomic, getter=isAvailableToPlayer, readonly) BOOL availableToPlayer;
+@property (atomic, getter=isAvailableToNPCs, readonly) BOOL availableToNPCs;
 
 @property (readonly) OOCargoQuantity requiredCargoSpace;
 @property (readonly, copy) NSSet *requiresEquipment;		// Set of equipment identifiers; all items required
@@ -127,25 +127,25 @@ SOFTWARE.
 @property (readonly, copy) NSDictionary *scriptInfo;
 @property (readonly, copy) NSString *scriptName;
 
-@property (readonly) BOOL fastAffinityDefensive;
-@property (readonly) BOOL fastAffinityOffensive;
+@property (atomic, readonly) BOOL fastAffinityDefensive;
+@property (atomic, readonly) BOOL fastAffinityOffensive;
 
 @property (readonly) NSUInteger installTime;
-@property (readonly) NSUInteger repairTime;
+@property (readonly, atomic) NSUInteger repairTime;
 
 @property (readonly, copy) NSArray *providesForScripting;
 - (BOOL) provides:(NSString *)key;
 
 // weapon properties
-@property (getter=isTurretLaser, readonly) BOOL turretLaser;
-@property (getter=isMiningLaser, readonly) BOOL miningLaser;
-@property (readonly) GLfloat weaponRange;
-@property (readonly) GLfloat weaponEnergyUse;
-@property (readonly) GLfloat weaponDamage;
-@property (readonly) GLfloat weaponRechargeRate;
-@property (readonly) GLfloat weaponShotTemperature;
-@property (readonly) GLfloat weaponThreatAssessment;
-@property (readonly, copy) OOColor *weaponColor;
+@property (atomic, getter=isTurretLaser, readonly) BOOL turretLaser;
+@property (atomic, getter=isMiningLaser, readonly) BOOL miningLaser;
+@property (atomic, readonly) GLfloat weaponRange;
+@property (atomic, readonly) GLfloat weaponEnergyUse;
+@property (atomic, readonly) GLfloat weaponDamage;
+@property (atomic, readonly) GLfloat weaponRechargeRate;
+@property (atomic, readonly) GLfloat weaponShotTemperature;
+@property (atomic, readonly) GLfloat weaponThreatAssessment;
+@property (atomic, readonly, copy) OOColor *weaponColor;
 
 @end
 

@@ -45,12 +45,11 @@ MA 02110-1301, USA.
 
 + (instancetype) laserFromShip:(ShipEntity *)ship direction:(OOWeaponFacing)direction offset:(Vector)offset;
 
-- (void) setColor:(OOColor *)color;
+@property (atomic, copy) OOColor *color;
+@property (nonatomic) GLfloat range;
 
-- (void) setRange:(GLfloat)range;
-
-@property (readonly, strong) OOTexture *texture1;
-@property (readonly, strong) OOTexture *texture2;
+@property (atomic, readonly, strong) OOTexture *texture1;
+@property (atomic, readonly, strong) OOTexture *texture2;
 
 + (void) setUpTexture;
 + (OOTexture *) innerTexture;

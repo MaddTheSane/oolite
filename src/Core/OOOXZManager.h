@@ -88,18 +88,18 @@ typedef NS_ENUM(unsigned int, OXZInterfaceState) {
 
 + (OOOXZManager *) sharedManager;
 
-@property (readonly, copy) NSString *installPath;
+@property (nonatomic, readonly, copy) NSString *installPath;
 
-@property (readonly) BOOL updateManifests;
-@property (readonly) BOOL cancelUpdate;
+- (BOOL) updateManifests;
+- (BOOL) cancelUpdate;
 
 @property (readonly, copy) NSArray *manifests;
-@property (readonly, copy) NSArray *managedOXZs;
+@property (atomic, readonly, copy) NSArray *managedOXZs;
 
 - (void) gui;
-@property (getter=isRestarting, readonly) BOOL restarting;
-@property (getter=isAcceptingTextInput, readonly) BOOL acceptingTextInput;
-@property (getter=isAcceptingGUIInput, readonly) BOOL acceptingGUIInput;
+@property (atomic, getter=isRestarting, readonly) BOOL restarting;
+@property (atomic, getter=isAcceptingTextInput, readonly) BOOL acceptingTextInput;
+@property (atomic, getter=isAcceptingGUIInput, readonly) BOOL acceptingGUIInput;
 
 - (void) processSelection;
 - (void) processTextInput:(NSString *)input;
@@ -107,8 +107,8 @@ typedef NS_ENUM(unsigned int, OXZInterfaceState) {
 - (void) processFilterKey;
 - (void) processShowInfoKey;
 - (void) processExtractKey;
-@property (readonly) OOGUIRow showInstallOptions;
-@property (readonly) OOGUIRow showRemoveOptions;
+- (OOGUIRow) showInstallOptions;
+- (OOGUIRow) showRemoveOptions;
 - (void) showOptionsUpdate;
 - (void) showOptionsPrev;
 - (void) showOptionsNext;

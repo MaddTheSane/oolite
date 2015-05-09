@@ -64,7 +64,7 @@ enum
 			   duration:(OOTimeDelta)duration
 			  baseColor:(GLfloat[4])baseColor NS_DESIGNATED_INITIALIZER;
 
-@property (readonly, strong) OOTexture *texture;
+@property (atomic, readonly, strong) OOTexture *texture;
 
 @end
 

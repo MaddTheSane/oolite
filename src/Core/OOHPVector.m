@@ -48,8 +48,8 @@ NSString *HPVectorDescription(HPVector vector)
 NSArray *ArrayFromHPVector(HPVector vec)
 {
 	return @[@(vec.x),
-					@(vec.y),
-					@(vec.z)];
+			 @(vec.y),
+			 @(vec.z)];
 }
 
 #endif

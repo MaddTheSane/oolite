@@ -60,7 +60,7 @@ static unsigned				sCacheMisses = 0;
 #endif
 
 
-@interface OOEncodingConverter (Private)
+@interface OOEncodingConverter ()
 
 - (NSData *) performConversionForString:(NSString *)string;
 
@@ -152,15 +152,8 @@ static unsigned				sCacheMisses = 0;
 }
 
 
-- (NSStringEncoding) encoding
-{
-	return _encoding;
-}
+@synthesize encoding = _encoding;
 
-@end
-
-
-@implementation OOEncodingConverter (Private)
 
 - (NSData *) performConversionForString:(NSString *)string
 {

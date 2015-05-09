@@ -113,10 +113,7 @@ MA 02110-1301, USA.
 	return x < 0 ? -[self rawValue: (-x-deadzone)/(1.0-deadzone)] : [self rawValue: (x-deadzone)/(1.0-deadzone)];
 }
 
-- (double) deadzone
-{
-	return deadzone;
-}
+@synthesize deadzone;
 
 - (void) setDeadzone: (double) newValue
 {
@@ -162,10 +159,8 @@ MA 02110-1301, USA.
 	return;
 }
 
-- (double) power
-{
-	return power;
-}
+
+@synthesize power;
 
 
 - (void) setParameter: (double) newValue
@@ -174,10 +169,8 @@ MA 02110-1301, USA.
 	return;
 }
 
-- (double) parameter
-{
-	return parameter;
-}
+
+@synthesize parameter;
 
 
 - (double) rawValue: (double) x
@@ -320,16 +313,9 @@ MA 02110-1301, USA.
 	return [segment autorelease];
 }
 
-- (double) start
-{
-	return start;
-}
 
-
-- (double) end
-{
-	return end;
-}
+@synthesize start;
+@synthesize end;
 
 
 - (double) value: (double) x
@@ -363,7 +349,6 @@ MA 02110-1301, USA.
 	[controlPoints release];
 	[segments release];
 	[super dealloc];
-	return;
 }
 
 - (id) copyWithZone: (NSZone *) zone

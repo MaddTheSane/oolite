@@ -72,7 +72,7 @@ SOFTWARE.
 */
 + (instancetype)loaderWithTextureSpecifier:(id)specifier extraOptions:(uint32_t)extraOptions folder:(NSString *)folder;
 
-@property (getter=isReady, readonly) BOOL ready;
+@property (getter=isReady, readonly, atomic) BOOL ready;
 
 /*	Return value indicates success. This may only be called once (subsequent
 	attempts will return failure), and only on the main thread.
@@ -85,7 +85,7 @@ SOFTWARE.
 /*	Hopefully-unique string for texture loader; analagous, but not identical,
 	to corresponding texture cacheKey.
 */
-@property (readonly, copy) NSString *cacheKey;
+@property (readonly, copy, atomic) NSString *cacheKey;
 
 
 
@@ -94,7 +94,7 @@ SOFTWARE.
 // Subclasses shouldn't do much on init, because of the whole asynchronous thing.
 - (instancetype)initWithPath:(NSString *)path options:(uint32_t)options NS_DESIGNATED_INITIALIZER;
 
-@property (readonly, copy) NSString *path;
+@property (readonly, copy, atomic) NSString *path;
 
 /*	Load data, setting up _data, _format, _width, and _height; also _rowBytes
 	if it's not _width * OOTextureComponentsForFormat(_format), and

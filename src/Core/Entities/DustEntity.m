@@ -131,18 +131,7 @@ enum
 }
 
 
-- (void) setDustColor:(OOColor *) color
-{
-	if (dust_color) [dust_color release];
-	dust_color = [color retain];
-	[dust_color getRed:&color_fv[0] green:&color_fv[1] blue:&color_fv[2] alpha:&color_fv[3]];
-}
-
-
-- (OOColor *) dustColor
-{
-	return dust_color;
-}
+@synthesize dustColor = dust_color;
 
 
 - (BOOL) canCollide

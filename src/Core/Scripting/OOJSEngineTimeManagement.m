@@ -662,16 +662,7 @@ static void UpdateProfileForFrame(OOHighResTimeValue now, OOJSProfileStackFrame 
 }
 
 
-- (double) totalTime
-{
-	return _totalTime;
-}
-
-
-- (void) setTotalTime:(double)value
-{
-	_totalTime = value;
-}
+@synthesize totalTime = _totalTime;
 
 
 - (double) javaScriptTime
@@ -692,28 +683,8 @@ static void UpdateProfileForFrame(OOHighResTimeValue now, OOJSProfileStackFrame 
 #endif
 
 
-- (double) nativeTime
-{
-	return _nativeTime;
-}
-
-
-- (void) setNativeTime:(double)value
-{
-	_nativeTime = value;
-}
-
-
-- (double) extensionTime
-{
-	return _extensionTime;
-}
-
-
-- (void) setExtensionTime:(double)value
-{
-	_extensionTime = value;
-}
+@synthesize nativeTime = _nativeTime;
+@synthesize extensionTime = _extensionTime;
 
 
 - (double) nonExtensionTime
@@ -722,32 +693,8 @@ static void UpdateProfileForFrame(OOHighResTimeValue now, OOJSProfileStackFrame 
 }
 
 
-- (double) profilerOverhead
-{
-	return _profilerOverhead;
-}
-
-
-- (void) setProfilerOverhead:(double)value
-{
-	_profilerOverhead = value;
-}
-
-
-- (NSArray *) profileEntries
-{
-	return _profileEntries;
-}
-
-
-- (void) setProfileEntries:(NSArray *)value
-{
-	if (_profileEntries != value)
-	{
-		[_profileEntries release];
-		_profileEntries = [value retain];
-	}
-}
+@synthesize profilerOverhead = _profilerOverhead;
+@synthesize profileEntries = _profileEntries;
 
 
 - (jsval) oo_jsValueInContext:(JSContext *)context
@@ -889,28 +836,10 @@ static void UpdateProfileForFrame(OOHighResTimeValue now, OOJSProfileStackFrame 
 }
 
 
-- (NSString *) function
-{
-	return _function;
-}
-
-
-- (NSUInteger) hitCount
-{
-	return _hitCount;
-}
-
-
-- (double) totalTimeSum
-{
-	return _totalTimeSum;
-}
-
-
-- (double) selfTimeSum
-{
-	return _selfTimeSum;
-}
+@synthesize function = _function;
+@synthesize hitCount = _hitCount;
+@synthesize totalTimeSum = _totalTimeSum;
+@synthesize selfTimeSum = _selfTimeSum;
 
 
 - (double) totalTimeAverage
@@ -924,17 +853,8 @@ static void UpdateProfileForFrame(OOHighResTimeValue now, OOJSProfileStackFrame 
 	return _hitCount ? (_selfTimeSum / _hitCount) : 0.0;
 }
 
-
-- (double) totalTimeMax
-{
-	return _totalTimeMax;
-}
-
-
-- (double) selfTimeMax
-{
-	return _selfTimeMax;
-}
+@synthesize totalTimeMax = _totalTimeMax;
+@synthesize selfTimeMax = _selfTimeMax;
 
 
 - (BOOL) isJavaScriptFrame

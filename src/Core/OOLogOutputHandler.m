@@ -101,7 +101,7 @@ static BOOL DirectoryExistCreatingIfNecessary(NSString *path);
 - (void)changeFile;
 
 // Internal
-@property (readonly) BOOL startLogging;
+- (BOOL)startLogging;
 - (void)loggerThread;
 - (void)flushLog;
 

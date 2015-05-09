@@ -47,13 +47,13 @@ MA 02110-1301, USA.
 
 @property (strong) OOMaterial *material;
 
-@property (copy) NSString *textureName;
+@property (atomic, copy) NSString *textureName;
 
 // Radius, in game metres.
-@property  float radius;
+@property (nonatomic) float radius;
 
 // Level of detail, [0..1]. Granularity is implementation-defined.
-@property  float levelOfDetail;
+@property (nonatomic) float levelOfDetail;
 - (void) calculateLevelOfDetailForViewDistance:(float)distance;
 
 // depth-buffer hack

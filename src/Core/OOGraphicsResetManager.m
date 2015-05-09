@@ -133,7 +133,7 @@ static OOGraphicsResetManager *sSingleton = nil;
 
 - (NSUInteger) retainCount
 {
-	return UINT_MAX;
+	return NSUIntegerMax;
 }
 
 

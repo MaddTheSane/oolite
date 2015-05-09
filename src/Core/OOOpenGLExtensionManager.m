@@ -418,22 +418,9 @@ static NSArray *ArrayOfExtensions(NSString *extensionString)
 }
 
 
-- (NSUInteger)majorVersionNumber
-{
-	return major;
-}
-
-
-- (NSUInteger)minorVersionNumber
-{
-	return minor;
-}
-
-
-- (NSUInteger)releaseVersionNumber
-{
-	return release;
-}
+@synthesize majorVersionNumber = major;
+@synthesize minorVersionNumber = minor;
+@synthesize releaseVersionNumber = release;
 
 
 - (void)getVersionMajor:(unsigned *)outMajor minor:(unsigned *)outMinor release:(unsigned *)outRelease
@@ -450,34 +437,11 @@ static NSArray *ArrayOfExtensions(NSString *extensionString)
 }
 
 
-- (NSString *) vendorString
-{
-	return vendor;
-}
-
-
-- (NSString *) rendererString
-{
-	return renderer;
-}
-
-
-- (BOOL) usePointSmoothing
-{
-	return usePointSmoothing;
-}
-
-
-- (BOOL) useLineSmoothing
-{
-	return useLineSmoothing;
-}
-
-
-- (BOOL) useDustShader
-{
-	return useDustShader;
-}
+@synthesize vendorString = vendor;
+@synthesize rendererString = renderer;
+@synthesize usePointSmoothing;
+@synthesize useLineSmoothing;
+@synthesize useDustShader;
 
 @end
 
@@ -780,7 +744,7 @@ NSComparisonResult CompareGPUSettingsByPriority(id a, id b, void *context)
 
 - (NSUInteger)retainCount
 {
-	return UINT_MAX;
+	return NSUIntegerMax;
 }
 
 

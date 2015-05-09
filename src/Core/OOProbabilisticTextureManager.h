@@ -66,7 +66,7 @@ SOFTWARE.
 
 /*	Select a texture, weighted-randomly.
 */
-@property (readonly, strong) OOTexture *selectTexture;
+@property (readonly, strong, atomic) OOTexture *selectTexture;
 
 @property (readonly) unsigned int textureCount;
 

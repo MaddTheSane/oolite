@@ -55,7 +55,7 @@ enum
 
 - (void) update;
 
-@property (readonly, strong) OOSoundChannel *popChannel;
+- (OOSoundChannel *) popChannel;
 - (void) pushChannel:(OOSoundChannel *)channel;
 
 @end

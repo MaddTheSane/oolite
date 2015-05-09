@@ -37,6 +37,10 @@ MA 02110-1301, USA.
 @property (readonly, copy) NSString *dockedStationName;
 @property (readonly, copy) NSString *dockedStationDisplayName;
 @property (readonly) BOOL dockedAtMainStation;
+- (NSString *) commanderKillsAsString;
+- (NSString *) commanderBountyAsString;
+- (NSString *) creditsFormattedForSubstitution;
+- (NSString *) creditsFormattedForLegacySubstitution;
 
 - (void) awardCommodityType:(NSString *)type amount:(OOCargoQuantity)amount;
 

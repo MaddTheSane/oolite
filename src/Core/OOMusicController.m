@@ -229,10 +229,7 @@ enum
 }
 
 
-- (OOMusicMode) mode
-{
-	return _mode;
-}
+@synthesize mode = _mode;
 
 
 - (void) setMode:(OOMusicMode)mode

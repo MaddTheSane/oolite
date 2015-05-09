@@ -68,7 +68,7 @@
 		1A11F84A0F35F60C001C886C /* OOJSShipGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A11F8480F35F60C001C886C /* OOJSShipGroup.m */; };
 		1A11F84B0F35F60C001C886C /* OOJSShipGroup.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A11F8490F35F60C001C886C /* OOJSShipGroup.h */; };
 		1A127F4312EC6A4400B65D9F /* OOTextureSprite.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A127F4112EC6A4400B65D9F /* OOTextureSprite.h */; };
-		1A127F4412EC6A4400B65D9F /* OOTextureSprite.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A127F4212EC6A4400B65D9F /* OOTextureSprite.m */; };
+		1A127F4412EC6A4400B65D9F /* OOTextureSprite.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A127F4212EC6A4400B65D9F /* OOTextureSprite.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		1A1280F812ECA4ED00B65D9F /* OOJSFont.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A1280F612ECA4ED00B65D9F /* OOJSFont.h */; };
 		1A1280F912ECA4ED00B65D9F /* OOJSFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1280F712ECA4ED00B65D9F /* OOJSFont.m */; };
 		1A143A4811EF22C5001BAB8D /* JAPersistentFileReference.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A143A4611EF22C5001BAB8D /* JAPersistentFileReference.h */; };

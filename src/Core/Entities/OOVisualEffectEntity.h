@@ -81,47 +81,47 @@
 - (instancetype)initWithKey:(NSString *)key definition:(NSDictionary *) dict NS_DESIGNATED_INITIALIZER;
 - (BOOL) setUpVisualEffectFromDictionary:(NSDictionary *) effectDict;
 
-@property (strong) OOMesh *mesh;
+@property (atomic, strong) OOMesh *mesh;
 
 @property (readonly, copy) NSString *effectKey;
 
-@property (readonly) GLfloat frustumRadius;
+@property (atomic, readonly) GLfloat frustumRadius;
 
 - (void) clearSubEntities;
-@property (readonly) BOOL setUpSubEntities;
+@property (atomic, readonly) BOOL setUpSubEntities;
 - (void) removeSubEntity:(Entity<OOSubEntity> *)sub;
 - (void) setNoDrawDistance;
 @property (readonly, copy) NSArray *subEntities;
-@property (readonly) NSUInteger subEntityCount;
-@property (readonly, strong) NSEnumerator *visualEffectSubEntityEnumerator;
+@property (atomic, readonly) NSUInteger subEntityCount;
+@property (atomic, readonly, strong) NSEnumerator *visualEffectSubEntityEnumerator;
 - (BOOL) hasSubEntity:(Entity<OOSubEntity> *)sub;
 
-@property (readonly, strong) NSEnumerator *subEntityEnumerator;
-@property (readonly, strong) NSEnumerator *effectSubEntityEnumerator;
-@property (readonly, strong) NSEnumerator *flasherEnumerator;
+@property (atomic, readonly, strong) NSEnumerator *subEntityEnumerator;
+@property (atomic, readonly, strong) NSEnumerator *effectSubEntityEnumerator;
+@property (atomic, readonly, strong) NSEnumerator *flasherEnumerator;
 
 - (void) orientationChanged;
 @property (readonly) Vector forwardVector;
 @property (readonly) Vector rightVector;
 @property (readonly) Vector upVector;
 
-@property (copy) OOColor *scannerDisplayColor1;
-@property (copy) OOColor *scannerDisplayColor2;
+@property (nonatomic, copy) OOColor *scannerDisplayColor1;
+@property (nonatomic, copy) OOColor *scannerDisplayColor2;
 - (GLfloat *) scannerDisplayColorForShip:(BOOL)flash :(OOColor *)scannerDisplayColor1 :(OOColor *)scannerDisplayColor2 NS_RETURNS_INNER_POINTER;
 
 - (void) setScript:(NSString *)script_name;
 - (OOJSScript *)script;
-@property (readonly, copy) NSDictionary *scriptInfo;
+@property (atomic, readonly, copy) NSDictionary *scriptInfo;
 - (void) doScriptEvent:(jsid)message;
 - (void) remove;
 
-@property (readonly) GLfloat scaleMax; // used for calculating frustum cull size
-@property  GLfloat scaleX;
-@property  GLfloat scaleY;
-@property  GLfloat scaleZ;
+@property (readonly, atomic) GLfloat scaleMax; // used for calculating frustum cull size
+@property (nonatomic) GLfloat scaleX;
+@property (nonatomic) GLfloat scaleY;
+@property (nonatomic) GLfloat scaleZ;
 
 // convenience for shaders
-@property  GLfloat hullHeatLevel;
+@property (nonatomic) GLfloat hullHeatLevel;
 // shader properties
 @property  GLfloat shaderFloat1;
 @property  GLfloat shaderFloat2; 
@@ -131,7 +131,7 @@
 @property  Vector shaderVector2; 
 
 
-@property  BOOL isBreakPattern;
+@property (atomic) BOOL isBreakPattern;
 
 @property (readonly, copy) NSDictionary *effectInfoDictionary;
 

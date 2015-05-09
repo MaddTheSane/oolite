@@ -94,16 +94,7 @@ MA 02110-1301, USA.
 }
 
 
-- (BOOL) isActive
-{
-	return _active;
-}
-
-
-- (void) setActive:(BOOL)active
-{
-	_active = !!active;
-}
+@synthesize active = _active;
 
 
 - (OOColor *) color
@@ -115,40 +106,9 @@ MA 02110-1301, USA.
 }
 
 
-- (float) frequency
-{
-	return _frequency;
-}
-
-
-- (void) setFrequency:(float)frequency
-{
-	_frequency = frequency;
-}
-
-
-- (float) phase
-{
-	return _phase;
-}
-
-
-- (void) setPhase:(float)phase
-{
-	_phase = phase;
-}
-
-
-- (float) fraction
-{
-	return _brightfraction;
-}
-
-
-- (void) setFraction:(float)fraction
-{
-	_brightfraction = fraction;
-}
+@synthesize frequency = _frequency;
+@synthesize phase = _phase;
+@synthesize fraction = _fraction;
 
 
 - (void) update:(OOTimeDelta) delta_t

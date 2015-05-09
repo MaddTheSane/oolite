@@ -52,15 +52,15 @@ MA 02110-1301, USA.
 
 @property (nonatomic, copy) NSString *name;
 
-@property (strong) ShipEntity *leader;
+@property (atomic, strong) ShipEntity *leader;
 
-@property (readonly, strong) NSEnumerator *objectEnumerator;
-@property (readonly, strong) NSEnumerator *mutationSafeEnumerator;	// Enumerate over contents at time this is called, even if actual group is mutated.
+@property (atomic, readonly, strong) NSEnumerator *objectEnumerator;
+@property (atomic, readonly, strong) NSEnumerator *mutationSafeEnumerator;	// Enumerate over contents at time this is called, even if actual group is mutated.
 
-@property (readonly, copy) NSSet *members;
-@property (readonly, copy) NSArray *memberArray;	// arbitrary order
-@property (readonly, copy) NSSet *membersExcludingLeader;
-@property (readonly, copy) NSArray *memberArrayExcludingLeader;	// arbitrary order
+@property (atomic, readonly, copy) NSSet *members;
+@property (atomic, readonly, copy) NSArray *memberArray;	// arbitrary order
+@property (atomic, readonly, copy) NSSet *membersExcludingLeader;
+@property (atomic, readonly, copy) NSArray *memberArrayExcludingLeader;	// arbitrary order
 
 - (BOOL) containsShip:(ShipEntity *)ship;
 - (BOOL) addShip:(ShipEntity *)ship;

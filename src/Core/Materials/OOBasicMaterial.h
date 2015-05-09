@@ -70,12 +70,11 @@ SOFTWARE.
 */
 - (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration;
 
-@property (copy) OOColor *diffuseColor;
+@property (copy, atomic) OOColor *diffuseColor;
 - (void)setAmbientAndDiffuseColor:(OOColor *)color;
-@property (copy) OOColor *specularColor;
-@property (copy) OOColor *ambientColor;
-@property (readonly, copy) OOColor *emmisionColor;
-- (void)setEmissionColor:(OOColor *)color;
+@property (copy, atomic) OOColor *specularColor;
+@property (copy, atomic) OOColor *ambientColor;
+@property (copy, atomic, setter=setEmissionColor:) OOColor *emmisionColor;
 
 - (void)getDiffuseComponents:(GLfloat[4])outComponents;
 - (void)setDiffuseComponents:(const GLfloat[4])components;
@@ -93,12 +92,12 @@ SOFTWARE.
 - (void)setAmbientRed:(GLfloat)r green:(GLfloat)g blue:(GLfloat)b alpha:(GLfloat)a;
 - (void)setEmissionRed:(GLfloat)r green:(GLfloat)g blue:(GLfloat)b alpha:(GLfloat)a;
 
-@property  uint8_t shininess;	// Clamped to [0, 128]
+@property (nonatomic) uint8_t shininess;	// Clamped to [0, 128]
 
 
 /*	For subclasses: return true to permit specular settings, false to deny
 	them. By default, this is ![UNIVERSE reducedDetail].
 */
-@property (readonly) BOOL permitSpecular;
+@property (readonly, atomic) BOOL permitSpecular;
 
 @end

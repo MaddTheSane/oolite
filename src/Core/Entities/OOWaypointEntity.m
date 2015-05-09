@@ -90,16 +90,8 @@ MA 02110-1301, USA.
 }
 
 
-- (BOOL) oriented
-{
-	return oriented;
-}
-
-
-- (OOScalar) size
-{
-	return _size;
-}
+@synthesize oriented;
+@synthesize size = _size;
 
 
 - (void) setSize:(OOScalar)newSize

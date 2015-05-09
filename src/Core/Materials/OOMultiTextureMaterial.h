@@ -48,7 +48,7 @@ SOFTWARE.
 
 - (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration NS_DESIGNATED_INITIALIZER;
 
-@property (readonly) NSUInteger textureUnitCount;
+@property (atomic, readonly) NSUInteger textureUnitCount;
 
 @end
 

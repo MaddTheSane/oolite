@@ -186,16 +186,8 @@ static void OpenLogFile(NSString *name);
 }
 
 
-- (NSString *)oxpPath
-{
-	return [[_basePath retain] autorelease];
-}
-
-
-- (NSString *)oxpDisplayName
-{
-	return [[_displayName retain] autorelease];
-}
+@synthesize oxpPath = _basePath;
+@synthesize oxpDisplayName = _displayName;
 
 
 - (id)stageWithName:(NSString *)name

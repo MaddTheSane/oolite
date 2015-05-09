@@ -136,6 +136,12 @@ static OOTexture *sShotTexture2 = nil;
 }
 
 
+- (OOColor*) color
+{
+	return [OOColor colorWithRed:_color[0] * 3.0 green:_color[1] * 3.0 blue:_color[2] * 3 alpha:1];
+}
+
+
 - (void) setColor:(OOColor *)color
 {
 	_color[0] = [color redComponent]/3.0;
@@ -143,6 +149,9 @@ static OOTexture *sShotTexture2 = nil;
 	_color[2] = [color blueComponent]/3.0;
 	// Ignore alpha; _color[3] is constant.
 }
+
+
+@synthesize range = _range;
 
 
 - (void) setRange:(GLfloat)range

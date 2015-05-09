@@ -49,7 +49,7 @@ MA 02110-1301, USA.
 
 @property (readonly, copy) NSString *name;
 @property (readonly) JSFunction *function;
-@property (readonly) jsval functionValue;
+@property (atomic, readonly) jsval functionValue;
 
 // Raw evaluation. Context may not be NULL and must be in a request.
 - (BOOL) evaluateWithContext:(JSContext *)context

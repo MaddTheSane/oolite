@@ -41,8 +41,8 @@ SOFTWARE.
 	BOOL						_canRun, _hasRun;
 }
 
-@property (readonly, strong) OOOXPVerifier *verifier;
-@property (readonly) BOOL completed;
+@property (nonatomic, readonly, strong) OOOXPVerifier *verifier;
+@property (nonatomic, readonly) BOOL completed;
 
 // Subclass responsibilities:
 
@@ -50,7 +50,7 @@ SOFTWARE.
 	unique. The name should be a phrase describing what will be done, like
 	"Scanning files" or "Verifying plist scripts".
 */
-@property (readonly, copy) NSString *name;
+@property (nonatomic, readonly, copy) NSString *name;
 
 /*	Dependencies and dependents:
 	-dependencies returns a set of names of stages that must be run before this
@@ -59,8 +59,8 @@ SOFTWARE.
 	-dependents returns a set of names of stages that should not be run before
 	this one. Unlike -dependencies, these are considered non-critical.
 */
-@property (readonly, copy) NSSet *dependencies;
-@property (readonly, copy) NSSet *dependents;
+@property (nonatomic, readonly, copy) NSSet *dependencies;
+@property (nonatomic, readonly, copy) NSSet *dependents;
 
 /*	This is called once by the verifier.
 	When it is called, all the verifier stages listed in -requiredStages will
@@ -74,7 +74,7 @@ SOFTWARE.
 	shouldRun counts as running; that is, it will stop this verifier stage
 	from running but will not stop dependencies from running.
 */
-@property (readonly) BOOL shouldRun;
+@property (nonatomic, readonly) BOOL shouldRun;
 - (void)run;
 
 @end

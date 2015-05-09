@@ -45,6 +45,6 @@ MA 02110-1301, USA.
 - (instancetype) initWithDictionary:(NSDictionary *)info NS_DESIGNATED_INITIALIZER;
 
 @property (readonly) BOOL oriented;
-@property  OOScalar size;
+@property (nonatomic) OOScalar size;
 
 @end

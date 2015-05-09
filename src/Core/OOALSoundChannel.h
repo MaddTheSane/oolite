@@ -35,12 +35,12 @@ SOFTWARE.
 #import "OOMaths.h"
 
 @class OOSound;
-
+@protocol OOSoundChannelDelegate;
 
 @interface OOSoundChannel: NSObject
 {
 	OOSoundChannel				*_next;
-	id							_delegate;
+	id<OOSoundChannelDelegate>	_delegate;
 	OOSound						*_sound;
 	ALuint						_buffer;
 	ALuint						_lastBuffer;
@@ -52,10 +52,10 @@ SOFTWARE.
 
 - (void) update;
 
-- (void) setDelegate:(id)delegate;
+@property (assign) id<OOSoundChannelDelegate> delegate;
 
 // Unretained pointer used to maintain simple stack
-@property (strong) OOSoundChannel *next;
+@property (assign) OOSoundChannel *next;
 
 // set sound position relative to listener
 - (void) setPosition:(Vector) vector;
@@ -68,7 +68,7 @@ SOFTWARE.
 @end
 
 
-@interface NSObject(OOSoundChannelDelegate)
+@protocol OOSoundChannelDelegate <NSObject>
 
 - (void)channel:(OOSoundChannel *)inChannel didFinishPlayingSound:(OOSound *)inSound;
 

@@ -39,7 +39,7 @@ MA 02110-1301, USA.
 static NSString * const kStageName	= @"Checking shipdata.plist";
 
 
-@interface OOCheckShipDataPListVerifierStage (OOPrivate)
+@interface OOCheckShipDataPListVerifierStage () <OOPListSchemaVerifierDelegate>
 
 - (void)verifyShipInfo:(NSDictionary *)info withName:(NSString *)name;
 
@@ -166,10 +166,6 @@ static NSString * const kStageName	= @"Checking shipdata.plist";
 	_playerKeys = nil;
 }
 
-@end
-
-
-@implementation OOCheckShipDataPListVerifierStage (OOPrivate)
 
 - (void)verifyShipInfo:(NSDictionary *)info withName:(NSString *)name
 {

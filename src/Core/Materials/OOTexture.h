@@ -207,7 +207,7 @@ typedef OOPixMapFormat OOTextureDataFormat;
 /*	Create a new pixmap with a copy of the texture data. The caller is
 	responsible for free()ing the resulting buffer.
 */
-@property (readonly) OOPixMap copyPixMapRepresentation;
+@property (readonly, nonatomic) OOPixMap copyPixMapRepresentation;
 
 /*	Identify special texture types.
 */

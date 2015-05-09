@@ -383,10 +383,8 @@ MA 02110-1301, USA.
 	{
 		return UNITS_TONS;
 	}
-	return [definition oo_unsignedIntegerForKey:kOOCommodityContainer];
+	return [definition oo_unsignedIntForKey:kOOCommodityContainer];
 }
-
-
 
 
 - (OOCargoQuantity) generateQuantityForGood:(NSDictionary *)good inEconomy:(OOEconomyID)economy

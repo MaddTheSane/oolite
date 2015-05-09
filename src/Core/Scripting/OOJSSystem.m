@@ -43,6 +43,14 @@
 #import "OOJSPopulatorDefinition.h"
 #import "OODebugStandards.h"
 
+
+#import "OOJSWaypoint.h"
+
+
+@interface NSObject (priv)
+- (BOOL) isVisibleToScripts;
+@end
+
 static JSObject *sSystemPrototype;
 
 

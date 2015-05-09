@@ -45,7 +45,7 @@
 #define LOD_FACTOR			(1.0 / 4.0)
 
 
-@interface OOPlanetDrawable (Private)
+@interface OOPlanetDrawable ()
 
 - (void) recalculateTransform;
 
@@ -122,17 +122,7 @@
 }
 
 
-- (OOMaterial *) material
-{
-	return _material;
-}
-
-
-- (void) setMaterial:(OOMaterial *)material
-{
-	[_material autorelease];
-	_material = [material retain];
-}
+@synthesize material = _material;
 
 
 - (NSString *) textureName
@@ -152,10 +142,7 @@
 }
 
 
-- (float) radius
-{
-	return _radius;
-}
+@synthesize radius = _radius;
 
 
 - (void) setRadius:(float)radius

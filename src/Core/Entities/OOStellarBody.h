@@ -56,10 +56,9 @@ typedef NS_ENUM(unsigned int, OOStellarBodyType)
 
 @protocol OOStellarBody <NSObject, OOWeakReferenceSupport>
 
-- (double) radius;
-- (OOStellarBodyType) planetType;
+@property (nonatomic, readonly) double radius;
+@property (nonatomic, readonly) OOStellarBodyType planetType;
 
-- (NSString *) name;
-- (void) setName:(NSString *)name;
+@property (nonatomic, copy) NSString *name;
 
 @end

@@ -4998,7 +4998,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 {
 	// Make sure there's no gaps between missiles, synchronise missile_entity & missile_list.
 	int i, pylon = 0;
-	OOLog(@"missile.tidying.debug",@"Tidying fitted %d of possible %d missiles",missiles,PLAYER_MAX_MISSILES);
+	OOLog(@"missile.tidying.debug",@"Tidying fitted %lu of possible %d missiles",(unsigned long)missiles,PLAYER_MAX_MISSILES);
 	for(i = 0; i < PLAYER_MAX_MISSILES; i++)
 	{
 		OOLog(@"missile.tidying.debug",@"%d %@ %@",i,missile_entity[i],missile_list[i]);
@@ -10354,10 +10354,8 @@ static NSString *last_outfitting_key=nil;
 	[gui setColor:[gui colorFromSetting:kGuiMarketCashColor defaultValue:[OOColor yellowColor]] forRow:GUI_ROW_MARKET_CASH];
 }
 
-- (OOGUIScreenID) guiScreen
-{
-	return gui_screen;
-}
+
+@synthesize guiScreen = gui_screen;
 
 
 - (BOOL) tryBuyingCommodity:(OOCommodityType)index all:(BOOL)all
@@ -11890,10 +11888,7 @@ else _dockTarget = NO_TARGET;
 }
 
 
-- (NSMutableDictionary*) getMissionDestinations
-{
-	return missionDestinations;
-}
+@synthesize missionDestinations;
 
 
 - (void) setLastShot:(OOLaserShotEntity *)shot

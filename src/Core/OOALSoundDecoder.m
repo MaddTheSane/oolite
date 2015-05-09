@@ -53,7 +53,7 @@ static int OOCloseOXZVorbis (void *datasource);
 	unzFile					uf;
 }
 
-@property (readonly, copy) NSDictionary *comments;
+@property (atomic, readonly, copy) NSDictionary *comments;
 
 @end
 

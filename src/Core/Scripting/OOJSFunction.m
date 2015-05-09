@@ -150,16 +150,8 @@ MA 02110-1301, USA.
 }
 
 
-- (NSString *) name
-{
-	return _name;
-}
-
-
-- (JSFunction *) function
-{
-	return _function;
-}
+@synthesize name = _name;
+@synthesize function = _function;
 
 
 - (jsval) functionValue

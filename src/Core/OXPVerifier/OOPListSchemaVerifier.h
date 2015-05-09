@@ -36,20 +36,22 @@ SOFTWARE.
 #import "OOFunctionAttributes.h"
 
 
+@protocol OOPListSchemaVerifierDelegate;
+
 @interface OOPListSchemaVerifier: NSObject
 {
 @private
 	NSDictionary				*_schema;
 	NSDictionary				*_definitions;
 	
-	id							_delegate;
-	uint32_t					_badDelegateWarning: 1;
+	id<OOPListSchemaVerifierDelegate>	_delegate;
+	uint32_t							_badDelegateWarning: 1;
 }
 
 + (instancetype)verifierWithSchema:(NSDictionary *)schema;
 - (instancetype)initWithSchema:(NSDictionary *)schema NS_DESIGNATED_INITIALIZER;
 
-@property (assign) id delegate;
+@property (assign, nonatomic) id<OOPListSchemaVerifierDelegate> delegate;
 
 - (BOOL)verifyPropertyList:(id)plist named:(NSString *)name;
 
@@ -65,7 +67,7 @@ SOFTWARE.
 @end
 
 
-@interface NSObject (OOPListSchemaVerifierDelegate)
+@protocol OOPListSchemaVerifierDelegate <NSObject>
 
 // Handle "delegated types". Return YES for valid, NO for invalid.
 - (BOOL)verifier:(OOPListSchemaVerifier *)verifier

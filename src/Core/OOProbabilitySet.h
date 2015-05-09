@@ -49,14 +49,14 @@ SOFTWARE.
 - (instancetype) initWithPropertyListRepresentation:(NSDictionary *)plist;
 
 // propertyListRepresentation is only valid if objects are property list objects.
-@property (readonly, copy) NSDictionary *propertyListRepresentation;
+@property (readonly, copy, nonatomic) NSDictionary *propertyListRepresentation;
 
 @property (atomic, readonly) NSUInteger count;
-@property (readonly, strong) id randomObject;
+- (id) randomObject;
 
 - (float) weightForObject:(id)object;	// Returns -1 for unknown objects.
-@property (readonly) float sumOfWeights;
-@property (readonly, copy) NSArray *allObjects;
+@property (atomic, readonly) float sumOfWeights;
+@property (atomic, readonly, copy) NSArray *allObjects;
 
 @end
 

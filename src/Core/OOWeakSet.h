@@ -40,7 +40,7 @@ This code is hereby placed in the public domain.
 
 @property (atomic, readonly) NSUInteger count;
 - (BOOL) containsObject:(id<OOWeakReferenceSupport>)object;
-@property (readonly, strong) NSEnumerator *objectEnumerator;
+@property (atomic, readonly, strong) NSEnumerator *objectEnumerator;
 
 - (void) addObject:(id<OOWeakReferenceSupport>)object;		// Unlike NSSet, adding nil fails silently.
 - (void) removeObject:(id<OOWeakReferenceSupport>)object;	// Like NSSet, does not complain if object is not already a member.
@@ -50,7 +50,7 @@ This code is hereby placed in the public domain.
 - (void) makeObjectsPerformSelector:(SEL)selector;
 - (void) makeObjectsPerformSelector:(SEL)selector withObject:(id)argument;
 
-@property (readonly, copy) NSArray *allObjects;
+@property (atomic, readonly, copy) NSArray *allObjects;
 
 - (void) removeAllObjects;
 

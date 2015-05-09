@@ -80,22 +80,22 @@ OOShaderUniformType OOShaderUniformTypeFromMethodSignature(NSMethodSignature *si
 
 @interface OOShaderUniformTypeMethodSignatureTemplateClass: NSObject
 
-@property (readonly) float floatMethod;
-@property (readonly) double doubleMethod;
-@property (readonly) signed char signedCharMethod;
-@property (readonly) unsigned char unsignedCharMethod;
-@property (readonly) short signedShortMethod;
-@property (readonly) unsigned short unsignedShortMethod;
-@property (readonly) int signedIntMethod;
-@property (readonly) unsigned int unsignedIntMethod;
-@property (readonly) long signedLongMethod;
-@property (readonly) unsigned long unsignedLongMethod;
-@property (readonly) Vector vectorMethod;
-@property (readonly) HPVector hpvectorMethod;
-@property (readonly) Quaternion quaternionMethod;
-@property (readonly) OOMatrix matrixMethod;
-@property (readonly) NSPoint pointMethod;
-@property (readonly, strong) id idMethod;
+@property (atomic, readonly) float floatMethod;
+@property (atomic, readonly) double doubleMethod;
+@property (atomic, readonly) signed char signedCharMethod;
+@property (atomic, readonly) unsigned char unsignedCharMethod;
+@property (atomic, readonly) short signedShortMethod;
+@property (atomic, readonly) unsigned short unsignedShortMethod;
+@property (atomic, readonly) int signedIntMethod;
+@property (atomic, readonly) unsigned int unsignedIntMethod;
+@property (atomic, readonly) long signedLongMethod;
+@property (atomic, readonly) unsigned long unsignedLongMethod;
+@property (atomic, readonly) Vector vectorMethod;
+@property (atomic, readonly) HPVector hpvectorMethod;
+@property (atomic, readonly) Quaternion quaternionMethod;
+@property (atomic, readonly) OOMatrix matrixMethod;
+@property (atomic, readonly) NSPoint pointMethod;
+@property (atomic, readonly, strong) id idMethod;
 
 @end
 

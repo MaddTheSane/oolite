@@ -50,7 +50,7 @@ MA 02110-1301, USA.
 }
 
 
-+ (instancetype) enumeratorWithEnumerator:(NSEnumerator *)enumerator
++ (NSEnumerator*) enumeratorWithEnumerator:(NSEnumerator *)enumerator
 				excludingObject:(id)object
 {
 	if (object == nil)  return enumerator;

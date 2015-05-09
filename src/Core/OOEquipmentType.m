@@ -351,10 +351,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 }
 
 
-- (NSString *) identifier
-{
-	return _identifier;
-}
+@synthesize identifier = _identifier;
 
 
 - (NSString *) damagedIdentifier
@@ -363,28 +360,10 @@ static NSDictionary		*sMissilesRegistry = nil;
 }
 
 
-- (NSString *) name
-{
-	return _name;
-}
-
-
-- (NSString *) descriptiveText
-{
-	return _description;
-}
-
-
-- (OOTechLevelID) techLevel
-{
-	return _techLevel;
-}
-
-
-- (OOCreditsQuantity) price
-{
-	return _price;
-}
+@synthesize name;
+@synthesize descriptiveText = _description;
+@synthesize techLevel = _techLevel;
+@synthesize price = _price;
 
 
 - (BOOL) isAvailableToAll
@@ -509,52 +488,16 @@ static NSDictionary		*sMissilesRegistry = nil;
 }
 
 
-- (OOCargoQuantity) requiredCargoSpace
-{
-	return _requiredCargoSpace;
-}
+@synthesize requiredCargoSpace = _requiredCargoSpace;
 
 
-- (NSSet *) requiresEquipment
-{
-	return _requiresEquipment;
-}
-
-
-- (NSSet *) requiresAnyEquipment
-{
-	return _requiresAnyEquipment;
-}
-
-
-- (NSSet *) incompatibleEquipment
-{
-	return _incompatibleEquipment;
-}
-
-
-- (NSArray *) conditions
-{
-	return _conditions;
-}
-
-
-- (NSString *) conditionScript
-{
-	return _condition_script;
-}
-
-
-- (NSDictionary *) scriptInfo
-{
-	return _scriptInfo;
-}
-
-
-- (NSString *) scriptName
-{
-	return _script;
-}
+@synthesize requiresEquipment = _requiresEquipment;
+@synthesize requiresAnyEquipment = _requiresAnyEquipment;
+@synthesize incompatibleEquipment = _incompatibleEquipment;
+@synthesize conditions = _conditions;
+@synthesize conditionScript = _condition_script;
+@synthesize scriptInfo = _scriptInfo;
+@synthesize scriptName = _script;
 
 
 - (BOOL) fastAffinityDefensive
@@ -569,10 +512,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 }
 
 
-- (NSUInteger) installTime
-{
-	return _installTime;
-}
+@synthesize installTime = _installTime;
 
 
 - (NSUInteger) repairTime
@@ -588,10 +528,7 @@ static NSDictionary		*sMissilesRegistry = nil;
 }
 
 
-- (NSArray *) providesForScripting
-{
-	return [[_provides copy] autorelease];
-}
+@synthesize providesForScripting = _provides;
 
 
 - (BOOL) provides:(NSString *)key

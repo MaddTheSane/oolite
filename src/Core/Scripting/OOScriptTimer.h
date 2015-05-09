@@ -53,12 +53,12 @@ MA 02110-1301, USA.
 
 - (OOTimeAbsolute)nextTime;
 - (BOOL)setNextTime:(OOTimeAbsolute)nextTime;	// Only works when timer is not scheduled.
-@property  OOTimeDelta interval;
+@property (nonatomic) OOTimeDelta interval;
 
 // Subclass responsibility:
 - (void) timerFired;
 
-@property (readonly) BOOL scheduleTimer;
+- (BOOL) scheduleTimer;
 - (void) unscheduleTimer;
 @property (getter=isScheduled, readonly) BOOL scheduled;
 
@@ -67,7 +67,7 @@ MA 02110-1301, USA.
 + (void) noteGameReset;
 
 
-@property (getter=isValidForScheduling, readonly) BOOL validForScheduling;
+@property (getter=isValidForScheduling, readonly, atomic) BOOL validForScheduling;
 
 - (NSComparisonResult) compareByNextFireTime:(OOScriptTimer *)other;
 

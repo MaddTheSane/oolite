@@ -60,13 +60,13 @@ SOFTWARE.
 
 @property (readonly) NSUInteger count;
 
-@property (readonly, strong) id nextObject;
-@property (readonly, strong) id peekAtNextObject;				// Returns next object without removing it.
+- (id) nextObject;
+@property (readonly, strong, atomic) id peekAtNextObject;				// Returns next object without removing it.
 - (void) removeNextObject;
 
 - (void) addObjects:(id)collection;		// collection must respond to -nextObject, or implement -objectEnumerator to return something that implements -nextObject -- such as an NSEnumerator.
 
-@property (readonly, copy) NSArray *sortedObjects;			// Returns the objects in -nextObject order and empties the heap. To get the objects without emptying the heap, copy the priority queue first.
-@property (readonly, strong) NSEnumerator *objectEnumerator;	// Enumerator which pulls objects off the heap until it's empty. Note however that the queue itself behaves like an enumerator, as -nextObject has similar semantics (except that the enumerator's -nextObject can never start returning objects after it returns nil).
+@property (readonly, copy, atomic) NSArray *sortedObjects;			// Returns the objects in -nextObject order and empties the heap. To get the objects without emptying the heap, copy the priority queue first.
+@property (readonly, strong, atomic) NSEnumerator *objectEnumerator;	// Enumerator which pulls objects off the heap until it's empty. Note however that the queue itself behaves like an enumerator, as -nextObject has similar semantics (except that the enumerator's -nextObject can never start returning objects after it returns nil).
 
 @end

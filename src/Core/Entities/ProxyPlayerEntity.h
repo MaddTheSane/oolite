@@ -53,10 +53,10 @@ MA 02110-1301, USA.
 - (void) copyValuesFromPlayer:(PlayerEntity *)player;
 
 // Default: NO
-@property  BOOL massLocked;
+@property (atomic) BOOL massLocked;
 
 // Default: NO
-@property  BOOL atHyperspeed;
+@property (atomic) BOOL atHyperspeed;
 
 // Default: MISSILE_STATUS_SAFE
 @property  OOMissileStatus dialMissileStatus;
@@ -68,7 +68,7 @@ MA 02110-1301, USA.
 @property  OOCompassMode compassMode;
 
 // Default: NO
-@property  BOOL dialIdentEngaged;
+@property (atomic) BOOL dialIdentEngaged;
 
 // Default: ALERT_CONDITION_DOCKED
 @property  OOAlertCondition alertCondition;

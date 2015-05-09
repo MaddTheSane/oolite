@@ -36,7 +36,7 @@ static JSObject *sTimerPrototype;
 static JSClass sTimerClass;
 
 
-@interface OOJSTimer (Private)
+@interface OOJSTimer ()
 
 - (instancetype) initWithDelay:(OOTimeAbsolute)delay
 			interval:(OOTimeDelta)interval

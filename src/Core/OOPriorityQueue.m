@@ -102,7 +102,7 @@ OOINLINE NSComparisonResult PQCompare(id a, id b, SEL comparator)
 
 
 // Private priority queue methods.
-@interface OOPriorityQueue (Private)
+@interface OOPriorityQueue ()
 
 - (void) makeObjectsPerformSelector:(SEL)selector;
 
@@ -335,10 +335,7 @@ OOINLINE NSComparisonResult PQCompare(id a, id b, SEL comparator)
 }
 
 
-- (NSUInteger) count
-{
-	return _count;
-}
+@synthesize count = _count;
 
 
 - (id) nextObject
@@ -385,10 +382,6 @@ OOINLINE NSComparisonResult PQCompare(id a, id b, SEL comparator)
 	return [[[OOPriorityQueueEnumerator alloc] initWithPriorityQueue:self] autorelease];
 }
 
-@end
-
-
-@implementation OOPriorityQueue (Private)
 
 - (void) makeObjectsPerformSelector:(SEL)selector
 {

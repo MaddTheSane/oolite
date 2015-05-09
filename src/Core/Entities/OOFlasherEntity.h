@@ -50,14 +50,14 @@ MA 02110-1301, USA.
 
 @property (getter=isActive) BOOL active;
 
-@property (readonly, copy) OOColor *color;
+@property (atomic, readonly, copy) OOColor *color;
 // setColor is defined by superclass
 
-@property  float frequency;
+@property float frequency;
 
-@property  float phase;
+@property float phase;
 
-@property  float fraction;
+@property float fraction;
 
 
 @end
@@ -65,7 +65,7 @@ MA 02110-1301, USA.
 
 @interface Entity (OOFlasherEntityExtensions)
 
-@property (getter=isFlasher, readonly) BOOL flasher;
+@property (atomic, getter=isFlasher, readonly) BOOL flasher;
 
 @end
 

@@ -161,10 +161,7 @@ MA 02110-1301, USA.
 }
 
 
-- (BOOL) allowsDocking
-{
-	return allow_docking;
-}
+@synthesize allowsDocking = allow_docking;
 
 
 - (void) setAllowsDocking:(BOOL)allowed
@@ -177,16 +174,8 @@ MA 02110-1301, USA.
 }
 
 
-- (BOOL) disallowedDockingCollides
-{
-	return disallowed_docking_collides;
-}
-
-
-- (BOOL) allowsLaunching
-{
-	return allow_launching;
-}
+@synthesize disallowedDockingCollides = disallowed_docking_collides;
+@synthesize allowsLaunching = allow_launching;
 
 
 - (void) setAllowsLaunching:(BOOL)allowed

@@ -28,9 +28,13 @@ SOFTWARE.
 #import "OOSoundInternal.h"
 #import "OOLogging.h"
 #import "OOMaths.h"
+#import "OOALSoundChannel.h"
 
 static NSMutableSet *sPlayingSoundSources;
 
+@interface OOSoundSource () <OOSoundChannelDelegate>
+
+@end
 
 @implementation OOSoundSource
 
@@ -85,10 +89,7 @@ static NSMutableSet *sPlayingSoundSources;
 }
 
 
-- (OOSound *) sound
-{
-	return _sound;
-}
+@synthesize sound = _sound;
 
 
 - (void) setSound:(OOSound *)sound
@@ -102,16 +103,7 @@ static NSMutableSet *sPlayingSoundSources;
 }
 
 
-- (BOOL) loop
-{
-	return _loop;
-}
-
-
-- (void) setLoop:(BOOL)loop
-{
-	_loop = !!loop;
-}
+@synthesize loop = _loop;
 
 
 - (uint8_t) repeatCount
@@ -240,10 +232,7 @@ static NSMutableSet *sPlayingSoundSources;
 }
 
 
-- (BOOL) positional
-{
-	return _positional;
-}
+@synthesize positional = _positional;
 
 
 - (void) setPosition:(Vector)inPosition
@@ -260,10 +249,7 @@ static NSMutableSet *sPlayingSoundSources;
 }
 
 
-- (Vector) position
-{
-	return _position;
-}
+@synthesize position = _position;
 
 
 - (void) setGain:(float)gain
@@ -276,10 +262,7 @@ static NSMutableSet *sPlayingSoundSources;
 }
 
 
-- (float) gain
-{
-	return _gain;
-}
+@synthesize gain = _gain;
 
 
 /* Following not yet implemented */

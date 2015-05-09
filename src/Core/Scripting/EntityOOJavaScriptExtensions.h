@@ -31,9 +31,9 @@ MA 02110-1301, USA.
 
 @interface Entity (OOJavaScriptExtensions)
 
-@property (getter=isVisibleToScripts, readonly) BOOL visibleToScripts;
+@property (nonatomic, getter=isVisibleToScripts, readonly) BOOL visibleToScripts;
 
-@property (readonly, copy) NSString *oo_jsClassName;
+@property (nonatomic, readonly, copy) NSString *oo_jsClassName;
 
 // Internal:
 - (void) getJSClass:(JSClass **)outClass andPrototype:(JSObject **)outPrototype;
@@ -45,7 +45,7 @@ MA 02110-1301, USA.
 @interface ShipEntity (OOJavaScriptExtensions)
 
 // "Normal" subentities, excluding flashers and exhaust plumes.
-@property (readonly, copy) NSArray *subEntitiesForScript;
+@property (nonatomic, readonly, copy) NSArray *subEntitiesForScript;
 
 - (void) setTargetForScript:(ShipEntity *)target;
 

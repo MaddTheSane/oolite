@@ -127,7 +127,7 @@ static JSFunctionSpec sSystemInfoStaticMethods[] =
 - (id) valueForKey:(NSString *)key;
 - (void) setValue:(id)value forKey:(NSString *)key;
 
-@property (readonly, copy) NSArray *allKeys;
+@property (readonly, copy, atomic) NSArray *allKeys;
 
 @property (readonly) OOGalaxyID galaxy;
 @property (readonly) OOSystemID system;
@@ -239,16 +239,8 @@ DEFINE_JS_OBJECT_GETTER(JSSystemInfoGetSystemInfo, &sSystemInfoClass, sSystemInf
 }
 
 
-- (OOGalaxyID) galaxy
-{
-	return _galaxy;
-}
-
-
-- (OOSystemID) system
-{
-	return _system;
-}
+@synthesize galaxy = _galaxy;
+@synthesize system = _system;
 
 
 /*- (Random_Seed) systemSeed

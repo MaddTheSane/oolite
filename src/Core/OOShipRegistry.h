@@ -51,8 +51,8 @@ SOFTWARE.
 - (NSDictionary *) shipyardInfoForKey:(NSString *)key;
 - (OOProbabilitySet *) probabilitySetForRole:(NSString *)role;
 
-@property (readonly, copy) NSArray *demoShipKeys;
-@property (readonly, copy) NSArray *playerShipKeys;
+@property (readonly, copy, atomic) NSArray *demoShipKeys;
+@property (readonly, copy, atomic) NSArray *playerShipKeys;
 
 @end
 

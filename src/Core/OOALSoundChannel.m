@@ -30,7 +30,7 @@ SOFTWARE.
 #import "OOLogging.h"
 #import "OOMaths.h"
 
-@interface OOSoundChannel (Private)
+@interface OOSoundChannel ()
 
 - (BOOL) enqueueBuffer:(OOSound *)sound;
 - (void) hasStopped;
@@ -125,22 +125,8 @@ SOFTWARE.
 }
 
 
-- (void) setDelegate:(id)delegate
-{
-	_delegate = delegate;
-}
-
-
-- (OOSoundChannel *) next
-{
-	return _next;
-}
-
-
-- (void) setNext:(OOSoundChannel *)next
-{
-	_next = next;
-}
+@synthesize delegate = _delegate;
+@synthesize next = _next;
 
 
 - (void) setPosition:(Vector) vector
@@ -245,10 +231,6 @@ SOFTWARE.
 }
 
 
-
-- (OOSound *)sound
-{
-	return _sound;
-}
+@synthesize sound = _sound;
 
 @end

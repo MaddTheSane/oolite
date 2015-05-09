@@ -228,10 +228,7 @@ FAIL:
 }
 
 
-- (NSUInteger)count
-{
-	return _elemCount;
-}
+@synthesize count = _elemCount;
 
 
 - (void)emptyQueue

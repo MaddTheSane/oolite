@@ -116,22 +116,22 @@ static OOOXZManager *sSingleton = nil;
 
 // protocol was only formalised in 10.7
 #if OOLITE_MAC_OS_X_10_7 
-@interface OOOXZManager (OOPrivate) <NSURLConnectionDataDelegate> 
+@interface OOOXZManager () <NSURLConnectionDataDelegate>
 #else
 @interface OOOXZManager (NSURLConnectionDataDelegate) 
 #endif
 
-@property (readonly, copy) NSString *manifestPath;
-@property (readonly, copy) NSString *downloadPath;
+@property (atomic, readonly, copy) NSString *manifestPath;
+@property (atomic, readonly, copy) NSString *downloadPath;
 - (NSString *) extractionBasePathForIdentifier:(NSString *)identifier andVersion:(NSString *)version;
-@property (readonly, copy) NSString *dataURL;
+@property (atomic, readonly, copy) NSString *dataURL;
 - (NSString *) humanSize:(NSUInteger)bytes;
 
-@property (readonly) BOOL ensureInstallPath;
+@property (atomic, readonly) BOOL ensureInstallPath;
 
 - (BOOL) beginDownload:(NSMutableURLRequest *)request;
-@property (readonly) BOOL processDownloadedManifests;
-@property (readonly) BOOL processDownloadedOXZ;
+- (BOOL) processDownloadedManifests;
+- (BOOL) processDownloadedOXZ;
 
 - (OXZInstallableState) installableState:(NSDictionary *)manifest;
 - (OOColor *) colorForManifest:(NSDictionary *)manifest;
@@ -144,12 +144,12 @@ static OOOXZManager *sSingleton = nil;
 - (NSArray *) applyCurrentFilter:(NSArray *)list;
 
 - (void) setCurrentDownload:(NSURLConnection *)download withLabel:(NSString *)label;
-- (void) setProgressStatus:(NSString *)newStatus;
+@property (nonatomic, copy) NSString *progressStatus;
 
 - (BOOL) installOXZ:(NSUInteger)item;
 - (BOOL) removeOXZ:(NSUInteger)item;
-@property (readonly, copy) NSArray *installOptions;
-@property (readonly, copy) NSArray *removeOptions;
+@property (atomic, readonly, copy) NSArray *installOptions;
+@property (atomic, readonly, copy) NSArray *removeOptions;
 
 - (NSString *) extractOXZ:(NSUInteger)item;
 
@@ -536,11 +536,8 @@ static OOOXZManager *sSingleton = nil;
 }
 
 
-- (void) setProgressStatus:(NSString *)new
-{
-	DESTROY(_progressStatus);
-	_progressStatus = [new copy];
-}
+@synthesize progressStatus = _progressStatus;
+
 
 - (BOOL) updateManifests
 {
@@ -619,10 +616,7 @@ static OOOXZManager *sSingleton = nil;
 }
 
 
-- (NSArray *) manifests
-{
-	return _oxzList;
-}
+@synthesize manifests = _oxzList;
 
 
 - (NSArray *) managedOXZs
@@ -778,7 +772,7 @@ static OOOXZManager *sSingleton = nil;
 	}
 	NSDictionary *requirement = nil;
 	NSMutableString *progress = [NSMutableString stringWithCapacity:2048];
-	OOLog(kOOOXZDebugLog,@"Dependency stack has %u elements",[_dependencyStack count]);
+	OOLog(kOOOXZDebugLog,@"Dependency stack has %lu elements",(unsigned long)[_dependencyStack count]);
 
 	if ([_dependencyStack count] > 0)
 	{
@@ -845,7 +839,7 @@ static OOOXZManager *sSingleton = nil;
 			_downloadStatus = OXZ_DOWNLOAD_NONE;
 			if (_downloadAllDependencies)
 			{
-				OOLog(kOOOXZDebugLog,@"Dependency stack: installing %u from list",index);
+				OOLog(kOOOXZDebugLog,@"Dependency stack: installing %lu from list",(unsigned long)index);
 				if (![self installOXZ:index]) {
 					// if a required dependency is somehow uninstallable
 					// e.g. required+maximum version don't match this Oolite

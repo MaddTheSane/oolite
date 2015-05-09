@@ -107,10 +107,7 @@ static NSMutableArray	*sDeferredTimers;
 }
 
 
-- (OOTimeDelta)interval
-{
-	return _interval;
-}
+@synthesize interval = _interval;
 
 
 - (void)setInterval:(OOTimeDelta)interval
@@ -155,10 +152,7 @@ static NSMutableArray	*sDeferredTimers;
 }
 
 
-- (BOOL) isScheduled
-{
-	return _isScheduled;
-}
+@synthesize scheduled = _isScheduled;
 
 
 + (void) updateTimers

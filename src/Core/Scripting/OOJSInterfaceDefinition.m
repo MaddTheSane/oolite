@@ -69,49 +69,10 @@ MA 02110-1301, USA.
 	[super dealloc];
 }
 
-- (NSString *)title 
-{
-	return _title;
-}
-
-
-- (void)setTitle:(NSString *)title
-{
-	[_title autorelease];
-	_title = [title retain];
-}
-
-
-- (NSString *)category
-{
-	return _category;
-}
-
-
-- (void)setCategory:(NSString *)category
-{
-	[_category autorelease];
-	_category = [category retain];
-}
-
-
-- (NSString *)summary
-{
-	return _summary;
-}
-
-
-- (void)setSummary:(NSString *)summary
-{
-	[_summary autorelease];
-	_summary = [summary retain];
-}
-
-
-- (jsval)callback
-{
-	return _callback;
-}
+@synthesize title = _title;
+@synthesize category = _category;
+@synthesize summary = _summary;
+@synthesize callback = _callback;
 
 
 - (void)setCallback:(jsval)callback
@@ -124,10 +85,7 @@ MA 02110-1301, USA.
 }
 
 
-- (JSObject *)callbackThis
-{
-	return _callbackThis;
-}
+@synthesize callbackThis = _callbackThis;
 
 
 - (void)setCallbackThis:(JSObject *)callbackThis

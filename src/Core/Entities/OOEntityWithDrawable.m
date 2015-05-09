@@ -40,10 +40,7 @@ MA 02110-1301, USA.
 }
 
 
-- (OODrawable *)drawable
-{
-	return drawable;
-}
+@synthesize drawable;
 
 
 - (void)setDrawable:(OODrawable *)inDrawable

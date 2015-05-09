@@ -49,7 +49,7 @@ MA 02110-1301, USA.
 	OOLightParticleEntity assumes the texture is twice as big as the nominal
 	size of the particle (with a black border for anti-aliasing purposes).
 */
-@property (readonly, strong) OOTexture *texture;
+@property (atomic, readonly, strong) OOTexture *texture;
 
 + (void) setUpTexture;
 + (OOTexture *) defaultParticleTexture;

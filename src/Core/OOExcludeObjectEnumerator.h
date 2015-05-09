@@ -35,7 +35,7 @@ MA 02110-1301, USA.
 	id						_excludeObject;
 }
 
-+ (instancetype) enumeratorWithEnumerator:(NSEnumerator *)enumerator
++ (NSEnumerator*) enumeratorWithEnumerator:(NSEnumerator *)enumerator
 				excludingObject:(id)object;
 
 @end

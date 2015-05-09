@@ -70,7 +70,6 @@ enum
 }
 
 - (instancetype) init NS_DESIGNATED_INITIALIZER;
-- (void) dealloc;
 - (void) loadModelView: (OOMatrix) matrix;
 - (void) resetModelView;
 - (void) multModelView: (OOMatrix) matrix;

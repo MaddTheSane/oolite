@@ -41,8 +41,8 @@ MA 02110-1301, USA.
 @property (copy) NSString *title;
 @property (copy) NSString *category;
 @property (copy) NSString *summary;
-@property  jsval callback;
-@property  JSObject *callbackThis;
+@property (nonatomic) jsval callback;
+@property (nonatomic) JSObject *callbackThis;
 
 - (void)runCallback:(NSString *)key;
 

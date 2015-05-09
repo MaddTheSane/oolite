@@ -40,7 +40,7 @@ MA 02110-1301, USA.
 
 - (void) setGood:(OOCommodityType)key withInfo:(NSDictionary *)info;
 
-@property (readonly, copy) NSArray *goods;
+@property (readonly, copy, atomic) NSArray *goods;
 - (NSDictionary *) dictionaryForScripting;
 
 - (BOOL) setPrice:(OOCreditsQuantity)price forGood:(OOCommodityType)good;
@@ -65,10 +65,10 @@ MA 02110-1301, USA.
 - (NSDictionary *) definitionForGood:(OOCommodityType)good;
 
 
-@property (readonly, copy) NSArray *savePlayerAmounts;
+@property (readonly, copy, atomic) NSArray *savePlayerAmounts;
 - (void) loadPlayerAmounts:(NSArray *)amounts;
 
-@property (readonly, copy) NSArray *saveStationAmounts;
+@property (readonly, copy, atomic) NSArray *saveStationAmounts;
 - (void) loadStationAmounts:(NSArray *)amounts;
 
 @end

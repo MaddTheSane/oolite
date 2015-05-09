@@ -89,17 +89,17 @@ static NSString * const kOOCommodityMarketTypeValueGood			= @"good";
 
 + (OOCommodityType) legacyCommodityType:(NSUInteger)i;
 
-@property (readonly, strong) OOCommodityMarket *generateManifestForPlayer;
-@property (readonly, strong) OOCommodityMarket *generateBlankMarket;
+- (OOCommodityMarket *) generateManifestForPlayer;
+- (OOCommodityMarket *) generateBlankMarket;
 - (OOCommodityMarket *) generateMarketForSystemWithEconomy:(OOEconomyID)economy andScript:(NSString *)scriptName;
 - (OOCommodityMarket *) generateMarketForStation:(StationEntity *)station;
 
 - (OOCreditsQuantity) samplePriceForCommodity:(OOCommodityType)commodity inEconomy:(OOEconomyID)economy withScript:(NSString *)scriptName inSystem:(OOSystemID)system;
 
 @property (readonly, atomic) NSUInteger count;
-@property (readonly, copy) NSArray *goods;
+@property (readonly, copy, atomic) NSArray *goods;
 - (BOOL) goodDefined:(NSString *)key;
-@property (getter=getRandomCommodity, readonly, copy) NSString *randomCommodity;
+@property (getter=getRandomCommodity, readonly, copy, atomic) NSString *randomCommodity;
 - (OOMassUnit) massUnitForGood:(NSString *)good;
 
 

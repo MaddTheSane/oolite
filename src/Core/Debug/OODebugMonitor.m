@@ -657,22 +657,8 @@ typedef struct
 }
 
 
-- (BOOL) TCPIgnoresDroppedPackets
-{
-	return _TCPIgnoresDroppedPackets;
-}
-
-
-- (void) setUsingPlugInController:(BOOL)flag
-{
-	_usingPlugInController = flag;
-}
-
-
-- (BOOL) usingPlugInController
-{
-	return _usingPlugInController;
-}
+@synthesize TCPIgnoresDroppedPackets = _TCPIgnoresDroppedPackets;
+@synthesize usingPlugInController = _usingPlugInController;
 
 
 - (NSString *)sourceCodeForFile:(in NSString *)filePath line:(in unsigned)line

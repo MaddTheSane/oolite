@@ -30,13 +30,14 @@ MA 02110-1301, USA.
 
 @class OOWaypointEntity;
 
+#import "OOWaypointEntity.h"
 
 void InitOOJSWaypoint(JSContext *context, JSObject *global);
 
 @interface OOWaypointEntity (OOJavaScriptExtensions)
 
 - (void)getJSClass:(JSClass **)outClass andPrototype:(JSObject **)outPrototype;
-@property (readonly, copy) NSString *oo_jsClassName;
-@property (getter=isVisibleToScripts, readonly) BOOL visibleToScripts;
+@property (nonatomic, readonly, copy) NSString *oo_jsClassName;
+@property (nonatomic, getter=isVisibleToScripts, readonly) BOOL visibleToScripts;
 
 @end

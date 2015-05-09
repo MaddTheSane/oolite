@@ -100,14 +100,14 @@ SOFTWARE.
 - (id)configurationValueForKey:(NSString *)key class:(Class)class defaultValue:(id)value;
 - (long long)configurationIntValueForKey:(NSString *)key defaultValue:(long long)value;
 
-@property (readonly, copy) NSArray *configurationKeys;
+@property (readonly, copy, atomic) NSArray *configurationKeys;
 
-@property (readonly) BOOL debuggerConnected;
+@property (readonly, atomic) BOOL debuggerConnected;
 
 - (void) dumpMemoryStatistics;
-@property (readonly) size_t dumpJSMemoryStatistics;
+@property (atomic, readonly) size_t dumpJSMemoryStatistics;
 
-@property  BOOL TCPIgnoresDroppedPackets;
+@property (nonatomic) BOOL TCPIgnoresDroppedPackets;
 
 @property  BOOL usingPlugInController;
 

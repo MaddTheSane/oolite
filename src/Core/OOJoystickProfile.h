@@ -46,7 +46,7 @@ MA 02110-1301, USA.
 - (id) copyWithZone: (NSZone *) zone;
 - (double) rawValue: (double) x;
 - (double) value: (double) x;
-@property  double deadzone;
+@property (nonatomic) double deadzone;
 
 @end
 
@@ -59,8 +59,8 @@ MA 02110-1301, USA.
 
 - (instancetype) init NS_DESIGNATED_INITIALIZER;
 - (id) copyWithZone: (NSZone *) zone;
-@property  double power;
-@property  double parameter;
+@property (nonatomic) double power;
+@property (nonatomic) double parameter;
 - (double) rawValue: (double) x;
 
 @end
@@ -77,13 +77,13 @@ MA 02110-1301, USA.
 - (id) copyWithZone: (NSZone *) zone;
 - (NSInteger) addControl: (NSPoint) point;
 - (NSPoint) pointAtIndex: (NSInteger) index;
-@property (readonly) NSInteger countPoints;
+@property (readonly, atomic) NSInteger countPoints;
 - (void) removeControl: (NSInteger) index;
 - (void) clearControlPoints;
 - (void) moveControl: (NSInteger) index point: (NSPoint) point;
 - (double) rawValue: (double) x;
 - (double) gradient: (double) x;
-@property (readonly, copy) NSArray *controlPoints;
+@property (readonly, copy, atomic) NSArray *controlPoints;
 
 @end
 

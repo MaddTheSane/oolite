@@ -41,7 +41,7 @@ static NSString * const kOOLogSoundLoadingError		= @"sound.load.error";
  
 + (OOOpenALController *) sharedController;
 
-@property  ALfloat masterVolume;
+@property (atomic) ALfloat masterVolume;
 
 - (void) shutdown;
 

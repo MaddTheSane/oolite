@@ -46,15 +46,15 @@ SOFTWARE.
 - (size_t)streamToBuffer:(char *)buffer;
 
 // Returns the size of the data -readMonoCreatingBuffer:withFrameCount: will create.
-@property (readonly) size_t sizeAsBuffer;
+@property (nonatomic, readonly) size_t sizeAsBuffer;
 
-@property (getter=isStereo, readonly) BOOL stereo;
+@property (nonatomic, getter=isStereo, readonly) BOOL stereo;
 
-@property (readonly) long sampleRate;
+@property (nonatomic, readonly) long sampleRate;
 
 // For streaming
 - (void) reset;
 
-@property (readonly, copy) NSString *name;
+@property (nonatomic, readonly, copy) NSString *name;
 
 @end

@@ -98,10 +98,7 @@ static OOBasicMaterial *sDefaultMaterial = nil;
 }
 
 
-- (NSString *)name
-{
-	return materialName;
-}
+@synthesize name = materialName;
 
 
 - (BOOL)doApply
@@ -153,8 +150,8 @@ static OOBasicMaterial *sDefaultMaterial = nil;
 
 - (void)setAmbientAndDiffuseColor:(OOColor *)color
 {
-	[self setAmbientColor:color];
-	[self setDiffuseColor:color];
+	self.ambientColor = color;
+	self.diffuseColor = color;
 }
 
 
@@ -319,11 +316,7 @@ static OOBasicMaterial *sDefaultMaterial = nil;
 }
 
 
-
-- (uint8_t)shininess
-{
-	return shininess;
-}
+@synthesize shininess;
 
 
 - (void)setShininess:(uint8_t)value

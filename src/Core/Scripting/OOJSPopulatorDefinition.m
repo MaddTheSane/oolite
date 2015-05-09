@@ -70,10 +70,8 @@ MA 02110-1301, USA.
 	[super dealloc];
 }
 
-- (jsval)callback
-{
-	return _callback;
-}
+
+@synthesize callback = _callback;
 
 
 - (void)setCallback:(jsval)callback
@@ -86,10 +84,7 @@ MA 02110-1301, USA.
 }
 
 
-- (JSObject *)callbackThis
-{
-	return _callbackThis;
-}
+@synthesize callbackThis = _callbackThis;
 
 
 - (void)setCallbackThis:(JSObject *)callbackThis

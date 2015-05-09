@@ -274,15 +274,10 @@ static void PlayTrumbleSqueal(void);
 
 
 @synthesize rotation;
-
 @synthesize movement;
-
 @synthesize size;
-
 @synthesize hunger;
-
 @synthesize discomfort;
-
 
 
 // AI methods here

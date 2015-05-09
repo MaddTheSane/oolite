@@ -38,33 +38,22 @@ MA 02110-1301, USA.
 
 - (instancetype)initWithTexture:(OOTexture *)inTexture size:(NSSize)spriteSize
 {
+	self = [super init];
 	if (inTexture == nil)
 	{
-		[self release];
 		return nil;
 	}
 	
-	self = [super init];
 	if (self != nil)
 	{
-		texture = [inTexture retain];
+		texture = inTexture;
 		size = spriteSize;
 	}
 	return self;
 }
 
 
-- (void)dealloc
-{
-	[texture release];
-	
-	[super dealloc];
-}
-
-- (NSSize)size
-{
-	return size;
-}
+@synthesize size;
 
 
 - (void) blitToX:(float)x Y:(float)y Z:(float)z alpha:(float)a

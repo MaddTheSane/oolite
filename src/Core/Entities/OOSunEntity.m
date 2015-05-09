@@ -738,6 +738,9 @@ MA 02110-1301, USA.
 }
 
 
+@synthesize name = _name;
+
+
 - (double) radius
 {
 	return collision_radius;

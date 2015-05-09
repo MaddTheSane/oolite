@@ -35,8 +35,8 @@ void InitOOJSVisualEffect(JSContext *context, JSObject *global);
 @interface OOVisualEffectEntity (OOJavaScriptExtensions)
 
 - (void)getJSClass:(JSClass **)outClass andPrototype:(JSObject **)outPrototype;
-@property (readonly, copy) NSString *oo_jsClassName;
-@property (getter=isVisibleToScripts, readonly) BOOL visibleToScripts;
-@property (readonly, copy) NSArray *subEntitiesForScript;
+@property (nonatomic, readonly, copy) NSString *oo_jsClassName;
+@property (nonatomic, getter=isVisibleToScripts, readonly) BOOL visibleToScripts;
+@property (nonatomic, readonly, copy) NSArray *subEntitiesForScript;
 
 @end

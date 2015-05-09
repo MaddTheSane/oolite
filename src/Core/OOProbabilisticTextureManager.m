@@ -176,10 +176,7 @@ SOFTWARE.
 }
 
 
-- (unsigned)textureCount
-{
-	return _count;
-}
+@synthesize textureCount = _count;
 
 
 - (void)ensureTexturesLoaded
@@ -193,15 +190,6 @@ SOFTWARE.
 }
 
 
-- (RANROTSeed)seed
-{
-	return _seed;
-}
-
-
-- (void)setSeed:(RANROTSeed)seed
-{
-	_seed = seed;
-}
+@synthesize seed = _seed;
 
 @end

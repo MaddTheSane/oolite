@@ -76,10 +76,10 @@ typedef NS_ENUM(unsigned int, OOMusicMode)
 
 - (void) toggleDockingMusic;	// Start docking music if none playing, stop docking music if currently playing docking music.
 
-@property (readonly, copy) NSString *playingMusic;
-@property (getter=isPlaying, readonly) BOOL playing;
+@property (readonly, copy, atomic) NSString *playingMusic;
+@property (getter=isPlaying, readonly, atomic) BOOL playing;
 
-@property  OOMusicMode mode;
+@property (nonatomic) OOMusicMode mode;
 
 
 @end

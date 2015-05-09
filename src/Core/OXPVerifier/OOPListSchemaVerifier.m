@@ -268,7 +268,7 @@ VERIFY_PROTO(DelegatedType);
 }
 
 
-- (void)setDelegate:(id)delegate
+- (void)setDelegate:(id<OOPListSchemaVerifierDelegate>)delegate
 {
 	if (_delegate != delegate)
 	{
@@ -278,10 +278,7 @@ VERIFY_PROTO(DelegatedType);
 }
 
 
-- (id)delegate
-{
-	return _delegate;
-}
+@synthesize delegate = _delegate;
 
 
 - (BOOL)verifyPropertyList:(id)plist named:(NSString *)name

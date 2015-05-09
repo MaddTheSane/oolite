@@ -58,9 +58,9 @@ enum
 
 - (void) resetPlume;
 
-@property  Vector scale;
+@property (nonatomic) Vector scale;
 
-@property (readonly, strong) OOTexture *texture;
+@property (atomic, readonly, strong) OOTexture *texture;
 
 + (void) setUpTexture;
 + (OOTexture *) plumeTexture;

@@ -82,15 +82,15 @@ MA 02110-1301, USA.
 - (BOOL) setSunColor:(OOColor*)sun_color;
 - (BOOL) changeSunProperty:(NSString *)key withDictionary:(NSDictionary*) dict;
 
-@property (readonly) OOStellarBodyType planetType;
+@property (nonatomic, readonly) OOStellarBodyType planetType;
 
 - (void) getDiffuseComponents:(GLfloat[4])components;
 - (void) getSpecularComponents:(GLfloat[4])components;
 
 - (void) setRadius:(GLfloat) rad andCorona:(GLfloat)corona;
 
-@property (readonly) BOOL willGoNova;
-@property (readonly) BOOL goneNova;
+@property (atomic, readonly) BOOL willGoNova;
+@property (atomic, readonly) BOOL goneNova;
 - (void) setGoingNova:(BOOL) yesno inTime:(double)interval;
 
 - (void) drawStarGlare;

@@ -767,6 +767,12 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 
 @end
 
+@interface OOConcreteMutableProbabilitySet ()
+
+- (instancetype) initPriv NS_DESIGNATED_INITIALIZER;
+- (instancetype) initWithPropertyListRepresentation:(NSDictionary *)plist NS_DESIGNATED_INITIALIZER;
+
+@end
 
 @implementation OOConcreteMutableProbabilitySet
 

@@ -57,12 +57,12 @@ enum
 - (instancetype) initWithShipGroup:(OOShipGroup *)group NS_DESIGNATED_INITIALIZER;
 
 @property (readonly) NSUInteger index;
-- (void) setPerformCleanup:(BOOL)flag;
+@property BOOL performCleanup;
 
 @end
 
 
-@interface OOShipGroup (Private)
+@interface OOShipGroup ()
 
 - (BOOL) resizeTo:(NSUInteger)newCapacity;
 - (void) cleanUp;
@@ -461,10 +461,7 @@ static id ShipGroupIterate(OOShipGroupEnumerator *enumerator);
 }
 
 
-- (NSUInteger) updateCount
-{
-	return _updateCount;
-}
+@synthesize updateCount = _updateCount;
 
 
 static id ShipGroupIterate(OOShipGroupEnumerator *enumerator)
@@ -586,15 +583,7 @@ static id ShipGroupIterate(OOShipGroupEnumerator *enumerator)
 }
 
 
-- (NSUInteger) index
-{
-	return _index;
-}
-
-
-- (void) setPerformCleanup:(BOOL)flag
-{
-	_considerCleanup = flag;
-}
+@synthesize index = _index;
+@synthesize performCleanup = _considerCleanup;
 
 @end

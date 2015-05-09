@@ -153,19 +153,19 @@ SOFTWARE.
 
 - (BOOL)haveExtension:(NSString *)extension;
 
-@property (readonly) BOOL shadersSupported;
-- (OOGraphicsDetail)defaultDetailLevel;
-@property (readonly) OOGraphicsDetail maximumDetailLevel;
-@property (readonly) GLint textureImageUnitCount;			// Fragment shader sampler count limit. Does not apply to fixed function multitexturing. (GL_MAX_TEXTURE_IMAGE_UNITS_ARB)
+@property (readonly, atomic) BOOL shadersSupported;
+@property (readonly, atomic) OOGraphicsDetail defaultDetailLevel;
+@property (readonly, atomic) OOGraphicsDetail maximumDetailLevel;
+@property (readonly, atomic) GLint textureImageUnitCount;		// Fragment shader sampler count limit. Does not apply to fixed function multitexturing. (GL_MAX_TEXTURE_IMAGE_UNITS_ARB)
 
-@property (readonly) BOOL vboSupported;					// Vertex buffer objects
-@property (readonly) BOOL fboSupported;					// Frame buffer objects
-@property (readonly) BOOL textureCombinersSupported;
-@property (readonly) GLint textureUnitCount;				// Fixed function multitexture limit, does not apply to shaders. (GL_MAX_TEXTURE_UNITS_ARB)
+@property (readonly, atomic) BOOL vboSupported;					// Vertex buffer objects
+@property (readonly, atomic) BOOL fboSupported;					// Frame buffer objects
+@property (readonly, atomic) BOOL textureCombinersSupported;
+@property (readonly, atomic) GLint textureUnitCount;			// Fixed function multitexture limit, does not apply to shaders. (GL_MAX_TEXTURE_UNITS_ARB)
 
-@property (readonly) NSUInteger majorVersionNumber;
-@property (readonly) NSUInteger minorVersionNumber;
-@property (readonly) NSUInteger releaseVersionNumber;
+@property (readonly) unsigned int majorVersionNumber;
+@property (readonly) unsigned int minorVersionNumber;
+@property (readonly) unsigned int releaseVersionNumber;
 - (void)getVersionMajor:(unsigned *)outMajor minor:(unsigned *)outMinor release:(unsigned *)outRelease;
 - (BOOL) versionIsAtLeastMajor:(unsigned)maj minor:(unsigned)min;
 

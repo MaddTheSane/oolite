@@ -208,10 +208,7 @@ MA 02110-1301, USA.
 }
 
 
-- (NSString *)effectKey
-{
-	return _effectKey;
-}
+@synthesize effectKey = _effectKey;
 
 
 - (GLfloat)frustumRadius 
@@ -347,10 +344,7 @@ MA 02110-1301, USA.
 }
 
 
-- (NSArray *)subEntities 
-{
-	return [[subEntities copy] autorelease];
-}
+@synthesize subEntities;
 
 
 - (NSUInteger) subEntityCount
@@ -449,10 +443,8 @@ MA 02110-1301, USA.
 	return scale;
 }
 
-- (GLfloat) scaleX
-{
-	return scaleX;
-}
+
+@synthesize scaleX;
 
 
 - (void) setScaleX:(GLfloat)factor
@@ -480,10 +472,7 @@ MA 02110-1301, USA.
 }
 
 
-- (GLfloat) scaleY
-{
-	return scaleY;
-}
+@synthesize scaleY;
 
 
 - (void) setScaleY:(GLfloat)factor
@@ -511,10 +500,7 @@ MA 02110-1301, USA.
 }
 
 
-- (GLfloat) scaleZ
-{
-	return scaleZ;
-}
+@synthesize scaleZ;
 
 
 - (void) setScaleZ:(GLfloat)factor
@@ -559,36 +545,17 @@ MA 02110-1301, USA.
 
 
 // exposed to shaders
-- (Vector) forwardVector
-{
-	return _v_forward;
-}
+@synthesize forwardVector = _v_forward;
 
 
 // exposed to shaders
-- (Vector) upVector
-{
-	return _v_up;
-}
+@synthesize upVector = _v_up;
 
 
 // exposed to shaders
-- (Vector) rightVector
-{
-	return _v_right;
-}
-
-
-- (OOColor *)scannerDisplayColor1
-{
-	return [[scanner_display_color1 retain] autorelease];
-}
-
-
-- (OOColor *)scannerDisplayColor2
-{
-	return [[scanner_display_color2 retain] autorelease];
-}
+@synthesize rightVector = _v_right;
+@synthesize scannerDisplayColor1 = scanner_display_color1;
+@synthesize scannerDisplayColor2 = scanner_display_color2;
 
 
 - (void)setScannerDisplayColor1:(OOColor *)color
@@ -696,10 +663,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};
 }
 
 
-- (NSDictionary *)effectInfoDictionary
-{
-	return effectinfoDictionary;
-}
+@synthesize effectInfoDictionary;
 
 
 /* scripting */
@@ -871,10 +835,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};
 /* Shader bindable uniforms */
 
 // no automatic change of this, but simplifies use of default shader
-- (GLfloat)hullHeatLevel
-{
-	return _hullHeatLevel;
-}
+@synthesize hullHeatLevel = _hullHeatLevel;
 
 
 - (void)setHullHeatLevel:(GLfloat)value
@@ -883,76 +844,12 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};
 }
 
 
-- (GLfloat) shaderFloat1 
-{
-	return _shaderFloat1;
-}
-
-
-- (void)setShaderFloat1:(GLfloat)value
-{
-	_shaderFloat1 = value;
-}
-
-
-- (GLfloat) shaderFloat2 
-{
-	return _shaderFloat2;
-}
-
-
-- (void)setShaderFloat2:(GLfloat)value
-{
-	_shaderFloat2 = value;
-}
-
-
-- (int) shaderInt1 
-{
-	return _shaderInt1;
-}
-
-
-- (void)setShaderInt1:(int)value
-{
-	_shaderInt1 = value;
-}
-
-
-- (int) shaderInt2 
-{
-	return _shaderInt2;
-}
-
-
-- (void)setShaderInt2:(int)value
-{
-	_shaderInt2 = value;
-}
-
-
-- (Vector) shaderVector1 
-{
-	return _shaderVector1;
-}
-
-
-- (void)setShaderVector1:(Vector)value
-{
-	_shaderVector1 = value;
-}
-
-
-- (Vector) shaderVector2 
-{
-	return _shaderVector2;
-}
-
-
-- (void)setShaderVector2:(Vector)value
-{
-	_shaderVector2 = value;
-}
+@synthesize shaderFloat1 = _shaderFloat1;
+@synthesize shaderFloat2 = _shaderFloat2;
+@synthesize shaderInt1 = _shaderInt1;
+@synthesize shaderInt2 = _shaderInt2;
+@synthesize shaderVector1 = _shaderVector1;
+@synthesize shaderVector2 = _shaderVector2;
 
 
 @end

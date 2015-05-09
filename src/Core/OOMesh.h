@@ -48,12 +48,13 @@ MA 02110-1301, USA.
 #endif
 
 
-
-
-typedef NS_OPTIONS(uint16_t, OOMeshSmoothGroup)
+enum
 {
 	kOOMeshMaxMaterials			= 8
 };
+
+
+typedef uint16_t			OOMeshSmoothGroup;
 typedef uint8_t				OOMeshMaterialIndex, OOMeshMaterialCount;
 typedef uint32_t			OOMeshVertexCount;
 typedef uint32_t			OOMeshFaceCount;
@@ -166,10 +167,10 @@ typedef struct
 @property (readonly, copy) NSDictionary *materials;
 @property (readonly, copy) NSDictionary *shaders;
 
-@property (readonly) size_t vertexCount;
-@property (readonly) size_t faceCount;
+@property (readonly) OOMeshVertexCount vertexCount;
+@property (readonly) OOMeshFaceCount faceCount;
 
-@property (readonly, strong) Octree *octree;
+@property (readonly, strong, atomic) Octree *octree;
 
 // This needs a better name.
 - (BoundingBox) findBoundingBoxRelativeToPosition:(Vector)opv

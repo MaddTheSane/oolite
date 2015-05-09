@@ -37,13 +37,13 @@ SOFTWARE.
 
 - (void)renderOpaqueParts;
 - (void)renderTranslucentParts;
-@property (readonly) BOOL hasOpaqueParts;
-@property (readonly) BOOL hasTranslucentParts;
+@property (readonly, nonatomic) BOOL hasOpaqueParts;
+@property (readonly, nonatomic) BOOL hasTranslucentParts;
 
-@property (readonly) GLfloat collisionRadius;
-@property (readonly) GLfloat maxDrawDistance;
+@property (readonly, nonatomic) GLfloat collisionRadius;
+@property (readonly, nonatomic) GLfloat maxDrawDistance;
 
-@property (readonly) BoundingBox boundingBox;
+@property (readonly, nonatomic) BoundingBox boundingBox;
 
 // Passed to all materials.
 - (void)setBindingTarget:(id<OOWeakReferenceSupport>)target;
@@ -51,8 +51,8 @@ SOFTWARE.
 - (void)dumpSelfState;
 
 #ifndef NDEBUG
-@property (readonly, copy) NSSet *allTextures;
-@property (readonly) size_t totalSize;	// Size including dynamic data, not counting textures.
+@property (readonly, copy, nonatomic) NSSet *allTextures;
+@property (readonly, nonatomic) size_t totalSize;	// Size including dynamic data, not counting textures.
 #endif
 
 @end

@@ -89,8 +89,8 @@ enum
 - (void)render;
 
 #ifndef NDEBUG
-@property (readonly) size_t totalSize;
-@property (readonly, strong) OOTexture *texture;
+@property (readonly, atomic) size_t totalSize;
+@property (readonly, strong, atomic) OOTexture *texture;
 #endif
 
 @end

@@ -35,7 +35,7 @@ void InitOOJSWormhole(JSContext *context, JSObject *global);
 @interface WormholeEntity (OOJavaScriptExtensions)
 
 - (void)getJSClass:(JSClass **)outClass andPrototype:(JSObject **)outPrototype;
-@property (readonly, copy) NSString *oo_jsClassName;
-@property (getter=isVisibleToScripts, readonly) BOOL visibleToScripts;
+@property (nonatomic, readonly, copy) NSString *oo_jsClassName;
+@property (nonatomic, getter=isVisibleToScripts, readonly) BOOL visibleToScripts;
 
 @end

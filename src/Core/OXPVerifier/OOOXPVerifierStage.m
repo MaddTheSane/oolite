@@ -73,16 +73,8 @@ SOFTWARE.
 }
 
 
-- (OOOXPVerifier *)verifier
-{
-	return [[_verifier retain] autorelease];
-}
-
-
-- (BOOL)completed
-{
-	return _hasRun;
-}
+@synthesize verifier = _verifier;
+@synthesize completed = _hasRun;
 
 
 - (NSString *)name

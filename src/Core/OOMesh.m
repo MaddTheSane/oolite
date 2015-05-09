@@ -346,7 +346,7 @@ static NSString *NormalModeDescription(OOMeshNormalMode mode)
 
 - (NSString *)descriptionComponents
 {
-	return [NSString stringWithFormat:@"\"%@\", %zu vertices, %zu faces, radius: %g m normals: %@", [self modelName], [self vertexCount], [self faceCount], [self collisionRadius], NormalModeDescription(_normalMode)];
+	return [NSString stringWithFormat:@"\"%@\", %zu vertices, %zu faces, radius: %g m normals: %@", [self modelName], (size_t)[self vertexCount], (size_t)[self faceCount], [self collisionRadius], NormalModeDescription(_normalMode)];
 }
 
 
@@ -357,22 +357,9 @@ static NSString *NormalModeDescription(OOMeshNormalMode mode)
 }
 
 
-- (NSString *) modelName
-{
-	return baseFile;
-}
-
-
-- (size_t)vertexCount
-{
-	return vertexCount;
-}
-
-
-- (size_t)faceCount
-{
-	return faceCount;
-}
+@synthesize modelName = baseFile;
+@synthesize vertexCount;
+@synthesize faceCount;
 
 
 - (void)renderOpaqueParts
@@ -587,16 +574,8 @@ static NSString *NormalModeDescription(OOMeshNormalMode mode)
 }
 
 
-- (NSDictionary *) materials
-{
-	return _materialDict;
-}
-
-
-- (NSDictionary *) shaders
-{
-	return _shadersDict;
-}
+@synthesize materials = _materialDict;
+@synthesize shaders = _shadersDict;
 
 
 - (BOOL)hasOpaqueParts

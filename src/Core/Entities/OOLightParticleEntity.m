@@ -72,16 +72,7 @@ static OOTexture *sBlobTexture = nil;
 }
 
 
-- (float) diameter
-{
-	return _diameter;
-}
-
-
-- (void) setDiameter:(float)diameter
-{
-	_diameter = diameter;
-}
+@synthesize diameter = _diameter;
 
 
 - (void) setColor:(OOColor *)color

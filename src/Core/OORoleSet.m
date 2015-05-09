@@ -112,6 +112,7 @@ SOFTWARE.
 }
 
 
+@synthesize roleString = _roleString;
 - (NSString *)roleString
 {
 	NSArray					*roles = nil;

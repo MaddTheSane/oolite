@@ -103,37 +103,9 @@ MA 02110-1301, USA.
 }
 
 
-- (OOMissileStatus) dialMissileStatus
-{
-	return _missileStatus;
-}
-
-- (void) setDialMissileStatus:(OOMissileStatus)value
-{
-	_missileStatus = value;
-}
-
-
-- (OOFuelScoopStatus) dialFuelScoopStatus
-{
-	return _fuelScoopStatus;
-}
-
-- (void) setDialFuelScoopStatus:(OOFuelScoopStatus)value
-{
-	_fuelScoopStatus = value;
-}
-
-
-- (OOCompassMode) compassMode
-{
-	return _compassMode;
-}
-
-- (void) setCompassMode:(OOCompassMode)value
-{
-	_compassMode = value;
-}
+@synthesize dialMissileStatus = _missileStatus;
+@synthesize dialFuelScoopStatus = _fuelScoopStatus;
+@synthesize compassMode = _compassMode;
 
 
 - (BOOL) dialIdentEngaged
@@ -146,16 +118,7 @@ MA 02110-1301, USA.
 	_dialIdentEngaged = !!value;
 }
 
-
-- (OOAlertCondition) alertCondition
-{
-	return _alertCondition;
-}
-
-- (void) setAlertCondition:(OOAlertCondition)value
-{
-	_alertCondition = value;
-}
+@synthesize alertCondition = _alertCondition;
 
 // If you're here to add more properties, don't forget to update -copyValuesFromPlayer:.
 

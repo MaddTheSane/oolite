@@ -86,10 +86,7 @@ static OOTexture *sPlumeTexture = nil;
 }
 
 
-- (Vector) scale
-{
-	return _exhaustScale;
-}
+@synthesize scale = _exhaustScale;
 
 
 - (void) setScale:(Vector)scale

@@ -266,10 +266,10 @@ typedef struct
 - (instancetype) init NS_DESIGNATED_INITIALIZER;
 
 // Roll/pitch axis
-@property (readonly) NSPoint rollPitchAxis;
+@property (atomic, readonly) NSPoint rollPitchAxis;
 
 // View axis
-@property (readonly) NSPoint viewAxis;
+@property (atomic, readonly) NSPoint viewAxis;
 
 // convert a dictionary into the internal function map
 - (void) setFunction:(int)function withDict: (NSDictionary *)stickFn;
@@ -279,10 +279,10 @@ typedef struct
 // Accessors and discovery about the hardware.
 // These work directly on the internal lookup table so to be fast
 // since they are likely to be called by the game loop.
-@property (readonly) NSUInteger joystickCount;
+@property (atomic, readonly) NSUInteger joystickCount;
 - (BOOL) getButtonState:(int)function;
 - (double) getAxisState:(int)function;
-@property (getter=getSensitivity, readonly) double sensitivity;
+@property (atomic, getter=getSensitivity, readonly) double sensitivity;
 
 // Axis profile handling
 - (void) setProfile: (OOJoystickAxisProfile *) profile forAxis:(int) axis;
@@ -292,15 +292,15 @@ typedef struct
 
 // This one just returns a pointer to the entire state array to
 // allow for multiple lookups with only one objc_sendMsg
-@property (getter=getAllButtonStates, readonly) const BOOL *allButtonStates;
+@property (atomic, getter=getAllButtonStates, readonly) const BOOL *allButtonStates;
 
 // Hardware introspection.
-@property (readonly, copy) NSArray *listSticks;
+@property (atomic, readonly, copy) NSArray *listSticks;
 
 // These use NSDictionary/NSArray since they are used outside the game
 // loop and are needed for loading/saving defaults.
-@property (readonly, copy) NSDictionary *axisFunctions;
-@property (readonly, copy) NSDictionary *buttonFunctions;
+@property (atomic, readonly, copy) NSDictionary *axisFunctions;
+@property (atomic, readonly, copy) NSDictionary *buttonFunctions;
 
 // Set a callback for the next moved axis/pressed button. hwflags
 // is in the form HW_AXIS | HW_BUTTON (or just one of).

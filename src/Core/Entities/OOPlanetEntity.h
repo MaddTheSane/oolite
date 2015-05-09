@@ -65,25 +65,25 @@ MA 02110-1301, USA.
 
 - (instancetype) initFromDictionary:(NSDictionary *)dict withAtmosphere:(BOOL)atmosphere andSeed:(Random_Seed)seed forSystem:(OOSystemID)systemID;
 
-@property (readonly, strong) id miniatureVersion;
+- (instancetype) miniatureVersion;
 
-@property  double rotationalVelocity;
+@property (atomic) double rotationalVelocity;
 
-@property (readonly) BOOL planetHasStation;
+@property (atomic, readonly) BOOL planetHasStation;
 - (void) launchShuttle;
 - (void) welcomeShuttle:(ShipEntity *)shuttle;
 
-@property (readonly) BOOL hasAtmosphere;
+@property (atomic, readonly) BOOL hasAtmosphere;
 
 // FIXME: need material model.
-@property (copy) NSString *textureFileName;
+@property (atomic, copy) NSString *textureFileName;
 
 - (BOOL) setUpPlanetFromTexture:(NSString *)fileName;
 
-@property (readonly, strong) OOMaterial *material;
-@property (readonly, strong) OOMaterial *atmosphereMaterial;
+@property (atomic, readonly, strong) OOMaterial *material;
+@property (atomic, readonly, strong) OOMaterial *atmosphereMaterial;
 
-@property (getter=isFinishedLoading, readonly) BOOL finishedLoading;
+@property (atomic, getter=isFinishedLoading, readonly) BOOL finishedLoading;
 
 @end
 
