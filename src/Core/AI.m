@@ -794,7 +794,6 @@ static AIStackElement *sStack = NULL;
 	NSDictionary			*newSM = nil;
 	NSMutableDictionary		*cleanSM = nil;
 	OOCacheManager			*cacheMgr = [OOCacheManager sharedCache];
-	NSEnumerator			*stateEnum = nil;
 	NSString				*stateKey = nil;
 	NSDictionary			*stateHandlers = nil;
 	NSAutoreleasePool		*pool = nil;
@@ -835,7 +834,7 @@ static AIStackElement *sStack = NULL;
 			
 			cleanSM = [NSMutableDictionary dictionaryWithCapacity:[newSM count]];
 			
-			for (stateEnum = [newSM keyEnumerator]; (stateKey = [stateEnum nextObject]); )
+			foreachkey(stateKey, newSM)
 			{
 				stateHandlers = newSM[stateKey];
 				if (![stateHandlers isKindOfClass:[NSDictionary class]])
@@ -878,13 +877,12 @@ static AIStackElement *sStack = NULL;
 
 - (NSDictionary *) cleanHandlers:(NSDictionary *)handlers forState:(NSString *)stateKey stateMachine:(NSString *)smName
 {
-	NSEnumerator			*handlerEnum = nil;
 	NSString				*handlerKey = nil;
 	NSArray					*handlerActions = nil;
 	NSMutableDictionary		*result = nil;
 	
 	result = [NSMutableDictionary dictionaryWithCapacity:[handlers count]];
-	for (handlerEnum = [handlers keyEnumerator]; (handlerKey = [handlerEnum nextObject]); )
+	foreachkey(handlerKey, handlers)
 	{
 		handlerActions = handlers[handlerKey];
 		if (![handlerActions isKindOfClass:[NSArray class]])
@@ -904,7 +902,6 @@ static AIStackElement *sStack = NULL;
 
 - (NSArray *) cleanActions:(NSArray *)actions forHandler:(NSString *)handlerKey state:(NSString *)stateKey stateMachine:(NSString *)smName
 {
-	NSEnumerator			*actionEnum = nil;
 	NSString				*action = nil;
 	NSRange					spaceRange;
 	NSString				*selector = nil;
@@ -927,7 +924,7 @@ static AIStackElement *sStack = NULL;
 	}
 	
 	result = [NSMutableArray arrayWithCapacity:[actions count]];
-	for (actionEnum = [actions objectEnumerator]; (action = [actionEnum nextObject]); )
+	foreach(action, actions)
 	{
 		if (![action isKindOfClass:[NSString class]])
 		{

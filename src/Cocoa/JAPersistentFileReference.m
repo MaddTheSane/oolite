@@ -58,7 +58,7 @@ SOFTWARE.
 @end
 
 
-enum
+typedef NS_ENUM(NSUInteger, NSURLBookmarkResolutionOptions)
 {
     NSURLBookmarkResolutionWithoutUI = ( 1UL << 8 ),
     NSURLBookmarkResolutionWithoutMounting = ( 1UL << 9 ),
@@ -113,11 +113,11 @@ NSDictionary *JAPersistentFileReferenceFromURL(NSURL *url)
 }
 
 
-static inline unsigned long BookmarkOptionsFromFlags(JAPersistentFileReferenceResolveFlags flags)
+static inline NSURLBookmarkResolutionOptions BookmarkOptionsFromFlags(JAPersistentFileReferenceResolveFlags flags)
 {
-	unsigned long result = 0;
-	if (flags & kJAPersistentFileReferenceWithoutUI)  result |= NSURLBookmarkResolutionWithoutUI;
-	if (flags & NSURLBookmarkResolutionWithoutMounting)  result |= NSURLBookmarkResolutionWithoutMounting;
+	NSURLBookmarkResolutionOptions result = 0;
+	if (flags & kJAPersistentFileReferenceWithoutUI)		result |= NSURLBookmarkResolutionWithoutUI;
+	if (flags & kJAPersistentFileReferenceWithoutMounting)  result |= NSURLBookmarkResolutionWithoutMounting;
 	return result;
 }
 

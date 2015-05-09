@@ -1885,9 +1885,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 	NSMutableDictionary			*loadedScripts = nil;
 	NSArray						*results = nil;
 	NSArray						*paths = nil;
-	NSEnumerator				*pathEnum = nil;
 	NSString					*path = nil;
-	NSEnumerator				*scriptEnum = nil;
 	OOScript					*script = nil;
 	NSString					*name = nil;
 	NSAutoreleasePool			*pool = nil;
@@ -1896,7 +1894,7 @@ static NSString *LogClassKeyRoot(NSString *key)
 	
 	loadedScripts = [NSMutableDictionary dictionary];
 	paths = [ResourceManager paths];
-	for (pathEnum = [paths objectEnumerator]; (path = [pathEnum nextObject]); )
+	foreach(path, paths)
 	{
 		// excluding world-scripts.plist also excludes script.js / script.plist
 		// though as those core files don't and won't exist this is not
@@ -1934,14 +1932,11 @@ static NSString *LogClassKeyRoot(NSString *key)
 		NSUInteger count = [loadedScripts count];
 		if (count != 0)
 		{
-			NSMutableArray		*displayNames = nil;
-			NSEnumerator		*scriptEnum = nil;
+			NSMutableArray		*displayNames = [NSMutableArray arrayWithCapacity:count];
 			OOScript			*script = nil;
 			NSString			*displayString = nil;
 			
-			displayNames = [NSMutableArray arrayWithCapacity:count];
-			
-			for (scriptEnum = [loadedScripts objectEnumerator]; (script = [scriptEnum nextObject]); )
+			foreach(script, [loadedScripts allValues])
 			{
 				[displayNames addObject:[script displayName]];
 			}
