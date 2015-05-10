@@ -833,7 +833,7 @@ static AIStackElement *sStack = NULL;
 			
 			cleanSM = [NSMutableDictionary dictionaryWithCapacity:[newSM count]];
 			
-			foreachkey(stateKey, newSM)
+			foreachkey (stateKey, newSM)
 			{
 				stateHandlers = newSM[stateKey];
 				if (![stateHandlers isKindOfClass:[NSDictionary class]])
@@ -881,7 +881,7 @@ static AIStackElement *sStack = NULL;
 	NSMutableDictionary		*result = nil;
 	
 	result = [NSMutableDictionary dictionaryWithCapacity:[handlers count]];
-	foreachkey(handlerKey, handlers)
+	foreachkey (handlerKey, handlers)
 	{
 		handlerActions = handlers[handlerKey];
 		if (![handlerActions isKindOfClass:[NSArray class]])
@@ -923,7 +923,7 @@ static AIStackElement *sStack = NULL;
 	}
 	
 	result = [NSMutableArray arrayWithCapacity:[actions count]];
-	foreach(action, actions)
+	foreach (action, actions)
 	{
 		if (![action isKindOfClass:[NSString class]])
 		{

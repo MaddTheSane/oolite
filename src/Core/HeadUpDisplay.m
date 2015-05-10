@@ -2581,7 +2581,7 @@ static OOPolygonSprite *IconForMissileRole(NSString *role)
 	OOWaypointEntity *waypoint = nil;
 	Entity *compass = [PLAYER compassTarget];
 	
-	foreach(waypoint, [UNIVERSE currentWaypoints])
+	foreach (waypoint, [[UNIVERSE currentWaypoints] allValues])
 	{
 		hudDrawWaypoint(waypoint, PLAYER, z1, alpha, waypoint==compass, scale);
 	}

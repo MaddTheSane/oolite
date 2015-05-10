@@ -772,11 +772,10 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 - (NSString *) serializeShipSubEntities
 {	
 	NSMutableString		*result = [NSMutableString stringWithCapacity:4];
-	NSEnumerator		*subEnum = nil;
 	ShipEntity			*se = nil;
 	NSUInteger			diff, i = 0;
 	
-	for (subEnum = [self shipSubEntityEnumerator]; (se = [subEnum nextObject]); )
+	foreach (se, [self shipSubEntityEnumerator])
 	{
 		diff = [se subIdx] - i;
 		i += diff + 1;
@@ -1334,9 +1333,8 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 			hitEntity[0] = self;
 	}
 	
-	NSEnumerator	*subEnum = nil;
 	ShipEntity		*se = nil;
-	for (subEnum = [self shipSubEntityEnumerator]; (se = [subEnum nextObject]); )
+	foreach (se, [self shipSubEntityEnumerator])
 	{
 		HPVector p0 = [se absolutePositionForSubentity];
 		Triangle ijk = [se absoluteIJKForSubentity];
@@ -1666,7 +1664,6 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 				  @"Ship %@ has bad escort_roles definition.", self);
 		return;
 	}
-	NSEnumerator				*edefEnumerator = nil;
 	NSDictionary				*escortDefinition = nil;
 	NSDictionary		*systeminfo = nil;
 	OOGovernmentID		government;
@@ -1687,7 +1684,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	
 	_maxEscortCount = 0;
 	int8_t i = 0;
-	for (edefEnumerator = [escortRoles objectEnumerator]; (escortDefinition = [edefEnumerator nextObject]); )
+	foreach (escortDefinition, escortRoles)
 	{
 		if (currentEscortCount >= MAX_ESCORTS)
 		{
@@ -2514,7 +2511,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 				ShipEntity	*escort = nil;
 				unsigned	i = 0;
 				// Note: works on escortArray rather than escortEnumerator because escorts may be mutated.
-				foreach(escort, [self escortArray])
+				foreach (escort, [self escortArray])
 				{
 					[escort setEscortDestination:[self coordinatesForEscortPosition:i++]];
 				}
@@ -2855,7 +2852,6 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 
 - (BOOL) hasPrimaryWeapon:(OOWeaponType)weaponType
 {
-	NSEnumerator				*subEntEnum = nil;
 	ShipEntity					*subEntity = nil;
 	
 	if ([[forward_weapon_type identifier] isEqualToString:[weaponType identifier]] ||
@@ -2866,7 +2862,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		return YES;
 	}
 
-	for (subEntEnum = [self shipSubEntityEnumerator]; (subEntity = [subEntEnum nextObject]); )
+	foreach (subEntity, [self shipSubEntityEnumerator])
 	{
 		if ([subEntity hasPrimaryWeapon:weaponType])  return YES;
 	}
@@ -3122,11 +3118,10 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 {
 	NSArray				*eqTypes = [OOEquipmentType allEquipmentTypes];
 	NSMutableArray		*quip = [NSMutableArray arrayWithCapacity:[eqTypes count]];
-	NSEnumerator		*eqTypeEnum = nil;
 	OOEquipmentType		*eqType = nil;
 	BOOL				isDamaged;
 	
-	for (eqTypeEnum = [eqTypes objectEnumerator]; (eqType = [eqTypeEnum nextObject]); )
+	foreach (eqType, eqTypes)
 	{
 		// Equipment list,  consistent with the rest of the API - Kaks
 		if ([eqType canCarryMultiple])
@@ -3552,9 +3547,8 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		if(isRandomMissile)
 		{
 			id 				value;
-			NSEnumerator	*enumerator = [[[missile roleSet] roles] objectEnumerator];
 			
-			while ((value = [enumerator nextObject]))
+			foreach (value, [[missile roleSet] roles])
 			{
 				role = (NSString *)value;
 				missileType = [OOEquipmentType equipmentTypeWithIdentifier:role];
@@ -8830,9 +8824,8 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 		}
 		
 		// Explode subentities.
-		NSEnumerator	*subEnum = nil;
 		ShipEntity		*se = nil;
-		for (subEnum = [self shipSubEntityEnumerator]; (se = [subEnum nextObject]); )
+		foreach (se, [self shipSubEntityEnumerator])
 		{
 			[se setSuppressExplosion:suppressExplosion];
 			[se becomeExplosion];
@@ -9064,9 +9057,8 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 
 		[self releaseCargoPodsDebris];
 		
-		NSEnumerator	*subEnum = nil;
 		ShipEntity		*se = nil;
-		for (subEnum = [self shipSubEntityEnumerator]; (se = [subEnum nextObject]); )
+		foreach (se, [self shipSubEntityEnumerator])
 		{
 			[se setSuppressExplosion:suppressExplosion];
 			[se becomeExplosion];
@@ -9193,10 +9185,9 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 
 - (void) resetExhaustPlumes
 {
-	NSEnumerator *exEnum = nil;
 	OOExhaustPlumeEntity *exEnt = nil;
 	
-	for (exEnum = [self exhaustEnumerator]; (exEnt = [exEnum nextObject]); )
+	foreach (exEnt, [self exhaustEnumerator])
 	{
 		[exEnt resetPlume];
 	}
@@ -10898,9 +10889,8 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	if (direction == WEAPON_FACING_FORWARD)
 	{
 		//can we fire lasers from our subentities?
-		NSEnumerator	*subEnum = nil;
 		ShipEntity		*se = nil;
-		for (subEnum = [self shipSubEntityEnumerator]; (se = [subEnum nextObject]); )
+		foreach (se, [self shipSubEntityEnumerator])
 		{
 			if ([se fireSubentityLaserShot:range])  fired = YES;
 		}
@@ -12994,17 +12984,16 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 // Exposed to AI
 - (void) switchLightsOn
 {
-	NSEnumerator	*subEnum = nil;
 	OOFlasherEntity	*se = nil;
 	ShipEntity		*sub = nil;
 	
 	_lightsActive = YES;
 	
-	for (subEnum = [self flasherEnumerator]; (se = [subEnum nextObject]); )
+	foreach (se, [self flasherEnumerator])
 	{
 		[se setActive:YES];
 	}
-	for (subEnum = [self shipSubEntityEnumerator]; (sub = [subEnum nextObject]); )
+	foreach (sub, [self shipSubEntityEnumerator])
 	{
 		[sub switchLightsOn];
 	}
@@ -13013,17 +13002,16 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 // Exposed to AI
 - (void) switchLightsOff
 {
-	NSEnumerator	*subEnum = nil;
 	OOFlasherEntity	*se = nil;
 	ShipEntity		*sub = nil;
 	
 	_lightsActive = NO;
 	
-	for (subEnum = [self flasherEnumerator]; (se = [subEnum nextObject]); )
+	foreach (se, [self flasherEnumerator])
 	{
 		[se setActive:NO];
 	}
-	for (subEnum = [self shipSubEntityEnumerator]; (sub = [subEnum nextObject]); )
+	foreach (sub, [self shipSubEntityEnumerator])
 	{
 		[sub switchLightsOff];
 	}
@@ -13203,7 +13191,6 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 // Exposed to AI
 - (void) deployEscorts
 {
-	NSEnumerator	*escortEnum = nil;
 	ShipEntity		*escort = nil;
 	ShipEntity		*target = nil;
 	NSMutableSet	*idleEscorts = nil;
@@ -13227,7 +13214,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	
 	// Find idle escorts
 	idleEscorts = [NSMutableSet set];
-	for (escortEnum = [self escortEnumerator]; (escort = [escortEnum nextObject]); )
+	foreach (escort, [self escortEnumerator])
 	{
 		if (![[[escort getAI] name] isEqualToString:@"interceptAI.plist"] && ![escort hasNewAI])
 		{
@@ -13247,7 +13234,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	
 	// Deploy deployCount idle escorts.
 	target = [self primaryTarget];
-	for (escortEnum = [idleEscorts objectEnumerator]; (escort = [escortEnum nextObject]); )
+	foreach (escort, idleEscorts)
 	{
 		[escort addTarget:target];
 		[escort setAITo:@"interceptAI.plist"];
@@ -13266,12 +13253,11 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	if (![self hasEscorts])  return;
 	
 	OOShipGroup			*escortGroup = [self escortGroup];
-	NSEnumerator		*escortEnum = nil;
 	ShipEntity			*escort = nil;
 	ShipEntity			*target = [self primaryTarget];
 	unsigned			i = 0;
 	// Note: works on escortArray rather than escortEnumerator because escorts may be mutated.
-	for (escortEnum = [[self escortArray] objectEnumerator]; (escort = [escortEnum nextObject]); )
+	foreach (escort, [self escortArray])
 	{
 		float		delay = i++ * 3.0 + 1.5;		// send them off at three second intervals
 		AI			*ai = [escort getAI];
@@ -13468,15 +13454,13 @@ static BOOL AuthorityPredicate(Entity *entity, void *parameter)
 			(scanClass == CLASS_PLAYER))	// only for active ships...
 	{
 		NSArray			*authorities = nil;
-		NSEnumerator	*authEnum = nil;
 		ShipEntity		*auth = nil;
 		
 		authorities = [UNIVERSE findShipsMatchingPredicate:AuthorityPredicate
 												 parameter:self
 												   inRange:-1
 												  ofEntity:nil];
-		authEnum = [authorities objectEnumerator];
-		while ((auth = [authEnum nextObject]))
+		foreach (auth, authorities)
 		{
 			[auth setFoundTarget:aggressor_ship];
 			[auth doScriptEvent:OOJSID("offenceCommittedNearby") withArgument:aggressor_ship andArgument:self];
@@ -14101,7 +14085,8 @@ static BOOL AuthorityPredicate(Entity *entity, void *parameter)
 		NSEnumerator *sEnum = [_defenseTargets objectEnumerator];
 		ShipEntity *ship = nil;
 		double scanrange2 = scannerRange * scannerRange;
-		while ((ship = [sEnum nextObject]))
+		// FIXME: OOWeakSet doesn't implement NSFastEnumeration protocol.
+		foreach (ship, sEnum)
 		{
 			if ([ship hasHostileTarget] || ([ship isPlayer] && [PLAYER weaponsOnline]))
 			{

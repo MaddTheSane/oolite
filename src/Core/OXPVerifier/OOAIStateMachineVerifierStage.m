@@ -79,7 +79,7 @@ static NSString * const kStageName	= @"Validating AIs";
 	[whitelist release];
 	
 	aiNames = [[_usedAIs allObjects] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
-	foreach(aiName, aiNames)
+	foreach (aiName, aiNames)
 	{
 		[self validateAI:aiName];
 	}
@@ -151,7 +151,7 @@ static NSString * const kStageName	= @"Validating AIs";
 	}
 	
 	// Validate each state.
-	foreachkey(stateKey, aiStateMachine)
+	foreachkey (stateKey, aiStateMachine)
 	{
 		stateHandlers = aiStateMachine[stateKey];
 		if (![stateHandlers isKindOfClass:[NSDictionary class]])
@@ -161,7 +161,7 @@ static NSString * const kStageName	= @"Validating AIs";
 		}
 		
 		// Verify handlers for this state.
-		foreachkey(handlerKey, stateHandlers)
+		foreachkey (handlerKey, stateHandlers)
 		{
 			handlerActions = stateHandlers[handlerKey];
 			if (![handlerActions isKindOfClass:[NSArray class]])
@@ -172,7 +172,7 @@ static NSString * const kStageName	= @"Validating AIs";
 			
 			// Verify commands for this handler.
 			index = 0;
-			foreach(action, handlerActions)
+			foreach (action, handlerActions)
 			{
 				index++;
 				if (![action isKindOfClass:[NSString class]])

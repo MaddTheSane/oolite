@@ -2085,7 +2085,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 - (void) drawSystemMarkers:(NSArray *)markers atX:(GLfloat)x andY:(GLfloat)y andZ:(GLfloat)z withAlpha:(GLfloat)alpha andScale:(GLfloat)scale
 {
 	NSDictionary *marker;
-	foreach(marker, markers)
+	foreach (marker, markers)
 	{
 		[self drawSystemMarker:marker atX:x andY:y andZ:z withAlpha:alpha andScale:scale];
 	}
