@@ -994,18 +994,20 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 	}
 	
 	// All OK; stick 'em in a dictionary.
-	return @{@"vertex count": vertCnt,
-						@"vertex data": vertData,
-						@"face count": faceCnt,
-						@"face data": faceData,
-						@"material keys": mtlKeys,
-						@"normal mode": normMode,
+	return [NSDictionary dictionaryWithObjectsAndKeys:
+						vertCnt, @"vertex count",
+						vertData, @"vertex data",
+						faceCnt, @"face count",
+						faceData, @"face data",
+						mtlKeys, @"material keys",
+						normMode, @"normal mode",
 						/*	NOTE: order matters. Since normData and tanData
 							are last, if they're nil the dictionary will be
 							built without them, which is desired behaviour.
 						*/
-						@"normal data": normData,
-						@"tangent data": tanData};
+						normData, @"normal data",
+						tanData, @"tangent data",
+						nil];
 	
 	OOJS_PROFILE_EXIT
 }

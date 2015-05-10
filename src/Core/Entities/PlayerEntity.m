@@ -108,7 +108,7 @@ NSComparisonResult marketSorterByQuantity(id a, id b, void *market);
 NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 
 
-@interface PlayerEntity (OOPrivate)
+@interface PlayerEntity ()
 
 - (void) setExtraEquipmentFromFlags;
 - (void) doTradeIn:(OOCreditsQuantity)tradeInValue forPriceFactor:(double)priceFactor;
