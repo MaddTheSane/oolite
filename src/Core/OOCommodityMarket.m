@@ -73,7 +73,27 @@ static NSComparisonResult goodsSorter(id a, id b, void *context);
 	if (_sortedKeys == nil)
 	{
 		NSArray *keys = [_commodityList allKeys];
+#if __BLOCKS__
+		_sortedKeys = [[keys sortedArrayUsingComparator:^NSComparisonResult(id a, id b) {
+			int v1 = [[_commodityList oo_dictionaryForKey:(NSString *)a] oo_intForKey:kOOCommoditySortOrder];
+			int v2 = [[_commodityList oo_dictionaryForKey:(NSString *)b] oo_intForKey:kOOCommoditySortOrder];
+			
+			if (v1 < v2)
+			{
+				return NSOrderedAscending;
+			}
+			else if (v1 > v2)
+			{
+				return NSOrderedDescending;
+			}
+			else
+			{
+				return NSOrderedSame;
+			}
+		}] retain];
+#else
 		_sortedKeys = [[keys sortedArrayUsingFunction:goodsSorter context:_commodityList] retain];
+#endif
 	}
 	return _sortedKeys;
 }
