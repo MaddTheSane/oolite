@@ -772,7 +772,7 @@ static OOOXZManager *sSingleton = nil;
 	}
 	NSDictionary *requirement = nil;
 	NSMutableString *progress = [NSMutableString stringWithCapacity:2048];
-	OOLog(kOOOXZDebugLog,@"Dependency stack has %lu elements",(unsigned long)[_dependencyStack count]);
+	OOLog(kOOOXZDebugLog,@"Dependency stack has %lu elements", (unsigned long)[_dependencyStack count]);
 
 	if ([_dependencyStack count] > 0)
 	{
