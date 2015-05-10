@@ -1923,10 +1923,11 @@ static NSMutableDictionary *currentShipyard = nil;
 	// keep track of portable equipment..
 
 	NSMutableSet	*portable_equipment = [NSMutableSet set];
+	NSEnumerator	*eqEnum = nil;
 	NSString		*eq_desc = nil;
 	OOEquipmentType	*item = nil;
 	
-	foreach (eq_desc, [self equipmentEnumerator])
+	for (eqEnum = [self equipmentEnumerator]; (eq_desc = [eqEnum nextObject]);)
 	{
 		item = [OOEquipmentType equipmentTypeWithIdentifier:eq_desc];
 		if ([item isPortableBetweenShips])  [portable_equipment addObject:eq_desc];
@@ -1936,7 +1937,7 @@ static NSMutableDictionary *currentShipyard = nil;
 	[self removeAllEquipment];
 	
 	// restore  portable equipment
-	foreach (eq_desc, portable_equipment)
+	for (eqEnum = [portable_equipment objectEnumerator]; (eq_desc = [eqEnum nextObject]); )
 	{
 		[self addEquipmentItem:eq_desc withValidation:NO inContext:@"portable"];
 	}

@@ -669,7 +669,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	
 	@try
 	{
-		foreach (uniform, uniforms)
+		foreach (uniform, [uniforms allValues])
 		{
 			[uniform apply];
 		}
