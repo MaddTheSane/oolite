@@ -264,6 +264,7 @@ enum OOScanClass
 
 @property (readonly, atomic) BOOL canCollide;
 @property GLfloat collisionRadius;
+@property (readonly, atomic) GLfloat frustumRadius;
 @property (readonly, retain) NSMutableArray *collisionArray;
 
 - (void) update:(OOTimeDelta)delta_t;

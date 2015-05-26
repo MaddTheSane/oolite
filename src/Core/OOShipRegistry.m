@@ -1642,6 +1642,13 @@ static NSString * const	kVisualEffectDataCacheKey = @"visual effect data";
 		if ([ScanTokensFromString(action)[0] isEqualToString:@"initialiseTurret"])  return YES;
 	}
 	
+	if ([shipKey isEqualToString:@"ballturret"])
+	{
+		// compatibility for OXPs using old subentity declarations and the
+		// core turret entity
+		return YES;
+	}
+
 	return NO;
 }
 

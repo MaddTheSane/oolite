@@ -564,7 +564,12 @@ static OOColor *ColorWithHSBColor(Vector c)
 	}
 
 	// 500km squared
-	if (magnitude2(cameraRelativePosition) > 250000000000.0) 
+    //	if (magnitude2(cameraRelativePosition) > 250000000000.0) 
+	/* Temporarily for 1.82 make this branch unconditional. There's an
+	 * odd change in appearance when crossing this boundary, which can
+	 * be quite noticeable. There don't appear to be close-range
+	 * problems with doing it this way all the time, though it's not
+	 * ideal. - CIM */
 	{
 		/* at this distance the atmosphere is too close to the planet
 		 * for a 24-bit depth buffer to reliably distinguish the two,
@@ -579,6 +584,7 @@ static OOColor *ColorWithHSBColor(Vector c)
 			OOGLPopModelView();
 		}
 	}
+#if OOLITE_HAVE_FIXED_THE_ABOVE_DESCRIBED_BUG_WHICH_WE_HAVENT
 	else 
 	{
 		/* At close range we can do this properly and draw the
@@ -598,7 +604,7 @@ static OOColor *ColorWithHSBColor(Vector c)
 			[_planetDrawable renderOpaqueParts];
 		}
 	}
-
+#endif
 	
 	if ([UNIVERSE wireframeGraphics])  OOGLWireframeModeOff();
 }

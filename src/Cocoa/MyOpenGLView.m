@@ -298,7 +298,6 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 
 - (void) initialiseGLWithSize:(NSSize)v_size
 {
-	NSInteger issue_136_fix = [[NSUserDefaults standardUserDefaults] integerForKey: @"issue_136_fix"];
 	viewSize = v_size;
 	if (viewSize.width/viewSize.height > 4.0/3.0) {
 		display_z = 480.0 * viewSize.width/viewSize.height;
@@ -313,15 +312,7 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 	if ([self respondsToSelector:@selector(convertSizeToBacking:)])
 	{
 		// High resolution mode support.
-		if ([self respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)] && issue_136_fix >= 1)
-		{
-			[self setWantsBestResolutionOpenGLSurface:YES];
-		}
 		v_size = [self convertSizeToBacking:v_size];
-		if (issue_136_fix >= 2)
-		{
-			viewSize = v_size;
-		}
 	}
 	
 	[self openGLContext];	// Force lazy setup if needed.
@@ -366,8 +357,15 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 - (BOOL) snapShot:(NSString *)filename
 {
 	BOOL snapShotOK = YES;
-	int w = viewSize.width;
-	int h = viewSize.height;
+        NSSize v_size = viewSize;
+	if ([self respondsToSelector:@selector(convertSizeToBacking:)])
+	{
+		// High resolution mode support.
+		v_size = [self convertSizeToBacking:v_size];
+	}
+	
+	int w = v_size.width;
+	int h = v_size.height;
 	
 	if (w & 3)
 		w = w + 4 - (w & 3);

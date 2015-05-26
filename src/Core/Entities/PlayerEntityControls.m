@@ -1812,6 +1812,15 @@ static NSTimeInterval	time_last_frame;
 					ANA_mode = OPTIMIZED_BY_NONE;
 				}
 
+				if ([gameView isDown:gvMouseDoubleClick])
+				{
+					[gameView clearMouse];
+					mouse_left_down = NO;
+					[self noteGUIWillChangeTo:GUI_SCREEN_SYSTEM_DATA];
+					showingLongRangeChart = (gui_screen == GUI_SCREEN_LONG_RANGE_CHART);
+					[self setGuiToSystemDataScreen];
+					break;
+				}
 				if ([gameView isDown:gvMouseLeftButton])
 				{
 					NSPoint maus = [gameView virtualJoystickPosition];
@@ -1851,14 +1860,6 @@ static NSTimeInterval	time_last_frame;
 						dragging = YES;
 					}
 					mouse_left_down = NO;
-				}
-				if ([gameView isDown:gvMouseDoubleClick])
-				{
-					[gameView clearMouse];
-					mouse_left_down = NO;
-					[self noteGUIWillChangeTo:GUI_SCREEN_SYSTEM_DATA];
-					[self setGuiToSystemDataScreen];
-					break;
 				}
 				if ([gameView isDown:key_map_home])
 				{
@@ -2101,7 +2102,8 @@ static NSTimeInterval	time_last_frame;
 		case GUI_SCREEN_SHIPLIBRARY:
 			if ([gameView isDown:' '])	//  '<space>'
 			{
-				[self setGuiToStatusScreen];
+				// viewed in game, return to interfaces as that's where it's accessed from
+				[self setGuiToInterfacesScreen:0];
 			}
 			if ([gameView isDown:key_gui_arrow_up])	//  '<--'
 			{
@@ -4097,6 +4099,7 @@ static BOOL autopilot_pause;
 		case GUI_SCREEN_SHIPLIBRARY:
 			if ([gameView isDown:' '])	//  '<space>'
 			{
+				// viewed from start screen, return to it
 				[self setGuiToIntroFirstGo:YES];
 			}
 			if ([gameView isDown:key_gui_arrow_up])	//  '<--'

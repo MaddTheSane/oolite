@@ -3562,17 +3562,6 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	if (shipData == nil)  shipData = [[OOShipRegistry sharedRegistry] shipInfoForKey:shipKey];
 	if (shipData == nil)  return;
 	
-	// Correct the position of the displayed model in the status screen when viewed in non-4/3 resolutions. Other screens displaying
-	// demoship models remain unaltered - Nikos 20140129
-	NSSize screenSize = [[UNIVERSE gameView] viewSize];
-	GLfloat screenSizeCorrectionFactor = 1.0f;
-	if ([context isEqualToString:@"GUI_SCREEN_STATUS"])
-	{
-		screenSizeCorrectionFactor = screenSize.height <= screenSize.width ?
-										screenSize.height / screenSize.width * (4.0f/3.0f) :
-										screenSize.height / screenSize.width * (3.0f/4.0f);
-	}
-	
 	Quaternion		q2 = { (GLfloat)M_SQRT1_2, (GLfloat)M_SQRT1_2, (GLfloat)0.0f, (GLfloat)0.0f };
 	// MKW - retrieve last demo ships' orientation and release it
 	if( demoShip != nil )
@@ -3590,7 +3579,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	
 	GLfloat cr = [ship collisionRadius];
 	[ship setOrientation: q2];
-	[ship setPositionX:factorX * cr * screenSizeCorrectionFactor y:factorY * cr * screenSizeCorrectionFactor z:factorZ * cr];
+	[ship setPositionX:factorX * cr y:factorY * cr z:factorZ * cr];
 	[ship setScanClass: CLASS_NO_DRAW];
 	[ship setRoll: M_PI/10.0];
 	[ship setPitch: M_PI/25.0];
@@ -8983,6 +8972,8 @@ static NSString *last_outfitting_key=nil;
 	
 	[[UNIVERSE gameController] setMouseInteractionModeForUIWithMouseInteraction:NO];
 	[[UNIVERSE gameView] clearMouse];
+	[[UNIVERSE gameView] clearKeys];
+
 
 	if (justCobra)
 	{
@@ -9116,6 +9107,9 @@ static NSString *last_outfitting_key=nil;
 	tab_stops[5] = 455;
 	[gui setTabStops:tab_stops];
 
+	[gui setSelectableRange:NSMakeRange(0,0)];
+	[gui setNoSelectedRow];
+	
 	NSArray *keys = @[@"key_roll_left",@"key_pitch_forward",@"key_yaw_left",
 		 @"key_roll_right",@"key_pitch_back",@"key_yaw_right",
 		 @"key_increase_speed",@"key_decrease_speed",@"key_inject_fuel",
@@ -10018,6 +10012,16 @@ static NSString *last_outfitting_key=nil;
 - (NSString *)marketScreenTitle
 {
 	StationEntity *dockedStation = [self dockedStation];
+
+	/* Override normal behaviour if station broadcasts market */
+	if (dockedStation == nil)  
+	{
+		if ([[self primaryTarget] isStation] && [(StationEntity *)[self primaryTarget] marketBroadcast])
+		{
+			dockedStation = [self primaryTarget];
+		}
+	}
+
 	NSString *system = nil;
 	if ([UNIVERSE sun] != nil)  system = [UNIVERSE getSystemName:system_id];
 	

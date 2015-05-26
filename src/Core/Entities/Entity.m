@@ -567,12 +567,12 @@ static NSString * const kOOLogEntityVerificationError		= @"entity.linkedList.ver
 
 - (GLfloat) cameraRangeFront
 {
-	return magnitude(cameraRelativePosition) - [self collisionRadius];
+	return magnitude(cameraRelativePosition) - [self frustumRadius];
 }
 
 - (GLfloat) cameraRangeBack
 {
-	return magnitude(cameraRelativePosition) + [self collisionRadius];
+	return magnitude(cameraRelativePosition) + [self frustumRadius];
 }
 
 
@@ -773,6 +773,12 @@ static NSString * const kOOLogEntityVerificationError		= @"entity.linkedList.ver
 
 @synthesize collisionRadius = collision_radius;
 @synthesize collisionArray = collidingEntities;
+
+
+- (GLfloat) frustumRadius
+{
+	return collision_radius;
+}
 
 
 - (void) update:(OOTimeDelta)delta_t

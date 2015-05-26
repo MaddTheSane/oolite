@@ -847,6 +847,23 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 
 @synthesize frustumRadius = _profileRadius;
 
+
+- (GLfloat) frustumRadius
+{
+	OOScalar exhaust_length = 0;
+	NSEnumerator *exEnum = nil;
+	OOExhaustPlumeEntity *exEnt = nil;
+	for (exEnum = [self exhaustEnumerator]; (exEnt = [exEnum nextObject]); )
+	{
+		if ([exEnt findCollisionRadius] > exhaust_length)
+		{
+			exhaust_length = [exEnt findCollisionRadius];
+		}
+	}
+	return _profileRadius + exhaust_length;
+}
+
+
 - (BOOL) setUpOneSubentity:(NSDictionary *) subentDict
 {
 	OOJS_PROFILE_ENTER
@@ -9725,7 +9742,15 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	Quaternion  q = kIdentityQuaternion;
 	while ((father)&&(father != last) && (father != NO_TARGET))
 	{
-		q = quaternion_multiply(q,quaternion_conjugate([father orientation]));
+		/* Fix orientation */
+		Quaternion fo = [father normalOrientation];
+		fo.w = -fo.w;
+		/* The below code works for player turrets where the
+		 * orientation is different, but not for NPC turrets. Taking
+		 * the normal orientation with -w works: there is probably a
+		 * neater way which someone who understands quaternions can
+		 * find, but this works well enough for 1.82 - CIM */
+		q = quaternion_multiply(q,quaternion_conjugate(fo));
 		last = father;
 		if (![last isSubEntity]) break;
 		father = [father owner];
@@ -9734,6 +9759,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	// q now contains the rotation to the turret's reference system
 
 	vector_to_target = quaternion_rotate_vector(q,vector_to_target);
+
 	leading = quaternion_rotate_vector(q,leading);
 	// rotate the vector to target and its velocity
 	

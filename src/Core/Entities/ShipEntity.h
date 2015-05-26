@@ -561,7 +561,7 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 - (BOOL)setUpShipFromDictionary:(NSDictionary *) shipDict;
 - (BOOL)setUpSubEntities;
 - (BOOL) setUpOneStandardSubentity:(NSDictionary *) subentDict asTurret:(BOOL)asTurret;
-@property (readonly) GLfloat frustumRadius;
+@property (readonly, atomic) GLfloat frustumRadius;
 
 @property (copy) NSString *shipDataKey;
 @property (readonly, copy, atomic) NSString *shipDataKeyAutoRole;
