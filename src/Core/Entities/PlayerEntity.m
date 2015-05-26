@@ -155,8 +155,8 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 - (void) witchEnd;
 
 // Jump distance/cost calculations for selected target.
-@property (readonly) double hyperspaceJumpDistance;
-@property (readonly) OOFuelQuantity fuelRequiredForJump;
+@property (atomic, readonly) double hyperspaceJumpDistance;
+@property (atomic, readonly) OOFuelQuantity fuelRequiredForJump;
 
 - (void) noteCompassLostTarget;
 
