@@ -4606,8 +4606,6 @@ static const OOMatrix	starboard_matrix =
 			if (lineWidth > 1.5)  lineWidth = 1.5; // don't overscale; think of ultra-wide screen setups
 			OOGL(GLScaledLineWidth(lineWidth));
 
-			[self drawMessage];
-			
 			HeadUpDisplay *theHUD = [player hud];
 			
 			// If the HUD has a non-nil deferred name string, it means that a HUD switch was requested while it was being rendered.
@@ -4653,6 +4651,9 @@ static const OOMatrix	starboard_matrix =
 					[theHUD renderHUD];
 				}
 			}
+
+			// should come after the HUD to avoid it being overlapped by it
+			[self drawMessage];
 			
 #if (defined (SNAPSHOT_BUILD) && defined (OOLITE_SNAPSHOT_VERSION))
 			[self drawWatermarkString:@"Development version " @OOLITE_SNAPSHOT_VERSION];
@@ -7546,10 +7547,13 @@ static void VerifyDesc(NSString *key, id desc)
 		return;
 	}
 
+	BOOL sameGalaxy = (gnum == [PLAYER currentGalaxyID]);
+	BOOL sameSystem = (sameGalaxy && pnum == [self currentSystemID]);
+
 	// trying to set  unsettable properties?  
-	if ([key isEqualToString:KEY_RADIUS]) // buggy if we allow this key to be set
+	if ([key isEqualToString:KEY_RADIUS] && sameGalaxy && sameSystem) // buggy if we allow this key to be set while in the system
 	{
-		OOLogERR(@"script.error", @"System property '%@' cannot be set.",key);
+		OOLogERR(@"script.error", @"System property '%@' cannot be set while in the system.",key);
 		return;
 	}
 
@@ -7561,8 +7565,6 @@ static void VerifyDesc(NSString *key, id desc)
 
 	
 	NSString	*overrideKey = [NSString stringWithFormat:@"%u %u", gnum, pnum];
-	BOOL sameGalaxy = (gnum == [PLAYER currentGalaxyID]);
-	BOOL sameSystem = (sameGalaxy && pnum == [self currentSystemID]);
 	NSDictionary *sysInfo = nil;
 	
 	// short range map fix

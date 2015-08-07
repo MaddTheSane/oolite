@@ -1,3 +1,31 @@
+Changes between Oolite 1.82 and Oolite 1.84:
+
+Expansion pack development:
+===========================
+
+Modified Plists:
+----------------
+* planetinfo.plist: link_color can be defined both ways in interstellar space
+  for gradient effects (also works via JS)
+
+Scripting:
+----------
+* Main planet radius can now be set by script if not in the same system
+
+
+Bug fixes:
+==========
+* Fix some full-screen resolution changes on Windows
+* Fix entry of '*' OXZ filter taking screenshot
+* Fix nova system description
+* Fix exhaust drawing when far from origin
+* Fix some docking computer/queue problems
+* Again allow commodity name as well as key in cargo_carried
+* Fix texture generation on secondary planets inheriting too many properties from primary
+* Fix bug with equipment scripts and can_carry_multiple
+
+-------------------------------------------------------------------------------
+
 Changes between Oolite 1.80 and Oolite 1.82:
 
 General:

@@ -177,6 +177,10 @@ enum
 @property (readonly) BOOL checkPlayerInFlight;
 @property (readonly) BOOL checkPlayerInSystemFlight;
 
+- (void) resetGui:(GuiDisplayGen*)gui withInfo:(NSDictionary *)gui_info;
+- (void) resetGuiPosition:(GuiDisplayGen*)gui withInfo:(NSDictionary *)gui_info;
+
+
 @end
 
 
@@ -338,16 +342,8 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 
 - (void) resetGui:(GuiDisplayGen*)gui withInfo:(NSDictionary *)gui_info
 {
-	Vector pos = [gui drawPosition];
-	if (gui_info[X_KEY])
-		pos.x = [gui_info oo_floatForKey:X_KEY] +
-			[[UNIVERSE gameView] x_offset] *
-			[gui_info oo_floatForKey:X_ORIGIN_KEY defaultValue:0.0];
-	if (gui_info[Y_KEY])
-		pos.y = [gui_info oo_floatForKey:Y_KEY] + 
-			[[UNIVERSE gameView] y_offset] *
-			[gui_info oo_floatForKey:Y_ORIGIN_KEY defaultValue:0.0];
-	[gui setDrawPosition:pos];
+	[self resetGuiPosition:gui withInfo:gui_info];
+	
 	NSSize		siz =	[gui	size];
 	int			rht =	[gui	rowHeight];
 	NSString*	title =	[gui	title];
@@ -366,6 +362,43 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 		[gui setMaxAlpha: OOClamp_0_max_f([gui_info oo_floatForKey:ALPHA_KEY],1.0f)];
 	else
 		[gui setMaxAlpha: 1.0f];
+}
+
+
+- (void) resetGuiPosition:(GuiDisplayGen*)gui withInfo:(NSDictionary *)gui_info
+{
+	Vector pos = [gui drawPosition];
+	if ([gui_info objectForKey:X_KEY])
+		pos.x = [gui_info oo_floatForKey:X_KEY] +
+			[[UNIVERSE gameView] x_offset] *
+			[gui_info oo_floatForKey:X_ORIGIN_KEY defaultValue:0.0];
+	if ([gui_info objectForKey:Y_KEY])
+		pos.y = [gui_info oo_floatForKey:Y_KEY] + 
+			[[UNIVERSE gameView] y_offset] *
+			[gui_info oo_floatForKey:Y_ORIGIN_KEY defaultValue:0.0];
+
+	[gui setDrawPosition:pos];
+}
+
+
+- (void) resetGuiPositions
+{
+	NSDictionary *hudDict = [ResourceManager dictionaryFromFilesNamed:[self hudName] inFolder:@"Config" andMerge:YES];
+
+	GuiDisplayGen*	gui = [UNIVERSE messageGUI];
+	NSDictionary*	gui_info = [hudDict oo_dictionaryForKey:@"message_gui"];
+	if (gui && gui_info)
+	{
+		[self resetGuiPosition:gui withInfo:gui_info];
+	}
+
+	gui = [UNIVERSE commLogGUI];
+	gui_info = [hudDict oo_dictionaryForKey:@"comm_log_gui"];
+	if (gui && gui_info)
+	{
+		[self resetGuiPosition:gui withInfo:gui_info];
+	}
+
 }
 
 
@@ -4019,13 +4052,12 @@ static GLfloat nonlinearScannerFunc( GLfloat distance, GLfloat zoom, GLfloat sca
 static void drawScannerGrid(GLfloat x, GLfloat y, GLfloat z, NSSize siz, int v_dir, GLfloat thickness, GLfloat zoom, BOOL nonlinear)
 {
 	OOSetOpenGLState(OPENGL_STATE_OVERLAY);
-	
+
+	MyOpenGLView* gameView = [UNIVERSE gameView];
+
 	GLfloat w1, h1;
 	GLfloat ww = 0.5 * siz.width;
 	GLfloat hh = 0.5 * siz.height;
-	
-	GLfloat w2 = 0.250 * siz.width;
-	GLfloat h2 = 0.250 * siz.height;
 	
 	GLfloat km_scan;
 	GLfloat hdiv;
@@ -4116,29 +4148,38 @@ static void drawScannerGrid(GLfloat x, GLfloat y, GLfloat z, NSSize siz, int v_d
 			}
 		}
 
+		double tanfov = [gameView fov:YES];
+		GLfloat aspect = [gameView viewSize].width / [gameView viewSize].height;
+		if (aspect < 4.0/3.0)
+		{
+			tanfov *= 0.75 * aspect;
+		}
+		double cosfov = 1.0/sqrt(1+tanfov*tanfov);
+		double sinfov = tanfov * cosfov;
+
 		switch (v_dir)
 		{
 			case VIEW_BREAK_PATTERN:
 			case VIEW_GUI_DISPLAY:
 			case VIEW_FORWARD:
 			case VIEW_NONE:
-				glVertex3f(x, y, z); glVertex3f(x - w2, y + hh, z);
-				glVertex3f(x, y, z); glVertex3f(x + w2, y + hh, z);
+				glVertex3f(x, y, z); glVertex3f(x - ww * sinfov, y + hh * cosfov, z);
+				glVertex3f(x, y, z); glVertex3f(x + ww * sinfov, y + hh * cosfov, z);
 				break;
 				
 			case VIEW_AFT:
-				glVertex3f(x, y, z); glVertex3f(x - w2, y - hh, z);
-				glVertex3f(x, y, z); glVertex3f(x + w2, y - hh, z);
+				glVertex3f(x, y, z); glVertex3f(x - ww * sinfov, y - hh * cosfov, z);
+				glVertex3f(x, y, z); glVertex3f(x + ww * sinfov, y - hh * cosfov, z);
 				break;
 				
 			case VIEW_PORT:
-				glVertex3f(x, y, z); glVertex3f(x - ww, y + h2, z);
-				glVertex3f(x, y, z); glVertex3f(x - ww, y - h2, z);
+				glVertex3f(x, y, z); glVertex3f(x - ww * cosfov, y + hh * sinfov, z);
+				glVertex3f(x, y, z); glVertex3f(x - ww * cosfov, y - hh * sinfov, z);
 				break;
 				
 			case VIEW_STARBOARD:
-				glVertex3f(x, y, z); glVertex3f(x + ww, y + h2, z);
-				glVertex3f(x, y, z); glVertex3f(x + ww, y - h2, z);
+				glVertex3f(x, y, z); glVertex3f(x + ww * cosfov, y + hh * sinfov, z);
+				glVertex3f(x, y, z); glVertex3f(x + ww * cosfov, y - hh * sinfov, z);
 				break;
 		}
 	OOGLEND();

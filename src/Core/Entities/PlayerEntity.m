@@ -3617,6 +3617,9 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		default:
 			break;
 	}
+
+
+	[hud resetGuiPositions];
 }
 
 
@@ -7695,7 +7698,10 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 			government_desc = OOExpandKeyWithSeed(targetSystemRandomSeed, @"nova-system-government");
 			economy_desc = OOExpandKeyWithSeed(targetSystemRandomSeed, @"nova-system-economy");
 			inhabitants = OOExpandKeyWithSeed(targetSystemRandomSeed, @"nova-system-inhabitants");
-			system_desc = OOExpandKeyWithSeed(targetSystemRandomSeed, @"nova-system-description");
+			{
+				NSString *system = targetSystemName;
+				system_desc = OOExpandKeyWithSeed(targetSystemRandomSeed, @"nova-system-description", system);
+			}
 			populationDesc = OOExpandKeyWithSeed(targetSystemRandomSeed, @"sysdata-pop-value", population, inhabitants);
 		}
 
@@ -10577,12 +10583,15 @@ static NSString *last_outfitting_key=nil;
 
 - (void) removeEquipmentItem:(NSString *)equipmentKey
 {
-	[self removeEqScriptForKey:equipmentKey];
 	if(![self hasEquipmentItemProviding:@"EQ_ADVANCED_COMPASS"] && [self compassMode] != COMPASS_MODE_BASIC)
 	{
 		[self setCompassMode:COMPASS_MODE_BASIC];
 	}
 	[super removeEquipmentItem:equipmentKey];
+	if(![self hasEquipmentItem:equipmentKey]) {
+		// removed the last one
+		[self removeEqScriptForKey:equipmentKey];
+	}
 }
 
 

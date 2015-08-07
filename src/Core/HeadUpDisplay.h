@@ -284,6 +284,7 @@ MA 02110-1301, USA.
 - (instancetype) initWithDictionary:(NSDictionary *)hudinfo inFile:(NSString *)hudFileName NS_DESIGNATED_INITIALIZER;
 
 - (void) resetGuis:(NSDictionary *)info;
+- (void) resetGuiPositions;
 
 @property (nonatomic, copy) NSString *hudName;
 
