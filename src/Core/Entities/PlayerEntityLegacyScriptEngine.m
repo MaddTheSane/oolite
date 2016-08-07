@@ -52,6 +52,7 @@ MA 02110-1301, USA.
 #import "OOEquipmentType.h"
 #import "HeadUpDisplay.h"
 #import "OOSystemDescriptionManager.h"
+#import "OOEntityFilterPredicate.h"
 
 
 static NSString * const kOOLogScriptAddShipsFailed			= @"script.addShips.failed";
@@ -1469,7 +1470,15 @@ static int shipsFound;
 	[tokens removeObjectAtIndex:0];
 	messageString = [tokens componentsJoinedByString:@" "];
 
-	[UNIVERSE sendShipsWithPrimaryRole:roleString messageToAI:messageString];
+	NSArray *targets = [UNIVERSE findShipsMatchingPredicate:HasPrimaryRolePredicate
+												  parameter:roleString
+													inRange:-1
+												   ofEntity:nil];
+
+	ShipEntity *target;
+	foreach(target, targets) {
+		[[target getAI] reactToMessage:messageString context:@"messageShipAIs:"];
+	}
 }
 
 
@@ -1565,7 +1574,7 @@ static int shipsFound;
 	yString = tokens[4];
 	zString = tokens[5];
 
-	HPVector posn = make_HPvector( [xString floatValue], [yString floatValue], [zString floatValue]);
+	HPVector posn = make_HPvector([xString doubleValue], [yString doubleValue], [zString doubleValue]);
 
 	int number = [numberString intValue];
 	if (number < 1)
@@ -1607,7 +1616,7 @@ static int shipsFound;
 	yString = tokens[4];
 	zString = tokens[5];
 
-	HPVector posn = make_HPvector( [xString floatValue], [yString floatValue], [zString floatValue]);
+	HPVector posn = make_HPvector([xString doubleValue], [yString doubleValue], [zString doubleValue]);
 
 	int number = [numberString intValue];
 	if (number < 1)
@@ -1635,14 +1644,14 @@ static int shipsFound;
 		return;
 	}
 
-	NSString* roleString = tokens[0];
-	int number = [tokens[1] intValue];
-	NSString* systemString = tokens[2];
-	GLfloat x = [tokens[3] floatValue];
-	GLfloat y = [tokens[4] floatValue];
-	GLfloat z = [tokens[5] floatValue];
-	GLfloat r = [tokens[6] floatValue];
-	HPVector posn = make_HPvector( x, y, z);
+	NSString* roleString = [tokens objectAtIndex:0];
+	int number = [[tokens objectAtIndex:1] intValue];
+	NSString* systemString = [tokens objectAtIndex:2];
+	double x = [[tokens objectAtIndex:3] doubleValue];
+	double y = [[tokens objectAtIndex:4] doubleValue];
+	double z = [[tokens objectAtIndex:5] doubleValue];
+	GLfloat r = [[tokens objectAtIndex:6] floatValue];
+	HPVector posn = make_HPvector(x, y, z);
 
 	if (number < 1)
 	{
@@ -2202,7 +2211,7 @@ static int shipsFound;
 	{
 		[self playFuelLeak];
 		[UNIVERSE addMessage:DESC(@"danger-fuel-leak") forCount:6];
-		OOLog(kOOLogNoteFuelLeak, @"FUEL LEAK activated!");
+		OOLog(kOOLogNoteFuelLeak, @"%@", @"FUEL LEAK activated!");
 	}
 }
 
@@ -2387,13 +2396,13 @@ static int shipsFound;
 - (void) debugOn
 {
 	OOLogSetDisplayMessagesInClass(kOOLogDebugOnMetaClass, YES);
-	OOLog(kOOLogDebugOnOff, @"SCRIPT debug messages ON");
+	OOLog(kOOLogDebugOnOff, @"%@", @"SCRIPT debug messages ON");
 }
 
 
 - (void) debugOff
 {
-	OOLog(kOOLogDebugOnOff, @"SCRIPT debug messages OFF");
+	OOLog(kOOLogDebugOnOff, @"%@", @"SCRIPT debug messages OFF");
 	OOLogSetDisplayMessagesInClass(kOOLogDebugOnMetaClass, NO);
 }
 
@@ -2745,13 +2754,13 @@ static int shipsFound;
 			return NO;				//		   0........... 1 2 3
 		
 		// sunlight position for F7 screen is chosen pseudo randomly from  4 different positions.
-		if (target_system_id & 8)
+		if (info_system_id & 8)
 		{
-			_sysInfoLight = (target_system_id & 2) ? (Vector){ -10000.0, 4000.0, -10000.0 } : (Vector){ -12000.0, -5000.0, -10000.0 };
+			_sysInfoLight = (info_system_id & 2) ? (Vector){ -10000.0, 4000.0, -10000.0 } : (Vector){ -12000.0, -5000.0, -10000.0 };
 		}
 		else
 		{
-			_sysInfoLight = (target_system_id & 2) ? (Vector){ 6000.0, -5000.0, -10000.0 } : (Vector){ 6000.0, 4000.0, -10000.0 };
+			_sysInfoLight = (info_system_id & 2) ? (Vector){ 6000.0, -5000.0, -10000.0 } : (Vector){ 6000.0, 4000.0, -10000.0 };
 		}
 
 		[UNIVERSE setMainLightPosition:_sysInfoLight]; // set light origin
@@ -2764,7 +2773,7 @@ static int shipsFound;
 		}
 		else
 		{
-			originalPlanet = [[[OOPlanetEntity alloc] initAsMainPlanetForSystem:target_system_id] autorelease];
+			originalPlanet = [[[OOPlanetEntity alloc] initAsMainPlanetForSystem:info_system_id] autorelease];
 		}
 		OOPlanetEntity *doppelganger = [originalPlanet miniatureVersion];
 		if (doppelganger == nil)  return NO;
@@ -2944,7 +2953,7 @@ static int shipsFound;
 	NSArray *coord_vals = ScanTokensFromString(galacticHyperspaceFixedCoordsString);
 	if ([coord_vals count] < 2)	// Will be 0 if string is nil
 	{
-		OOLog(@"player.setGalacticHyperspaceFixedCoords.invalidInput",
+		OOLog(@"player.setGalacticHyperspaceFixedCoords.invalidInput", @"%@",
 			  @"setGalacticHyperspaceFixedCoords: called with bad specifier. Defaulting to Oolite standard.");
 		galacticHyperspaceFixedCoords.x = galacticHyperspaceFixedCoords.y = 0x60;
 	}

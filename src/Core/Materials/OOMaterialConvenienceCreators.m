@@ -127,6 +127,7 @@ static void SynthSpecular(OOMaterialSynthContext *context);
 		//	Add uniforms required for hull heat glow.
 		context.uniforms[@"uHullHeatLevel"] = @"hullHeatLevel";
 		context.uniforms[@"uTime"] = @"timeElapsedSinceSpawn";
+		[context.uniforms setObject:@"fogUniform" forKey:@"uFogColor"];
 	}
 	
 	//	Stuff in the general properties.

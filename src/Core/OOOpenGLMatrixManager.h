@@ -96,7 +96,7 @@ enum
 @property (getter=getProjection, readonly, atomic) OOMatrix projection;
 - (void) syncProjection;
 - (OOMatrix) getMatrix: (int) which;
-- (NSArray*) standardMatrixUniformLocations: (GLuint) program;
+- (NSArray*) standardMatrixUniformLocations: (GLhandleARB) program;
 
 @end
 

@@ -191,14 +191,14 @@ static const double kMesosphere = 10.0 * ATMOSPHERE_DEPTH;	// atmosphere effect 
 	}
 	else
 	{
-		_rotationalVelocity = [planetInfo oo_floatForKey:@"rotation_speed" defaultValue:0.005 * randf()]; // 0.0 .. 0.005 avr 0.0025
+		_rotationalVelocity = [planetInfo oo_floatForKey:@"rotation_speed" defaultValue:0.005f * randf()]; // 0.0 .. 0.005 avr 0.0025
 		_rotationalVelocity *= [planetInfo oo_floatForKey:@"rotation_speed_factor" defaultValue:1.0f];
 	}
 
 	_atmosphereRotationalVelocity = [dict oo_floatForKey:@"atmosphere_rotational_velocity" defaultValue:0.01f * randf()];
 
 	// set energy
-	energy = collision_radius * 1000.0;
+	energy = collision_radius * 1000.0f;
 	
 	setRandomSeed(savedRndSeed);
 	RANROTSetFullSeed(savedRanrotSeed);
@@ -322,7 +322,7 @@ static OOColor *ColorWithHSBColor(Vector c)
 		{
 			seaHSB = RandomHSBColor();
 		}
-		while (dot_product(landHSB, seaHSB) > .80); // make sure land and sea colors differ significantly
+		while (dot_product(landHSB, seaHSB) > .80f); // make sure land and sea colors differ significantly
 		
 		// saturation bias - avoids really grey oceans
 		if (seaHSB.y < 0.22f) seaHSB.y = seaHSB.y * 0.3f + 0.2f;
@@ -488,7 +488,12 @@ static OOColor *ColorWithHSBColor(Vector c)
 		if (EXPECT_NOT(_atmosphereDrawable && cam_zero_distance < _mesopause2))
 		{
 			NSAssert(_airColor != nil, @"Expected a non-nil air colour for normal planet. Exiting.");
-			double		alt = (sqrt(cam_zero_distance) - collision_radius) / kMesosphere;
+			double		alt = (sqrt(cam_zero_distance) - collision_radius) / kMesosphere; // the viewpoint altitude
+			double		trueAlt = (sqrt(zero_distance) - collision_radius) / kMesosphere; // the actual ship altitude
+			// if at long distance external view, rotating the camera could potentially end up with it being
+			// at negative altitude. Since we know we are already inside the atmosphere at this point, just make sure
+			// that altitude is kept to a minimum positive value to avoid sudden black skies
+			if (alt <= 0.0)  alt = 1e-4;
 			if (EXPECT_NOT(alt > 0 && alt <= 1.0))	// ensure aleph is clamped between 0 and 1
 			{
 				double	aleph = 1.0 - alt;
@@ -530,11 +535,18 @@ static OOColor *ColorWithHSBColor(Vector c)
 									blue:[mixColor blueComponent] * aleph
 								   alpha:aleph];
 				[_atmosphereDrawable setRadius:collision_radius + (ATMOSPHERE_DEPTH * alt)];
+				// apply air resistance for the ship, not the camera. Although setSkyColorRed
+				// has already set the air resistance to aleph, override it immediately
+				[UNIVERSE setAirResistanceFactor:OOClamp_0_1_f(1.0 - trueAlt)];
 			}
 		}
-		else if (EXPECT_NOT([_atmosphereDrawable radius] < collision_radius + ATMOSPHERE_DEPTH))
+		else
 		{
-			[_atmosphereDrawable setRadius:collision_radius + ATMOSPHERE_DEPTH];
+			if (EXPECT_NOT([_atmosphereDrawable radius] < collision_radius + ATMOSPHERE_DEPTH))
+			{
+				[_atmosphereDrawable setRadius:collision_radius + ATMOSPHERE_DEPTH];
+			}
+			[UNIVERSE setAirResistanceFactor:0.0f];	// out of atmosphere - no air friction
 		}
 		
 		double time = [UNIVERSE getTime];

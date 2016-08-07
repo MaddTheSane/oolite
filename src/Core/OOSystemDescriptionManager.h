@@ -36,6 +36,16 @@ typedef NS_ENUM(int, OOSystemLayer)
 	OO_LAYER_OXP_PRIORITY = 3
 };
 
+
+typedef enum
+{
+	OO_SYSTEMCONCEALMENT_NONE = 0,
+	OO_SYSTEMCONCEALMENT_NODATA = 100,
+	OO_SYSTEMCONCEALMENT_NONAME = 200,
+	OO_SYSTEMCONCEALMENT_NOTHING = 300
+} OOSystemConcealment;
+
+
 #define OO_SYSTEM_LAYERS        4
 #define OO_SYSTEMS_PER_GALAXY	(kOOMaximumSystemID+1)
 #define OO_GALAXIES_AVAILABLE	(kOOMaximumGalaxyID+1)
@@ -93,6 +103,7 @@ typedef NS_ENUM(int, OOSystemLayer)
 @property (atomic, readonly, copy) NSDictionary *exportScriptedChanges;
 
 - (NSDictionary *) getPropertiesForSystemKey:(NSString *)key;
+- (NSDictionary *) getPropertiesForSystem:(OOSystemID)s inGalaxy:(OOGalaxyID)g;
 @property (atomic, getter=getPropertiesForCurrentSystem, readonly, copy) NSDictionary *propertiesForCurrentSystem;
 - (id) getProperty:(NSString *)property forSystemKey:(NSString *)key;
 - (id) getProperty:(NSString *)property forSystem:(OOSystemID)s inGalaxy:(OOGalaxyID)g;

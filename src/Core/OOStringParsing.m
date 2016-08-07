@@ -214,8 +214,8 @@ NSPoint PointFromString(NSString *xyString)
 	NSUInteger n_tokens = [tokens count];
 	if (n_tokens == 2)
 	{
-		result.x = [tokens[0] floatValue];
-		result.y = [tokens[1] floatValue];
+		result.x = [tokens[0] doubleValue];
+		result.y = [tokens[1] doubleValue];
 	}
 	return result;
 }

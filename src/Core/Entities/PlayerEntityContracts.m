@@ -939,7 +939,10 @@ for (unsigned i=0;i<amount;i++)
 		CONTRACT_KEY_RISK: @(risk)};
 	
 	// extra checks, just in case.
-	if (parcel_record[Name] != nil) return NO;
+	// FIXME: do we absolutely need this check? can we live
+	// with parcels of senders who happen to have the same
+	// name? - Nikos 20160527
+	//if ([parcel_record objectForKey:Name] != nil) return NO;
 
 	if (risk > 1)
 	{
@@ -1104,8 +1107,9 @@ for (unsigned i=0;i<amount;i++)
 		NSString *deadline = [UNIVERSE shortTimeDescription:dest_eta];
 
 		OOCreditsQuantity fee = [contract_info oo_intForKey:CONTRACT_KEY_FEE];
+		NSString *feeDesc = OOIntCredits(fee);
 
-		[result addObject:OOExpandKey(formatString, label, destination, deadline, fee)];
+		[result addObject:OOExpandKey(formatString, label, destination, deadline, feeDesc)];
 
 	}
 	

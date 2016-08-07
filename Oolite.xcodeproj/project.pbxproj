@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 47;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -3467,11 +3467,11 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0730;
 				ORGANIZATIONNAME = "the Oolite team";
 			};
 			buildConfigurationList = 08B31CB008FE63D70038D42F /* Build configuration list for PBXProject "Oolite" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 6.3";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -4047,6 +4047,7 @@
 					"\"$(SRCROOT)/deps/Cocoa-deps/Ogg Vorbis\"",
 				);
 				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.aegidian.oolite;
 				PRODUCT_NAME = Oolite;
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
@@ -4091,6 +4092,7 @@
 					"\"$(SRCROOT)/deps/Cocoa-deps/Ogg Vorbis\"",
 				);
 				PLIST_FILE_OUTPUT_FORMAT = binary;
+				PRODUCT_BUNDLE_IDENTIFIER = org.aegidian.oolite;
 				PRODUCT_NAME = Oolite;
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
@@ -4114,6 +4116,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -4179,6 +4182,7 @@
 					"\"$(SRCROOT)/deps/Cocoa-deps/Ogg Vorbis\"",
 				);
 				PLIST_FILE_OUTPUT_FORMAT = XML;
+				PRODUCT_BUNDLE_IDENTIFIER = org.aegidian.oolite;
 				PRODUCT_NAME = Oolite;
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;

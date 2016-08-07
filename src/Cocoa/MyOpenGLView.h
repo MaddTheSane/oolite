@@ -117,7 +117,7 @@ extern int debug;
 	BOOL				keys[NUM_KEYS];
 	BOOL				supressKeys;	// DJS
 
-	BOOL				opt, ctrl, command, shift;
+	BOOL				opt, ctrl, command, shift, capsLockOn;
 	BOOL				allowingStringInput;
 	BOOL				isAlphabetKeyDown;
 	BOOL				commandQ;
@@ -136,6 +136,7 @@ extern int debug;
 	NSPoint				virtualJoystickPosition;
 	
 	NSSize				viewSize;
+	NSSize				backingViewSize;
 	GLfloat				display_z;
 	GLfloat				x_offset, y_offset;
 	
@@ -156,6 +157,7 @@ extern int debug;
 - (void) resetTypedString;
 
 @property (readonly) NSSize viewSize;
+- (NSSize) backingViewSize;
 @property (readonly) GLfloat display_z;
 @property (readonly) GLfloat x_offset;
 @property (readonly) GLfloat y_offset;
@@ -170,6 +172,8 @@ extern int debug;
 
 - (void) drawRect:(NSRect)rect;
 - (void) updateScreen;
+
+- (void) stringToClipboard:(NSString *)stringToCopy;
 
 - (BOOL) snapShot:(NSString *)filename;
 
@@ -189,6 +193,7 @@ extern int debug;
 @property (atomic, readonly, getter=isCtrlDown) BOOL ctrlDown;
 @property (atomic, readonly, getter=isCommandDown) BOOL commandDown;
 @property (atomic, readonly, getter=isShiftDown) BOOL shiftDown;
+- (BOOL) isCapsLockOn;
 @property (readonly, atomic) int numKeys;
 @property (readonly, atomic) MouseWheelStatus mouseWheelState;
 

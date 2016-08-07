@@ -107,7 +107,7 @@ static OOShipGroup *GroupForGroupID(NSUInteger groupID, NSMutableDictionary *con
 		[result oo_setQuaternion:[self normalOrientation] forKey:KEY_ORIENTATION];
 	}
 	
-	if (energy != maxEnergy)  [result oo_setFloat:(float)energy / (float)maxEnergy forKey:KEY_ENERGY_LEVEL];
+	if (energy != maxEnergy)  [result oo_setFloat:energy / maxEnergy forKey:KEY_ENERGY_LEVEL];
 	
 	result[KEY_PRIMARY_ROLE] = [self primaryRole];
 	

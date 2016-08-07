@@ -168,6 +168,8 @@ typedef OOPixMapFormat OOTextureDataFormat;
 */
 + (instancetype) textureWithGenerator:(OOTextureGenerator *)generator;
 
+//	Load a texture from a generator with option to force an enqueue
++ (id) textureWithGenerator:(OOTextureGenerator *)generator enqueue:(BOOL) enqueue;
 
 /*	Bind the texture to the current texture unit.
 	This will block until loading is completed.

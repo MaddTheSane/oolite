@@ -36,6 +36,7 @@ MA 02110-1301, USA.
 	OOFuelScoopStatus		_fuelScoopStatus;
 	OOCompassMode			_compassMode;
 	OOAlertCondition		_alertCondition;
+	NSUInteger				_trumbleCount;
 	unsigned				_massLocked: 1,
 							_atHyperspeed: 1,
 							_dialIdentEngaged: 1;

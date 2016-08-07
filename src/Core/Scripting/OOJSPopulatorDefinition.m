@@ -31,6 +31,7 @@ MA 02110-1301, USA.
 @implementation OOJSPopulatorDefinition
 
 - (instancetype) init {
+	self = [super init];
 	_callback = JSVAL_VOID;
 	_callbackThis = NULL;
 

@@ -51,6 +51,8 @@ MA 02110-1301, USA.
 // reposition menu
 #define GUI_ROW(GROUP,ITEM) (GUI_FIRST_ROW(GROUP) - 4 + GUI_ROW_##GROUP##OPTIONS_##ITEM)
 
+#define CUSTOM_VIEW_MAX_ZOOM_IN		1.5
+#define CUSTOM_VIEW_MAX_ZOOM_OUT	25
 
 #define ENTRY(label, value) label,
 
@@ -111,6 +113,7 @@ typedef NS_ENUM(unsigned int, OOLongRangeChartMode)
 #define CHART_SCROLL_AT_Y		31.0
 #define CHART_CLIP_BORDER		10.0
 #define CHART_SCREEN_VERTICAL_CENTRE	(10*MAIN_GUI_ROW_HEIGHT)
+#define CHART_SCREEN_VERTICAL_CENTRE_COMPACT	(7*MAIN_GUI_ROW_HEIGHT)
 #define CHART_ZOOM_SPEED_FACTOR		1.05
 
 #define CHART_ZOOM_SHOW_LABELS		2.0
@@ -140,6 +143,7 @@ enum
 	
 	STATUS_EQUIPMENT_FIRST_ROW 			= 10,
 	STATUS_EQUIPMENT_MAX_ROWS 			= 8,
+	STATUS_EQUIPMENT_BIGGUI_EXTRA_ROWS	= 6,
 
 	GUI_ROW_EQUIPMENT_START				= 3,
 	GUI_MAX_ROWS_EQUIPMENT				= 12,
@@ -161,8 +165,10 @@ enum
 	GUI_MAX_ROWS_SCENARIOS				= 12,
 	GUI_ROW_SCENARIOS_DETAIL			= GUI_ROW_SCENARIOS_START + GUI_MAX_ROWS_SCENARIOS + 2,
 	GUI_ROW_CHART_SYSTEM				= 19,
+	GUI_ROW_CHART_SYSTEM_COMPACT		= 17,
 	GUI_ROW_PLANET_FINDER				= 20
 };
+
 #if GUI_FIRST_ROW() < 0
 # error Too many items in OPTIONS list!
 #endif
@@ -355,6 +361,7 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 @private
 	OOSystemID				system_id;
 	OOSystemID				target_system_id;
+	OOSystemID				info_system_id;
 
 	float					occlusion_dial;
 	
@@ -477,11 +484,11 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 	OOCargoQuantity			current_cargo;
 	
 	NSPoint					cursor_coordinates;
-	NSPoint					chart_cursor_coordinates;
 	NSPoint					chart_focus_coordinates;
 	NSPoint					chart_centre_coordinates;
 	// where we want the chart centre to be - used for smooth transitions
 	NSPoint					target_chart_centre;
+	NSPoint					target_chart_focus;
 	// Chart zoom is 1.0 when fully zoomed in and increases as we zoom out.  The reason I've done it that way round
 	// is because we might want to implement bigger galaxies one day, and thus may need to zoom out indefinitely.
 	OOScalar				chart_zoom;
@@ -580,6 +587,8 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 	OOKeyCode				key_docking_music;
 	
 	OOKeyCode				key_advanced_nav_array;
+	OOKeyCode				key_info_next_system;
+	OOKeyCode				key_info_previous_system;
 	OOKeyCode				key_map_home;
 	OOKeyCode				key_map_info;
 	
@@ -638,12 +647,12 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 	// target memory
 	// TODO: this should use weakrefs
 	NSMutableArray  		*target_memory;
-	NSInteger				target_memory_index;
+	NSUInteger				target_memory_index;
 	
 	// custom view points
 	Quaternion				customViewQuaternion;
 	OOMatrix				customViewMatrix;
-	Vector					customViewOffset, customViewForwardVector, customViewUpVector, customViewRightVector;
+	Vector					customViewOffset, customViewForwardVector, customViewUpVector, customViewRightVector, customViewRotationCenter;
 	NSString				*customViewDescription;
 	
 	
@@ -716,7 +725,7 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 	WormholeEntity			*wormhole;
 
 	ShipEntity				*demoShip; // Used while docked to maintain demo ship rotation.
-	OOLaserShotEntity *lastShot; // used to correctly position laser shots on first frame of firing
+	NSArray                 *lastShot; // used to correctly position laser shots on first frame of firing
 	
 	StickProfileScreen		*stickProfileScreen;
 
@@ -767,6 +776,13 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 @property (nonatomic) OOSystemID systemID;
 @property (nonatomic) OOSystemID targetSystemID;
 @property (readonly, atomic) OOSystemID nextHopTargetSystemID;
+- (OOSystemID) infoSystemID;
+- (void) setInfoSystemID: (OOSystemID) sid moveChart:(BOOL) moveChart;
+- (void) nextInfoSystem;
+- (void) previousInfoSystem;
+- (void) homeInfoSystem;
+- (void) targetInfoSystem;
+- (BOOL) infoSystemOnRoute;
 
 
 @property (readonly, copy, atomic) NSDictionary *commanderDataDictionary;
@@ -918,7 +934,7 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 
 - (OOWeaponType) weaponForFacing:(OOWeaponFacing)facing;
 @property (readonly, copy, atomic) OOWeaponType currentWeapon;
-@property (readonly, atomic) Vector currentLaserOffset;
+@property (readonly, copy, atomic) NSArray *currentLaserOffset;
 
 - (void) rotateCargo;
 
@@ -977,6 +993,8 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (void) showInformationForSelectedUpgrade;
 - (void) showInformationForSelectedUpgradeWithFormatString:(NSString *)extraString;
 - (BOOL) setWeaponMount:(OOWeaponFacing)chosen_weapon_facing toWeapon:(NSString *)eqKey;
+- (BOOL) setWeaponMount:(OOWeaponFacing)facing toWeapon:(NSString *)eqKey inContext:(NSString *) context;
+
 - (BOOL) changePassengerBerths:(int) addRemove;
 - (OOCargoQuantity) cargoQuantityForType:(OOCommodityType)type;
 - (OOCargoQuantity) setCargoQuantityForType:(OOCommodityType)type amount:(OOCargoQuantity)amount;
@@ -1040,7 +1058,7 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 
 - (void) clearTargetMemory;
 @property (readonly, retain) NSMutableArray *targetMemory;
-- (BOOL) moveTargetMemoryBy:(int)delta;
+- (BOOL) moveTargetMemoryBy:(NSInteger)delta;
 
 - (void) printIdentLockedOnForMissile:(BOOL)missile;
 
@@ -1049,14 +1067,29 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 /* GILES custom viewpoints */
 
 // custom view points
-@property (readonly) Quaternion customViewQuaternion;
+@property (nonatomic) Quaternion customViewQuaternion;
 @property (readonly) OOMatrix customViewMatrix;
-@property (readonly) Vector customViewOffset;
+@property (nonatomic) Vector customViewOffset;
+- (Vector)customViewRotationCenter;
+- (void)setCustomViewRotationCenter:(Vector)center;
+- (void)customViewZoomOut:(OOScalar) rate;
+- (void)customViewZoomIn: (OOScalar) rate;
+- (void)customViewRotateLeft:(OOScalar) angle;
+- (void)customViewRotateRight:(OOScalar) angle;
+- (void)customViewRotateUp:(OOScalar) angle;
+- (void)customViewRotateDown:(OOScalar) angle;
+- (void)customViewRollLeft:(OOScalar) angle;
+- (void)customViewRollRight:(OOScalar) angle;
+- (void)customViewPanUp:(OOScalar) angle;
+- (void)customViewPanDown:(OOScalar) angle;
+- (void)customViewPanLeft:(OOScalar) angle;
+- (void)customViewPanRight:(OOScalar) angle;
 @property (readonly) Vector customViewForwardVector;
 @property (readonly) Vector customViewUpVector;
 @property (readonly) Vector customViewRightVector;
 @property (readonly, copy) NSString *customViewDescription;
 - (void)resetCustomView;
+- (void)setCustomViewData;
 - (void)setCustomViewDataFromDictionary:(NSDictionary*) viewDict withScaling:(BOOL)withScaling;
 @property (readonly, atomic) HPVector viewpointPosition;
 @property (readonly, atomic) HPVector breakPatternPosition;
@@ -1117,7 +1150,7 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (BOOL) removeMissionDestinationMarker:(NSDictionary *)marker;
 @property (getter=getMissionDestinations, readonly, copy) NSMutableDictionary *missionDestinations;
 
-- (void) setLastShot:(OOLaserShotEntity *)shot;
+- (void) setLastShot:(NSArray *)shot;
 
 - (void) showShipModelWithKey:(NSString *)shipKey shipData:(NSDictionary *)shipData personality:(uint16_t)personality factorX:(GLfloat)factorX factorY:(GLfloat)factorY factorZ:(GLfloat)factorZ inContext:(NSString *)context;
 

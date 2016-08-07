@@ -592,7 +592,7 @@ static OOOXZManager *sSingleton = nil;
 	{
 		return NO;
 	}
-	OOLog(kOOOXZDebugLog,@"Trying to cancel file download");
+	OOLog(kOOOXZDebugLog, @"%@", @"Trying to cancel file download");
 	if (_currentDownload != nil)
 	{
 		[_currentDownload cancel];
@@ -728,7 +728,7 @@ static OOOXZManager *sSingleton = nil;
 		)
 	{
 		_downloadStatus = OXZ_DOWNLOAD_ERROR;
-		OOLog(kOOOXZErrorLog,@"Downloaded OXZ does not have the same identifer and version as expected. This might be due to your manifests list being out of date - try updating it.");
+		OOLog(kOOOXZErrorLog, @"%@", @"Downloaded OXZ does not have the same identifer and version as expected. This might be due to your manifests list being out of date - try updating it.");
 		_interfaceState = OXZ_STATE_TASKDONE;
 		[self gui];
 		return NO;
@@ -740,7 +740,7 @@ static OOOXZManager *sSingleton = nil;
 	if (![self ensureInstallPath])
 	{
 		_downloadStatus = OXZ_DOWNLOAD_ERROR;
-		OOLog(kOOOXZErrorLog,@"Unable to create installation folder.");
+		OOLog(kOOOXZErrorLog, @"%@", @"Unable to create installation folder.");
 		_interfaceState = OXZ_STATE_TASKDONE;
 		[self gui];
 		return NO;
@@ -754,7 +754,7 @@ static OOOXZManager *sSingleton = nil;
 	if (![[NSFileManager defaultManager] oo_moveItemAtPath:[self downloadPath] toPath:destination])
 	{
 		_downloadStatus = OXZ_DOWNLOAD_ERROR;
-		OOLog(kOOOXZErrorLog,@"Downloaded OXZ could not be installed.");
+		OOLog(kOOOXZErrorLog, @"%@", @"Downloaded OXZ could not be installed.");
 		_interfaceState = OXZ_STATE_TASKDONE;
 		[self gui];
 		return NO;
@@ -798,7 +798,7 @@ static OOOXZManager *sSingleton = nil;
 				[progress appendFormat:DESC(@"oolite-oxzmanager-progress-now-has-@"),[requirement oo_stringForKey:kOOManifestRelationDescription defaultValue:[requirement oo_stringForKey:kOOManifestRelationIdentifier]]];
 				// it was unmet, but now it's met
 				[_dependencyStack removeObject:requirement];
-				OOLog(kOOOXZDebugLog,@"Dependency stack: requirement met");
+				OOLog(kOOOXZDebugLog, @"%@", @"Dependency stack: requirement met");
 			} else if ([[requirement oo_stringForKey:kOOManifestRelationIdentifier] isEqualToString:[downloadedManifest oo_stringForKey:kOOManifestIdentifier]]) {
 				// remove the requirement for the just downloaded OXP
 				[_dependencyStack removeObject:requirement];
@@ -845,7 +845,7 @@ static OOOXZManager *sSingleton = nil;
 				{
 					if ([ResourceManager matchVersions:requirement withVersion:[availableDownload oo_stringForKey:kOOManifestVersion]])
 					{
-						OOLog(kOOOXZDebugLog,@"Dependency stack: found download for next item");
+						OOLog(kOOOXZDebugLog, @"%@", @"Dependency stack: found download for next item");
 						foundDownload = YES;
 						index = [_oxzList indexOfObject:availableDownload];
 						break;
@@ -894,7 +894,7 @@ static OOOXZManager *sSingleton = nil;
 					[self setProgressStatus:progress];
 					OOLog(kOOOXZErrorLog,@"OXZ dependency %@ could not be found for automatic download.",needsIdentifier);
 					_downloadStatus = OXZ_DOWNLOAD_ERROR;
-					OOLog(kOOOXZErrorLog,@"Downloaded OXZ could not be installed.");
+					OOLog(kOOOXZErrorLog, @"%@", @"Downloaded OXZ could not be installed.");
 					_interfaceState = OXZ_STATE_TASKDONE;
 					[self gui];
 					return NO;
@@ -916,7 +916,7 @@ static OOOXZManager *sSingleton = nil;
 			[self setProgressStatus:progress];
 			OOLog(kOOOXZErrorLog,@"OXZ dependency %@ could not be found for automatic download.",needsIdentifier);
 			_downloadStatus = OXZ_DOWNLOAD_ERROR;
-			OOLog(kOOOXZErrorLog,@"Downloaded OXZ could not be installed.");
+			OOLog(kOOOXZErrorLog, @"%@", @"Downloaded OXZ could not be installed.");
 			_interfaceState = OXZ_STATE_TASKDONE;
 			[self gui];
 			return NO;
@@ -1552,9 +1552,13 @@ static OOOXZManager *sSingleton = nil;
 				  startingAtRow:7  align:GUI_ALIGN_LEFT];
 
 // infoURL		
+			NSString *infoURLString = [manifest oo_stringForKey:kOOManifestInformationURL];
 			[gui setText:[NSString stringWithFormat:DESC(@"oolite-oxzmanager-infopage-infourl-@"),
-								   [manifest oo_stringForKey:kOOManifestInformationURL]]
+								   infoURLString]
 				  forRow:25 align:GUI_ALIGN_LEFT];
+			// copy url info text to clipboard automatically once we are in the oxz info page
+			[[UNIVERSE gameView] stringToClipboard:infoURLString];	  
+				  
 // instructions
 			[gui setText:OOExpand(DESC(@"oolite-oxzmanager-infopage-return")) forRow:27 align:GUI_ALIGN_CENTER];
 			[gui setColor:[OOColor greenColor] forRow:27];
@@ -1606,7 +1610,7 @@ static OOOXZManager *sSingleton = nil;
 	NSString *url = manifest[kOOManifestDownloadURL];
 	if (url == nil)
 	{
-		OOLog(kOOOXZErrorLog,@"Manifest does not have a download URL - cannot install");
+		OOLog(kOOOXZErrorLog, @"%@", @"Manifest does not have a download URL - cannot install");
 		return NO;
 	}
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
@@ -2175,7 +2179,7 @@ static OOOXZManager *sSingleton = nil;
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
 	_downloadStatus = OXZ_DOWNLOAD_RECEIVING;
-	OOLog(kOOOXZDebugLog,@"Download receiving");
+	OOLog(kOOOXZDebugLog, @"%@", @"Download receiving");
 	_downloadExpected = [response expectedContentLength];
 	_downloadProgress = 0;
 	DESTROY(_fileWriter);
@@ -2184,7 +2188,7 @@ static OOOXZManager *sSingleton = nil;
 	if (_fileWriter == nil)
 	{
 		// file system is full or read-only or something
-		OOLog(kOOOXZErrorLog,@"Unable to create download file");
+		OOLog(kOOOXZErrorLog, @"%@", @"Unable to create download file");
 		[self cancelUpdate];
 	}
 }
@@ -2221,7 +2225,7 @@ static OOOXZManager *sSingleton = nil;
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
 	_downloadStatus = OXZ_DOWNLOAD_COMPLETE;
-	OOLog(kOOOXZDebugLog,@"Download complete");
+	OOLog(kOOOXZDebugLog, @"%@", @"Download complete");
 	[_fileWriter synchronizeFile];
 	[_fileWriter closeFile];
 	DESTROY(_fileWriter);

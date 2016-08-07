@@ -252,7 +252,7 @@ static NSArray *ArrayOfExtensions(NSString *extensionString)
 		
 		if (shadersAvailable)
 		{
-			OOLog(kOOLogOpenGLShaderSupport, @"Shaders are supported.");
+			OOLog(kOOLogOpenGLShaderSupport, @"%@", @"Shaders are supported.");
 		}
 	}
 	else
@@ -483,7 +483,7 @@ static unsigned IntegerFromString(const GLubyte **ioString)
 	{
 		if ([arg isEqual:@"-noshaders"] || [arg isEqual:@"--noshaders"])
 		{
-			OOLog(kOOLogOpenGLShaderSupport, @"Shaders will not be used (disabled on command line).");
+			OOLog(kOOLogOpenGLShaderSupport, @"%@", @"Shaders will not be used (disabled on command line).");
 			return;
 		}
 	}	

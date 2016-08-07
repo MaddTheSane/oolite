@@ -254,21 +254,21 @@ static NSString * const kOOLogLoadScriptNone				= @"script.load.none";
 
 - (NSString *)name
 {
-	OOLogERR(kOOLogSubclassResponsibility, @"OOScript should not be used directly!");
+	OOLogERR(kOOLogSubclassResponsibility, @"%@", @"OOScript should not be used directly!");
 	return nil;
 }
 
 
 - (NSString *)scriptDescription
 {
-	OOLogERR(kOOLogSubclassResponsibility, @"OOScript should not be used directly!");
+	OOLogERR(kOOLogSubclassResponsibility, @"%@", @"OOScript should not be used directly!");
 	return nil;
 }
 
 
 - (NSString *)version
 {
-	OOLogERR(kOOLogSubclassResponsibility, @"OOScript should not be used directly!");
+	OOLogERR(kOOLogSubclassResponsibility, @"%@", @"OOScript should not be used directly!");
 	return nil;
 }
 
@@ -292,7 +292,7 @@ static NSString * const kOOLogLoadScriptNone				= @"script.load.none";
 
 - (void)runWithTarget:(Entity *)target
 {
-	OOLogERR(kOOLogSubclassResponsibility, @"OOScript should not be used directly!");
+	OOLogERR(kOOLogSubclassResponsibility, @"%@", @"OOScript should not be used directly!");
 }
 
 @end

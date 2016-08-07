@@ -36,7 +36,7 @@ MA 02110-1301, USA.
 @interface OOCommodities (OOPrivate)
 
 - (NSDictionary *) modifyGood:(NSDictionary *)good withScript:(OOScript *)script atStation:(StationEntity *)station inSystem:(OOSystemID)system localMode:(BOOL)local;
-- (NSDictionary *) createDefinitionFrom:(NSDictionary *) good price:(OOCreditsQuantity)p andQuantity:(OOCreditsQuantity)q forKey:(OOCommodityType)key atStation:(StationEntity *)station inSystem:(OOSystemID)system;
+- (NSDictionary *) createDefinitionFrom:(NSDictionary *) good price:(OOCreditsQuantity)p andQuantity:(OOCargoQuantity)q forKey:(OOCommodityType)key atStation:(StationEntity *)station inSystem:(OOSystemID)system;
 
 
 - (OOCargoQuantity) generateQuantityForGood:(NSDictionary *)good inEconomy:(OOEconomyID)economy;
@@ -175,7 +175,7 @@ MA 02110-1301, USA.
 }
 
 
-- (NSDictionary *) createDefinitionFrom:(NSDictionary *) good price:(OOCreditsQuantity)p andQuantity:(OOCreditsQuantity)q forKey:(OOCommodityType)key atStation:(StationEntity *)station inSystem:(OOSystemID)system
+- (NSDictionary *) createDefinitionFrom:(NSDictionary *) good price:(OOCreditsQuantity)p andQuantity:(OOCargoQuantity)q forKey:(OOCommodityType)key atStation:(StationEntity *)station inSystem:(OOSystemID)system
 {
 	NSMutableDictionary *definition = [NSMutableDictionary dictionaryWithDictionary:good];
 	[definition oo_setUnsignedInteger:p forKey:kOOCommodityPriceCurrent];
@@ -213,8 +213,8 @@ MA 02110-1301, USA.
 	JSContext			*context = OOJSAcquireContext();
 	jsval				rval;
 	jsval				args[] = { 
-		[good oo_jsValueInContext:context], 
-		[station oo_jsValueInContext:context], 
+		OOJSValueFromNativeObject(context, good),
+		OOJSValueFromNativeObject(context, station),
 		INT_TO_JSVAL(system) 
 	};
 	BOOL				OK = YES;
@@ -278,9 +278,10 @@ MA 02110-1301, USA.
 		good = [_commodityLists oo_dictionaryForKey:commodity];
 		OOCargoQuantity q = [self generateQuantityForGood:good inEconomy:economy];
 		// main system market limited to 127 units of each item
-		if (q > MAIN_SYSTEM_MARKET_LIMIT)
+		OOCargoQuantity cap = [good oo_unsignedIntForKey:kOOCommodityCapacity defaultValue:MAIN_SYSTEM_MARKET_LIMIT];
+		if (q > cap)
 		{
-			q = MAIN_SYSTEM_MARKET_LIMIT;
+			q = cap;
 		}
 		OOCreditsQuantity p = [self generatePriceForGood:good inEconomy:economy];
 		good = [self createDefinitionFrom:good price:p andQuantity:q forKey:commodity atStation:nil inSystem:[UNIVERSE currentSystemID]];
@@ -315,7 +316,10 @@ MA 02110-1301, USA.
 	foreachkey (commodity, _commodityLists)
 	{
 		good = [_commodityLists oo_dictionaryForKey:commodity];
-		OOCargoQuantity baseCapacity = [good oo_unsignedIntegerForKey:kOOCommodityCapacity defaultValue:MAIN_SYSTEM_MARKET_LIMIT];
+		OOCargoQuantity baseCapacity = [good oo_unsignedIntForKey:kOOCommodityCapacity defaultValue:MAIN_SYSTEM_MARKET_LIMIT];
+		
+		// important - ensure baseCapacity cannot be zero
+		if (!baseCapacity)  baseCapacity = MAIN_SYSTEM_MARKET_LIMIT;
 
 		OOCargoQuantity q = [mainMarket quantityForGood:commodity];
 		OOCreditsQuantity p = [mainMarket priceForGood:commodity];
@@ -327,7 +331,7 @@ MA 02110-1301, USA.
 			p = [self adjustPrice:p byRule:modifier];
 		
 			// first, scale to this station's capacity for this good
-			OOCargoQuantity localCapacity = [good oo_unsignedIntegerForKey:kOOCommodityCapacity];
+			OOCargoQuantity localCapacity = [good oo_unsignedIntForKey:kOOCommodityCapacity];
 			if (localCapacity > capacity)
 			{
 				localCapacity = capacity;

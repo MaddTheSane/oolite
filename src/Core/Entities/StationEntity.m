@@ -172,13 +172,13 @@
 }
 
 
-- (void) setPrice:(NSUInteger)price forCommodity:(OOCommodityType)commodity
+- (void) setPrice:(OOCreditsQuantity)price forCommodity:(OOCommodityType)commodity
 {
 	[[self localMarket] setPrice:price forGood:commodity];
 }
 
 
-- (void) setQuantity:(NSUInteger)quantity forCommodity:(OOCommodityType)commodity
+- (void) setQuantity:(OOCargoQuantity)quantity forCommodity:(OOCommodityType)commodity
 {
 	[[self localMarket] setQuantity:quantity forGood:commodity];
 }
@@ -653,7 +653,7 @@ NSDictionary *OOMakeDockingInstructions(StationEntity *station, HPVector coords,
 	suppress_arrival_reports = [dict oo_boolForKey:@"suppress_arrival_reports" defaultValue:NO];
 	[self setAllegiance:[dict oo_stringForKey:@"allegiance"]];
 
-	marketCapacity = [dict oo_unsignedIntegerForKey:@"market_capacity" defaultValue:MAIN_SYSTEM_MARKET_LIMIT];
+	marketCapacity = [dict oo_unsignedIntForKey:@"market_capacity" defaultValue:MAIN_SYSTEM_MARKET_LIMIT];
 	marketDefinition = [[dict oo_arrayForKey:@"market_definition" defaultValue:nil] retain];
 	marketScriptName = [[dict oo_stringForKey:@"market_script" defaultValue:nil] retain];
 	marketMonitored = [dict oo_boolForKey:@"market_monitored" defaultValue:NO];
@@ -851,6 +851,7 @@ NSDictionary *OOMakeDockingInstructions(StationEntity *station, HPVector coords,
 			{
 				[self sendExpandedMessage:@"[station-docking-clearance-expired]" toShip:player];
 				[player setDockingClearanceStatus:DOCKING_CLEARANCE_STATUS_NONE];	// Docking clearance for player has expired.
+				[player doScriptEvent:OOJSID("playerDockingClearanceExpired")];
 				if ([self currentlyInDockingQueues] == 0) 
 				{
 					[[self getAI] message:@"DOCKING_COMPLETE"];
