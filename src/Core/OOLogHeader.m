@@ -34,6 +34,10 @@ SOFTWARE.
 #import "OOJavaScriptEngine.h"
 #import "OOSound.h"
 
+#ifndef CPUFAMILY_INTEL_MEROM
+//This was removed in Xcode 8.
+#define CPUFAMILY_INTEL_MEROM		0x426f69ef
+#endif
 
 static NSString *AdditionalLogHeaderInfo(void);
 
