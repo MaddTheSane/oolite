@@ -123,7 +123,7 @@ enum trumble_mouth
 
 - (void) calcGrowthRate;
 
-@property (readonly, atomic) unichar *digram;
+@property (readonly, atomic) unichar *digram NS_RETURNS_INNER_POINTER;
 @property (readonly) NSPoint position;
 @property (readonly) NSPoint movement;
 @property (readonly) GLfloat rotation;

@@ -58,7 +58,7 @@ SOFTWARE.
 @end
 
 
-typedef NS_ENUM(NSUInteger, NSURLBookmarkResolutionOptions)
+enum
 {
     NSURLBookmarkResolutionWithoutUI = ( 1UL << 8 ),
     NSURLBookmarkResolutionWithoutMounting = ( 1UL << 9 ),
@@ -73,7 +73,7 @@ NSDictionary *JAPersistentFileReferenceFromURL(NSURL *url)
 	if (url == nil)  return nil;
 	
 	NSMutableDictionary *result = [NSMutableDictionary dictionaryWithCapacity:3];
-	result[kURLKey] = [url absoluteString];
+	[result setObject:[url absoluteString] forKey:kURLKey];
 	
 	if ([url isFileURL])
 	{
@@ -86,7 +86,7 @@ NSDictionary *JAPersistentFileReferenceFromURL(NSURL *url)
 				NSData *aliasData = [NSData dataWithBytes:*alias length:GetAliasSize(alias)];
 				if (aliasData != NULL)
 				{
-					result[kAliasKey] = aliasData;
+					[result setObject:aliasData forKey:kAliasKey];
 				}
 				DisposeHandle((Handle)alias);
 			}
@@ -104,7 +104,7 @@ NSDictionary *JAPersistentFileReferenceFromURL(NSURL *url)
 															 error:NULL];
 			if (bookmarkData != nil)
 			{
-				result[kBookmarkKey] = bookmarkData;
+				[result setObject:bookmarkData forKey:kBookmarkKey];
 			}
 		}
 	}
@@ -138,7 +138,7 @@ NSURL *JAURLFromPersistentFileReference(NSDictionary *fileRef, JAPersistentFileR
 	// Try bookmark.
 	if (BookmarkDataSupported())
 	{
-		NSData *bookmarkData = fileRef[kBookmarkKey];
+		NSData *bookmarkData = [fileRef objectForKey:kBookmarkKey];
 		if ([bookmarkData isKindOfClass:[NSData class]])
 		{
 			result = [NSURL URLByResolvingBookmarkData:bookmarkData
@@ -153,7 +153,7 @@ NSURL *JAURLFromPersistentFileReference(NSDictionary *fileRef, JAPersistentFileR
 	// Try alias.
 	if (result == nil)
 	{
-		NSData *aliasData = fileRef[kAliasKey];
+		NSData *aliasData = [fileRef objectForKey:kAliasKey];
 		if ([aliasData isKindOfClass:[NSData class]])
 		{
 			size_t size = [aliasData length];
@@ -178,7 +178,7 @@ NSURL *JAURLFromPersistentFileReference(NSDictionary *fileRef, JAPersistentFileR
 	// Try URL.
 	if (result == nil)
 	{
-		NSString *urlString = fileRef[kURLKey];
+		NSString *urlString = [fileRef objectForKey:kURLKey];
 		if ([urlString isKindOfClass:[NSString class]])
 		{
 			result = [NSURL URLWithString:urlString relativeToURL:nil];

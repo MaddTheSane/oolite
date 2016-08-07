@@ -342,7 +342,7 @@ static BOOL _refreshStarChart = NO;
 	
 	OOColor *col = nil;
 	if (setting != nil) {
-		col = [OOColor colorWithDescription:guiUserSettings[setting]];
+		col = [OOColor colorWithDescription:[guiUserSettings objectForKey:setting]];
 	}
 	if (col == nil) {
 		if (def != nil) {
@@ -381,14 +381,14 @@ static BOOL _refreshStarChart = NO;
 - (void) setColor:(OOColor *) color forRow:(OOGUIRow)row
 {
 	if (RowInRange(row, rowRange))
-		rowColor[row] = color;
+		[rowColor replaceObjectAtIndex:row withObject:color];
 }
 
 
 - (id) objectForRow:(OOGUIRow)row
 {
 	if (RowInRange(row, rowRange))
-		return rowText[row];
+		return [rowText objectAtIndex:row];
 	else
 		return NULL;
 }
@@ -396,9 +396,9 @@ static BOOL _refreshStarChart = NO;
 
 - (OOGUIRow) rowForKey:(NSString*)key
 {
-	for (unsigned i=0;i<[rowKey count];i++)
+	for (NSUInteger i=0;i<[rowKey count];i++)
 	{
-		if ([key isEqualToString:rowKey[i]])
+		if ([key isEqualToString:[rowKey objectAtIndex:i]])
 		{
 			return (OOGUIRow)i;
 		}
@@ -410,7 +410,7 @@ static BOOL _refreshStarChart = NO;
 - (NSString*) keyForRow:(OOGUIRow)row
 {
 	if (RowInRange(row, rowRange))
-		return rowKey[row];
+		return [rowKey objectAtIndex:row];
 	else
 		return NULL;
 }
@@ -431,7 +431,7 @@ static BOOL _refreshStarChart = NO;
 		return YES;
 	if (RowInRange(row, selectableRange))
 	{
-		if (![rowKey[row] isEqual:GUI_KEY_SKIP])
+		if (![[rowKey objectAtIndex:row] isEqual:GUI_KEY_SKIP])
 		{
 			selectedRow = row;
 			return YES;
@@ -446,7 +446,7 @@ static BOOL _refreshStarChart = NO;
 	OOGUIRow row = selectedRow + direction;
 	while (RowInRange(row, selectableRange))
 	{
-		if (![rowKey[row] isEqual:GUI_KEY_SKIP])
+		if (![[rowKey objectAtIndex:row] isEqual:GUI_KEY_SKIP])
 		{
 			selectedRow = row;
 			return YES;
@@ -462,7 +462,7 @@ static BOOL _refreshStarChart = NO;
 	NSUInteger row = selectableRange.location;
 	while (RowInRange(row, selectableRange))
 	{
-		if (![rowKey[row] isEqual:GUI_KEY_SKIP])
+		if (![[rowKey objectAtIndex:row] isEqual:GUI_KEY_SKIP])
 		{
 			selectedRow = row;
 			return YES;
@@ -479,7 +479,7 @@ static BOOL _refreshStarChart = NO;
 	NSUInteger row = selectableRange.location + selectableRange.length - 1;
 	while (RowInRange(row, selectableRange))
 	{
-		if (![rowKey[row] isEqual:GUI_KEY_SKIP])
+		if (![[rowKey objectAtIndex:row] isEqual:GUI_KEY_SKIP])
 		{
 			selectedRow = row;
 			return YES;
@@ -499,10 +499,10 @@ static BOOL _refreshStarChart = NO;
 
 - (NSString *) selectedRowText
 {
-	if ([rowText[selectedRow] isKindOfClass:[NSString class]])
-		return (NSString *)rowText[selectedRow];
-	if ([rowText[selectedRow] isKindOfClass:[NSArray class]])
-		return (NSString *)rowText[selectedRow][0];
+	if ([[rowText objectAtIndex:selectedRow] isKindOfClass:[NSString class]])
+		return (NSString *)[rowText objectAtIndex:selectedRow];
+	if ([[rowText objectAtIndex:selectedRow] isKindOfClass:[NSArray class]])
+		return (NSString *)[[rowText objectAtIndex:selectedRow] objectAtIndex:0];
 	return NULL;
 }
 
@@ -512,7 +512,7 @@ static BOOL _refreshStarChart = NO;
 	if ((selectedRow < 0)||((unsigned)selectedRow > [rowKey count]))
 		return nil;
 	else
-		return (NSString *)rowKey[selectedRow];
+		return (NSString *)[rowKey objectAtIndex:selectedRow];
 }
 
 
@@ -590,7 +590,7 @@ static BOOL _refreshStarChart = NO;
 - (void) setKey:(NSString *)str forRow:(OOGUIRow)row
 {
 	if (RowInRange(row, rowRange))
-		rowKey[row] = str;
+		[rowKey replaceObjectAtIndex:row withObject:str];
 }
 
 
@@ -598,7 +598,7 @@ static BOOL _refreshStarChart = NO;
 {
 	if (RowInRange(row, rowRange))
 	{
-		rowText[row] = str;
+		[rowText replaceObjectAtIndex:row withObject:str];
 	}
 }
 
@@ -607,7 +607,7 @@ static BOOL _refreshStarChart = NO;
 {
 	if (str != nil && RowInRange(row, rowRange))
 	{
-		rowText[row] = str;
+		[rowText replaceObjectAtIndex:row withObject:str];
 		rowAlignment[row] = alignment;
 	}
 }
@@ -644,12 +644,12 @@ static BOOL _refreshStarChart = NO;
 		strsize.width = 0.0f;
 		while ((strsize.width < size_in_pixels.width)&&([words count] > 0))
 		{
-			[string1 appendString:(NSString *)words[0]];
+			[string1 appendString:(NSString *)[words objectAtIndex:0]];
 			[string1 appendString:@" "];
 			[words removeObjectAtIndex:0];
 			strsize = OORectFromString(string1, 0.0f, 0.0f, chSize).size;
 			if ([words count] > 0)
-				strsize.width += OORectFromString((NSString *)words[0], 0.0f, 0.0f, chSize).size.width;
+				strsize.width += OORectFromString((NSString *)[words objectAtIndex:0], 0.0f, 0.0f, chSize).size.width;
 		}
 		[string2 appendString:[words componentsJoinedByString:@" "]];
 		[self setText:string1		forRow:row			align:alignment];
@@ -699,9 +699,9 @@ static BOOL _refreshStarChart = NO;
 	unsigned i;
 	for (i=0; i < n_rows-1; i++)
 	{
-		rowText[i] = @"";
-		rowColor[i] = textColor;
-		rowKey[i] = @"";
+		[rowText	replaceObjectAtIndex:i withObject:@""];
+		[rowColor	replaceObjectAtIndex:i withObject:textColor];
+		[rowKey		replaceObjectAtIndex:i withObject:@""];
 		rowAlignment[i] = GUI_ALIGN_LEFT;
 		rowFadeTime[i]	= 0.0f;
 	}
@@ -716,12 +716,12 @@ static BOOL _refreshStarChart = NO;
 	// we have at least 1 row!
 	
 	unsigned				i = n_rows-1;
-	OORGBAComponents		col = [(OOColor *)rowColor[i] rgbaComponents];
+	OORGBAComponents		col = [[rowColor objectAtIndex:i] rgbaComponents];
 	
 	if (i>0)
 	{
 		// we have at least 2 rows!
-		OORGBAComponents	col0 = [(OOColor *)rowColor[i-1] rgbaComponents];
+		OORGBAComponents	col0 = [[rowColor objectAtIndex:i-1] rgbaComponents];
 		return @[[rowText oo_stringAtIndex:i-1],
 										[NSString stringWithFormat:@"%.3g %.3g %.3g %.3g", col0.r, col0.g, col0.b, col0.a],
 										@(rowFadeTime[i-1]),
@@ -782,7 +782,7 @@ static BOOL _refreshStarChart = NO;
 		strsize.width = 0.0f;
 		while ((strsize.width < size_in_pixels.width)&&([words count] > 0))
 		{
-			[string1 appendString:(NSString *)words[0]];
+			[string1 appendString:(NSString *)[words objectAtIndex:0]];
 			[string1 appendString:@" "];
 			[words removeObjectAtIndex:0];
 			strsize = OORectFromString(string1, 0.0f, 0.0f, chSize).size;
@@ -826,7 +826,7 @@ static BOOL _refreshStarChart = NO;
 - (void) setArray:(NSArray *)arr forRow:(OOGUIRow)row
 {
 	if (RowInRange(row, rowRange))
-		rowText[row] = arr;
+		[rowText replaceObjectAtIndex:row withObject:arr];
 }
 
 
@@ -860,7 +860,7 @@ static BOOL _refreshStarChart = NO;
 	}
 	for (i = 0; i < n_items; i++)
 	{
-		id new_row_info = items[i];
+		id new_row_info = [items objectAtIndex:i];
 		if (text_color)
 			[self setColor:text_color forRow: row + i];
 		else
@@ -870,7 +870,7 @@ static BOOL _refreshStarChart = NO;
 		if ([new_row_info isKindOfClass:[NSString class]])
 			[self setText:(NSString *)new_row_info forRow: row + i];
 		if (item_keys)
-			[self setKey:item_keys[i] forRow: row + i];
+			[self setKey:[item_keys objectAtIndex:i] forRow: row + i];
 		else
 			[self setKey:@"" forRow: row + i];
 	}
@@ -882,17 +882,17 @@ static BOOL _refreshStarChart = NO;
 	unsigned i;
 	for (i = 0; i + how_much < n_rows; i++)
 	{
-		rowText[i] = rowText[i + how_much];
-		rowColor[i] = rowColor[i + how_much];
-		rowKey[i] = rowKey[i + how_much];
+		[rowText	replaceObjectAtIndex:i withObject:[rowText objectAtIndex:	i + how_much]];
+		[rowColor	replaceObjectAtIndex:i withObject:[rowColor objectAtIndex:	i + how_much]];
+		[rowKey		replaceObjectAtIndex:i withObject:[rowKey objectAtIndex:	i + how_much]];
 		rowAlignment[i] = rowAlignment[i + how_much];
 		rowFadeTime[i]	= rowFadeTime[i + how_much];
 	}
 	for (; i < n_rows; i++)
 	{
-		rowText[i] = @"";
-		rowColor[i] = textColor;
-		rowKey[i] = @"";
+		[rowText	replaceObjectAtIndex:i withObject:@""];
+		[rowColor	replaceObjectAtIndex:i withObject:textColor];
+		[rowKey		replaceObjectAtIndex:i withObject:@""];
 		rowAlignment[i] = GUI_ALIGN_LEFT;
 		rowFadeTime[i]	= 0.0f;
 	}
@@ -1417,14 +1417,14 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 	OOStartDrawingStrings();
 	for (i = 0; i < n_rows; i++)
 	{
-		OOColor* row_color = (OOColor *)rowColor[i];
+		OOColor* row_color = [rowColor objectAtIndex:i];
 		GLfloat row_alpha = alpha;
 		if (rowFadeTime[i] > 0.0f)
 		{
 			rowFadeTime[i] -= (float)delta_t;
 			if (rowFadeTime[i] <= 0.0f)
 			{
-				rowText[i] = @"";
+				[rowText replaceObjectAtIndex:i withObject:@""];
 				rowFadeTime[i] = 0.0f;
 			}
 			if ((rowFadeTime[i] > 0.0f)&&(rowFadeTime[i] < 1.0))
@@ -1432,9 +1432,9 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		}
 		glColor4f([row_color redComponent], [row_color greenComponent], [row_color blueComponent], row_alpha);
 		
-		if ([rowText[i] isKindOfClass:[NSString class]])
+		if ([[rowText objectAtIndex:i] isKindOfClass:[NSString class]])
 		{
-			NSString*   text = (NSString *)rowText[i];
+			NSString*   text = (NSString *)[rowText objectAtIndex:i];
 			if (![text isEqual:@""])
 			{
 				strsize = OORectFromString(text, 0.0f, 0.0f, characterSize).size;
@@ -1487,7 +1487,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 				}
 			}
 		}
-		if ([rowText[i] isKindOfClass:[NSArray class]])
+		if ([[rowText objectAtIndex:i] isKindOfClass:[NSArray class]])
 		{
 			NSArray		*array = [rowText oo_arrayAtIndex:i];
 			NSUInteger	j, max_columns = MIN([array count], n_columns);
@@ -1882,7 +1882,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		noNova = !nearby_systems[i].nova;
 		NSAssert1(chart_mode <= OOLRC_MODE_TECHLEVEL, @"Long range chart mode %i out of range", (int)chart_mode);
 	
-		NSArray *markers = markedDestinations[@(i)];
+		NSArray *markers = [markedDestinations objectForKey:@(i)];
 		if (markers != nil)	// is marked
 		{
 			GLfloat base_size = 0.5f * blob_size + 2.5f;
@@ -2441,9 +2441,9 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		OOSystemID loc;
 		for (i = 0; i < route_hops; i++)
 		{
-			loc = [routeInfo[@"route"] oo_intAtIndex:i];
+			loc = [[routeInfo objectForKey:@"route"] oo_intAtIndex:i];
 			starabs = [systemManager getCoordinatesForSystem:loc inGalaxy:g];
-			star2abs = [systemManager getCoordinatesForSystem:[routeInfo[@"route"] oo_intAtIndex:i+1] inGalaxy:g];
+			star2abs = [systemManager getCoordinatesForSystem:[[routeInfo objectForKey:@"route"] oo_intAtIndex:i+1] inGalaxy:g];
 
 			star.x = (float)(starabs.x * hscale);
 			star.y = (float)(starabs.y * vscale);
@@ -2466,7 +2466,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		// Label the destination, which was not included in the above loop.
 		if (zoom > CHART_ZOOM_SHOW_LABELS)
 		{
-			loc = [routeInfo[@"route"] oo_intAtIndex:i];
+			loc = [[routeInfo objectForKey:@"route"] oo_intAtIndex:i];
 			OODrawString([UNIVERSE systemNameIndex:loc], x + star2.x + 2.0, y + star2.y, z, NSMakeSize(10,10));
 		}
 	}

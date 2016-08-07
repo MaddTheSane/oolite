@@ -185,8 +185,8 @@ typedef OOGUITabStop OOGUITabSettings[GUI_MAX_COLUMNS];
 	NSString				*title;
 	
 	NSMutableArray			*rowText;
-	NSMutableArray			*rowKey;
-	NSMutableArray			*rowColor;
+	NSMutableArray<NSString*>			*rowKey;
+	NSMutableArray<OOColor*>			*rowColor;
 	
 	Vector					drawPosition;
 	

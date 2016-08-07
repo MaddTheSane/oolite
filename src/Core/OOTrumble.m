@@ -264,15 +264,12 @@ static void PlayTrumbleSqueal(void);
 }
 
 
-@synthesize position;
-
-
 - (unichar *)	digram
 {
 	return digram;
 }
 
-
+@synthesize position;
 @synthesize rotation;
 @synthesize movement;
 @synthesize size;
@@ -573,7 +570,7 @@ static void PlayTrumbleSqueal(void);
 		NSUInteger i, n_pods = [cargopods count];
 		for (i = 0 ; i < n_pods; i++)
 		{
-			ShipEntity *cargopod = cargopods[i];
+			ShipEntity *cargopod = [cargopods objectAtIndex:i];
 			OOCommodityType cargo_type = [cargopod commodityType];
 			float yumminess = (1.0 + randf()) * [[UNIVERSE commodityMarket] trumbleOpinionForGood:cargo_type];
 			if (yumminess > mostYummy)
@@ -936,16 +933,16 @@ static void PlayTrumbleSqueal(void);
 
 - (void) setFromDictionary:(NSDictionary*) dict
 {
-	NSString* digramString = (NSString*)dict[@"digram"];
+	NSString* digramString = (NSString*)[dict objectForKey:@"digram"];
 	[self setupForPlayer: player digram: digramString];
-	hunger =		[dict[@"hunger"]			floatValue];
-	discomfort =	[dict[@"discomfort"]		floatValue];
-	size =			[dict[@"size"]			floatValue];
-	growth_rate =	[dict[@"growth_rate"]	floatValue];
-	rotation =		[dict[@"rotation"]		floatValue];
-	rotational_velocity =	[dict[@"rotational_velocity"]	floatValue];
-	position =	PointFromString(dict[@"position"]);
-	movement =	PointFromString(dict[@"movement"]);
+	hunger =		[[dict objectForKey: @"hunger"]			floatValue];
+	discomfort =	[[dict objectForKey: @"discomfort"]		floatValue];
+	size =			[[dict objectForKey: @"size"]			floatValue];
+	growth_rate =	[[dict objectForKey: @"growth_rate"]	floatValue];
+	rotation =		[[dict objectForKey: @"rotation"]		floatValue];
+	rotational_velocity =	[[dict objectForKey: @"rotational_velocity"]	floatValue];
+	position =	PointFromString([dict objectForKey: @"position"]);
+	movement =	PointFromString([dict objectForKey: @"movement"]);
 }
 
 @end

@@ -177,7 +177,7 @@ extern void GenerateGraphVizForAIStateMachine(NSDictionary *stateMachine, NSStri
 
 - (NSString *) shortDescriptionComponents
 {
-	return [NSString stringWithFormat:@"%@:%@ / %@", stateMachineName, currentState, stateMachine[@"jsScript"]];
+	return [NSString stringWithFormat:@"%@:%@ / %@", stateMachineName, currentState, [stateMachine objectForKey:@"jsScript"]];
 }
 
 
@@ -218,7 +218,7 @@ extern void GenerateGraphVizForAIStateMachine(NSDictionary *stateMachine, NSStri
 			NSUInteger count = [aiStack count];
 			while (count--)
 			{
-				OOPreservedAIStateMachine *preservedMachine = aiStack[count];
+				OOPreservedAIStateMachine *preservedMachine = [aiStack objectAtIndex:count];
 				OOLog(@"ai.error.stackOverflow.dump", @"%3lu: %@: %@", count, [preservedMachine name], [preservedMachine state]);
 			}
 			
@@ -250,7 +250,7 @@ extern void GenerateGraphVizForAIStateMachine(NSDictionary *stateMachine, NSStri
 																   name:stateMachineName
 																  state:currentState
 														pendingMessages:pendingMessages
-																									jsScript:stateMachine[@"jsScript"]];
+																									jsScript:[stateMachine objectForKey:@"jsScript"]];
 	
 #ifndef NDEBUG
 	if ([[self owner] reportAIMessages])  OOLog(@"ai.stack.push", @"Pushing state machine for %@", self);
@@ -333,7 +333,7 @@ extern void GenerateGraphVizForAIStateMachine(NSDictionary *stateMachine, NSStri
 
 - (void) setState:(NSString *) stateName
 {
-	if (stateMachine[stateName])
+	if ([stateMachine objectForKey:stateName])
 	{
 		/*	CRASH in objc_msgSend, apparently on [self reactToMessage:@"EXIT"] (1.69, OS X/x86).
 			Analysis: self corrupted. We're being called by __NSFireDelayedPerform, which doesn't go
@@ -369,7 +369,7 @@ extern void GenerateGraphVizForAIStateMachine(NSDictionary *stateMachine, NSStri
 
 - (NSString *) associatedJS
 {
-	return stateMachine[@"jsScript"];
+	return [stateMachine objectForKey:@"jsScript"];
 }
 
 
@@ -462,7 +462,7 @@ static AIStackElement *sStack = NULL;
 		return;
 	}
 	
-	messagesForState = stateMachine[currentState];
+	messagesForState = [stateMachine objectForKey:currentState];
 	if (messagesForState == nil)  return;
 	
 #ifndef NDEBUG
@@ -472,7 +472,7 @@ static AIStackElement *sStack = NULL;
 	}
 #endif
 	
-	actions = [[messagesForState[message] copy] autorelease];
+	actions = [[[messagesForState objectForKey:message] copy] autorelease];
 	
 	sCurrentlyRunningAI = self;
 	if ([actions count] > 0)
@@ -482,7 +482,7 @@ static AIStackElement *sStack = NULL;
 		{
 			for (i = 0; i < [actions count]; i++)
 			{
-				[self takeAction:actions[i]];
+				[self takeAction:[actions objectAtIndex:i]];
 			}
 		}
 		@catch (NSException *exception)
@@ -529,7 +529,7 @@ static AIStackElement *sStack = NULL;
 	
 	if (tokenCount != 0)
 	{
-		NSString *selectorStr = tokens[0];
+		NSString *selectorStr = [tokens objectAtIndex:0];
 		
 		if (owner != nil)
 		{
@@ -537,7 +537,7 @@ static AIStackElement *sStack = NULL;
 			
 			if (tokenCount == 2)
 			{
-				dataString = tokens[1];
+				dataString = [tokens objectAtIndex:1];
 			}
 			else if ([tokens count] > 1)
 			{
@@ -595,7 +595,7 @@ static AIStackElement *sStack = NULL;
 	{
 		for (i = 0; i < [ms_list count]; i++)
 		{
-			[self reactToMessage:ms_list[i] context:@"handling deferred message"];
+			[self reactToMessage:[ms_list objectAtIndex:i] context:@"handling deferred message"];
 		}
 	}
 }
@@ -657,6 +657,7 @@ static AIStackElement *sStack = NULL;
 	
 	OOLog(@"ai.debug.pendingMessages", @"Pending messages for AI %@: %@", [self descriptionComponents], displayMessages);
 }
+
 
 @synthesize nextThinkTime;
 
@@ -835,7 +836,7 @@ static AIStackElement *sStack = NULL;
 			
 			foreachkey (stateKey, newSM)
 			{
-				stateHandlers = newSM[stateKey];
+				stateHandlers = [newSM objectForKey:stateKey];
 				if (![stateHandlers isKindOfClass:[NSDictionary class]])
 				{
 					OOLogWARN(@"ai.invalidFormat.state", @"State \"%@\" in AI \"%@\" is not a dictionary, ignoring.", stateKey, smName);
@@ -843,9 +844,9 @@ static AIStackElement *sStack = NULL;
 				}
 				
 				stateHandlers = [self cleanHandlers:stateHandlers forState:stateKey stateMachine:smName];
-				cleanSM[stateKey] = stateHandlers;
+				[cleanSM setObject:stateHandlers forKey:stateKey];
 			}
-			cleanSM[@"jsScript"] = script;
+			[cleanSM setObject:script forKey:@"jsScript"];
 
 			// Make immutable.
 			newSM = [[cleanSM copy] autorelease];
@@ -883,7 +884,7 @@ static AIStackElement *sStack = NULL;
 	result = [NSMutableDictionary dictionaryWithCapacity:[handlers count]];
 	foreachkey (handlerKey, handlers)
 	{
-		handlerActions = handlers[handlerKey];
+		handlerActions = [handlers objectForKey:handlerKey];
 		if (![handlerActions isKindOfClass:[NSArray class]])
 		{
 			OOLogWARN(@"ai.invalidFormat.handler", @"Handler \"%@\" for state \"%@\" in AI \"%@\" is not an array, ignoring.", handlerKey, stateKey, smName);
@@ -891,7 +892,7 @@ static AIStackElement *sStack = NULL;
 		}
 		
 		handlerActions = [self cleanActions:handlerActions forHandler:handlerKey state:stateKey stateMachine:smName];
-		result[handlerKey] = handlerActions;
+		[result setObject:handlerActions forKey:handlerKey];
 	}
 	
 	// Return immutable copy.
@@ -940,7 +941,7 @@ static AIStackElement *sStack = NULL;
 		else  selector = [action substringToIndex:spaceRange.location];
 		
 		// Look in alias table.
-		aliasedSelector = aliases[selector];
+		aliasedSelector = [aliases objectForKey:selector];
 		if (aliasedSelector != nil)
 		{
 			if ([aliasedSelector isKindOfClass:[NSString class]])
@@ -954,7 +955,7 @@ static AIStackElement *sStack = NULL;
 			{
 				// Alias is complete expression, pretokenized in anticipation of a tokenized future.
 				action = [aliasedSelector componentsJoinedByString:@" "];
-				selector = [aliasedSelector[0] description];
+				selector = [[aliasedSelector objectAtIndex:0] description];
 			}
 		}
 		

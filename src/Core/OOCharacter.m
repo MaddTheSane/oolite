@@ -139,7 +139,7 @@ MA 02110-1301, USA.
 {
 	// determine the planet of origin
 	NSDictionary *originInfo = [UNIVERSE generateSystemData:[self planetIDOfOrigin]];
-	return originInfo[KEY_NAME];
+	return [originInfo objectForKey:KEY_NAME];
 }
 
 
@@ -383,7 +383,7 @@ MA 02110-1301, USA.
 	id					origin = nil;
 	Random_Seed			seed;
 	
-	origin = dict[@"origin"];
+	origin = [dict objectForKey:@"origin"];
 	if ([origin isKindOfClass:[NSNumber class]] ||
 		([origin respondsToSelector:@selector(intValue)] && ([origin intValue] != 0 || [origin isEqual:@"0"])))
 	{
@@ -409,7 +409,7 @@ MA 02110-1301, USA.
 		[self setOriginSystem:(ranrot_rand() & 0xff)];
 	}
 
-	if (dict[@"random_seed"])
+	if ([dict objectForKey:@"random_seed"])
 	{
 		seed = RandomSeedFromString([dict oo_stringForKey:@"random_seed"]);  // returns kNilRandomSeed on failure
 	}
@@ -428,9 +428,9 @@ MA 02110-1301, USA.
 	if ([dict oo_stringForKey:@"role"])  [self castInRole:[dict oo_stringForKey:@"role"]];
 	if ([dict oo_stringForKey:@"name"])  [self setName:[dict oo_stringForKey:@"name"]];
 	if ([dict oo_stringForKey:@"short_description"])  [self setShortDescription:[dict oo_stringForKey:@"short_description"]];
-	if (dict[@"legal_status"])  [self setLegalStatus:[dict oo_intForKey:@"legal_status"]];
-	if (dict[@"bounty"])  [self setLegalStatus:[dict oo_intForKey:@"bounty"]];
-	if (dict[@"insurance"])  [self setInsuranceCredits:[dict oo_unsignedLongLongForKey:@"insurance"]];
+	if ([dict objectForKey:@"legal_status"])  [self setLegalStatus:[dict oo_intForKey:@"legal_status"]];
+	if ([dict objectForKey:@"bounty"])  [self setLegalStatus:[dict oo_intForKey:@"bounty"]];
+	if ([dict objectForKey:@"insurance"])  [self setInsuranceCredits:[dict oo_unsignedLongLongForKey:@"insurance"]];
 	if ([dict oo_stringForKey:@"script"]) [self setCharacterScript:[dict oo_stringForKey:@"script"]];
 	if ([dict oo_arrayForKey:@"script_actions"])  [self setLegacyScript:[dict oo_arrayForKey:@"script_actions"]];
 	

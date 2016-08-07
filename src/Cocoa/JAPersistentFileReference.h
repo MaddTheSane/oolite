@@ -40,7 +40,7 @@ typedef NS_OPTIONS(uint32_t, JAPersistentFileReferenceResolveFlags)
 };
 
 
-NSDictionary *__nullable JAPersistentFileReferenceFromURL(NSURL *__nonnull url);
+NSDictionary *__nullable JAPersistentFileReferenceFromURL(NSURL *__nullable url);
 NSURL *__nullable JAURLFromPersistentFileReference(NSDictionary *__nonnull fileRef, JAPersistentFileReferenceResolveFlags flags, BOOL *__nullable isStale);
 
 NSDictionary *__nullable JAPersistentFileReferenceFromPath(NSString *__nonnull path);
