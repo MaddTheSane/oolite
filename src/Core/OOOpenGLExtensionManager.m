@@ -685,7 +685,7 @@ NSComparisonResult CompareGPUSettingsByPriority(id a, id b, void *context)
 		NSDictionary *match = [config oo_dictionaryForKey:@"match"];
 		NSString *expr = nil;
 		
-		expr = match[@"vendor"];
+		expr = [match objectForKey:@"vendor"];
 		if (!CheckRegExps(vendor, expr))  continue;
 		
 		expr = [match oo_stringForKey:@"renderer"];

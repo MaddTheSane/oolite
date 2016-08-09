@@ -345,7 +345,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 		*/
 		if ([shipDict oo_fuzzyBooleanForKey:@"has_energy_bomb"])
 		{
-			if (max_missiles == missiles && max_missiles < SHIPENTITY_MAX_MISSILES && shipDict[@"max_missiles"] == nil)
+			if (max_missiles == missiles && max_missiles < SHIPENTITY_MAX_MISSILES && [shipDict objectForKey:@"max_missiles"] == nil)
 			{
 				max_missiles++;
 			}
@@ -410,7 +410,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	if (octree)  mass = (GLfloat)(density * 20.0f * [octree volume]);
 	
 	DESTROY(default_laser_color);
-	default_laser_color = [[OOColor brightColorWithDescription:shipDict[@"laser_color"]] retain];
+	default_laser_color = [[OOColor brightColorWithDescription:[shipDict objectForKey:@"laser_color"]] retain];
 	
 	if (default_laser_color == nil) 
 	{
@@ -426,7 +426,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	defaultExhaustEmissiveColorComponents.g = 0.9f;
 	defaultExhaustEmissiveColorComponents.b = 1.0f;
 	defaultExhaustEmissiveColorComponents.a = 0.9f;
-	OOColor *color = [OOColor brightColorWithDescription:shipDict[@"exhaust_emissive_color"]];
+	OOColor *color = [OOColor brightColorWithDescription:[shipDict objectForKey:@"exhaust_emissive_color"]];
 	if (color == nil)  color = [OOColor colorWithRGBAComponents:defaultExhaustEmissiveColorComponents];
 	[self setExhaustEmissiveColor:color];
 	
@@ -469,7 +469,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	
 	// rotating subentities
 	subentityRotationalVelocity = kIdentityQuaternion;
-	ScanQuaternionFromString(shipDict[@"rotational_velocity"], &subentityRotationalVelocity);
+	ScanQuaternionFromString([shipDict objectForKey:@"rotational_velocity"], &subentityRotationalVelocity);
 
 	// set weapon offsets
 	NSString *weaponMountMode = [shipDict oo_stringForKey:@"weapon_mount_mode" defaultValue:@"single"];
@@ -740,7 +740,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	else 
 	{
 		// crew and passengers
-		NSDictionary *cdict = [UNIVERSE characters][[shipDict oo_stringForKey:@"pilot"]];
+		NSDictionary *cdict = [[UNIVERSE characters] objectForKey:[shipDict oo_stringForKey:@"pilot"]];
 		if (cdict != nil)
 		{
 			OOCharacter	*pilot = [OOCharacter characterWithDictionary:cdict];
@@ -761,8 +761,8 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 }
 
 
-	@synthesize subIdx = _subIdx;
-	@synthesize maxShipSubEntities = _maxShipSubIdx;
+@synthesize subIdx = _subIdx;
+@synthesize maxShipSubEntities = _maxShipSubIdx;
 
 
 - (NSString *) repeatString:(NSString *)str times:(NSUInteger)times
@@ -810,7 +810,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	
 	for (i = start; i >= 0; i--)
 	{
-		se = (ShipEntity *)subEnts[i];
+		se = (ShipEntity *)[subEnts objectAtIndex:i];
 		idx = [se subIdx]; // should be identical to i, but better safe than sorry...
 		if (idx <= strMaxIdx && [[string substringWithRange:NSMakeRange(idx, 1)] isEqualToString:@"0"])
 		{
@@ -1137,7 +1137,9 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	if (octree)  mass = (GLfloat)(density * 20.0f * [octree volume]);
 }
 
+
 @synthesize subEntityRotationalVelocity;
+
 
 - (NSString *)descriptionComponents
 {
@@ -1212,10 +1214,12 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	}
 }
 
+
 @synthesize totalBoundingBox;
 @synthesize forwardVector = v_forward;
 @synthesize upVector = v_up;
 @synthesize rightVector = v_right;
+
 
 - (BOOL) scriptedMisjump
 {
@@ -1603,7 +1607,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 		return;
 	}
 
-	if (shipinfoDictionary[@"escort_roles"] != nil)
+	if ([shipinfoDictionary objectForKey:@"escort_roles"] != nil)
 	{
 		[self setUpMixedEscorts];
 		return;
@@ -1880,6 +1884,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	return [[[NSString alloc] initWithFormat:@"[%@]",[self shipDataKey]] autorelease];
 }
 
+
 @synthesize shipInfoDictionary;
 
 
@@ -1909,6 +1914,7 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 		return [NSArray arrayWithArray:output];
 	}
 }
+
 
 @synthesize aftWeaponOffset;
 @synthesize forwardWeaponOffset;
@@ -1990,7 +1996,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		NSUInteger i, n_subs = [prime_subs count];
 		for (i = 0; i < n_subs; i++)
 		{
-			Entity* se = prime_subs[i];
+			Entity* se = [prime_subs objectAtIndex:i];
 			if ([se isShip] && [se canCollide] && doOctreesCollide((ShipEntity*)se, other))
 				return other;
 		}
@@ -2000,10 +2006,9 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	NSArray *other_subs = other->subEntities;
 	if (other_subs)
 	{
-		NSUInteger i, n_subs = [other_subs count];
-		for (i = 0; i < n_subs; i++)
+		Entity* se;
+		foreach (se, other_subs)
 		{
-			Entity* se = other_subs[i];
 			if ([se isShip] && [se canCollide] && doOctreesCollide(prime, (ShipEntity*)se))
 				return (ShipEntity*)se;
 		}
@@ -2012,16 +2017,14 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	// check prime subenties against the other's subentities
 	if ((prime_subs)&&(other_subs))
 	{
-		NSUInteger i, n_osubs = [other_subs count];
-		for (i = 0; i < n_osubs; i++)
+		Entity* oe;
+		foreach (oe, other_subs)
 		{
-			Entity* oe = other_subs[i];
 			if ([oe isShip] && [oe canCollide])
 			{
-				NSUInteger j, n_psubs = [prime_subs count];
-				for (j = 0; j <  n_psubs; j++)
+				Entity* pe;
+				foreach (pe, prime_subs)
 				{
-					Entity* pe = prime_subs[j];
 					if ([pe isShip] && [pe canCollide] && doOctreesCollide((ShipEntity*)pe, (ShipEntity*)oe))
 						return (ShipEntity*)oe;
 				}
@@ -2052,13 +2055,13 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		OOUniversalID	otherID = [otherShip universalID];
 		NSString		*other_key = [NSString stringWithFormat:@"%d", otherID];
 		
-		if (!closeContactsInfo[other_key] &&
+		if (![closeContactsInfo objectForKey:other_key] &&
 			HPdistance2(position, otherPos) < collision_radius * collision_radius)
 		{
 			// calculate position with respect to our own position and orientation
 			Vector	dpos = HPVectorToVector(HPvector_between(position, otherPos));
 			Vector  rpos = make_vector(dot_product(dpos, v_right), dot_product(dpos, v_up), dot_product(dpos, v_forward));
-			closeContactsInfo[other_key] = [NSString stringWithFormat:@"%f %f %f", rpos.x, rpos.y, rpos.z];
+			[closeContactsInfo setObject:[NSString stringWithFormat:@"%f %f %f", rpos.x, rpos.y, rpos.z] forKey: other_key];
 			
 			// send AI a message about the touch
 			OOWeakReference	*temp = _primaryTarget;
@@ -2287,7 +2290,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 						Vector	dpos = HPVectorToVector(HPvector_between(position, other->position));
 						Vector  pos1 = make_vector(dot_product(dpos, v_right), dot_product(dpos, v_up), dot_product(dpos, v_forward));
 						Vector	pos0 = {0, 0, 0};
-						ScanVectorFromString(closeContactsInfo[other_key], &pos0);
+						ScanVectorFromString([closeContactsInfo objectForKey: other_key], &pos0);
 						// send AI messages about the contact
 						OOWeakReference *temp = _primaryTarget;
 						_primaryTarget = [other weakRetain];
@@ -3936,11 +3939,13 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 @synthesize afterburnerFactor = afterburner_speed_factor;
 @synthesize afterburnerRate = afterburner_rate;
 @synthesize maxThrust = max_thrust;
-	
-- (float)thrust
+
+
+- (float) thrust
 {
 	return thrust;
 }
+
 
 ////////////////
 //            //
@@ -5996,7 +6001,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	OOJSRelinquishContext(context);
 
 	// roll or roll factor
-	if (result[@"stickRollFactor"] != nil)
+	if ([result objectForKey:@"stickRollFactor"] != nil)
 	{
 		stick_roll = [result oo_floatForKey:@"stickRollFactor"] * max_flight_roll;
 	} 
@@ -6014,7 +6019,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 
 	// pitch or pitch factor
-	if (result[@"stickPitchFactor"] != nil)
+	if ([result objectForKey:@"stickPitchFactor"] != nil)
 	{
 		stick_pitch = [result oo_floatForKey:@"stickPitchFactor"] * max_flight_pitch;
 	} 
@@ -6032,7 +6037,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 
 	// yaw or yaw factor
-	if (result[@"stickYawFactor"] != nil)
+	if ([result objectForKey:@"stickYawFactor"] != nil)
 	{
 		stick_yaw = [result oo_floatForKey:@"stickYawFactor"] * max_flight_yaw;
 	} 
@@ -6053,7 +6058,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	[self applySticks:delta_t];
 
 	// desired speed
-	if (result[@"desiredSpeedFactor"] != nil)
+	if ([result objectForKey:@"desiredSpeedFactor"] != nil)
 	{
 		desired_speed = [result oo_floatForKey:@"desiredSpeedFactor"] * maxFlightSpeed;
 	}
@@ -6092,7 +6097,9 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 	}
 }
 
+
 @synthesize reactionTime;
+
 
 - (HPVector) calculateTargetPosition
 {
@@ -6409,7 +6416,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 {
 	DESTROY(scanner_display_color1);
 	
-	if (color == nil)  color = [OOColor colorWithDescription:[self shipInfoDictionary][@"scanner_display_color1"]];
+	if (color == nil)  color = [OOColor colorWithDescription:[[self shipInfoDictionary] objectForKey:@"scanner_display_color1"]];
 	scanner_display_color1 = [color retain];
 }
 
@@ -6418,7 +6425,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 {
 	DESTROY(scanner_display_color2);
 	
-	if (color == nil)  color = [OOColor colorWithDescription:[self shipInfoDictionary][@"scanner_display_color2"]];
+	if (color == nil)  color = [OOColor colorWithDescription:[[self shipInfoDictionary] objectForKey:@"scanner_display_color2"]];
 	scanner_display_color2 = [color retain];
 }
 
@@ -6439,7 +6446,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 {
 	DESTROY(scanner_display_color_hostile1);
 	
-	if (color == nil)  color = [OOColor colorWithDescription:[self shipInfoDictionary][@"scanner_hostile_display_color1"]];
+	if (color == nil)  color = [OOColor colorWithDescription:[[self shipInfoDictionary] objectForKey:@"scanner_hostile_display_color1"]];
 	scanner_display_color_hostile1 = [color retain];
 }
 
@@ -6448,7 +6455,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 {
 	DESTROY(scanner_display_color_hostile2);
 	
-	if (color == nil)  color = [OOColor colorWithDescription:[self shipInfoDictionary][@"scanner_hostile_display_color2"]];
+	if (color == nil)  color = [OOColor colorWithDescription:[[self shipInfoDictionary] objectForKey:@"scanner_hostile_display_color2"]];
 	scanner_display_color_hostile2 = [color retain];
 }
 
@@ -6652,7 +6659,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 		if ([self primaryTarget] != nil)
 		{
 			// must use the weak ref here to prevent potential over-retention
-			previousCondition[@"primaryTarget"] = [[self primaryTarget] weakSelf];
+			[previousCondition setObject:[[self primaryTarget] weakSelf] forKey:@"primaryTarget"];
 		}
 		[previousCondition oo_setFloat:desired_range forKey:@"desired_range"];
 		[previousCondition oo_setFloat:desired_speed forKey:@"desired_speed"];
@@ -6675,7 +6682,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 
 	behaviour =		[previousCondition oo_intForKey:@"behaviour"];
 	[_primaryTarget release];
-	_primaryTarget =	[previousCondition[@"primaryTarget"] weakRetain];
+	_primaryTarget =	[[previousCondition objectForKey:@"primaryTarget"] weakRetain];
 	[self startTrackingCurve];
 	desired_range =	[previousCondition oo_floatForKey:@"desired_range"];
 	desired_speed =	[previousCondition oo_floatForKey:@"desired_speed"];
@@ -6709,6 +6716,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 		[[group leader] updateEscortFormation];
 	}
 }
+
 
 @synthesize escortGroup = _escortGroup;
 - (OOShipGroup *) escortGroup
@@ -6790,6 +6798,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 {
 	_pendingEscortCount = MIN(count, _maxEscortCount);
 }
+
 
 @synthesize maxEscortCount = _maxEscortCount;
 
@@ -6900,6 +6909,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 	return scan_description;
 }
 
+
 @synthesize scanDescription = scan_description;
 - (NSString *)scanDescription
 {
@@ -6942,6 +6952,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};	// to be defined by s
 		return desc;
 	}
 }
+
 
 - (NSString *) identFromShip:(ShipEntity*) otherShip
 {
@@ -7170,7 +7181,9 @@ static BOOL IsBehaviourHostile(OOBehaviour behaviour)
 	return ([self hasHostileTarget] && [self primaryTarget] == entity);
 }
 
+
 @synthesize weaponRange;
+
 
 - (void) setWeaponDataFromType: (OOWeaponType) weapon_type
 {
@@ -7333,7 +7346,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 
 	for (i=0; i < [bodies count]; i++)
 	{
-		planet = bodies[i];
+		planet = [bodies objectAtIndex:i];
 		if([planet planetType] == STELLAR_TYPE_NORMAL_PLANET)
 					planets = [planets arrayByAddingObject:planet];
 	}
@@ -7341,7 +7354,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	if ([planets count] == 0)  return nil;
 	
 	planets = [planets sortedArrayUsingFunction:ComparePlanetsBySurfaceDistance context:self];
-	result = planets[0];
+	result = [planets objectAtIndex:0];
 		
 	return result;
 }
@@ -7614,7 +7627,6 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 }
 
 
-@synthesize AI = shipAI;
 
 - (void) setAI:(AI *)ai
 {
@@ -7626,6 +7638,9 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	}
 	shipAI = ai;
 }
+
+
+@synthesize AI = shipAI;
 
 
 - (BOOL) hasAutoAI
@@ -7652,7 +7667,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	NSArray					*actions = nil;
 	
 	properties = [NSMutableDictionary dictionary];
-	properties[@"ship"] = self;
+	[properties setObject:self forKey:@"ship"];
 	
 	[script autorelease];
 	script = [OOScript jsScriptFromFileNamed:script_name properties:properties];
@@ -7665,7 +7680,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 			OOStandardsDeprecated([NSString stringWithFormat:@"The launch_actions ship key is deprecated on %@.",[self displayName]]);
 			if (!OOEnforceStandards()) 
 			{
-				properties[@"legacy_launchActions"] = actions;	
+				[properties setObject:actions forKey:@"legacy_launchActions"];	
 			}
 		}
 
@@ -7675,7 +7690,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 			OOStandardsDeprecated([NSString stringWithFormat:@"The script_actions ship key is deprecated on %@.",[self displayName]]);
 			if (!OOEnforceStandards()) 
 			{
-				properties[@"legacy_scriptActions"] = actions;	
+				[properties setObject:actions forKey:@"legacy_scriptActions"];	
 			}
 		}
 
@@ -7685,7 +7700,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 			OOStandardsDeprecated([NSString stringWithFormat:@"The death_actions ship key is deprecated on %@.",[self displayName]]);
 			if (!OOEnforceStandards()) 
 			{
-				properties[@"legacy_deathActions"] = actions;	
+				[properties setObject:actions forKey:@"legacy_deathActions"];	
 			}
 		}
 
@@ -7695,7 +7710,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 			OOStandardsDeprecated([NSString stringWithFormat:@"The setup_actions ship key is deprecated on %@.",[self displayName]]);
 			if (!OOEnforceStandards()) 
 			{
-				properties[@"legacy_setupActions"] = actions;	
+				[properties setObject:actions forKey:@"legacy_setupActions"];	
 			}
 		}
 		
@@ -7711,7 +7726,9 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	return frustration;
 }
 
+
 @synthesize fuel;
+
 
 - (void) setFuel:(OOFuelQuantity) amount
 {
@@ -8017,7 +8034,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	}
 	for (i = 0; i < [cargo count]; i++)
 	{
-		ShipEntity *container = cargo[i];
+		ShipEntity *container = [cargo objectAtIndex:i];
 		j = [goods indexOfObject:[container commodityType]];
 		quantityInHold[j] += [container commodityAmount];
 	}
@@ -8027,12 +8044,12 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 		if (quantityInHold[i] > 0)
 		{
 			NSMutableDictionary	*commodity = [NSMutableDictionary dictionaryWithCapacity:4];
-			good = goods[i];
+			good = [goods objectAtIndex:i];
 			// commodity, quantity - keep consistency between .manifest and .contracts
-			commodity[@"commodity"] = good;
-			commodity[@"quantity"] = @(quantityInHold[i]);
-			commodity[@"displayName"] = [[UNIVERSE commodityMarket] nameForGood:good];
-			commodity[@"unit"] = DisplayStringForMassUnitForCommodity(good);
+			[commodity setObject:good forKey:@"commodity"];
+			[commodity setObject:@(quantityInHold[i]) forKey:@"quantity"];
+			[commodity setObject:[[UNIVERSE commodityMarket] nameForGood:good] forKey:@"displayName"]; 
+			[commodity setObject:DisplayStringForMassUnitForCommodity(good) forKey:@"unit"]; 
 			[list addObject:commodity];
 		}
 	}
@@ -8082,7 +8099,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	// iterate downwards to be safe removing during iteration
 	while (amount > 0)
 	{
-		if ([[cargo[i] commodityType] isEqualToString:commodity])
+		if ([[[cargo objectAtIndex:i] commodityType] isEqualToString:commodity])
 		{
 			amount--;
 			[cargo removeObjectAtIndex:i];
@@ -8354,7 +8371,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 		unsigned i;
 		for (i = 0; i < [targets count]; i++)
 		{
-			Entity *e2 = targets[i];
+			Entity *e2 = [targets objectAtIndex:i];
 			Vector p2 = [self vectorTo:e2];
 			double ecr = [e2 collisionRadius];
 			double d = (magnitude(p2) - ecr) / range;
@@ -8424,7 +8441,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 		unsigned i;
 		for (i = 0; i < [targets count]; i++)
 		{
-			Entity *e2 = targets[i];
+			Entity *e2 = [targets objectAtIndex:i];
 			Vector p2 = [self vectorTo:e2];
 			double ecr = [e2 collisionRadius];
 			double d = (magnitude(p2) - ecr) * 2.6; // 2.6 is a correction constant to stay in limits of the old code.
@@ -8443,7 +8460,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 		unsigned i;
 		for (i = 0; i < [targets count]; i++)
 		{
-			ShipEntity *e2 = (ShipEntity*)targets[i];
+			ShipEntity *e2 = (ShipEntity*)[targets objectAtIndex:i];
 			if ([e2 isShip] && [e2 isInSpace])
 			{
 				Vector p2 = [self vectorTo:e2];
@@ -8620,7 +8637,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 				}
 			}
 			limit--;
-			ShipEntity* cargoObj = jetsam[i];
+			ShipEntity* cargoObj = [jetsam objectAtIndex:i];
 			ShipEntity* container = [UNIVERSE reifyCargoPod:cargoObj];
 			/* TODO: this debris position/velocity setting code is
 			 * duplicated - sometimes not very cleanly - all over the
@@ -8992,7 +9009,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 		unsigned i;
 		for (i = 0; i < [targets count]; i++)
 		{
-			Entity *e2 = targets[i];
+			Entity *e2 = [targets objectAtIndex:i];
 			if ([e2 isShip]) 
 			{
 				ShipEntity *se = (ShipEntity *)e2;
@@ -9750,9 +9767,9 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	}
 }
 
+
 @synthesize destination = _destination;
 @synthesize coordinates;
-
 
 - (HPVector) distance_six: (GLfloat) dist
 {
@@ -11905,7 +11922,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 		// make sure crew inherit any legalStatus
 		for (i = 0; i < [crew count]; i++)
 		{
-			OOCharacter *ch = (OOCharacter*)crew[i];
+			OOCharacter *ch = (OOCharacter*)[crew objectAtIndex:i];
 			[ch setLegalStatus: [self legalStatus] | [ch legalStatus]];
 		}
 		mainPod = [self launchPodWithCrew:crew];
@@ -11955,16 +11972,16 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	{
 		if (preferred == nil)
 		{
-			jetto = [[cargo[0] retain] autorelease];
+			jetto = [[[cargo objectAtIndex:0] retain] autorelease];
 		}
 		else
 		{
 			BOOL found = NO;
 			for (i=0;i<[cargo count];i++)
 			{
-				if ([[cargo[i] commodityType] isEqualToString:preferred])
+				if ([[[cargo objectAtIndex:i] commodityType] isEqualToString:preferred])
 				{
-					jetto = [[cargo[i] retain] autorelease];
+					jetto = [[[cargo objectAtIndex:i] retain] autorelease];
 					found = YES;
 					break;
 				}
@@ -11972,7 +11989,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 			if (found == NO)
 			{
 				// dump anything
-				jetto = [[cargo[0] retain] autorelease];
+				jetto = [[[cargo objectAtIndex:0] retain] autorelease];
 				i = 0;
 			}
 		}
@@ -12097,7 +12114,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 	while ([collidingEntities count] > 0)
 	{
 		// EMMSTRAN: investigate if doing this backwards would be more efficient. (Not entirely obvious, NSArray is kinda funky.) -- Ahruman 2011-02-12
-		ent = [[collidingEntities[0] retain] autorelease];
+		ent = [[[collidingEntities objectAtIndex:0] retain] autorelease];
 		[collidingEntities removeObjectAtIndex:0];
 		if (ent)
 		{
@@ -12448,7 +12465,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 					unsigned i;
 					for (i = 0; i < [[other crew] count]; i++)
 					{
-						OOCharacter *rescuee = [other crew][i];
+						OOCharacter *rescuee = [[other crew] objectAtIndex:i];
 						NSString *characterName = [rescuee name];
 						if ([rescuee legalStatus])
 						{
@@ -13709,9 +13726,9 @@ static BOOL AuthorityPredicate(Entity *entity, void *parameter)
 		// if I'm under attack send a thank-you message to the rescuer
 		//
 		NSArray* tokens = ScanTokensFromString(ms);
-		int switcher_id = [(NSString*)tokens[1] intValue]; // Attacker that switched targets.
+		int switcher_id = [(NSString*)[tokens objectAtIndex:1] intValue]; // Attacker that switched targets.
 		Entity* switcher = [UNIVERSE entityForUniversalID:switcher_id];
-		int rescuer_id = [(NSString*)tokens[2] intValue]; // New primary target of attacker. 
+		int rescuer_id = [(NSString*)[tokens objectAtIndex:2] intValue]; // New primary target of attacker. 
 		Entity* rescuer = [UNIVERSE entityForUniversalID:rescuer_id];
 		if ((switcher == [self primaryAggressor])&&(switcher == [self primaryTarget])&&(switcher)&&(rescuer)&&(rescuer->isShip)&&([self thankedShip] != rescuer)&&(scanClass != CLASS_THARGOID))
 		{
@@ -14092,7 +14109,7 @@ static BOOL AuthorityPredicate(Entity *entity, void *parameter)
 		{
 			for (i = 0; i != argc; ++i)
 			{
-				argv[i] = [arguments[i] oo_jsValueInContext:context];
+				argv[i] = [[arguments objectAtIndex:i] oo_jsValueInContext:context];
 				OOJSAddGCValueRoot(context, &argv[i], "event parameter");
 			}
 		}

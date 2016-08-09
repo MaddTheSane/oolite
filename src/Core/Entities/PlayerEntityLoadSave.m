@@ -244,7 +244,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 
 		for (i = page*n_rows ; i < count && row < start_row + n_rows ; i++)
 		{
-			scenario = [UNIVERSE scenarios][i];
+			scenario = [[UNIVERSE scenarios] objectAtIndex:i];
 			NSString *scenarioName = [NSString stringWithFormat:@" %@ ",[scenario oo_stringForKey:@"name"]];
 			[gui setText:OOExpand(scenarioName) forRow:row];
 			[gui setKey:[NSString stringWithFormat:@"Scenario:%lu", (unsigned long)i] forRow:row];
@@ -290,7 +290,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	if ([key hasPrefix:@"Scenario"])
 	{
 		int item = [[key componentsSeparatedByString:@":"] oo_intAtIndex:1];
-		NSDictionary *scenario = [UNIVERSE scenarios][item];
+		NSDictionary *scenario = [[UNIVERSE scenarios] objectAtIndex:item];
 		[self setShowDemoShips:NO];
 		for (NSUInteger i=GUI_ROW_SCENARIOS_DETAIL;i<=27;i++)
 		{
@@ -329,7 +329,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	}
 	int selection = [[key componentsSeparatedByString:@":"] oo_intAtIndex:1];
 
-	NSDictionary *scenario = [UNIVERSE scenarios][selection];
+	NSDictionary *scenario = [[UNIVERSE scenarios] objectAtIndex:selection];
 	NSString *file = [scenario oo_stringForKey:@"file" defaultValue:nil];
 	if (file == nil) 
 	{

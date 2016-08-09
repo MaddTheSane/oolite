@@ -209,7 +209,7 @@
 	}
 	else
 	{
-		localInterfaces[key] = definition;
+		[localInterfaces setObject:definition forKey:key];
 	}
 }
 
@@ -404,16 +404,16 @@ NSDictionary *OOMakeDockingInstructions(StationEntity *station, HPVector coords,
 	[acc oo_setHPVector:coords forKey:@"destination"];
 	[acc oo_setFloat:speed forKey:@"speed"];
 	[acc oo_setFloat:range forKey:@"range"];
-	acc[@"station"] = [[station weakRetain] autorelease];
+	[acc setObject:[[station weakRetain] autorelease] forKey:@"station"];
 	[acc oo_setBool:match_rotation forKey:@"match_rotation"];
 	[acc oo_setInteger:docking_stage forKey:@"docking_stage"];
 	if (ai_message)
 	{
-		acc[@"ai_message"] = ai_message;
+		[acc setObject:ai_message forKey:@"ai_message"];
 	}
 	if (comms_message)
 	{
-		acc[@"comms_message"] = comms_message;
+		[acc setObject:comms_message forKey:@"comms_message"];
 	}
 	return [NSDictionary dictionaryWithDictionary:acc];
 }
@@ -633,9 +633,9 @@ NSDictionary *OOMakeDockingInstructions(StationEntity *station, HPVector coords,
 			NSArray* tokens = [portDimensionsStr componentsSeparatedByString:@"x"];
 			if ([tokens count] == 3)
 			{
-				port_dimensions = make_vector([tokens[0] floatValue],
-											  [tokens[1] floatValue],
-											  [tokens[2] floatValue]);
+				port_dimensions = make_vector([[tokens objectAtIndex:0] floatValue],
+											  [[tokens objectAtIndex:1] floatValue],
+											  [[tokens objectAtIndex:2] floatValue]);
 			}
 		}
 	}
@@ -740,12 +740,12 @@ NSDictionary *OOMakeDockingInstructions(StationEntity *station, HPVector coords,
 
 	// no real docks, make a virtual one
 	NSMutableDictionary *virtualDockDict = [NSMutableDictionary dictionaryWithCapacity:10];
-	virtualDockDict[@"type"] = @"standard";
-	virtualDockDict[@"subentity_key"] = @"oolite-dock-virtual";
+	[virtualDockDict setObject:@"standard" forKey:@"type"];
+	[virtualDockDict setObject:@"oolite-dock-virtual" forKey:@"subentity_key"];
 	[virtualDockDict oo_setVector:make_vector(0,0,port_radius) forKey:@"position"];
 	[virtualDockDict oo_setQuaternion:kIdentityQuaternion forKey:@"orientation"];
 	[virtualDockDict oo_setBool:YES forKey:@"is_dock"];
-	virtualDockDict[@"dock_label"] = @"the docking bay";
+	[virtualDockDict setObject:@"the docking bay" forKey:@"dock_label"];
 	[virtualDockDict oo_setBool:YES forKey:@"allow_docking"];
 	[virtualDockDict oo_setBool:NO forKey:@"disallowed_docking_collides"];
 	[virtualDockDict oo_setBool:YES forKey:@"allow_launching"];
@@ -2261,7 +2261,7 @@ NSDictionary *OOMakeDockingInstructions(StationEntity *station, HPVector coords,
 - (BOOL) isRotatingStation
 {
 	if ([shipinfoDictionary oo_boolForKey:@"rotating" defaultValue:NO])  return YES;
-	return [shipinfoDictionary[@"roles"] rangeOfString:@"rotating-station"].location != NSNotFound;	// legacy
+	return [[shipinfoDictionary objectForKey:@"roles"] rangeOfString:@"rotating-station"].location != NSNotFound;	// legacy
 }
 
 
@@ -2280,10 +2280,10 @@ NSDictionary *OOMakeDockingInstructions(StationEntity *station, HPVector coords,
 {
 	if ([UNIVERSE station] == self)
 		return YES;
-	id	determinant = shipinfoDictionary[@"has_shipyard"];
+	id	determinant = [shipinfoDictionary objectForKey:@"has_shipyard"];
 
 	if (!determinant)
-		determinant = shipinfoDictionary[@"hasShipyard"];
+		determinant = [shipinfoDictionary objectForKey:@"hasShipyard"];
 		
 	// NOTE: non-standard capitalization is documented and entrenched.
 	if (determinant)

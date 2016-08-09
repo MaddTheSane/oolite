@@ -286,7 +286,7 @@
 	NSMutableDictionary		*properties = nil;
 	
 	properties = [NSMutableDictionary dictionary];
-	properties[@"ship"] = self;
+	[properties setObject:self forKey:@"ship"];
 	
 	[aiScript autorelease];
 	aiScript = [OOScript jsAIScriptFromFileNamed:aiString properties:properties];
@@ -568,9 +568,9 @@
 		{
 			[self recallDockingInstructions];
 			
-			message = dockingInstructions[@"ai_message"];
+			message = [dockingInstructions objectForKey:@"ai_message"];
 			if (message != nil)  [shipAI message:message];
-			message = dockingInstructions[@"comms_message"];
+			message = [dockingInstructions objectForKey:@"comms_message"];
 			if (message != nil)  [station sendExpandedMessage:message toShip:self];
 		}
 	}
@@ -593,9 +593,9 @@
 		_destination = [dockingInstructions oo_hpvectorForKey:@"destination"];
 		desired_speed = fmin([dockingInstructions oo_floatForKey:@"speed"], maxFlightSpeed);
 		desired_range = [dockingInstructions oo_floatForKey:@"range"];
-		if (dockingInstructions[@"station"])
+		if ([dockingInstructions objectForKey:@"station"])
 		{
-			StationEntity *targetStation = [dockingInstructions[@"station"] weakRefUnderlyingObject];
+			StationEntity *targetStation = [[dockingInstructions objectForKey:@"station"] weakRefUnderlyingObject];
 			if (targetStation != nil)
 			{
 				[self addTarget:targetStation];
@@ -1550,7 +1550,7 @@
 {
 	/*-- Locates all the ships in range and compares their legal status or bounty against ranrot_rand() & 255 - chooses the worst offender --*/
 	NSDictionary		*systeminfo = [UNIVERSE currentSystemData];
-	float gov_factor =	0.4 * [(NSNumber *)systeminfo[KEY_GOVERNMENT] intValue]; // 0 .. 7 (0 anarchic .. 7 most stable) --> [0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8]
+	float gov_factor =	0.4 * [(NSNumber *)[systeminfo objectForKey:KEY_GOVERNMENT] intValue]; // 0 .. 7 (0 anarchic .. 7 most stable) --> [0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8]
 	//
 	if ([UNIVERSE sun] == nil)
 		gov_factor = 1.0;
@@ -2371,7 +2371,7 @@
 #endif
 	
 	// Look for cached function
-	function = scriptCache[key];
+	function = [scriptCache objectForKey:key];
 	if (function == nil)
 	{
 		NSString					*predicateCode = nil;
@@ -2393,7 +2393,7 @@
 		if (function != nil)
 		{
 			if (scriptCache == nil)  scriptCache = [[NSMutableDictionary alloc] init];
-			scriptCache[key] = function;
+			[scriptCache setObject:function forKey:key];
 		}
 	}
 	
@@ -2431,7 +2431,7 @@
 
 - (void) setCoordinates:(NSString *)system_x_y_z
 {
-	NSArray*	tokens = ScanTokensFromString(system_x_y_z);
+	NSArray<NSString*>*	tokens = ScanTokensFromString(system_x_y_z);
 	NSString*	systemString = nil;
 	NSString*	xString = nil;
 	NSString*	yString = nil;
@@ -2443,16 +2443,16 @@
 		return;
 	}
 	
-	systemString = (NSString *)tokens[0];
-	xString = (NSString *)tokens[1];
+	systemString = (NSString *)[tokens objectAtIndex:0];
+	xString = (NSString *)[tokens objectAtIndex:1];
 	if ([xString hasPrefix:@"rand:"])
-		xString = [NSString stringWithFormat:@"%.3f", bellf([(NSString*)[xString componentsSeparatedByString:@":"][1] intValue])];
-	yString = (NSString *)tokens[2];
+		xString = [NSString stringWithFormat:@"%.3f", bellf([(NSString*)[[xString componentsSeparatedByString:@":"] objectAtIndex:1] intValue])];
+	yString = (NSString *)[tokens objectAtIndex:2];
 	if ([yString hasPrefix:@"rand:"])
-		yString = [NSString stringWithFormat:@"%.3f", bellf([(NSString*)[yString componentsSeparatedByString:@":"][1] intValue])];
-	zString = (NSString *)tokens[3];
+		yString = [NSString stringWithFormat:@"%.3f", bellf([(NSString*)[[yString componentsSeparatedByString:@":"] objectAtIndex:1] intValue])];
+	zString = (NSString *)[tokens objectAtIndex:3];
 	if ([zString hasPrefix:@"rand:"])
-		zString = [NSString stringWithFormat:@"%.3f", bellf([(NSString*)[zString componentsSeparatedByString:@":"][1] intValue])];
+		zString = [NSString stringWithFormat:@"%.3f", bellf([(NSString*)[[zString componentsSeparatedByString:@":"] objectAtIndex:1] intValue])];
 	
 	HPVector posn = make_HPvector([xString floatValue], [yString floatValue], [zString floatValue]);
 	GLfloat	scalar = 1.0;
@@ -2613,7 +2613,7 @@
 	}
 	else
 	{
-		NSString *function = components[0];
+		NSString *function = [components objectAtIndex:0];
 		components = [components subarrayWithRange:NSMakeRange(1, [components count] - 1)];
 		[self doScriptEvent:OOJSIDFromString(function) withArgument:components];
 	}
@@ -2647,7 +2647,7 @@
 	NSArray			*all_beacons = [UNIVERSE listBeaconsWithCode: code];
 	if ([all_beacons count])
 	{
-		[self addTarget:(ShipEntity*)all_beacons[0]];
+		[self addTarget:(ShipEntity*)[all_beacons objectAtIndex:0]];
 		[shipAI message:@"TARGET_FOUND"];
 	}
 	else
@@ -2681,7 +2681,7 @@
 	if (i < [all_beacons count])
 	{
 		// locate current target in list
-		[self addTarget:(ShipEntity*)all_beacons[i]];
+		[self addTarget:(ShipEntity*)[all_beacons objectAtIndex:i]];
 		[shipAI message:@"TARGET_FOUND"];
 	}
 	else

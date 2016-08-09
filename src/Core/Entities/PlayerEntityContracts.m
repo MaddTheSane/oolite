@@ -66,14 +66,14 @@ static unsigned RepForRisk(unsigned risk);
 	BOOL added_entry = NO; // to prevent empty lines for slaves and the rare empty report.
 	NSMutableString	*result = [NSMutableString string];
 	NSMutableArray	*rescuees = [NSMutableArray array];
-	OOGovernmentID	government = [[UNIVERSE currentSystemData][KEY_GOVERNMENT] intValue];
+	OOGovernmentID	government = [[[UNIVERSE currentSystemData] objectForKey:KEY_GOVERNMENT] intValue];
 	if ([UNIVERSE inInterstellarSpace])  government = 1;	// equivalent to Feudal. I'm assuming any station in interstellar space is military. -- Ahruman 2008-05-29
 	
 	// step through the cargo removing crew from any escape pods
 	// No enumerator because we're mutating the array -- Ahruman
 	for (i = 0; i < [cargo count]; i++)
 	{
-		ShipEntity	*cargoItem = cargo[i];
+		ShipEntity	*cargoItem = [cargo objectAtIndex:i];
 		NSArray		*podCrew = [cargoItem crew];
 		
 		if (podCrew != nil)
@@ -87,10 +87,9 @@ static unsigned RepForRisk(unsigned risk);
 	}
 	
 	// step through the rescuees awarding insurance or bounty or adding to slaves
-	for (i = 0; i < [rescuees count]; i++)
+	OOCharacter *rescuee;
+	foreach(rescuee, rescuees)
 	{
-		OOCharacter *rescuee = rescuees[i];
-		
 		if ([rescuee script])
 		{
 			[rescuee doScriptEvent:OOJSID("unloadCharacter")];
@@ -112,7 +111,7 @@ static unsigned RepForRisk(unsigned risk);
 				[result appendFormat:DESC(@"capture-reward-for-@@-@-credits-@-alt"),
 				 [rescuee name], [rescuee shortDescription], OOStringFromDeciCredits(reward, YES, NO),
 				 OOStringFromDeciCredits(insurance, YES, NO)];
-				[self doScriptEvent:OOJSID("playerRescuedEscapePod") withArguments:@[[NSNumber numberWithUnsignedInteger:reward],@"bounty",[rescuee infoForScripting]]];
+				[self doScriptEvent:OOJSID("playerRescuedEscapePod") withArguments:@[@(reward),@"bounty",[rescuee infoForScripting]]];
 			}
 			else
 			{
@@ -121,7 +120,7 @@ static unsigned RepForRisk(unsigned risk);
 				 [rescuee name], [rescuee shortDescription], OOStringFromDeciCredits(insurance - reward, YES, NO),
 				 OOStringFromDeciCredits(reward, YES, NO)];
 				reward = insurance - reward;
-				[self doScriptEvent:OOJSID("playerRescuedEscapePod") withArguments:@[[NSNumber numberWithUnsignedInteger:reward],@"insurance",[rescuee infoForScripting]]];
+				[self doScriptEvent:OOJSID("playerRescuedEscapePod") withArguments:@[@(reward),@"insurance",[rescuee infoForScripting]]];
 			}
 			credits += reward;
 			added_entry = YES;
@@ -143,7 +142,7 @@ static unsigned RepForRisk(unsigned risk);
 			[result appendFormat:DESC(@"capture-reward-for-@@-@-credits"),
 				[rescuee name], [rescuee shortDescription], OOStringFromDeciCredits(reward, YES, NO)];
 			credits += reward;
-			[self doScriptEvent:OOJSID("playerRescuedEscapePod") withArguments:@[[NSNumber numberWithUnsignedInteger:reward],@"bounty",[rescuee infoForScripting]]];
+			[self doScriptEvent:OOJSID("playerRescuedEscapePod") withArguments:@[@(reward),@"bounty",[rescuee infoForScripting]]];
 			added_entry = YES;
 		}
 		else
@@ -438,7 +437,7 @@ static unsigned RepForRisk(unsigned risk);
 	NSArray* names = [passenger_record allKeys];
 	for (i = 0; i < [names count]; i++)
 	{
-		double dest_eta = [passenger_record oo_doubleForKey:names[i]] - ship_clock;
+		double dest_eta = [passenger_record oo_doubleForKey:[names objectAtIndex:i]] - ship_clock;
 		if (dest_eta < 0)
 		{
 			// check they're not STILL on board
@@ -447,12 +446,12 @@ static unsigned RepForRisk(unsigned risk);
 			for (j = 0; j < [passengers count]; j++)
 			{
 				NSDictionary* passenger_info = [passengers oo_dictionaryAtIndex:j];
-				if ([passenger_info[PASSENGER_KEY_NAME] isEqual:names[i]])
+				if ([[passenger_info objectForKey:PASSENGER_KEY_NAME] isEqual:[names objectAtIndex:i]])
 					on_board = YES;
 			}
 			if (!on_board)
 			{
-				[passenger_record removeObjectForKey:names[i]];
+				[passenger_record removeObjectForKey:[names objectAtIndex:i]];
 			}
 		}
 	}
@@ -461,10 +460,10 @@ static unsigned RepForRisk(unsigned risk);
 	NSArray* ids = [contract_record allKeys];
 	for (i = 0; i < [ids count]; i++)
 	{
-		double dest_eta = [(NSNumber*)contract_record[ids[i]] doubleValue] - ship_clock;
+		double dest_eta = [(NSNumber*)[contract_record objectForKey:[ids objectAtIndex:i]] doubleValue] - ship_clock;
 		if (dest_eta < 0)
 		{
-			[contract_record removeObjectForKey:ids[i]];
+			[contract_record removeObjectForKey:[ids objectAtIndex:i]];
 		}
 	}
 
@@ -472,10 +471,10 @@ static unsigned RepForRisk(unsigned risk);
 	ids = [parcel_record allKeys];
 	for (i = 0; i < [ids count]; i++)
 	{
-		double dest_eta = [(NSNumber*)parcel_record[ids[i]] doubleValue] - ship_clock;
+		double dest_eta = [(NSNumber*)[parcel_record objectForKey:[ids objectAtIndex:i]] doubleValue] - ship_clock;
 		if (dest_eta < 0)
 		{
-			[parcel_record removeObjectForKey:ids[i]];
+			[parcel_record removeObjectForKey:[ids objectAtIndex:i]];
 		}
 	}
 
@@ -801,15 +800,15 @@ for (unsigned i=0;i<amount;i++)
 		pl_unknown++;
 	}
 	
-	reputation[CONTRACTS_GOOD_KEY] = @(c_good);
-	reputation[CONTRACTS_BAD_KEY] = @(c_bad);
-	reputation[CONTRACTS_UNKNOWN_KEY] = @(c_unknown);
-	reputation[PASSAGE_GOOD_KEY] = @(p_good);
-	reputation[PASSAGE_BAD_KEY] = @(p_bad);
-	reputation[PASSAGE_UNKNOWN_KEY] = @(p_unknown);
-	reputation[PARCEL_GOOD_KEY] = @(pl_good);
-	reputation[PARCEL_BAD_KEY] = @(pl_bad);
-	reputation[PARCEL_UNKNOWN_KEY] = @(pl_unknown);
+	[reputation setObject:@(c_good)		forKey:CONTRACTS_GOOD_KEY];
+	[reputation setObject:@(c_bad)		forKey:CONTRACTS_BAD_KEY];
+	[reputation setObject:@(c_unknown)	forKey:CONTRACTS_UNKNOWN_KEY];
+	[reputation setObject:@(p_good)		forKey:PASSAGE_GOOD_KEY];
+	[reputation setObject:@(p_bad)		forKey:PASSAGE_BAD_KEY];
+	[reputation setObject:@(p_unknown)	forKey:PASSAGE_UNKNOWN_KEY];
+	[reputation setObject:@(pl_good)	forKey:PARCEL_GOOD_KEY];
+	[reputation setObject:@(pl_bad)		forKey:PARCEL_BAD_KEY];
+	[reputation setObject:@(pl_unknown)	forKey:PARCEL_UNKNOWN_KEY];
 	
 }
 
@@ -863,15 +862,15 @@ for (unsigned i=0;i<amount;i++)
 		pl_unknown = MAX_CONTRACT_REP - pl_good - pl_bad;
 	}
 
-	reputation[CONTRACTS_GOOD_KEY] = @(c_good);
-	reputation[CONTRACTS_BAD_KEY] = @(c_bad);
-	reputation[CONTRACTS_UNKNOWN_KEY] = @(c_unknown);
-	reputation[PASSAGE_GOOD_KEY] = @(p_good);
-	reputation[PASSAGE_BAD_KEY] = @(p_bad);
-	reputation[PASSAGE_UNKNOWN_KEY] = @(p_unknown);
-	reputation[PARCEL_GOOD_KEY] = @(pl_good);
-	reputation[PARCEL_BAD_KEY] = @(pl_bad);
-	reputation[PARCEL_UNKNOWN_KEY] = @(pl_unknown);
+	[reputation setObject:@(c_good)		forKey:CONTRACTS_GOOD_KEY];
+	[reputation setObject:@(c_bad)		forKey:CONTRACTS_BAD_KEY];
+	[reputation setObject:@(c_unknown)	forKey:CONTRACTS_UNKNOWN_KEY];
+	[reputation setObject:@(p_good)		forKey:PASSAGE_GOOD_KEY];
+	[reputation setObject:@(p_bad)		forKey:PASSAGE_BAD_KEY];
+	[reputation setObject:@(p_unknown)	forKey:PASSAGE_UNKNOWN_KEY];
+	[reputation setObject:@(pl_good)	forKey:PARCEL_GOOD_KEY];
+	[reputation setObject:@(pl_bad)		forKey:PARCEL_BAD_KEY];
+	[reputation setObject:@(pl_unknown)	forKey:PARCEL_UNKNOWN_KEY];
 	
 }
 
@@ -888,7 +887,7 @@ for (unsigned i=0;i<amount;i++)
 		CONTRACT_KEY_RISK: @(risk)};
 	
 	// extra checks, just in case.
-	if ([passengers count] >= max_passengers || passenger_record[Name] != nil) return NO;
+	if ([passengers count] >= max_passengers || [passenger_record objectForKey:Name] != nil) return NO;
 		
 	if (risk > 1)
 	{
@@ -896,7 +895,7 @@ for (unsigned i=0;i<amount;i++)
 	}
 
 	[passengers addObject:passenger_info];
-	passenger_record[Name] = @(eta);
+	[passenger_record setObject:@(eta) forKey:Name];
 
 	[self doScriptEvent:OOJSID("playerEnteredContract") withArguments:@[@"passenger",passenger_info]];
 
@@ -950,7 +949,7 @@ for (unsigned i=0;i<amount;i++)
 	}
 		
 	[parcels addObject:parcel_info];
-	parcel_record[Name] = @(eta);
+	[parcel_record setObject:@(eta) forKey:Name];
 
 	[self doScriptEvent:OOJSID("playerEnteredContract") withArguments:@[@"parcel",parcel_info]];
 
@@ -994,7 +993,7 @@ for (unsigned i=0;i<amount;i++)
 	if (qty < 1)  return NO;
 	
 	// avoid duplicate cargo_IDs
-	while (contract_record[cargo_ID] != nil)
+	while ([contract_record objectForKey:cargo_ID] != nil)
 	{
 		sr2++;
 		cargo_ID =[NSString stringWithFormat:@"%06x-%06x", sr1, sr2];
@@ -1028,16 +1027,16 @@ for (unsigned i=0;i<amount;i++)
 	if ([shipCommodityData exportLegalityForGood:type] > 0)
 	{
 		[self addRoleToPlayer:@"trader-smuggler"];
-		roleWeightFlags[@"bought-illegal"] = @1;
+		[roleWeightFlags setObject:@1 forKey:@"bought-illegal"];
 	}
 	else
 	{
 		[self addRoleToPlayer:@"trader"];
-		roleWeightFlags[@"bought-legal"] = @1;
+		[roleWeightFlags setObject:@1 forKey:@"bought-legal"];
 	}
 
 	[contracts addObject:cargo_info];
-	contract_record[cargo_ID] = @(eta);
+	[contract_record setObject:@(eta) forKey:cargo_ID];
 
 	[self doScriptEvent:OOJSID("playerEnteredContract") withArguments:@[@"cargo",cargo_info]];
 
@@ -1096,10 +1095,9 @@ for (unsigned i=0;i<amount;i++)
 	// check  contracts
 	NSMutableArray	*result = [NSMutableArray arrayWithCapacity:5];
 	NSString		*formatString = (forCargo||forParcels) ? @"oolite-manifest-item-delivery" : @"oolite-manifest-person-travelling";
-	unsigned i;
-	for (i = 0; i < [contracts_array count]; i++)
+	NSDictionary* contract_info;
+	foreach (contract_info, contracts_array)
 	{
-		NSDictionary* contract_info = (NSDictionary *)contracts_array[i];
 		NSString* label = [contract_info oo_stringForKey:forCargo ? CARGO_KEY_DESCRIPTION : PASSENGER_KEY_NAME];
 		// the system name can change via script. The following PASSENGER_KEYs are identical to the corresponding CONTRACT_KEYs
 		NSString* destination = [UNIVERSE getSystemName: [contract_info oo_intForKey:CONTRACT_KEY_DESTINATION]];
@@ -1217,10 +1215,10 @@ for (unsigned i=0;i<amount;i++)
 			{
 				NSMutableArray*		row_info = [NSMutableArray arrayWithCapacity:3];
 				// i is always smaller than manifest_count, no need to test.
-				[row_info addObject:cargoManifest[i]];
+				[row_info addObject:[cargoManifest objectAtIndex:i]];
 				if (i + cargoRowCount < manifestCount)
 				{
-					[row_info addObject:cargoManifest[i + cargoRowCount]];
+					[row_info addObject:[cargoManifest objectAtIndex:i + cargoRowCount]];
 				}
 				else
 				{
@@ -1242,7 +1240,7 @@ for (unsigned i=0;i<amount;i++)
 		
 		if (manifestCount > 0)
 		{
-			if ([missionsManifest[0] isKindOfClass:[NSString class]])
+			if ([[missionsManifest objectAtIndex:0] isKindOfClass:[NSString class]])
 			{
 				// then there's at least one without its own heading
 				// to go under the generic 'missions' heading
@@ -1257,7 +1255,7 @@ for (unsigned i=0;i<amount;i++)
 			for (i = 0; i < manifestCount; i++)
 			{
 				NSString *mmItem = nil;
-				mmEntry = missionsManifest[i];
+				mmEntry = [missionsManifest objectAtIndex:i];
 				if ([mmEntry isKindOfClass:[NSString class]])
 				{
 					mmItem = [NSString stringWithFormat:@"\t%@",(NSString *)mmEntry];
@@ -1477,7 +1475,7 @@ static NSMutableDictionary *currentShipyard = nil;
 	for (i = 0; i < [shipyard count]; i++)
 	{
 		NSString *shipID = [[shipyard oo_dictionaryAtIndex:i] oo_stringForKey:SHIPYARD_KEY_ID];
-		if (shipyard_record[shipID])
+		if ([shipyard_record objectForKey:shipID])
 		{
 			[shipyard removeObjectAtIndex:i--];
 		}
@@ -1488,7 +1486,8 @@ static NSMutableDictionary *currentShipyard = nil;
 
 	for (i = 0; i < [shipyard count]; i++)
 	{
-		currentShipyard[[[shipyard oo_dictionaryAtIndex:i] oo_stringForKey:SHIPYARD_KEY_ID]] = shipyard[i];
+		[currentShipyard setObject:[shipyard objectAtIndex:i]
+							forKey:[[shipyard oo_dictionaryAtIndex:i] oo_stringForKey:SHIPYARD_KEY_ID]];
 	}
 	
 	NSUInteger shipCount = [shipyard count];
@@ -1552,7 +1551,7 @@ static NSMutableDictionary *currentShipyard = nil;
 				[gui setArray:@[[NSString stringWithFormat:@" %@ ",[[ship_info oo_dictionaryForKey:SHIPYARD_KEY_SHIP] oo_stringForKey:@"display_name" defaultValue:[[ship_info oo_dictionaryForKey:SHIPYARD_KEY_SHIP] oo_stringForKey:KEY_NAME]]],
 						OOIntCredits(ship_price)]
 					forRow:startRow + i];
-				[gui setKey:(NSString*)ship_info[SHIPYARD_KEY_ID] forRow:startRow + i];
+				[gui setKey:(NSString*)[ship_info objectForKey:SHIPYARD_KEY_ID] forRow:startRow + i];
 			}
 			if (i < shipCount - skip)
 			{
@@ -1610,8 +1609,8 @@ static NSMutableDictionary *currentShipyard = nil;
 	NSDictionary *info = [currentShipyard oo_dictionaryForKey:key];
 
 	// clean up the display ready for the newly-selected ship (if there is one)
-	row_info[2] = @"";
-	row_info[3] = @"";
+	[row_info replaceObjectAtIndex:2 withObject:@""];
+	[row_info replaceObjectAtIndex:3 withObject:@""];
 	for (i = GUI_ROW_SHIPYARD_INFO_START; i < GUI_ROW_MARKET_CASH - 1; i++)
 	{
 		[gui setText:@"" forRow:i];
@@ -1643,8 +1642,8 @@ static NSMutableDictionary *currentShipyard = nil;
 			}
 		}
 		
-		row_info[2] = OOExpandKey(@"shipyard-cargo-value", cargoRating);
-		row_info[3] = OOExpandKey(@"shipyard-speed-value", speedRating);
+		[row_info replaceObjectAtIndex:2 withObject:OOExpandKey(@"shipyard-cargo-value", cargoRating)];
+		[row_info replaceObjectAtIndex:3 withObject:OOExpandKey(@"shipyard-speed-value", speedRating)];
 		
 		// Show footer first. It'll be overwritten by the sales_pitch if that text is longer than usual.
 		[self showTradeInInformationFooter];
@@ -1793,7 +1792,7 @@ static NSMutableDictionary *currentShipyard = nil;
 	}
 
 	// add bought ship to shipyard_record
-	shipyard_record[shipInfo[SHIPYARD_KEY_ID]] = [self shipDataKey];
+	[shipyard_record setObject:[self shipDataKey] forKey:[shipInfo objectForKey:SHIPYARD_KEY_ID]];
 	
 	// remove the ship from the localShipyard
 	[[[self dockedStation] localShipyard] removeObjectAtIndex:selectedRow - GUI_ROW_SHIPYARD_START];

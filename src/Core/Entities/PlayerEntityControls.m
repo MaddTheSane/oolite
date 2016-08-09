@@ -212,8 +212,8 @@ static NSTimeInterval	time_last_frame;
 	keys = [kdic allKeys];
 	for (i = 0; i < [keys count]; i++)
 	{
-		key = keys[i];
-		value = kdic[key];
+		key = [keys objectAtIndex:i];
+		value = [kdic objectForKey: key];
 		iValue = [value intValue];
 		
 		//	for '0' '1' '2' '3' '4' '5' '6' '7' '8' '9' - we want to interpret those as strings - not numbers
@@ -229,7 +229,7 @@ static NSTimeInterval	time_last_frame;
 			else if (iValue <= 0xFF)  keychar = iValue;
 			else continue;
 			
-			kdic[key] = @((unsigned short)keychar);
+			[kdic setObject:@((unsigned short)keychar) forKey:key];
 		}
 	}
 
@@ -1393,7 +1393,7 @@ static NSTimeInterval	time_last_frame;
 							// FIXME: how to preload target system for hyperspace jump?
 							
 							[self doScriptEvent:OOJSID("playerStartedJumpCountdown")
-								  withArguments:@[@"galactic", [NSNumber numberWithFloat:witchspaceCountdown]]];
+								  withArguments:@[@"galactic", @(witchspaceCountdown)]];
 						}
 					}
 					galhyperspace_pressed = YES;
