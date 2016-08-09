@@ -77,19 +77,19 @@ static NSString * const kCacheName			= @"sanitized legacy scripts";
 
 - (NSString *)name
 {
-	return _metadata[kMDKeyName];
+	return [_metadata objectForKey:kMDKeyName];
 }
 
 
 - (NSString *)scriptDescription
 {
-	return _metadata[kMDKeyDescription];
+	return [_metadata objectForKey:kMDKeyDescription];
 }
 
 
 - (NSString *)version
 {
-	return _metadata[kMDKeyVersion];
+	return [_metadata objectForKey:kMDKeyVersion];
 }
 
 
@@ -135,12 +135,12 @@ static NSString * const kCacheName			= @"sanitized legacy scripts";
 	result = [NSMutableArray arrayWithCapacity:count];
 	cachedScripts = [NSMutableDictionary dictionaryWithCapacity:count];
 	
-	metadata = dictionary[kKeyMetadata];
+	metadata = [dictionary objectForKey:kKeyMetadata];
 	if (![metadata isKindOfClass:[NSDictionary class]]) metadata = nil;
 	
 	foreachkey (key, dictionary)
 	{
-		scriptArray = dictionary[key];
+		scriptArray = [dictionary objectForKey:key];
 		if ([key isKindOfClass:[NSString class]] &&
 			[scriptArray isKindOfClass:[NSArray class]] &&
 			![key isEqual:kKeyMetadata])
@@ -152,7 +152,7 @@ static NSString * const kCacheName			= @"sanitized legacy scripts";
 				if (script != nil)
 				{
 					[result addObject:script];
-					cachedScripts[key] = @{kKeyScript: scriptArray, kKeyMetadata: metadata};
+					[cachedScripts setObject:@{kKeyScript: scriptArray, kKeyMetadata: metadata} forKey:key];
 					
 					[script release];
 				}
@@ -201,7 +201,7 @@ static NSString * const kCacheName			= @"sanitized legacy scripts";
 			else
 			{
 				NSMutableDictionary *mutableMetadata = [[metadata mutableCopy] autorelease];
-				mutableMetadata[kMDKeyName] = name;
+				[mutableMetadata setObject:name forKey:kMDKeyName];
 				metadata = mutableMetadata;
 			}
 		}

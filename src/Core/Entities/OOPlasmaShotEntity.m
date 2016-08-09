@@ -90,10 +90,9 @@ MA 02110-1301, USA.
 	const float attenuation = 1.0f;
 #endif
 	
-	NSUInteger i, count = [collidingEntities count];
-	for (i = 0; i < count; i++)
+	Entity *e;
+	foreach (e, collidingEntities)
 	{
-		Entity *e = (Entity *)collidingEntities[i];
 		if ([e rootShipEntity] != [self owner])
 		{
 			[e takeEnergyDamage:[self energy] * attenuation

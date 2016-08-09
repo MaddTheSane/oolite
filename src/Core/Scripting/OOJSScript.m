@@ -185,7 +185,7 @@ static JSFunctionSpec sScriptMethods[] =
 		{
 			if ([key isKindOfClass:[NSString class]])
 			{
-				property = defaultProperties[key];
+				property = [defaultProperties objectForKey:key];
 				if ([key isEqualToString:kLocalManifestProperty])
 				{
 					// this must not be editable
@@ -206,7 +206,7 @@ static JSFunctionSpec sScriptMethods[] =
 			{
 				if ([key isKindOfClass:[NSString class]])
 				{
-					property = properties[key];
+					property = [properties objectForKey:key];
 					[self defineProperty:property named:key];
 				}
 			}
@@ -622,22 +622,22 @@ static JSFunctionSpec sScriptMethods[] =
 	 * values are meaningless and shouldn't be used here */
 	if (manifest != nil && ![[manifest oo_stringForKey:kOOManifestIdentifier] hasPrefix:@"__oolite.tmp."])
 	{
-		if (manifest[kOOManifestVersion] != nil)
+		if ([manifest objectForKey:kOOManifestVersion] != nil)
 		{
-			properties[@"version"] = [manifest oo_stringForKey:kOOManifestVersion];
+			[properties setObject:[manifest oo_stringForKey:kOOManifestVersion] forKey:@"version"];
 		}
-		if (manifest[kOOManifestIdentifier] != nil)
+		if ([manifest objectForKey:kOOManifestIdentifier] != nil)
 		{
 			// used for system info
-			properties[kLocalManifestProperty] = [manifest oo_stringForKey:kOOManifestIdentifier];
+			[properties setObject:[manifest oo_stringForKey:kOOManifestIdentifier] forKey:kLocalManifestProperty];
 		}
-		if (manifest[kOOManifestAuthor] != nil)
+		if ([manifest objectForKey:kOOManifestAuthor] != nil)
 		{
-			properties[@"author"] = [manifest oo_stringForKey:kOOManifestAuthor];
+			[properties setObject:[manifest oo_stringForKey:kOOManifestAuthor] forKey:@"author"];
 		}
-		if (manifest[kOOManifestLicense] != nil)
+		if ([manifest objectForKey:kOOManifestLicense] != nil)
 		{
-			properties[@"license"] = [manifest oo_stringForKey:kOOManifestLicense];
+			[properties setObject:[manifest oo_stringForKey:kOOManifestLicense] forKey:@"license"];
 		}
 	}
 	return properties;

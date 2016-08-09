@@ -278,7 +278,7 @@ enum
 	StationEntity			*cachedStation;
 	OOPlanetEntity			*cachedPlanet;
 	OOSunEntity				*cachedSun;
-	NSMutableArray			*allPlanets;
+	NSMutableArray<OOPlanetEntity*>			*allPlanets;
 	NSMutableSet			*allStations;
 	
 	float					ambientLightLevel;

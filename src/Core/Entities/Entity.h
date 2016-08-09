@@ -163,7 +163,7 @@ enum OOScanClass
 	BoundingBox				boundingBox;
 	GLfloat					mass;
 	
-	NSMutableArray			*collidingEntities;
+	NSMutableArray<Entity *>			*collidingEntities;
 	
 	OOTimeAbsolute			spawnTime;
 	

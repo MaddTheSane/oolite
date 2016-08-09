@@ -163,7 +163,7 @@ MA 02110-1301, USA.
 	{
 		dict = description;	// Workaround for gnu-gcc's more agressive "multiple methods named..." warnings.
 		
-		if (dict[@"hue"] != nil)
+		if ([dict objectForKey:@"hue"] != nil)
 		{
 			// Treat as HSB(A) dictionary
 			float h = [dict oo_floatForKey:@"hue"];

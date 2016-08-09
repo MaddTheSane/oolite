@@ -119,7 +119,7 @@ NSString * const kOOJavaScriptEngineDidResetNotification = @"org.aegidian.oolite
 
 @interface OOJavaScriptEngine (Private)
 
-@property (readonly) BOOL lookUpStandardClassPointers;
+- (BOOL) lookUpStandardClassPointers;
 - (void) registerStandardObjectConverters;
 
 - (void) createMainThreadContext;
@@ -1173,7 +1173,7 @@ static JSObject *JSArrayFromNSArray(JSContext *context, NSArray *array)
 		{
 			for (i = 0; i != count; ++i)
 			{
-				jsval value = [array[i] oo_jsValueInContext:context];
+				jsval value = [[array objectAtIndex:i] oo_jsValueInContext:context];
 				BOOL OK = JS_SetElement(context, result, i, &value);
 				
 				if (EXPECT_NOT(!OK))
@@ -1259,7 +1259,7 @@ static JSObject *JSObjectFromNSDictionary(JSContext *context, NSDictionary *dict
 					// GCC before 4.7 seems to have problems with this
 					// bit if the object is a weakref, causing crashes
 					// in docking code.
-					id tmp = dictionary[key];
+					id tmp = [dictionary objectForKey:key];
 					if ([tmp respondsToSelector:@selector(weakRefUnderlyingObject)])
 					{
 						tmp = [tmp weakRefUnderlyingObject];
@@ -1278,7 +1278,7 @@ static JSObject *JSObjectFromNSDictionary(JSContext *context, NSDictionary *dict
 					index = [key intValue];
 					if (0 < index)
 					{
-						value = [dictionary[key] oo_jsValueInContext:context];
+						value = [[dictionary objectForKey:key] oo_jsValueInContext:context];
 						if (!JSVAL_IS_VOID(value))
 						{
 							OK = JS_SetElement(context, (JSObject *)result, index, &value);
@@ -2243,7 +2243,7 @@ NSDictionary *OOJSDictionaryFromJSObject(JSContext *context, JSObject *object)
 			objValue = OOJSNativeObjectFromJSValue(context, value);
 			if (objValue != nil)
 			{
-				result[objKey] = objValue;
+				[result setObject:objValue forKey:objKey];
 			}
 		}
 	}
@@ -2301,7 +2301,7 @@ NSDictionary *OOJSDictionaryFromStringTable(JSContext *context, jsval tableValue
 			
 			if (objValue != nil)
 			{
-				result[objKey] = objValue;
+				[result setObject:objValue forKey:objKey];
 			}
 		}
 	}
@@ -2361,7 +2361,7 @@ id OOJSNativeObjectFromJSObject(JSContext *context, JSObject *tableObject)
 	
 	class = OOJSGetClass(context, tableObject);
 	wrappedClass = [NSValue valueWithPointer:class];
-	if (wrappedClass != nil)  wrappedConverter = sObjectConverters[wrappedClass];
+	if (wrappedClass != nil)  wrappedConverter = [sObjectConverters objectForKey:wrappedClass];
 	if (wrappedConverter != nil)
 	{
 		converter = [wrappedConverter pointerValue];
@@ -2414,7 +2414,7 @@ void OOJSRegisterObjectConverter(JSClass *theClass, OOJSClassConverterCallback c
 	if (converter != NULL)
 	{
 		wrappedConverter = [NSValue valueWithPointer:converter];
-		sObjectConverters[wrappedClass] = wrappedConverter;
+		[sObjectConverters setObject:wrappedConverter forKey:wrappedClass];
 	}
 	else
 	{

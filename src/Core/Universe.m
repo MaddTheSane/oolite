@@ -664,7 +664,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 			int index = 0;
 			while ([entities count] > 2)
 			{
-				Entity *ent = entities[index];
+				Entity *ent = [entities objectAtIndex:index];
 				if ((ent != player)&&(ent != dockedStation))
 				{
 					if (ent->isStation)  // clear out queues
@@ -886,11 +886,11 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	
 	if ([allPlanets count]>0)	// F7 sets [UNIVERSE planet], which can lead to some trouble! TODO: track down where exactly that happens!
 	{
-		OOPlanetEntity *tmp=allPlanets[0];
+		OOPlanetEntity *tmp=[allPlanets objectAtIndex:0];
 		[self addEntity:a_planet];
 		[allPlanets removeObject:a_planet];
 		cachedPlanet=a_planet;
-		allPlanets[0] = a_planet;
+		[allPlanets replaceObjectAtIndex:0 withObject:a_planet];
 		[self removeEntity:(Entity *)tmp];
 	}
 	else
@@ -984,7 +984,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	
 	// pick a main sequence colour
 
-	dict_object=systeminfo[@"sun_color"];
+	dict_object=[systeminfo objectForKey:@"sun_color"];
 	if (dict_object!=nil) 
 	{
 		bgcolor = [OOColor colorWithDescription:dict_object];
@@ -1078,31 +1078,31 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 
 	
 	NSMutableDictionary *sun_dict = [NSMutableDictionary dictionaryWithCapacity:5];
-	sun_dict[@"sun_radius"] = @(sun_radius);
-	dict_object=systeminfo[@"corona_shimmer"];
-	if (dict_object!=nil) sun_dict[@"corona_shimmer"] = dict_object;
-	dict_object=systeminfo[@"corona_hues"];
+	[sun_dict setObject:@(sun_radius) forKey:@"sun_radius"];
+	dict_object=[systeminfo objectForKey: @"corona_shimmer"];
+	if (dict_object!=nil) [sun_dict setObject:dict_object forKey:@"corona_shimmer"];
+	dict_object=[systeminfo objectForKey: @"corona_hues"];
 	if (dict_object!=nil)
 	{
-		sun_dict[@"corona_hues"] = dict_object;
+		[sun_dict setObject:dict_object forKey:@"corona_hues"];
 	}
 	else
 	{
-		sun_dict[@"corona_hues"] = @(defaultSunHues);
+		[sun_dict setObject:@(defaultSunHues) forKey:@"corona_hues"];
 	}
-	dict_object=systeminfo[@"corona_flare"];
+	dict_object=[systeminfo objectForKey: @"corona_flare"];
 	if (dict_object!=nil) 
 	{
-		sun_dict[@"corona_flare"] = dict_object;
+		[sun_dict setObject:dict_object forKey:@"corona_flare"];
 	}
 	else
 	{
-		sun_dict[@"corona_flare"] = @(defaultSunFlare);
+		[sun_dict setObject:@(defaultSunFlare) forKey:@"corona_flare"];
 	}
-	dict_object=systeminfo[KEY_SUNNAME];
+	dict_object=[systeminfo objectForKey:KEY_SUNNAME];
 	if (dict_object!=nil) 
 	{
-		sun_dict[KEY_SUNNAME] = dict_object;
+		[sun_dict setObject:dict_object forKey:KEY_SUNNAME];
 	}
 #ifdef OO_DUMP_PLANETINFO
 	OOLog(@"planetinfo.record",@"corona_flare = %f",[sun_dict oo_floatForKey:@"corona_flare"]);
@@ -1310,7 +1310,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	} 
 	else
 	{
-		populatorSettings[key] = setting;
+		[populatorSettings setObject:setting forKey:key];
 	}
 }
 
@@ -1385,7 +1385,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 				}			
 			}
 			// location now contains a Vector coordinate, one way or another
-			pdef = populator[@"callbackObj"];
+			pdef = [populator objectForKey:@"callbackObj"];
 			[pdef runCallback:location];
 		}
 	}
@@ -2531,7 +2531,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 
 - (BOOL) role:(NSString *)role isInCategory:(NSString *)category
 {
-	NSSet *categoryInfo = roleCategories[category];
+	NSSet *categoryInfo = [roleCategories objectForKey:category];
 	if (categoryInfo == nil)
 	{
 		return NO;
@@ -2607,15 +2607,15 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	OOColor *col1 = [OOColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.5];	//standard tunnel colour
 	OOColor *col2 = [OOColor colorWithRed:0.0 green:0.0 blue:1.0 alpha:0.25];	//standard tunnel colour
 	
-	colorDesc = [self globalSettings][@"hyperspace_tunnel_color_1"];
+	colorDesc = [[self globalSettings] objectForKey:@"hyperspace_tunnel_color_1"];
 	if (colorDesc != nil)
 	{
 		color = [OOColor colorWithDescription:colorDesc];
 		if (color != nil)  col1 = color;
 		else  OOLogWARN(@"hyperspaceTunnel.fromDict", @"could not interpret \"%@\" as a colour.", colorDesc);
 	}
-	colorDesc = [self globalSettings][@"hyperspace_tunnel_color_2"];
 
+	colorDesc = [[self globalSettings] objectForKey:@"hyperspace_tunnel_color_2"];
 	if (colorDesc != nil)
 	{
 		color = [OOColor colorWithDescription:colorDesc];
@@ -3032,15 +3032,15 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 
 	
 	// line 19: ship categories
-	field1 = [NSString stringWithFormat:@"<-- %@",OOShipLibraryCategoryPlural([demo_ships[((demo_ship_index+[demo_ships count]-1)%[demo_ships count])][0] oo_stringForKey:kOODemoShipClass])];
-	field2 = OOShipLibraryCategoryPlural([demo_ships[demo_ship_index][0] oo_stringForKey:kOODemoShipClass]);
-	field3 = [NSString stringWithFormat:@"%@ -->",OOShipLibraryCategoryPlural([demo_ships[((demo_ship_index+1)%[demo_ships count])][0] oo_stringForKey:kOODemoShipClass])];
+	field1 = [NSString stringWithFormat:@"<-- %@",OOShipLibraryCategoryPlural([[[demo_ships objectAtIndex:((demo_ship_index+[demo_ships count]-1)%[demo_ships count])] objectAtIndex:0] oo_stringForKey:kOODemoShipClass])];
+	field2 = OOShipLibraryCategoryPlural([[[demo_ships objectAtIndex:demo_ship_index] objectAtIndex:0] oo_stringForKey:kOODemoShipClass]);
+	field3 = [NSString stringWithFormat:@"%@ -->",OOShipLibraryCategoryPlural([[[demo_ships objectAtIndex:((demo_ship_index+1)%[demo_ships count])] objectAtIndex:0] oo_stringForKey:kOODemoShipClass])];
 	
 	[gui setArray:@[field1,field2,field3] forRow:19];
 	[gui setColor:[OOColor greenColor] forRow:19];
 
 	// lines 21-25: ship names
-	NSArray *subList = demo_ships[demo_ship_index];
+	NSArray *subList = [demo_ships objectAtIndex:demo_ship_index];
 	NSUInteger i,start = demo_ship_subindex - (demo_ship_subindex%5);
 	NSUInteger end = start + 4;
 	if (end >= [subList count])
@@ -3052,7 +3052,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	field3 = @"";
 	for (i = start ; i <= end ; i++)
 	{
-		field2 = [subList[i] oo_stringForKey:kOODemoShipName];
+		field2 = [[subList objectAtIndex:i] oo_stringForKey:kOODemoShipName];
 		[gui setArray:@[field1,field2,field3] forRow:row];
 		if (i == demo_ship_subindex)
 		{
@@ -3083,7 +3083,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 - (void) selectIntro2Previous
 {
 	demo_stage = DEMO_SHOW_THING;
-	NSUInteger subcount = [demo_ships[demo_ship_index] count];
+	NSUInteger subcount = [[demo_ships objectAtIndex:demo_ship_index] count];
 	demo_ship_subindex = (demo_ship_subindex + subcount - 2) % subcount;
 	demo_stage_time  = universal_time - 1.0;	// force change
 }
@@ -3093,7 +3093,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 {
 	demo_stage = DEMO_SHOW_THING;
 	demo_ship_index = (demo_ship_index + [demo_ships count] - 1) % [demo_ships count];
-	demo_ship_subindex = [demo_ships[demo_ship_index] count] - 1;
+	demo_ship_subindex = [[demo_ships objectAtIndex:demo_ship_index] count] - 1;
 	demo_stage_time  = universal_time - 1.0;	// force change
 }
 
@@ -3102,7 +3102,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 {
 	demo_stage = DEMO_SHOW_THING;
  	demo_ship_index = (demo_ship_index + 1) % [demo_ships count];
-	demo_ship_subindex = [demo_ships[demo_ship_index] count] - 1;
+	demo_ship_subindex = [[demo_ships objectAtIndex:demo_ship_index] count] - 1;
 	demo_stage_time  = universal_time - 1.0;	// force change
 }
 
@@ -3174,7 +3174,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 {
 	if (cachedPlanet == nil && [allPlanets count] > 0)
 	{
-		cachedPlanet = allPlanets[0];
+		cachedPlanet = allPlanets.firstObject;
 	}
 	return cachedPlanet;
 }
@@ -3334,7 +3334,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 {
 	OOWaypointEntity *waypoint = nil;
 	BOOL preserveCompass = NO;
-	waypoint = waypoints[key];
+	waypoint = [waypoints objectForKey:key];
 	if (waypoint != nil)
 	{
 		if ([PLAYER compassTarget] == waypoint) 
@@ -3350,7 +3350,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 		if (waypoint != nil)
 		{
 			[self addEntity:waypoint];
-			waypoints[key] = waypoint;
+			[waypoints setObject:waypoint forKey:key];
 			if (preserveCompass)
 			{
 				[PLAYER setCompassTarget:waypoint];
@@ -3611,7 +3611,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 		if (scale != 1.0f)
 		{
 			NSMutableDictionary *mShipDict = [shipDict mutableCopy];
-			mShipDict[@"model_scale_factor"] = @(scale);
+			[mShipDict setObject:@(scale) forKey:@"model_scale_factor"];
 			shipDict = [NSDictionary dictionaryWithDictionary:mShipDict];
 			[mShipDict release];
 		}
@@ -3651,7 +3651,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 		if (scale != 1.0f)
 		{
 			NSMutableDictionary *mShipDict = [shipDict mutableCopy];
-			mShipDict[@"model_scale_factor"] = @(scale);
+			[mShipDict setObject:@(scale) forKey:@"model_scale_factor"];
 			shipDict = [NSDictionary dictionaryWithDictionary:mShipDict];
 			[mShipDict release];
 		}
@@ -3824,7 +3824,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 			co_type--;
 		}
 
-		ShipEntity *container = cargoPods[[goodsKeys oo_stringAtIndex:co_type]];
+		ShipEntity *container = [cargoPods objectForKey:[goodsKeys oo_stringAtIndex:co_type]];
 		
 		if (container != nil)
 		{
@@ -3848,7 +3848,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 		return @[]; // empty array
 	}
 	
-	ShipEntity *container = cargoPods[commodity_name];
+	ShipEntity *container = [cargoPods objectForKey:commodity_name];
 	while (how_much > 0)
 	{
 		if (container)
@@ -3969,7 +3969,6 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 
 ////////////////////////////////////////////////////
 
-
 @synthesize gameView;
 
 
@@ -3997,7 +3996,7 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 
 	[result oo_setFloat:[gameView fov:NO] forKey:@"fovValue"];
 	
-	result[@"detailLevel"] = OOStringFromGraphicsDetail([self detailLevel]);
+	[result setObject:OOStringFromGraphicsDetail([self detailLevel]) forKey:@"detailLevel"];
 	
 	NSString *desc = @"UNDEFINED";
 	switch ([[OOMusicController sharedController] mode])
@@ -4006,14 +4005,14 @@ static BOOL IsFriendlyStationPredicate(Entity *entity, void *parameter)
 		case kOOMusicOn:		desc = @"MUSIC_ON"; break;
 		case kOOMusicITunes:	desc = @"MUSIC_ITUNES"; break;
 	}
-	result[@"musicMode"] = desc;
+	[result setObject:desc forKey:@"musicMode"];
 	
 	NSDictionary *gameWindow = @{@"width": @([gameView viewSize].width),
 						@"height": @([gameView viewSize].height),
 						@"fullScreen": @([[self gameController] inFullScreenMode])};
-	result[@"gameWindow"] = gameWindow;
+	[result setObject:gameWindow forKey:@"gameWindow"];
 	
-	result[@"keyConfig"] = [PLAYER keyConfig];
+	[result setObject:[PLAYER keyConfig] forKey:@"keyConfig"];
 
 	return [[result copy] autorelease];
 }
@@ -4964,7 +4963,7 @@ static BOOL MaintainLinkedLists(Universe *uni)
 					{
 						double stationRoll = 0.0;
 						// check for station_roll override
-						id definedRoll = [se shipInfoDictionary][@"station_roll"];
+						id definedRoll = [[se shipInfoDictionary] objectForKey:@"station_roll"];
 						
 						if (definedRoll != nil)
 						{
@@ -5053,7 +5052,7 @@ static BOOL MaintainLinkedLists(Universe *uni)
 		}
 		else if ([entity isPlanet])
 		{
-			[allPlanets addObject:entity];
+			[allPlanets addObject:(OOPlanetEntity*)entity];
 		}
 		else if ([entity isShip])
 		{
@@ -5110,7 +5109,7 @@ static BOOL MaintainLinkedLists(Universe *uni)
 	no_update = YES;			// no drawing while we do this!
 	
 #ifndef NDEBUG
-	Entity* p0 = entities[0];
+	Entity* p0 = entities.firstObject;
 	if (!(p0->isPlayer))
 	{
 		OOLog(kOOLogInconsistentState, @"***** First entity is not the player in Universe.removeAllEntitiesExceptPlayer - exiting.");
@@ -5123,7 +5122,7 @@ static BOOL MaintainLinkedLists(Universe *uni)
 	
 	while ([entities count] > 1)
 	{
-		Entity* ent = entities[1];
+		Entity* ent = [entities objectAtIndex:1];
 		if (ent->isStation)  // clear out queues
 			[(StationEntity *)ent clear];
 		[self removeEntity:ent];
@@ -6155,7 +6154,7 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 {
 	NSString				*result = nil;
 	NSMutableSet			*seen = nil;
-	id object = customSounds[key];
+	id object = [customSounds objectForKey:key];
 	
 	if ([object isKindOfClass:[NSArray class]] && [object count] > 0)
 	{
@@ -6177,7 +6176,7 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 			for (;;)
 			{
 				[seen addObject:result];
-				object = customSounds[result];
+				object = [customSounds objectForKey:result];
 				if( [object isKindOfClass:[NSArray class]] && [object count] > 0)
 				{
 					result = [object oo_stringAtIndex:Ranrot() % [object count]];
@@ -6215,8 +6214,8 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 
 - (NSDictionary *) screenTextureDescriptorForKey:(NSString *)key
 {
-	id value = screenBackgrounds[key];
-	while ([value isKindOfClass:[NSArray class]])  value = value[Ranrot() % [value count]];
+	id value = [screenBackgrounds objectForKey:key];
+	while ([value isKindOfClass:[NSArray class]])  value = [value objectAtIndex:Ranrot() % [value count]];
 	
 	if ([value isKindOfClass:[NSString class]])  value = @{@"name": value};
 	else if (![value isKindOfClass:[NSDictionary class]])  value = nil;
@@ -6268,8 +6267,8 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 - (void) addDelayedMessage:(NSString *)text forCount:(OOTimeDelta)count afterDelay:(double)delay
 {
 	NSMutableDictionary *msgDict = [NSMutableDictionary dictionaryWithCapacity:2];
-	msgDict[@"message"] = text;
-	msgDict[@"duration"] = @(count);
+	[msgDict setObject:text forKey:@"message"];
+	[msgDict setObject:@(count) forKey:@"duration"];
 	[self performSelector:@selector(addDelayedMessage:) withObject:msgDict afterDelay:delay];
 }
 
@@ -6494,7 +6493,7 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 								NSString		*shipName = nil;
 								NSDictionary	*shipDict = nil; */
 								
-								demo_ship_subindex = (demo_ship_subindex + 1) % [demo_ships[demo_ship_index] count];
+								demo_ship_subindex = (demo_ship_subindex + 1) % [[demo_ships objectAtIndex:demo_ship_index] count];
 								demo_ship = [self newShipWithName:[[self demoShipData] oo_stringForKey:kOODemoShipKey] usePlayerProxy:NO];
 								
 								if (demo_ship != nil)
@@ -7385,7 +7384,7 @@ static void VerifyDesc(NSString *key, id desc)
 	}
 	foreachkey (key, _descriptions)
 	{
-		VerifyDesc(key, _descriptions[key]);
+		VerifyDesc(key, [_descriptions objectForKey:key]);
 	}
 }
 
@@ -7430,7 +7429,7 @@ static void VerifyDesc(NSString *key, id desc)
 {
 	NSArray *array = [[self descriptions] oo_arrayForKey:key];
 	if ([array count] <= index)  return nil;	// Catches nil array
-	return array[index];
+	return [array objectAtIndex:index];
 }
 
 
@@ -8021,7 +8020,7 @@ static void VerifyDesc(NSString *key, id desc)
 	while ([curr count] != 0)
 	{
 		for (i = 0; i < [curr count]; i++) {
-			RouteElement *elemI = curr[i];
+			RouteElement *elemI = [curr objectAtIndex:i];
 			NSArray *ns = neighbours[[elemI location]];
 			for (j = 0; j < [ns count]; j++)
 			{
@@ -8323,8 +8322,8 @@ static void VerifyDesc(NSString *key, id desc)
 			if (stationMarket != nil)
 			{
 				savedMarket = [NSMutableDictionary dictionaryWithCapacity:2];
-				savedMarket[@"market"] = [stationMarket saveStationAmounts];
-				savedMarket[@"position"] = ArrayFromHPVector([station position]);
+				[savedMarket setObject:[stationMarket saveStationAmounts] forKey:@"market"];
+				[savedMarket setObject:ArrayFromHPVector([station position]) forKey:@"position"];
 				[markets addObject:savedMarket];
 			}
 		}
@@ -8607,7 +8606,7 @@ static void VerifyDesc(NSString *key, id desc)
 							price += eqPrice;
 							fwdWeaponString = equipmentKey;
 							fwdWeapon = new_weapon;
-							shipDict[KEY_EQUIPMENT_FORWARD_WEAPON] = fwdWeaponString;
+							[shipDict setObject:fwdWeaponString forKey:KEY_EQUIPMENT_FORWARD_WEAPON];
 							weaponCustomized = YES;
 							fwdWeaponDesc = eqShortDesc;
 						}
@@ -8620,7 +8619,7 @@ static void VerifyDesc(NSString *key, id desc)
 								price += eqPrice;
 								aftWeaponString = equipmentKey;
 								aftWeapon = new_weapon;
-								shipDict[KEY_EQUIPMENT_AFT_WEAPON] = aftWeaponString;
+								[shipDict setObject:aftWeaponString forKey:KEY_EQUIPMENT_AFT_WEAPON];
 							}
 							else 
 							{
@@ -8710,7 +8709,7 @@ static void VerifyDesc(NSString *key, id desc)
 				KEY_EQUIPMENT_EXTRAS: extras,
 				SHIPYARD_KEY_PERSONALITY: @(personality)};
 			
-			resultDictionary[shipID] = ship_info_dictionary;	// should order them fairly randomly
+			[resultDictionary setObject:ship_info_dictionary forKey:shipID];	// should order them fairly randomly
 		}
 		
 		// next contract
@@ -8728,7 +8727,7 @@ static void VerifyDesc(NSString *key, id desc)
 	
 	while (i < [resultArray count])
 	{
-		if (compareName(resultArray[i - 1], resultArray[i], nil) == NSOrderedSame )
+		if (compareName([resultArray objectAtIndex:i - 1], [resultArray objectAtIndex:i], nil) == NSOrderedSame )
 		{
 			[resultArray removeObjectAtIndex: i];
 		}
@@ -8761,8 +8760,8 @@ static OOComparisonResult compareName(id dict1, id dict2, void *context)
 
 static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 {
-	NSNumber		*price1 = ((NSDictionary *)dict1)[SHIPYARD_KEY_PRICE];
-	NSNumber		*price2 = ((NSDictionary *)dict2)[SHIPYARD_KEY_PRICE];
+	NSNumber		*price1 = [(NSDictionary *)dict1 objectForKey:SHIPYARD_KEY_PRICE];
+	NSNumber		*price2 = [(NSDictionary *)dict2 objectForKey:SHIPYARD_KEY_PRICE];
 	
 	return [price1 compare:price2];
 }
@@ -9485,7 +9484,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 
 	[gui autorelease];
 	gui = [[GuiDisplayGen alloc] init];
-	[gui setTextColor:[OOColor colorWithDescription:[gui userSettings][kGuiDefaultTextColor]]];
+	[gui setTextColor:[OOColor colorWithDescription:[[gui userSettings] objectForKey:kGuiDefaultTextColor]]];
 
 	// message_gui and comm_log_gui defaults are set up inside [hud resetGuis:] ( via [player deferredInit], called from the code that calls this method). 
 	[message_gui autorelease];
@@ -9571,7 +9570,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 		ShipEntity *container = [self newShipWithRole:@"oolite-template-cargopod"];
 		[container setScanClass:CLASS_CARGO];
 		[container setCommodity:type andAmount:1];
-		tmp[type] = container;
+		[tmp setObject:container forKey:type];
 		[container release];
 	}
 	[cargoPods release];
@@ -9889,7 +9888,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 		}
 		else if ([entity isPlanet])
 		{
-			[allPlanets removeObject:entity];
+			[allPlanets removeObject:(OOPlanetEntity*)entity];
 		}
 		
 		[entities removeObject:entity];
@@ -9915,7 +9914,7 @@ static void PreloadOneSound(NSString *soundName)
 	NSString *key = nil;
 	foreachkey (key, customSounds)
 	{
-		id object = customSounds[key];
+		id object = [customSounds objectForKey:key];
 		if([object isKindOfClass:[NSString class]])
 		{
 			PreloadOneSound(object);
@@ -9947,7 +9946,7 @@ static void PreloadOneSound(NSString *soundName)
 		pool = [[NSAutoreleasePool alloc] init];
 		@try
 		{
-			WormholeEntity* whole = activeWormholes[0];		
+			WormholeEntity* whole = activeWormholes.firstObject;
 			// If the wormhole has been scanned by the player then the
 			// PlayerEntity will take care of it
 			if (![whole isScanned] &&
@@ -9969,7 +9968,7 @@ static void PreloadOneSound(NSString *soundName)
 
 - (NSString *)chooseStringForKey:(NSString *)key inDictionary:(NSDictionary *)dictionary
 {
-	id object = dictionary[key];
+	id object = [dictionary objectForKey:key];
 	if ([object isKindOfClass:[NSString class]])  return object;
 	else if ([object isKindOfClass:[NSArray class]] && [object count] > 0)  return [object oo_stringAtIndex:Ranrot() % [object count]];
 	return nil;
@@ -10055,7 +10054,7 @@ static void PreloadOneSound(NSString *soundName)
 	for (i = 0; i < count; ++i)
 	{
 		// Build label, using sysdesc_key_table.plist if available
-		label = keyMap[[NSString stringWithFormat:@"%lu", i]];
+		label = [keyMap objectForKey:[NSString stringWithFormat:@"%lu", i]];
 		if (label == nil)  label = [NSString stringWithFormat:@"[%lu]", i];
 		else  label = [NSString stringWithFormat:@"[%lu] (%@)", i, label];
 		
@@ -10179,7 +10178,7 @@ static void PreloadOneSound(NSString *soundName)
 	NSUInteger i = [_preloadingPlanetMaterials count];
 	while (i--)
 	{
-		if ([_preloadingPlanetMaterials[i] isFinishedLoading])
+		if ([[_preloadingPlanetMaterials objectAtIndex:i] isFinishedLoading])
 		{
 			[_preloadingPlanetMaterials removeObjectAtIndex:i];
 		}
@@ -10207,12 +10206,12 @@ static void PreloadOneSound(NSString *soundName)
 	NSString *scriptname = nil;
 	while ((scriptname = [scripts nextObject]))
 	{
-		if (conditionScripts[scriptname] == nil)
+		if ([conditionScripts objectForKey:scriptname] == nil)
 		{
 			OOJSScript *script = [OOScript jsScriptFromFileNamed:scriptname properties:nil];
 			if (script != nil)
 			{
-				conditionScripts[scriptname] = script;
+				[conditionScripts setObject:script forKey:scriptname];
 			}
 		}
 	}
@@ -10221,7 +10220,7 @@ static void PreloadOneSound(NSString *soundName)
 
 - (OOJSScript*) getConditionScript:(NSString *)scriptname
 {
-	return conditionScripts[scriptname];
+	return [conditionScripts objectForKey:scriptname];
 }
 
 @end

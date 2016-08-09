@@ -46,7 +46,7 @@ MA 02110-1301, USA.
 		unsigned i;
 		for (i = 0; i < [contents count]; i++)
 		{
-			NSString* path = [savePath stringByAppendingPathComponent: (NSString*)contents[i]];
+			NSString* path = [savePath stringByAppendingPathComponent: (NSString*)[contents objectAtIndex:i]];
 			
 			// ensure it's not a directory
 			if (![[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&pathIsDirectory] && pathIsDirectory)
@@ -70,7 +70,7 @@ MA 02110-1301, USA.
 			}
 			
 			// all okay - we can use this path!
-			contents[i] = path;
+			[contents replaceObjectAtIndex: i withObject: path];
 			
 		}
 		
@@ -236,11 +236,11 @@ MA 02110-1301, USA.
 - (BOOL) oo_oxzFileExistsAtPath:(NSString *)path
 {
 	NSUInteger i, cl;
-	NSArray *components = [path pathComponents];
+	NSArray<NSString*> *components = [path pathComponents];
 	cl = [components count];
 	for (i = 0 ; i < cl ; i++)
 	{
-		NSString *component = components[i];
+		NSString *component = [components objectAtIndex:i];
 		if ([[[component pathExtension] lowercaseString] isEqualToString:@"oxz"])
 		{
 			break;

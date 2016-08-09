@@ -200,10 +200,10 @@ NSString *OODisplayStringFromGovernmentID(OOGovernmentID government)
 	NSArray		*strings = nil;
 	NSString	*value = nil;
 	
-	strings = [UNIVERSE descriptions][@"government"]; 
+	strings = [[UNIVERSE descriptions] objectForKey:@"government"]; 
 	if ([strings isKindOfClass:[NSArray class]] && government < [strings count])
 	{
-		value = strings[government];
+		value = [strings objectAtIndex:government];
 		if ([value isKindOfClass:[NSString class]]) return value;
 	}
 	
@@ -216,10 +216,10 @@ NSString *OODisplayStringFromEconomyID(OOEconomyID economy)
 	NSArray		*strings = nil;
 	NSString	*value = nil;
 	
-	strings = [UNIVERSE descriptions][@"economy"]; 
+	strings = [[UNIVERSE descriptions] objectForKey:@"economy"]; 
 	if ([strings isKindOfClass:[NSArray class]] && economy < [strings count])
 	{
-		value = strings[economy];
+		value = [strings objectAtIndex:economy];
 		if ([value isKindOfClass:[NSString class]]) return value;
 	}
 	

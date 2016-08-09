@@ -75,6 +75,7 @@ static BOOL	isHitByOctree(Octree_details axialDetails, Octree_details otherDetai
 
 
 @implementation Octree
+//@synthesize hasCollision = _hasCollision;
 
 - (instancetype) init
 {
@@ -114,7 +115,7 @@ static BOOL	isHitByOctree(Octree_details axialDetails, Octree_details otherDetai
 
 - (instancetype) initWithDictionary:(NSDictionary *)dict
 {
-	NSData *data = dict[@"octree"];
+	NSData *data = [dict objectForKey:@"octree"];
 	if (![data isKindOfClass:[NSData class]] || ([data length] % sizeof (int)) != 0)
 	{
 		// Invalid representation.

@@ -80,20 +80,20 @@ MA 02110-1301, USA.
 		radius *= SCANNER_MAX_RANGE;
 		_blastsRemaining--;
 		
-		NSArray *targets = [UNIVERSE findEntitiesMatchingPredicate:IsShipPredicate
+		NSArray<ShipEntity*> *targets = [UNIVERSE findEntitiesMatchingPredicate:IsShipPredicate
 														 parameter:NULL
 														   inRange:radius
 														  ofEntity:self];
-		NSUInteger i, count = [targets count];
+		NSUInteger count = [targets count];
 		if (count > 0)
 		{
 			JSContext *context = OOJSAcquireContext();
 			jsval ecmPulsesRemaining = INT_TO_JSVAL(_blastsRemaining);
 			jsval whomVal = OOJSValueFromNativeObject(context, ship);
 			
-			for (i = 0; i < count; i++)
+			ShipEntity *target;
+			foreach (target, targets)
 			{
-				ShipEntity *target = targets[i];
 				ShipScriptEvent(context, target, "shipHitByECM", ecmPulsesRemaining, whomVal);
 				[target reactToAIMessage:@"ECM" context:nil];
 				[target noticeECM];

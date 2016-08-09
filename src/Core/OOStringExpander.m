@@ -529,7 +529,7 @@ static NSString *ApplyOneOperator(NSString *string, NSString *op, NSString *para
 					 nil];
 	}
 	
-	NSString *(*operator)(NSString *string, NSString *param) = [operators[op] pointerValue];
+	NSString *(*operator)(NSString *string, NSString *param) = [[operators objectForKey:op] pointerValue];
 	if (operator != NULL)
 	{
 		return operator(string, param);
@@ -657,7 +657,7 @@ static NSString *ExpandStringKeyOverride(OOStringExpansionContext *context, NSSt
 {
 	NSCParameterAssert(context != NULL && key != nil);
 	
-	id value = context->overrides[key];
+	id value = [context->overrides objectForKey:key];
 	if (value != nil)
 	{
 #if WARNINGS
@@ -761,7 +761,7 @@ static NSMapTable *SpecialSubstitutionSelectors(void)
 */
 static NSString *ExpandStringKeyFromDescriptions(OOStringExpansionContext *context, NSString *key, NSUInteger sizeLimit, NSUInteger recursionLimit)
 {
-	id value = [UNIVERSE descriptions][key];
+	id value = [[UNIVERSE descriptions] objectForKey:key];
 	if (value != nil)
 	{
 		if ([value isKindOfClass:[NSArray class]] && [value count] > 0)
@@ -808,7 +808,7 @@ static NSString *ExpandStringKeyMissionVariable(OOStringExpansionContext *contex
 */
 static NSString *ExpandStringKeyLegacyLocalVariable(OOStringExpansionContext *context, NSString *key)
 {
-	return [context->legacyLocals[key] description];
+	return [[context->legacyLocals objectForKey:key] description];
 }
 
 
@@ -1174,7 +1174,7 @@ static NSString *OldRandomDigrams(void)
 	/* The only point of using %R is for world generation, so there's
 	 * no point in checking the context */
 	unsigned len = gen_rnd_number() & 3;
-	NSString *digrams = [UNIVERSE descriptions][@"digrams"];
+	NSString *digrams = [[UNIVERSE descriptions] objectForKey:@"digrams"];
 	NSMutableString *name = [NSMutableString stringWithCapacity:256];
 	
 	for (unsigned i = 0; i <=len; i++)
@@ -1193,7 +1193,7 @@ static NSString *NewRandomDigrams(OOStringExpansionContext *context)
 {
 	unsigned length = (OO_EXPANDER_RANDOM % 4) + 1;
 	if ((OO_EXPANDER_RANDOM % 5) < ((length == 1) ? 3 : 1))  ++length;	// Make two-letter names rarer and 10-letter names happen sometimes
-	NSString *digrams = [UNIVERSE descriptions][@"digrams"];
+	NSString *digrams = [[UNIVERSE descriptions] objectForKey:@"digrams"];
 	NSUInteger count = [digrams length] / 2;
 	NSMutableString *name = [NSMutableString stringWithCapacity:length * 2];
 	

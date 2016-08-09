@@ -464,10 +464,10 @@ static NSString *GetExtractMode(NSDictionary *textureSpecifier)
 	NSParameterAssert([name length] > 0);
 	
 	NSMutableDictionary *bindingSpec = [[binding mutableCopy] autorelease];
-	if ([bindingSpec oo_stringForKey:@"type"] == nil)  bindingSpec[@"type"] = @"binding";
+	if ([bindingSpec oo_stringForKey:@"type"] == nil)  [bindingSpec setObject:@"binding" forKey:@"type"];
 	
 	// Use existing uniform if one is defined.
-	NSString *uniformName = _uniformBindingNames[bindingSpec];
+	NSString *uniformName = [_uniformBindingNames objectForKey:bindingSpec];
 	if (uniformName != nil)  return uniformName;
 	
 	// Capitalize first char of name, and prepend u.
@@ -477,15 +477,15 @@ static NSString *GetExtractMode(NSDictionary *textureSpecifier)
 	// Ensure name is unique.
 	name = baseName;
 	unsigned idx = 1;
-	while (_uniforms[name] != nil)
+	while ([_uniforms objectForKey:name] != nil)
 	{
 		name = [NSString stringWithFormat:@"%@%u", baseName, ++idx];
 	}
 	
 	[self addFragmentUniform:name ofType:type];
 	
-	_uniforms[name] = bindingSpec;
-	_uniformBindingNames[bindingSpec] = name;
+	[_uniforms setObject:bindingSpec forKey:name];
+	[_uniformBindingNames setObject:name forKey:bindingSpec];
 	
 	return name;
 }
@@ -581,7 +581,7 @@ static NSString *KeyFromTextureSpec(NSDictionary *spec)
 	NSParameterAssert(spec != nil);
 	
 	// extract_channel doesn't affect uniqueness, and we don't want OOTexture to do actual extraction.
-	if (spec[kOOTextureSpecifierSwizzleKey] != nil)
+	if ([spec objectForKey:kOOTextureSpecifierSwizzleKey] != nil)
 	{
 		spec = [spec dictionaryByRemovingObjectForKey:kOOTextureSpecifierSwizzleKey];
 	}
@@ -604,7 +604,7 @@ static NSString *KeyFromTextureSpec(NSDictionary *spec)
 	
 	NSString *key = KeyFromTextureParameters(texName, texOptions, anisotropy, lodBias);
 	NSUInteger texID;
-	NSObject *existing = _texturesByName[key];
+	NSObject *existing = [_texturesByName objectForKey:key];
 	if (existing == nil)
 	{
 		texID = [_texturesByName count];
@@ -618,9 +618,10 @@ static NSString *KeyFromTextureSpec(NSDictionary *spec)
 #endif
 		
 		[_textures addObject:OOMakeTextureSpecifier(texName, texOptions, anisotropy, lodBias, useInternalFormat)];
-		_texturesByName[key] = spec;
-		_textureIDs[key] = texIDObj;
-		_uniforms[texUniform] = @{@"type": @"texture", @"value": texIDObj};
+		[_texturesByName setObject:spec forKey:key];
+		[_textureIDs setObject:texIDObj forKey:key];
+		[_uniforms setObject:@{@"type": @"texture", @"value": texIDObj}
+					  forKey:texUniform];
 		
 		[self addFragmentUniform:texUniform ofType:@"sampler2D"];
 	}
@@ -1317,27 +1318,27 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 	id						texSpec = nil;
 	
 	// Colours.
-	col = [OOColor colorWithDescription:spec[kOOMaterialDiffuseColorName]];
-	if (col == nil)  col = [OOColor colorWithDescription:spec[kOOMaterialDiffuseColorLegacyName]];
-	if (col != nil)  result[kOOMaterialDiffuseColorName] = [col normalizedArray];
+	col = [OOColor colorWithDescription:[spec objectForKey:kOOMaterialDiffuseColorName]];
+	if (col == nil)  col = [OOColor colorWithDescription:[spec objectForKey:kOOMaterialDiffuseColorLegacyName]];
+	if (col != nil)  [result setObject:[col normalizedArray] forKey:kOOMaterialDiffuseColorName];
 	
-	col = [OOColor colorWithDescription:spec[kOOMaterialAmbientColorName]];
-	if (col == nil)  col = [OOColor colorWithDescription:spec[kOOMaterialAmbientColorLegacyName]];
-	if (col != nil)  result[kOOMaterialAmbientColorName] = [col normalizedArray];
+	col = [OOColor colorWithDescription:[spec objectForKey:kOOMaterialAmbientColorName]];
+	if (col == nil)  col = [OOColor colorWithDescription:[spec objectForKey:kOOMaterialAmbientColorLegacyName]];
+	if (col != nil)  [result setObject:[col normalizedArray] forKey:kOOMaterialAmbientColorName];
 	
-	col = [OOColor colorWithDescription:spec[kOOMaterialSpecularColorName]];
-	if (col == nil)  col = [OOColor colorWithDescription:spec[kOOMaterialSpecularColorLegacyName]];
-	if (col != nil)  result[kOOMaterialSpecularColorName] = [col normalizedArray];
+	col = [OOColor colorWithDescription:[spec objectForKey:kOOMaterialSpecularColorName]];
+	if (col == nil)  col = [OOColor colorWithDescription:[spec objectForKey:kOOMaterialSpecularColorLegacyName]];
+	if (col != nil)  [result setObject:[col normalizedArray] forKey:kOOMaterialSpecularColorName];
 	
-	col = [OOColor colorWithDescription:spec[kOOMaterialSpecularModulateColorName]];
-	if (col != nil)  result[kOOMaterialSpecularModulateColorName] = [col normalizedArray];
+	col = [OOColor colorWithDescription:[spec objectForKey:kOOMaterialSpecularModulateColorName]];
+	if (col != nil)  [result setObject:[col normalizedArray] forKey:kOOMaterialSpecularModulateColorName];
 	
-	col = [OOColor colorWithDescription:spec[kOOMaterialEmissionColorName]];
-	if (col == nil)  col = [OOColor colorWithDescription:spec[kOOMaterialEmissionColorLegacyName]];
-	if (col != nil)  result[kOOMaterialEmissionColorName] = [col normalizedArray];
+	col = [OOColor colorWithDescription:[spec objectForKey:kOOMaterialEmissionColorName]];
+	if (col == nil)  col = [OOColor colorWithDescription:[spec objectForKey:kOOMaterialEmissionColorLegacyName]];
+	if (col != nil)  [result setObject:[col normalizedArray] forKey:kOOMaterialEmissionColorName];
 	
 	// Diffuse map.
-	texSpec = spec[kOOMaterialDiffuseMapName];
+	texSpec = [spec objectForKey:kOOMaterialDiffuseMapName];
 	if ([texSpec isKindOfClass:[NSString class]])
 	{
 		if ([texSpec length] > 0)
@@ -1350,7 +1351,7 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 		/*	Special case for diffuse map: no name is changed to
 			name = materialKey, while name = "" is changed to no name.
 		*/
-		NSString *name = texSpec[kOOTextureSpecifierNameKey];
+		NSString *name = [texSpec objectForKey:kOOTextureSpecifierNameKey];
 		if (name == nil)  texSpec = [texSpec dictionaryByAddingObject:materialKey forKey:kOOTextureSpecifierNameKey];
 		else if ([name length] == 0)
 		{
@@ -1362,12 +1363,12 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 		// Special case for unspecified diffuse map.
 		texSpec = @{kOOTextureSpecifierNameKey: materialKey};
 	}
-	result[kOOMaterialDiffuseMapName] = texSpec;
+	[result setObject:texSpec forKey:kOOMaterialDiffuseMapName];
 	
 	// Specular maps.
 	{
 		BOOL haveNewSpecular = NO;
-		texSpec = spec[kOOMaterialSpecularColorMapName];
+		texSpec = [spec objectForKey:kOOMaterialSpecularColorMapName];
 		if ([texSpec isKindOfClass:[NSString class]])
 		{
 			texSpec = @{kOOTextureSpecifierNameKey: texSpec};
@@ -1379,10 +1380,10 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 		if (texSpec != nil)
 		{
 			haveNewSpecular = YES;
-			result[kOOMaterialSpecularColorMapName] = texSpec;
+			[result setObject:texSpec forKey:kOOMaterialSpecularColorMapName];
 		}
 		
-		texSpec = spec[kOOMaterialSpecularExponentMapName];
+		texSpec = [spec objectForKey:kOOMaterialSpecularExponentMapName];
 		if ([texSpec isKindOfClass:[NSString class]])
 		{
 			texSpec = @{kOOTextureSpecifierNameKey: texSpec};
@@ -1394,13 +1395,13 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 		if (texSpec != nil)
 		{
 			haveNewSpecular = YES;
-			result[kOOMaterialSpecularExponentMapName] = texSpec;
+			[result setObject:texSpec forKey:kOOMaterialSpecularExponentMapName];
 		}
 		
 		if (!haveNewSpecular)
 		{
 			// Fall back to legacy combined specular map if defined.
-			texSpec = spec[kOOMaterialCombinedSpecularMapName];
+			texSpec = [spec objectForKey:kOOMaterialCombinedSpecularMapName];
 			if ([texSpec isKindOfClass:[NSString class]])
 			{
 				texSpec = @{kOOTextureSpecifierNameKey: texSpec};
@@ -1411,9 +1412,9 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 			}
 			if (texSpec != nil)
 			{
-				result[kOOMaterialSpecularColorMapName] = texSpec;
+				[result setObject:texSpec forKey:kOOMaterialSpecularColorMapName];
 				texSpec = [texSpec dictionaryByAddingObject:@"a" forKey:kOOTextureSpecifierSwizzleKey];
-				result[kOOMaterialSpecularExponentMapName] = texSpec;
+				[result setObject:texSpec forKey:kOOMaterialSpecularExponentMapName];
 			}
 		}
 	}
@@ -1422,7 +1423,7 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 	{
 		BOOL haveParallax = NO;
 		BOOL haveNewNormal = NO;
-		texSpec = spec[kOOMaterialNormalMapName];
+		texSpec = [spec objectForKey:kOOMaterialNormalMapName];
 		if ([texSpec isKindOfClass:[NSString class]])
 		{
 			texSpec = @{kOOTextureSpecifierNameKey: texSpec};
@@ -1434,10 +1435,10 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 		if (texSpec != nil)
 		{
 			haveNewNormal = YES;
-			result[kOOMaterialNormalMapName] = texSpec;
+			[result setObject:texSpec forKey:kOOMaterialNormalMapName];
 		}
 		
-		texSpec = spec[kOOMaterialParallaxMapName];
+		texSpec = [spec objectForKey:kOOMaterialParallaxMapName];
 		if ([texSpec isKindOfClass:[NSString class]])
 		{
 			texSpec = @{kOOTextureSpecifierNameKey: texSpec};
@@ -1450,13 +1451,13 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 		{
 			haveNewNormal = YES;
 			haveParallax = YES;
-			result[kOOMaterialParallaxMapName] = texSpec;
+			[result setObject:texSpec forKey:kOOMaterialParallaxMapName];
 		}
 		
 		if (!haveNewNormal)
 		{
 			// Fall back to legacy combined normal and parallax map if defined.
-			texSpec = spec[kOOMaterialNormalAndParallaxMapName];
+			texSpec = [spec objectForKey:kOOMaterialNormalAndParallaxMapName];
 			if ([texSpec isKindOfClass:[NSString class]])
 			{
 				texSpec = @{kOOTextureSpecifierNameKey: texSpec};
@@ -1468,9 +1469,9 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 			if (texSpec != nil)
 			{
 				haveParallax = YES;
-				result[kOOMaterialNormalMapName] = texSpec;
+				[result setObject:texSpec forKey:kOOMaterialNormalMapName];
 				texSpec = [texSpec dictionaryByAddingObject:@"a" forKey:kOOTextureSpecifierSwizzleKey];
-				result[kOOMaterialParallaxMapName] = texSpec;
+				[result setObject:texSpec forKey:kOOMaterialParallaxMapName];
 			}
 		}
 		
@@ -1488,7 +1489,7 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 	// Light maps.
 	{
 		NSMutableArray *lightMaps = [NSMutableArray array];
-		id lightMapSpecs = spec[kOOMaterialLightMapsName];
+		id lightMapSpecs = [spec objectForKey:kOOMaterialLightMapsName];
 		if (lightMapSpecs != nil && ![lightMapSpecs isKindOfClass:[NSArray class]])
 		{
 			lightMapSpecs = @[lightMapSpecs];
@@ -1510,21 +1511,21 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 				continue;
 			}
 			
-			id modulateColor = lmSpec[kOOTextureSpecifierModulateColorKey];
+			id modulateColor = [lmSpec objectForKey:kOOTextureSpecifierModulateColorKey];
 			if (modulateColor != nil && ![modulateColor isKindOfClass:[NSArray class]])
 			{
 				// Don't convert arrays here, because we specifically don't want the behaviour of treating numbers greater than 1 as 0..255 components.
 				col = [OOColor colorWithDescription:modulateColor];
-				lmSpec[kOOTextureSpecifierModulateColorKey] = [col normalizedArray];
+				[lmSpec setObject:[col normalizedArray] forKey:kOOTextureSpecifierModulateColorKey];
 			}
 			
-			id binding = lmSpec[kOOTextureSpecifierBindingKey];
+			id binding = [lmSpec objectForKey:kOOTextureSpecifierBindingKey];
 			if (binding != nil)
 			{
 				if ([binding isKindOfClass:[NSString class]])
 				{
 					NSDictionary *expandedBinding = @{@"type": @"binding", @"binding": binding};
-					lmSpec[kOOTextureSpecifierBindingKey] = expandedBinding;
+					[lmSpec setObject:expandedBinding forKey:kOOTextureSpecifierBindingKey];
 				}
 				else if (![binding isKindOfClass:[NSDictionary class]] || [[binding oo_stringForKey:@"binding"] length] == 0)
 				{
@@ -1538,12 +1539,12 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 		if ([lightMaps count] == 0)
 		{
 			// If light_map isn't use, handle legacy emission_map, illumination_map and emission_and_illumination_map.
-			id emissionSpec = spec[kOOMaterialEmissionMapName];
-			id illuminationSpec = spec[kOOMaterialIlluminationMapName];
+			id emissionSpec = [spec objectForKey:kOOMaterialEmissionMapName];
+			id illuminationSpec = [spec objectForKey:kOOMaterialIlluminationMapName];
 			
 			if (emissionSpec == nil && illuminationSpec == nil)
 			{
-				emissionSpec = spec[kOOMaterialEmissionAndIlluminationMapName];
+				emissionSpec = [spec objectForKey:kOOMaterialEmissionAndIlluminationMapName];
 				if ([emissionSpec isKindOfClass:[NSString class]])
 				{
 					// Redundantish check required because we want to modify this as a dictionary to make illuminationSpec.
@@ -1568,7 +1569,7 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 				}
 				if ([emissionSpec isKindOfClass:[NSDictionary class]])
 				{
-					col = [OOColor colorWithDescription:spec[kOOMaterialEmissionModulateColorName]];
+					col = [OOColor colorWithDescription:[spec objectForKey:kOOMaterialEmissionModulateColorName]];
 					if (col != nil)  emissionSpec = [emissionSpec dictionaryByAddingObject:[col normalizedArray] forKey:kOOTextureSpecifierModulateColorKey];
 					
 					[lightMaps addObject:emissionSpec];
@@ -1583,7 +1584,7 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 				}
 				if ([illuminationSpec isKindOfClass:[NSDictionary class]])
 				{
-					col = [OOColor colorWithDescription:spec[kOOMaterialIlluminationModulateColorName]];
+					col = [OOColor colorWithDescription:[spec objectForKey:kOOMaterialIlluminationModulateColorName]];
 					if (col != nil)  illuminationSpec = [illuminationSpec dictionaryByAddingObject:[col normalizedArray] forKey:kOOTextureSpecifierModulateColorKey];
 					
 					illuminationSpec = [illuminationSpec dictionaryByAddingObject:@YES forKey:kOOTextureSpecifierIlluminationModeKey];
@@ -1593,7 +1594,7 @@ static NSDictionary *CanonicalizeMaterialSpecifier(NSDictionary *spec, NSString 
 			}
 		}
 		
-		result[kOOMaterialLightMapsName] = lightMaps;
+		[result setObject:lightMaps forKey:kOOMaterialLightMapsName];
 	}
 	
 	OOLog(@"material.canonicalForm", @"Canonicalized material %@:\nORIGINAL:\n%@\n\n@CANONICAL:\n%@", materialKey, spec, result);

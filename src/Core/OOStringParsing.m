@@ -43,7 +43,7 @@ static NSString * const kOOLogStringQuaternionConversion		= @"strings.conversion
 static NSString * const kOOLogStringRandomSeedConversion		= @"strings.conversion.randomSeed";
 
 
-NSMutableArray *ScanTokensFromString(NSString *values)
+NSMutableArray<NSString*> *ScanTokensFromString(NSString *values)
 {
 	NSMutableArray			*result = nil;
 	NSScanner				*scanner = nil;
@@ -214,8 +214,8 @@ NSPoint PointFromString(NSString *xyString)
 	NSUInteger n_tokens = [tokens count];
 	if (n_tokens == 2)
 	{
-		result.x = [tokens[0] doubleValue];
-		result.y = [tokens[1] doubleValue];
+		result.x = [[tokens objectAtIndex:0] doubleValue];
+		result.y = [[tokens objectAtIndex:1] doubleValue];
 	}
 	return result;
 }
@@ -364,14 +364,14 @@ NSArray *ComponentsFromVersionString(NSString *string)
 	id					component;
 	
 	stringComponents = [string componentsSeparatedByString:@" "];
-	stringComponents = [stringComponents[0] componentsSeparatedByString:@"-"];
-	stringComponents = [stringComponents[0] componentsSeparatedByString:@"."];
+	stringComponents = [[stringComponents objectAtIndex:0] componentsSeparatedByString:@"-"];
+	stringComponents = [[stringComponents objectAtIndex:0] componentsSeparatedByString:@"."];
 	count = [stringComponents count];
 	result = [NSMutableArray arrayWithCapacity:count];
 	
 	for (i = 0; i != count; ++i)
 	{
-		component = stringComponents[i];
+		component = [stringComponents objectAtIndex:i];
 		if ([component respondsToSelector:@selector(intValue)])  value = MAX([component intValue], 0);
 		else  value = 0;
 		

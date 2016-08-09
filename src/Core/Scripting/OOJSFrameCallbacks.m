@@ -455,12 +455,12 @@ static void RunDeferredOperations(JSContext *context)
 	
 	foreach (operation, sDeferredOps)
 	{
-		NSString	*opType = operation[@"operation"];
+		NSString	*opType = [operation objectForKey:@"operation"];
 		uint32		trackingID = [operation oo_intForKey:@"trackingID"];
 		
 		if ([opType isEqualToString:@"add"])
 		{
-			OOJSValue	*callbackObj = operation[@"value"];
+			OOJSValue	*callbackObj = [operation objectForKey:@"value"];
 			NSString	*errorString = nil;
 			
 			if (!AddCallback(context, OOJSValueFromNativeObject(context, callbackObj), trackingID, &errorString))

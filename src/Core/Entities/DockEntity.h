@@ -32,7 +32,7 @@ MA 02110-1301, USA.
 {
 @private
 	NSMutableDictionary		*shipsOnApproach;
-	NSMutableArray			*launchQueue;
+	NSMutableArray<ShipEntity*>			*launchQueue;
 	double					last_launch_time;
 //	double					approach_spacing; // not needed now holding pattern changed
 	

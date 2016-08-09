@@ -95,8 +95,8 @@ MA 02110-1301, USA.
 - (NSArray *) displayModes
 {
 	NSSize size = self.fullScreenWindow.frame.size;
-	NSDictionary *fakeMode = @{kOODisplayWidth: [NSNumber numberWithUnsignedInteger:size.width],
-							  kOODisplayHeight: [NSNumber numberWithUnsignedInteger:size.height]};
+	NSDictionary *fakeMode = @{kOODisplayWidth: @((NSUInteger)size.width),
+							  kOODisplayHeight: @((NSUInteger)size.height)};
 	return @[fakeMode];
 }
 
@@ -115,7 +115,7 @@ MA 02110-1301, USA.
 
 - (NSDictionary *) findDisplayModeForWidth:(NSUInteger)width height:(NSUInteger)height refreshRate:(NSUInteger)refresh
 {
-	NSDictionary *fakeMode = (self.displayModes)[0];
+	NSDictionary *fakeMode = [self.displayModes objectAtIndex:0];
 	if (width == [fakeMode oo_unsignedIntegerForKey:kOODisplayWidth] &&
 		height == [fakeMode oo_unsignedIntegerForKey:kOODisplayHeight])
 	{

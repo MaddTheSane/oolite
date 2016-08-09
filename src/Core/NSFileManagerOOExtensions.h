@@ -43,10 +43,10 @@ MA 02110-1301, USA.
 	Wrappers for methods that were deprecated in Leopard but whose replacements
 	still aren't in GNUstep.
 */
-- (NSArray *) oo_directoryContentsAtPath:(NSString *)path;
-- (BOOL) oo_createDirectoryAtPath:(NSString *)path attributes:(NSDictionary *)attributes;
-- (NSDictionary *) oo_fileAttributesAtPath:(NSString *)path traverseLink:(BOOL)yorn;
-- (NSDictionary *) oo_fileSystemAttributesAtPath:(NSString *)path;
+- (NSArray<NSString*> *) oo_directoryContentsAtPath:(NSString *)path;
+- (BOOL) oo_createDirectoryAtPath:(NSString *)path attributes:(NSDictionary<NSString*,id> *)attributes;
+- (NSDictionary<NSString*,id> *) oo_fileAttributesAtPath:(NSString *)path traverseLink:(BOOL)yorn;
+- (NSDictionary<NSString*,id> *) oo_fileSystemAttributesAtPath:(NSString *)path;
 - (BOOL) oo_removeItemAtPath:(NSString *)path;
 - (BOOL) oo_moveItemAtPath:(NSString *)src toPath:(NSString *)dest;
 

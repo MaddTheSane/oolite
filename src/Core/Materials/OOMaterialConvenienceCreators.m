@@ -125,19 +125,19 @@ static void SynthSpecular(OOMaterialSynthContext *context);
 	if ([UNIVERSE detailLevel] >= DETAIL_LEVEL_SHADERS)
 	{
 		//	Add uniforms required for hull heat glow.
-		context.uniforms[@"uHullHeatLevel"] = @"hullHeatLevel";
-		context.uniforms[@"uTime"] = @"timeElapsedSinceSpawn";
+		[context.uniforms setObject:@"hullHeatLevel" forKey:@"uHullHeatLevel"];
+		[context.uniforms setObject:@"timeElapsedSinceSpawn" forKey:@"uTime"];
 		[context.uniforms setObject:@"fogUniform" forKey:@"uFogColor"];
 	}
 	
 	//	Stuff in the general properties.
-	context.outConfig[@"_oo_is_synthesized_config"] = @"true";
-	context.outConfig[@"vertex_shader"] = @"oolite-tangent-space-vertex.vertex";
-	context.outConfig[@"fragment_shader"] = @"oolite-default-shader.fragment";
+	[context.outConfig setObject:@"true" forKey:@"_oo_is_synthesized_config"];
+	[context.outConfig setObject:@"oolite-tangent-space-vertex.vertex" forKey:@"vertex_shader"];
+	[context.outConfig setObject:@"oolite-default-shader.fragment" forKey:@"fragment_shader"];
 	
-	if ([context.textures count] != 0)  context.outConfig[@"textures"] = context.textures;
-	if ([context.uniforms count] != 0)  context.outConfig[@"uniforms"] = context.uniforms;
-	if ([context.macros count] != 0)  context.outConfig[@"_oo_synthesized_material_macros"] = context.macros;
+	if ([context.textures count] != 0)  [context.outConfig setObject:context.textures forKey:@"textures"];
+	if ([context.uniforms count] != 0)  [context.outConfig setObject:context.uniforms forKey:@"uniforms"];
+	if ([context.macros count] != 0)  [context.outConfig setObject:context.macros forKey:@"_oo_synthesized_material_macros"];
 	
 	return context.outConfig;
 }
@@ -154,7 +154,7 @@ static void SynthSpecular(OOMaterialSynthContext *context);
 	OOMaterial				*result = nil;
 	
 	// Avoid looping (can happen if shader fails to compile).
-	if (configuration[@"_oo_is_synthesized_config"] != nil)
+	if ([configuration objectForKey:@"_oo_is_synthesized_config"] != nil)
 	{
 		OOLog(@"material.synthesize.loop", @"Synthesis loop for material %@.", name);
 		return nil;
@@ -187,7 +187,7 @@ static void SynthSpecular(OOMaterialSynthContext *context);
 		result =  [self materialWithName:name
 								cacheKey:cacheKey
 						   configuration:synthesizedConfig
-								  macros:synthesizedConfig[@"_oo_synthesized_material_macros"]
+								  macros:[synthesizedConfig objectForKey:@"_oo_synthesized_material_macros"]
 						   bindingTarget:target
 						 forSmoothedMesh:YES];
 	}
@@ -389,7 +389,7 @@ static BOOL sDumpShaderSource = NO;
 
 static void SetUniform(NSMutableDictionary *uniforms, NSString *key, NSString *type, id value)
 {
-	uniforms[key] = @{@"type": type, @"value": value};
+	[uniforms setObject:@{@"type": type, @"value": value} forKey:key];
 }
 
 
@@ -408,11 +408,11 @@ static void AddTexture(OOMaterialSynthContext *context, NSString *uniformName, N
 	[context->textures addObject:specifier];
 	if (nonShaderKey != nil)
 	{
-		context->outConfig[kOOMaterialDiffuseMapName] = specifier;
+		[context->outConfig setObject:specifier forKey:kOOMaterialDiffuseMapName];
 	}
 	if (macroName != nil)
 	{
-		context->macros[macroName] = @"1";
+		[context->macros setObject:@"1" forKey:macroName];
 	}
 }
 
@@ -423,8 +423,8 @@ static void AddColorIfAppropriate(OOMaterialSynthContext *context, SEL selector,
 	
 	if (color != nil)
 	{
-		context->outConfig[key] = [color normalizedArray];
-		if (macroName != nil)  context->macros[macroName] = @"1";
+		[context->outConfig setObject:[color normalizedArray] forKey:key];
+		if (macroName != nil)  [context->macros setObject:@"1" forKey:macroName];
 	}
 }
 
@@ -440,7 +440,7 @@ static void AddMacroColorIfAppropriate(OOMaterialSynthContext *context, SEL sele
 							   [color greenComponent],
 							   [color blueComponent],
 							   [color alphaComponent]];
-		context->macros[macroName] = macroText;
+		[context->macros setObject:macroText forKey:macroName];
 	}
 }
 
@@ -455,13 +455,13 @@ static void SynthDiffuse(OOMaterialSynthContext *context, NSString *name)
 		
 		if ([diffuseMapSpec oo_boolForKey:@"cube_map"])
 		{
-			context->macros[@"OOSTD_DIFFUSE_MAP_IS_CUBE_MAP"] = @"1";
+			[context->macros setObject:@"1" forKey:@"OOSTD_DIFFUSE_MAP_IS_CUBE_MAP"];
 		}
 	}
 	else
 	{
 		// No diffuse map must be specified explicitly.
-		context->outConfig[kOOMaterialDiffuseMapName] = @"";
+		[context->outConfig setObject:@"" forKey:kOOMaterialDiffuseMapName];
 	}
 	
 	// Set up diffuse colour if any.
@@ -539,7 +539,7 @@ static void SynthNormalMap(OOMaterialSynthContext *context)
 			
 			if (hasParallax)
 			{
-				context->macros[@"OOSTD_NORMAL_AND_PARALLAX_MAP"] = @"1";
+				[context->macros setObject:@"1" forKey:@"OOSTD_NORMAL_AND_PARALLAX_MAP"];
 				SetUniformFloat(context, @"uParallaxScale", [context->inConfig oo_parallaxScale]);
 				SetUniformFloat(context, @"uParallaxBias", [context->inConfig oo_parallaxBias]);
 			}
@@ -565,7 +565,7 @@ static void SynthSpecular(OOMaterialSynthContext *context)
 	else  specularColor = [context->inConfig oo_specularColor];
 	if ([specularColor isBlack])  return;
 	
-	context->outConfig[kOOMaterialSpecularExponentLegacyName] = @(shininess);
+	[context->outConfig setObject:@(shininess) forKey:kOOMaterialSpecularExponentLegacyName];
 	
 	if (specularMapSpec != nil)
 	{
@@ -578,9 +578,9 @@ static void SynthSpecular(OOMaterialSynthContext *context)
 		 specular_color here because the shader reads it from the standard
 		 material specular colour property set by OOBasicMaterial.
 		 */
-		context->outConfig[kOOMaterialSpecularColorName] = [specularColor normalizedArray];
+		[context->outConfig setObject:[specularColor normalizedArray] forKey:kOOMaterialSpecularColorName];
 	}
-	context->macros[@"OOSTD_SPECULAR"] = @"1";
+	[context->macros setObject:@"1" forKey:@"OOSTD_SPECULAR"];
 }
 
 #endif

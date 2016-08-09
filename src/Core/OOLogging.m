@@ -152,7 +152,7 @@ BOOL OOLogWillDisplayMessagesInClass(NSString *inMessageClass)
 	[sLock lock];
 	
 	// Look for cached value
-	value = sDerivedSettingsCache[inMessageClass];
+	value = [sDerivedSettingsCache objectForKey:inMessageClass];
 	if (EXPECT_NOT(value == nil))
 	{
 		@try
@@ -163,7 +163,7 @@ BOOL OOLogWillDisplayMessagesInClass(NSString *inMessageClass)
 			if (value != nil)
 			{
 				if (EXPECT_NOT(sDerivedSettingsCache == nil)) sDerivedSettingsCache = [[NSMutableDictionary alloc] init];
-				sDerivedSettingsCache[inMessageClass] = value;
+				[sDerivedSettingsCache setObject:value forKey:inMessageClass];
 			}
 		}
 		@catch (id exception)
@@ -186,12 +186,12 @@ void OOLogSetDisplayMessagesInClass(NSString *inClass, BOOL inFlag)
 	if (!Inited()) return;
 	
 	[sLock lock];
-	value = sExplicitSettings[inClass];
+	value = [sExplicitSettings objectForKey:inClass];
 	if (value == nil || value != CacheValue(inFlag))
 	{
 		OOLogInternal(OOLOG_SETTING_SET, @"Setting %@ to %s", inClass, inFlag ? "ON" : "OFF");
 		
-		sExplicitSettings[inClass] = CacheValue(inFlag);
+		[sExplicitSettings setObject:CacheValue(inFlag) forKey:inClass];
 		
 		// Clear cache and let it be rebuilt as needed.
 		DESTROY(sDerivedSettingsCache);
@@ -302,14 +302,14 @@ void OOLogPopIndent(void)
 OOINLINE unsigned GetIndentLevel(void)
 {
 	NSMutableDictionary *threadDict = [[NSThread currentThread] threadDictionary];
-	return [threadDict[kIndentLevelKey] unsignedIntValue];
+	return [[threadDict objectForKey:kIndentLevelKey] unsignedIntValue];
 }
 
 
 OOINLINE void SetIndentLevel(unsigned value)
 {
 	NSMutableDictionary *threadDict = [[NSThread currentThread] threadDictionary];
-	threadDict[kIndentLevelKey] = @(value);
+	[threadDict setObject:@(value) forKey:kIndentLevelKey];
 }
 
 
@@ -323,16 +323,16 @@ void OOLogPushIndent(void)
 	if (elem != NULL)
 	{
 		threadDict = [[NSThread currentThread] threadDictionary];
-		val = threadDict[kIndentStackKey];
+		val = [threadDict objectForKey:kIndentStackKey];
 		
-		elem->indent = [threadDict[kIndentLevelKey] intValue];
+		elem->indent = [[threadDict objectForKey:kIndentLevelKey] intValue];
 		elem->link = [val pointerValue];
 		
 		/*
 			Clang static analyzer reports elem not released here. It is in fact
 			released in OOLogPopIndent().
 		*/
-		threadDict[kIndentStackKey] = [NSValue valueWithPointer:elem];
+		[threadDict setObject:[NSValue valueWithPointer:elem] forKey:kIndentStackKey];
 	}
 }
 
@@ -344,14 +344,14 @@ void OOLogPopIndent(void)
 	NSValue					*val = nil;
 	
 	threadDict = [[NSThread currentThread] threadDictionary];
-	val = threadDict[kIndentStackKey];
+	val = [threadDict objectForKey:kIndentStackKey];
 	
 	elem = [val pointerValue];
 	
 	if (elem != NULL)
 	{
-		threadDict[kIndentLevelKey] = @(elem->indent);
-		threadDict[kIndentStackKey] = [NSValue valueWithPointer:elem->link];
+		[threadDict setObject:@(elem->indent) forKey:kIndentLevelKey];
+		[threadDict setObject:[NSValue valueWithPointer:elem->link] forKey:kIndentStackKey];
 		free(elem);
 	}
 	else
@@ -737,7 +737,7 @@ static void LoadExplicitSettings(void)
 	LoadExplicitSettingsFromDictionary(settings);
 	
 	// Get _default and _override values.
-	id value = sExplicitSettings[@"_default"];
+	id value = [sExplicitSettings objectForKey:@"_default"];
 	if (value != nil && [value respondsToSelector:@selector(boolValue)])
 	{
 		if (value == kTrueToken) sDefaultDisplay = YES;
@@ -746,7 +746,7 @@ static void LoadExplicitSettings(void)
 		
 		[sExplicitSettings removeObjectForKey:@"_default"];
 	}
-	value = sExplicitSettings[@"_override"];
+	value = [sExplicitSettings objectForKey:@"_override"];
 	if (value != nil && [value respondsToSelector:@selector(boolValue)])
 	{
 		if (value == kTrueToken)
@@ -779,7 +779,7 @@ static void LoadExplicitSettingsFromDictionary(NSDictionary *inDict)
 	id key = nil;
 	foreachkey (key, inDict)
 	{
-		id value = inDict[key];
+		id value = [inDict objectForKey:key];
 		
 		/*	Supported values:
 			"yes", "true" or "on" -> kTrueToken
@@ -826,7 +826,7 @@ static void LoadExplicitSettingsFromDictionary(NSDictionary *inDict)
 		
 		if (value != nil)
 		{
-			sExplicitSettings[key] = value;
+			[sExplicitSettings setObject:value forKey:key];
 		}
 	}
 }
@@ -865,7 +865,7 @@ static id ResolveDisplaySetting(NSString *inMessageClass)
 	
 	if (inMessageClass == nil) return CacheValue(sDefaultDisplay);
 	
-	value = sExplicitSettings[inMessageClass];
+	value = [sExplicitSettings objectForKey:inMessageClass];
 	
 	// Simple case: explicit setting for this value
 	if (value == kTrueToken || value == kFalseToken) return value;
@@ -895,7 +895,7 @@ static id ResolveMetaClassReference(NSString *inMetaClass, NSMutableSet *ioSeenM
 	
 	[ioSeenMetaClasses addObject:inMetaClass];
 	
-	value = sExplicitSettings[inMetaClass];
+	value = [sExplicitSettings objectForKey:inMetaClass];
 	
 	if (value == kTrueToken || value == kFalseToken) return value;
 	if (value == nil)

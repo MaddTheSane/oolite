@@ -367,8 +367,8 @@ static void CacheCheckIntegrity(OOCacheImpl *cache, NSString *context);
 	{
 		if ([entry isKindOfClass:[NSDictionary class]])
 		{
-			key = entry[kSerializedEntryKeyKey];
-			value = entry[kSerializedEntryKeyValue];
+			key = [entry objectForKey:kSerializedEntryKeyKey];
+			value = [entry objectForKey:kSerializedEntryKeyValue];
 			if ([key isKindOfClass:[NSString class]] && value != nil)
 			{
 				[self setObject:value forKey:key];

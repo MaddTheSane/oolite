@@ -143,7 +143,7 @@ static void PerformScriptActions(NSArray *actions, Entity *target)
 	NSArray *statement = nil;
 	foreach (statement, actions)
 	{
-		if ([statement[0] boolValue])
+		if ([[statement objectAtIndex:0] boolValue])
 		{
 			PerformConditionalStatment(statement, target);
 		}
@@ -167,15 +167,15 @@ static void PerformConditionalStatment(NSArray *statement, Entity *target)
 	NSArray				*conditions = nil;
 	NSArray				*actions = nil;
 	
-	conditions = statement[1];
+	conditions = [statement objectAtIndex:1];
 	
 	if (TestScriptConditions(conditions))
 	{
-		actions = statement[2];
+		actions = [statement objectAtIndex:2];
 	}
 	else
 	{
-		actions = statement[3];
+		actions = [statement objectAtIndex:3];
 	}
 	
 	PerformScriptActions(actions, target);
@@ -204,8 +204,8 @@ static void PerformActionStatment(NSArray *statement, Entity *target)
 	NSMutableDictionary		*locals = nil;
 	PlayerEntity			*player = PLAYER;
 	
-	selectorString = statement[1];
-	if ([statement count] > 2)  argumentString = statement[2];
+	selectorString = [statement objectAtIndex:1];
+	if ([statement count] > 2)  argumentString = [statement objectAtIndex:2];
 	
 	selector = NSSelectorFromString(selectorString);
 	
@@ -287,10 +287,10 @@ static BOOL sRunningScript = NO;
 	NSString *scriptName;
 	foreachkey (scriptName, worldScripts)
 	{
-		OOScript *candidateScript = worldScripts[scriptName];
+		OOScript *candidateScript = [worldScripts objectForKey:scriptName];
 		if ([candidateScript requiresTickle])
 		{
-			tickleScripts[scriptName] = candidateScript;
+			[tickleScripts setObject:candidateScript forKey:scriptName];
 		}
 	}
 	
@@ -470,13 +470,13 @@ static BOOL sRunningScript = NO;
 	// Transform mission/local var ops into string ops.
 	if (opType == OP_MISSION_VAR)
 	{
-		sMissionStringValue = mission_variables[selectorString];
+		sMissionStringValue = [mission_variables objectForKey:selectorString];
 		selector = @selector(mission_string);
 		opType = OP_STRING;
 	}
 	else if (opType == OP_LOCAL_VAR)
 	{
-		sMissionStringValue = [self localVariablesForMission:sCurrentMissionKey][selectorString];
+		sMissionStringValue = [[self localVariablesForMission:sCurrentMissionKey] objectForKey:selectorString];
 		selector = @selector(mission_string);
 		opType = OP_STRING;
 	}
@@ -520,7 +520,7 @@ static BOOL sRunningScript = NO;
 					
 					for (i = 0; i < count; i++)
 					{
-						rhsItem = [rhsComponents[i] stringByTrimmingCharactersInSet:whitespace];
+						rhsItem = [[rhsComponents objectAtIndex:i] stringByTrimmingCharactersInSet:whitespace];
 						if ([lhsString isEqualToString:rhsItem])
 						{
 							return YES;
@@ -541,7 +541,7 @@ static BOOL sRunningScript = NO;
 			
 			for (i = 0; i < count; i++)
 			{
-				rhsItem = rhsComponents[i];
+				rhsItem = [rhsComponents objectAtIndex:i];
 				rhsValue = [rhsItem doubleValue];
 				
 				if (lhsValue == rhsValue)
@@ -602,7 +602,7 @@ static BOOL sRunningScript = NO;
 	}
 	
 	// What are we doing here?
-	OOLog(@"script.error.fallthrough", @"***** SCRIPT ERROR: in %@, unhandled condition '%@' (%@). %@", CurrentScriptDesc(), scriptCondition[1], scriptCondition, @"This is an internal error, please report it.");
+	OOLog(@"script.error.fallthrough", @"***** SCRIPT ERROR: in %@, unhandled condition '%@' (%@). %@", CurrentScriptDesc(), [scriptCondition objectAtIndex:1], scriptCondition, @"This is an internal error, please report it.");
 	return NO;
 }
 
@@ -628,7 +628,7 @@ static BOOL sRunningScript = NO;
 		
 		value = [component oo_stringAtIndex:1];
 		
-		if ([component[0] boolValue])
+		if ([[component objectAtIndex:0] boolValue])
 		{
 			value = [[self performSelector:NSSelectorFromString(value)] description];
 			if (value == nil)  value = @"(null)";	// for backwards compatibility
@@ -650,7 +650,7 @@ static BOOL sRunningScript = NO;
 - (NSString *)missionVariableForKey:(NSString *)key
 {
 	NSString *result = nil;
-	if (key != nil)  result = mission_variables[key];
+	if (key != nil)  result = [mission_variables objectForKey:key];
 	return result;
 }
 
@@ -659,7 +659,7 @@ static BOOL sRunningScript = NO;
 {
 	if (key != nil)
 	{
-		if (value != nil)  mission_variables[key] = value;
+		if (value != nil)  [mission_variables setObject:value forKey:key];
 		else [mission_variables removeObjectForKey:key];
 	}
 }
@@ -671,11 +671,11 @@ static BOOL sRunningScript = NO;
 	
 	if (missionKey == nil)  return nil;
 	
-	result = localVariables[missionKey];
+	result = [localVariables objectForKey:missionKey];
 	if (result == nil)
 	{
 		result = [NSMutableDictionary dictionary];
-		localVariables[missionKey] = result;
+		[localVariables setObject:result forKey:missionKey];
 	}
 	
 	return result;
@@ -684,7 +684,7 @@ static BOOL sRunningScript = NO;
 
 - (NSString *)localVariableForKey:(NSString *)variableName andMission:(NSString *)missionKey
 {
-	return [localVariables oo_dictionaryForKey:missionKey][variableName];
+	return [[localVariables oo_dictionaryForKey:missionKey] objectForKey:variableName];
 }
 
 
@@ -697,7 +697,7 @@ static BOOL sRunningScript = NO;
 		locals = [self localVariablesForMission:missionKey];
 		if (value != nil)
 		{
-			locals[variableName] = value;
+			[locals setObject:value forKey:variableName];
 		}
 		else
 		{
@@ -741,7 +741,7 @@ static BOOL sRunningScript = NO;
 	 * entries, so sort them now */	
 	for (scriptEnum = [worldScripts keyEnumerator]; (scriptName = [scriptEnum nextObject]); )
 	{
-		vars = mission_variables[scriptName];
+		vars = [mission_variables objectForKey:scriptName];
 		
 		if (vars != nil)
 		{
@@ -788,15 +788,15 @@ static BOOL sRunningScript = NO;
 	
 	for (i = 0; i < [tokens  count]; i++)
 	{
-		valueString = tokens[i];
+		valueString = [tokens objectAtIndex:i];
 		
-		if ([valueString hasPrefix:@"mission_"] && mission_variables[valueString])
+		if ([valueString hasPrefix:@"mission_"] && [mission_variables objectForKey:valueString])
 		{
-			[resultString replaceOccurrencesOfString:valueString withString:mission_variables[valueString] options:NSLiteralSearch range:NSMakeRange(0, [resultString length])];
+			[resultString replaceOccurrencesOfString:valueString withString:[mission_variables objectForKey:valueString] options:NSLiteralSearch range:NSMakeRange(0, [resultString length])];
 		}
-		else if (locals[valueString])
+		else if ([locals objectForKey:valueString])
 		{
-			[resultString replaceOccurrencesOfString:valueString withString:locals[valueString] options:NSLiteralSearch range:NSMakeRange(0, [resultString length])];
+			[resultString replaceOccurrencesOfString:valueString withString:[locals objectForKey:valueString] options:NSLiteralSearch range:NSMakeRange(0, [resultString length])];
 		}
 		else if (([valueString hasSuffix:@"_number"])||([valueString hasSuffix:@"_bool"])||([valueString hasSuffix:@"_string"]))
 		{
@@ -853,7 +853,7 @@ static BOOL sRunningScript = NO;
 	text = OOExpand(text);
 	text = [self replaceVariablesInString: text];
 
-	mission_variables[key] = text;
+	[mission_variables setObject:text forKey:key];
 }
 
 
@@ -879,7 +879,7 @@ static BOOL sRunningScript = NO;
 		}
 	}
 
-	mission_variables[key] = expandedList;
+	[mission_variables setObject:expandedList forKey:key];
 }
 
 
@@ -897,7 +897,7 @@ static BOOL sRunningScript = NO;
 		return;
 	}
 	
-	if (!mission_variables[key]) return;
+	if (![mission_variables objectForKey:key]) return;
 	
 	[mission_variables removeObjectForKey:key];
 }
@@ -1103,7 +1103,7 @@ static int shipsFound;
 - (NSNumber *) systemGovernment_number
 {
 	NSDictionary *systeminfo = [UNIVERSE currentSystemData];
-	return systeminfo[KEY_GOVERNMENT];
+	return [systeminfo objectForKey:KEY_GOVERNMENT];
 }
 
 
@@ -1120,28 +1120,28 @@ static int shipsFound;
 - (NSNumber *) systemEconomy_number
 {
 	NSDictionary *systeminfo = [UNIVERSE currentSystemData];
-	return systeminfo[KEY_ECONOMY];
+	return [systeminfo objectForKey:KEY_ECONOMY];
 }
 
 
 - (NSNumber *) systemTechLevel_number
 {
 	NSDictionary *systeminfo = [UNIVERSE currentSystemData];
-	return systeminfo[KEY_TECHLEVEL];
+	return [systeminfo objectForKey:KEY_TECHLEVEL];
 }
 
 
 - (NSNumber *) systemPopulation_number
 {
 	NSDictionary *systeminfo = [UNIVERSE currentSystemData];
-	return systeminfo[KEY_POPULATION];
+	return [systeminfo objectForKey:KEY_POPULATION];
 }
 
 
 - (NSNumber *) systemProductivity_number
 {
 	NSDictionary *systeminfo = [UNIVERSE currentSystemData];
-	return systeminfo[KEY_PRODUCTIVITY];
+	return [systeminfo objectForKey:KEY_PRODUCTIVITY];
 }
 
 
@@ -1303,8 +1303,8 @@ static int shipsFound;
 		return;
 	}
 	
-	keyString = [tokens[0] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-	valueString = [tokens[1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+	keyString = [[tokens objectAtIndex:0] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+	valueString = [[tokens objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 	
 	/* Legacy script planetinfo settings are now non-persistent over save/load
 	 * Virtually nothing uses them any more, and expecting them to have a
@@ -1329,8 +1329,8 @@ static int shipsFound;
 
 	gnum = [tokens oo_intAtIndex:0];
 	pnum = [tokens oo_intAtIndex:1];
-	keyString = [tokens[2] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-	valueString = [tokens[3] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+	keyString = [[tokens objectAtIndex:2] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+	valueString = [[tokens objectAtIndex:3] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 
 	[UNIVERSE setSystemDataForGalaxy:gnum planet:pnum key:keyString value:valueString fromManifest:@"" forLayer:OO_LAYER_OXP_DYNAMIC];
 }
@@ -1411,7 +1411,7 @@ static int shipsFound;
 		NSInteger i;
 		for (i = [cargo count] - 1; i >= 0; i--)
 		{
-			ShipEntity* canister = cargo[i];
+			ShipEntity* canister = [cargo objectAtIndex:i];
 			if (!canister)  break;
 			// Since we are forcing cargo removal, we don't really care about the unit of measurement. Any
 			// commodity at more than 1000kg or 1000000gr will be inside cargopods, so remove those too.
@@ -1466,7 +1466,7 @@ static int shipsFound;
 		return;
 	}
 
-	roleString = tokens[0];
+	roleString = [tokens objectAtIndex:0];
 	[tokens removeObjectAtIndex:0];
 	messageString = [tokens componentsJoinedByString:@" "];
 
@@ -1501,8 +1501,8 @@ static int shipsFound;
 		return;
 	}
 	
-	roleString = tokens[0];
-	numberString = tokens[1];
+	roleString = [tokens objectAtIndex:0];
+	numberString = [tokens objectAtIndex:1];
 	
 	int number = [numberString intValue];
 	if (number < 0)
@@ -1531,9 +1531,9 @@ static int shipsFound;
 		return;
 	}
 
-	roleString = tokens[0];
-	numberString = tokens[1];
-	positionString = tokens[2];
+	roleString = [tokens objectAtIndex:0];
+	numberString = [tokens objectAtIndex:1];
+	positionString = [tokens objectAtIndex:2];
 
 	int number = [numberString intValue];
 	double posn = [positionString doubleValue];
@@ -1567,12 +1567,12 @@ static int shipsFound;
 		return;
 	}
 
-	roleString = tokens[0];
-	numberString = tokens[1];
-	systemString = tokens[2];
-	xString = tokens[3];
-	yString = tokens[4];
-	zString = tokens[5];
+	roleString = [tokens objectAtIndex:0];
+	numberString = [tokens objectAtIndex:1];
+	systemString = [tokens objectAtIndex:2];
+	xString = [tokens objectAtIndex:3];
+	yString = [tokens objectAtIndex:4];
+	zString = [tokens objectAtIndex:5];
 
 	HPVector posn = make_HPvector([xString doubleValue], [yString doubleValue], [zString doubleValue]);
 
@@ -1609,12 +1609,12 @@ static int shipsFound;
 		return;
 	}
 
-	roleString = tokens[0];
-	numberString = tokens[1];
-	systemString = tokens[2];
-	xString = tokens[3];
-	yString = tokens[4];
-	zString = tokens[5];
+	roleString = [tokens objectAtIndex:0];
+	numberString = [tokens objectAtIndex:1];
+	systemString = [tokens objectAtIndex:2];
+	xString = [tokens objectAtIndex:3];
+	yString = [tokens objectAtIndex:4];
+	zString = [tokens objectAtIndex:5];
 
 	HPVector posn = make_HPvector([xString doubleValue], [yString doubleValue], [zString doubleValue]);
 
@@ -1694,7 +1694,7 @@ static int shipsFound;
 		return;
 	}
 
-	missionVariableString = tokens[0];
+	missionVariableString = [tokens objectAtIndex:0];
 	[tokens removeObjectAtIndex:0];
 	valueString = [tokens componentsJoinedByString:@" "];
 
@@ -1811,7 +1811,7 @@ static int shipsFound;
 		return;
 	}
 
-	missionVariableString = tokens[0];
+	missionVariableString = [tokens objectAtIndex:0];
 	[tokens removeObjectAtIndex:0];
 	valueString = [tokens componentsJoinedByString:@" "];
 
@@ -1851,7 +1851,7 @@ static int shipsFound;
 		return;
 	}
 
-	missionVariableString = tokens[0];
+	missionVariableString = [tokens objectAtIndex:0];
 	[tokens removeObjectAtIndex:0];
 	valueString = [tokens componentsJoinedByString:@" "];
 
@@ -1973,9 +1973,9 @@ static int shipsFound;
 	 * thoughts. - CIM 15/2/13 */
 	for (i=0; i < [choiceKeys count]; i++)
 	{
-		if (![choiceKeys[i] isKindOfClass:[NSString class]])
+		if (![[choiceKeys objectAtIndex:i] isKindOfClass:[NSString class]])
 		{
-			OOLog(@"test.script.error",@"Choices list in mission screen has non-string value %@",choiceKeys[i]);
+			OOLog(@"test.script.error",@"Choices list in mission screen has non-string value %@",[choiceKeys objectAtIndex:i]);
 			keysOK = false;
 		}
 	}	
@@ -2000,7 +2000,7 @@ static int shipsFound;
 
 	foreach (choiceKey, choiceKeys)
 	{
-		choiceValue = choicesDict[choiceKey];
+		choiceValue = [choicesDict objectForKey:choiceKey];
 		OOGUIAlignment alignment = GUI_ALIGN_CENTER;
 		OOColor *rowColor = [OOColor yellowColor];
 		BOOL selectable = YES;
@@ -2021,7 +2021,7 @@ static int shipsFound;
 			{
 				alignment = GUI_ALIGN_RIGHT;
 			}
-			id colorDesc = choiceOpts[@"color"];
+			id colorDesc = [choiceOpts objectForKey:@"color"];
 			if ([choiceOpts oo_boolForKey:@"unselectable"])
 			{
 				selectable = NO;
@@ -2124,7 +2124,7 @@ static int shipsFound;
 
 	for (j = 0; j < [tokens count]; j++)
 	{
-		dest = [tokens[j] intValue];
+		dest = [[tokens objectAtIndex:j] intValue];
 		if (dest < 0 || dest > 255)  continue;
 
 		[self removeMissionDestinationMarker:[self defaultMarker:dest]];
@@ -2309,18 +2309,18 @@ static int shipsFound;
 	OOPlanetEntity *planet = [[[OOPlanetEntity alloc] initFromDictionary:dict withAtmosphere:YES andSeed:[[UNIVERSE systemManager] getRandomSeedForCurrentSystem] forSystem:system_id] autorelease];
 	
 	Quaternion planetOrientation;
-	if (ScanQuaternionFromString(dict[@"orientation"], &planetOrientation))
+	if (ScanQuaternionFromString([dict objectForKey:@"orientation"], &planetOrientation))
 	{
 		[planet setOrientation:planetOrientation];
 	}
 
-	if (!dict[@"position"])
+	if (![dict objectForKey:@"position"])
 	{
 		OOLog(@"script.error.addPlanet.noPosition", @"***** ERROR: you must specify a position for scripted planet '%@' before it can be created", planetKey);
 		return nil;
 	}
 	
-	NSString *positionString = dict[@"position"];
+	NSString *positionString = [dict objectForKey:@"position"];
 	if([positionString hasPrefix:@"abs "] && ([UNIVERSE planet] != nil || [UNIVERSE sun] !=nil))
 	{
 		OOLogWARN(@"script.deprecated", @"setting %@ for %@ '%@' in 'abs' inside .plists can cause compatibility issues across Oolite versions. Use coordinates relative to main system objects instead.",@"position",@"planet",planetKey);
@@ -2360,18 +2360,18 @@ static int shipsFound;
 	OOPlanetEntity *planet = [[[OOPlanetEntity alloc] initFromDictionary:dict withAtmosphere:NO andSeed:[[UNIVERSE systemManager] getRandomSeedForCurrentSystem] forSystem:system_id] autorelease];
 	
 	Quaternion planetOrientation;
-	if (ScanQuaternionFromString(dict[@"orientation"], &planetOrientation))
+	if (ScanQuaternionFromString([dict objectForKey:@"orientation"], &planetOrientation))
 	{
 		[planet setOrientation:planetOrientation];
 	}
 
-	if (!dict[@"position"])
+	if (![dict objectForKey:@"position"])
 	{
 		OOLog(@"script.error.addPlanet.noPosition", @"***** ERROR: you must specify a position for scripted moon '%@' before it can be created", moonKey);
 		return nil;
 	}
 	
-	NSString *positionString = dict[@"position"];
+	NSString *positionString = [dict objectForKey:@"position"];
 	if([positionString hasPrefix:@"abs "] && ([UNIVERSE planet] != nil || [UNIVERSE sun] !=nil))
 	{
 		OOLogWARN(@"script.deprecated", @"setting %@ for %@ '%@' in 'abs' inside .plists can cause compatibility issues across Oolite versions. Use coordinates relative to main system objects instead.",@"position",@"moon",moonKey);
@@ -2556,7 +2556,7 @@ static int shipsFound;
 
 - (void) setBackgroundFromDescriptionsKey:(NSString*) d_key
 {
-	NSArray * items = (NSArray *)[UNIVERSE descriptions][d_key];
+	NSArray * items = (NSArray *)[[UNIVERSE descriptions] objectForKey:d_key];
 	//
 	if (!items)
 		return;
@@ -2575,7 +2575,7 @@ static int shipsFound;
 	
 	for (i = 0; i < [items count]; i++)
 	{
-		id item = items[i];
+		id item = [items objectAtIndex:i];
 		if ([item isKindOfClass:[NSString class]])
 		{
 			[self processSceneString:item atOffset: off];
@@ -2594,13 +2594,13 @@ static int shipsFound;
 
 - (BOOL) processSceneDictionary:(NSDictionary *) couplet atOffset:(Vector) off
 {
-	NSArray *conditions = couplet[@"conditions"];
+	NSArray *conditions = [couplet objectForKey:@"conditions"];
 	NSArray *actions = nil;
-	if (couplet[@"do"])
-		actions = @[couplet[@"do"]];
+	if ([couplet objectForKey:@"do"])
+		actions = @[[couplet objectForKey:@"do"]];
 	NSArray *else_actions = nil;
-	if (couplet[@"else"])
-		else_actions = @[couplet[@"else"]];
+	if ([couplet objectForKey:@"else"])
+		else_actions = @[[couplet objectForKey:@"else"]];
 	BOOL success = YES;
 	if (conditions == nil)
 	{
@@ -2640,7 +2640,7 @@ static int shipsFound;
 	NSArray * i_info = ScanTokensFromString(item);
 	if (!i_info)
 		return NO;
-	NSString* i_key = [(NSString*)i_info[0] lowercaseString];
+	NSString* i_key = [(NSString*)i_info.firstObject lowercaseString];
 
 	OOLog(kOOLogNoteProcessSceneString, @"..... processing %@ (%@)", i_info, i_key);
 
@@ -2651,11 +2651,11 @@ static int shipsFound;
 	{
 		if ([i_info count] != 5)	// must be scene_key_x_y_z
 			return NO;				//		   0.... 1.. 2 3 4
-		NSString* scene_key = (NSString*)i_info[1];
+		NSString* scene_key = (NSString*)[i_info objectAtIndex: 1];
 		Vector	scene_offset = {0};
 		ScanVectorFromString([[i_info subarrayWithRange:NSMakeRange(2, 3)] componentsJoinedByString:@" "], &scene_offset);
 		scene_offset.x += off.x;	scene_offset.y += off.y;	scene_offset.z += off.z;
-		NSArray * scene_items = (NSArray *)[UNIVERSE descriptions][scene_key];
+		NSArray * scene_items = (NSArray *)[[UNIVERSE descriptions] objectForKey:scene_key];
 		OOLog(kOOLogDebugProcessSceneStringAddScene, @"::::: adding scene: '%@'", scene_key);
 		//
 		if (scene_items)
@@ -2724,7 +2724,7 @@ static int shipsFound;
 		
 		ScanVectorAndQuaternionFromString([[i_info subarrayWithRange:NSMakeRange( 1, 7)] componentsJoinedByString:@" "], &model_p0, &model_q);
 		
-		Vector	model_offset = positionOffsetForShipInRotationToAlignment( doppelganger, model_q, (NSString*)i_info[8]);
+		Vector	model_offset = positionOffsetForShipInRotationToAlignment( doppelganger, model_q, (NSString*)[i_info objectAtIndex:8]);
 		model_p0.x += off.x - model_offset.x;
 		model_p0.y += off.y - model_offset.y;
 		model_p0.z += off.z - model_offset.z;
@@ -2855,8 +2855,8 @@ static int shipsFound;
 		if ([key isEqualToString: eq_key])  return NO;
 	}
 	
-	properties[@"ship"] = self;
-	properties[@"equipmentKey"] = eq_key;
+	[properties setObject:self forKey:@"ship"];
+	[properties setObject:eq_key forKey:@"equipmentKey"];
 	OOScript *s = [OOScript jsScriptFromFileNamed:scriptName properties:properties];
 	if (s == nil) return NO;
 	

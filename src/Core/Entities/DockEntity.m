@@ -285,7 +285,7 @@ MA 02110-1301, USA.
 	
 	// check if this is a new ship on approach
 	//
-	if (!shipsOnApproach[shipID])
+	if (![shipsOnApproach objectForKey:shipID])
 	{
 		HPVector	delta = HPvector_subtract([ship position], [self absolutePositionForSubentity]);
 		float	ship_distance = HPmagnitude(delta);
@@ -316,7 +316,7 @@ MA 02110-1301, USA.
 		}
 	}
 	
-	if (!shipsOnApproach[shipID])
+	if (![shipsOnApproach objectForKey:shipID])
 	{
 		// some error has occurred - log it, and send the try-again message
 		OOLogERR(@"station.issueDockingInstructions.failed", @"couldn't addShipToShipsOnApproach:%@ in %@, retrying later -- shipsOnApproach:\n%@", ship, self, shipsOnApproach);
@@ -327,7 +327,7 @@ MA 02110-1301, USA.
 
 	//	shipsOnApproach now has an entry for the ship.
 	//
-	NSMutableArray* coordinatesStack = shipsOnApproach[shipID];
+	NSMutableArray* coordinatesStack = [shipsOnApproach objectForKey:shipID];
 
 	if ([coordinatesStack count] == 0)
 	{
@@ -337,7 +337,7 @@ MA 02110-1301, USA.
 	}
 	
 	// get the docking information from the instructions	
-	NSMutableDictionary *nextCoords = (NSMutableDictionary *)coordinatesStack[0];
+	NSMutableDictionary *nextCoords = (NSMutableDictionary *)[coordinatesStack objectAtIndex:0];
 	int docking_stage = [nextCoords oo_intForKey:@"docking_stage"];
 	float speedAdvised = [nextCoords oo_floatForKey:@"speed"];
 	float rangeAdvised = [nextCoords oo_floatForKey:@"range"];
@@ -419,12 +419,12 @@ MA 02110-1301, USA.
 	//
 	[[ship getAI] message:@"HOLD_POSITION"];
 	
-	if (!nextCoords[@"hold_message_given"])
+	if (![nextCoords objectForKey:@"hold_message_given"])
 	{
 		// COMM-CHATTER
 		[UNIVERSE clearPreviousMessage];
 		[self sendExpandedMessage: @"[station-hold-position]" toShip: ship];
-		nextCoords[@"hold_message_given"] = @"YES";
+		[nextCoords setObject:@"YES" forKey:@"hold_message_given"];
 	}
 
 	return OOMakeDockingInstructions(station, ship->position, 0, 100, @"HOLD_POSITION", nil, NO, -1);
@@ -532,25 +532,25 @@ MA 02110-1301, USA.
 		
 		if (corridor_rotate[i])
 		{
-			nextCoords[@"match_rotation"] = @"YES";
+			[nextCoords setObject:@"YES" forKey:@"match_rotation"];
 		}
 		
 		if (i == corridor_final_approach)
 		{
 			if (station == [UNIVERSE station])
 			{
-				nextCoords[@"comms_message"] = @"[station-begin-final-aproach]";
+				[nextCoords setObject:@"[station-begin-final-aproach]" forKey:@"comms_message"];
 			}
 			else
 			{
-				nextCoords[@"comms_message"] = @"[docking-begin-final-aproach]";
+				[nextCoords setObject:@"[docking-begin-final-aproach]" forKey:@"comms_message"];
 			}
 		}
 		
 		[coordinatesStack addObject:nextCoords];
 	}
 	
-	shipsOnApproach[shipID] = coordinatesStack;
+	[shipsOnApproach setObject:coordinatesStack forKey:shipID];
 	
 	
 	// COMM-CHATTER
@@ -580,7 +580,7 @@ MA 02110-1301, USA.
 	OOUniversalID	ship_id = [ship universalID];
 	NSNumber		*shipID = @(ship_id);
 	
-	if (shipsOnApproach[shipID])
+	if ([shipsOnApproach objectForKey:shipID])
 	{
 		[shipsOnApproach removeObjectForKey:shipID];
 	}
@@ -633,7 +633,7 @@ MA 02110-1301, USA.
 	OOUniversalID	ship_id = [ship universalID];
 	NSNumber		*shipID = @(ship_id);
 	
-	if (shipsOnApproach[shipID])
+	if ([shipsOnApproach objectForKey:shipID])
 	{
 		return YES;
 	}
@@ -1238,7 +1238,7 @@ MA 02110-1301, USA.
 	
 	if (([launchQueue count] > 0)&&([shipsOnApproach count] == 0)&&[self dockingCorridorIsEmpty])
 	{
-		ShipEntity *se=(ShipEntity *)launchQueue[0];
+		ShipEntity *se=[launchQueue objectAtIndex:0];
 		// check to make sure ship has not been destroyed in queue by script
 		if ([se status] == STATUS_DOCKED)
 		{

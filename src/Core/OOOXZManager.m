@@ -224,8 +224,8 @@ static OOOXZManager *sSingleton = nil;
  * location. */
 - (NSString *) installPath
 {
-	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory,NSUserDomainMask,YES);
-	NSString *appPath = paths[0];
+	NSArray<NSString*> *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory,NSUserDomainMask,YES);
+	NSString *appPath = [paths objectAtIndex:0];
 	if (appPath != nil)
 	{
 		appPath = [appPath stringByAppendingPathComponent:@"Oolite"];
@@ -556,7 +556,7 @@ static OOOXZManager *sSingleton = nil;
 
 - (BOOL) beginDownload:(NSMutableURLRequest *)request
 {
-	NSString *userAgent = [NSString stringWithFormat:@"Oolite/%@", [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"]];
+	NSString *userAgent = [NSString stringWithFormat:@"Oolite/%@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]];
 	[request setValue:userAgent forHTTPHeaderField:@"User-Agent"];
 	NSURLConnection *download = [[NSURLConnection alloc] initWithRequest:request delegate:self];
 	if (download)
@@ -567,7 +567,7 @@ static OOOXZManager *sSingleton = nil;
 		if (_interfaceState != OXZ_STATE_UPDATING)
 		{
 			NSDictionary *expectedManifest = nil;
-			expectedManifest = _filteredList[_item];
+			expectedManifest = [_filteredList objectAtIndex:_item];
 
 			label = [expectedManifest oo_stringForKey:kOOManifestTitle defaultValue:DESC(@"oolite-oxzmanager-download-label-oxz")];
 		}
@@ -637,7 +637,7 @@ static OOOXZManager *sSingleton = nil;
 			if (manifest != nil)
 			{
 				NSMutableDictionary *adjManifest = [NSMutableDictionary dictionaryWithDictionary:manifest];
-				adjManifest[kOOManifestFilePath] = fullpath;
+				[adjManifest setObject:fullpath forKey:kOOManifestFilePath];
 
 				NSDictionary *stored = nil;
 				/* The list is already sorted to put the latest
@@ -651,8 +651,8 @@ static OOOXZManager *sSingleton = nil;
 					{
 						if (foundInstallable == NO)
 						{
-							adjManifest[kOOManifestAvailableVersion] = [stored oo_stringForKey:kOOManifestVersion];
-							adjManifest[kOOManifestDownloadURL] = [stored oo_stringForKey:kOOManifestDownloadURL];
+							[adjManifest setObject:[stored oo_stringForKey:kOOManifestVersion] forKey:kOOManifestAvailableVersion];
+							[adjManifest setObject:[stored oo_stringForKey:kOOManifestDownloadURL] forKey:kOOManifestDownloadURL];
 							if ([ResourceManager checkVersionCompatibility:manifest forOXP:nil])
 							{
 								foundInstallable = YES;
@@ -720,7 +720,7 @@ static OOOXZManager *sSingleton = nil;
 		return NO;
 	}
 	NSDictionary *expectedManifest = nil;
-	expectedManifest = _filteredList[_item];
+	expectedManifest = [_filteredList objectAtIndex:_item];
 
 	if (expectedManifest == nil || 
 		(![[downloadedManifest oo_stringForKey:kOOManifestIdentifier] isEqualToString:[expectedManifest oo_stringForKey:kOOManifestIdentifier]]) || 
@@ -1598,7 +1598,7 @@ static OOOXZManager *sSingleton = nil;
 	{
 		return NO;
 	}
-	NSDictionary *manifest = picklist[item];
+	NSDictionary *manifest = [picklist objectAtIndex:item];
 	_item = item;
 
 	if ([self installableState:manifest] >= OXZ_UNINSTALLABLE_ALREADY)
@@ -1607,7 +1607,7 @@ static OOOXZManager *sSingleton = nil;
 		// can't be installed on this version of Oolite, or already is installed
 		return NO;
 	}
-	NSString *url = manifest[kOOManifestDownloadURL];
+	NSString *url = [manifest objectForKey:kOOManifestDownloadURL];
 	if (url == nil)
 	{
 		OOLog(kOOOXZErrorLog, @"%@", @"Manifest does not have a download URL - cannot install");
@@ -1824,7 +1824,7 @@ static OOOXZManager *sSingleton = nil;
 		OOLog(kOOOXZDebugLog, @"Unable to remove item %lu as only %lu in list", (unsigned long)item, (unsigned long)[remList count]);
 		return NO;
 	}
-	NSString *filename = [remList[item] oo_stringForKey:kOOManifestFilePath];
+	NSString *filename = [[remList objectAtIndex:item] oo_stringForKey:kOOManifestFilePath];
 	if (filename == nil)
 	{
 		OOLog(kOOOXZDebugLog, @"Unable to remove item %lu as filename not found", (unsigned long)item);

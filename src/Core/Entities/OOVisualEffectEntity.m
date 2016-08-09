@@ -569,7 +569,7 @@ MA 02110-1301, USA.
 {
 	DESTROY(scanner_display_color1);
 	
-	if (color == nil)  color = [OOColor colorWithDescription:effectinfoDictionary[@"scanner_display_color1"]];
+	if (color == nil)  color = [OOColor colorWithDescription:[effectinfoDictionary objectForKey:@"scanner_display_color1"]];
 	scanner_display_color1 = [color retain];
 }
 
@@ -578,7 +578,7 @@ MA 02110-1301, USA.
 {
 	DESTROY(scanner_display_color2);
 	
-	if (color == nil)  color = [OOColor colorWithDescription:effectinfoDictionary[@"scanner_display_color2"]];
+	if (color == nil)  color = [OOColor colorWithDescription:[effectinfoDictionary objectForKey:@"scanner_display_color2"]];
 	scanner_display_color2 = [color retain];
 }
 
@@ -680,7 +680,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};
 	NSMutableDictionary		*properties = nil;
 	
 	properties = [NSMutableDictionary dictionary];
-	properties[@"visualEffect"] = self;
+	[properties setObject:self forKey:@"visualEffect"];
 	
 	[script autorelease];
 	script = [OOScript jsScriptFromFileNamed:script_name properties:properties];
@@ -700,7 +700,7 @@ static GLfloat scripted_color[4] = 	{ 0.0, 0.0, 0.0, 0.0};
 
 - (NSDictionary *)scriptInfo
 {
-	return (scriptInfo != nil) ? scriptInfo : (NSDictionary *)@{};
+	return (scriptInfo != nil) ? scriptInfo : @{};
 }
 
 // unlikely to need events with arguments
