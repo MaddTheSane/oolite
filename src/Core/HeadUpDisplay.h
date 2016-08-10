@@ -280,6 +280,7 @@ MA 02110-1301, USA.
 
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithDictionary:(NSDictionary *)hudinfo;
 - (instancetype) initWithDictionary:(NSDictionary *)hudinfo inFile:(NSString *)hudFileName NS_DESIGNATED_INITIALIZER;
 

@@ -92,6 +92,8 @@ typedef NS_OPTIONS(uint16_t, OOUniformConvertOptions)
 								 macros:(NSDictionary *)macros
 						  bindingTarget:(id<OOWeakReferenceSupport>)target;
 
+- (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration UNAVAILABLE_ATTRIBUTE;
+
 - (instancetype) initWithName:(NSString *)name
 	  configuration:(NSDictionary *)configuration
 			 macros:(NSDictionary *)macros

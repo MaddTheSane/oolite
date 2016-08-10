@@ -28,6 +28,7 @@ MA 02110-1301, USA.
 
 @interface OOPlasmaBurstEntity: OOLightParticleEntity
 
+- (instancetype) initWithDiameter:(float)diameter UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithPosition:(HPVector)position NS_DESIGNATED_INITIALIZER;
 
 @end

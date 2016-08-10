@@ -32,6 +32,7 @@ MA 02110-1301, USA.
 	OOTimeDelta					_duration;
 }
 
+- (instancetype) initWithDiameter:(float)diameter UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithPosition:(HPVector)position
 			   velocity:(Vector)velocity
 				 energy:(float)energy

@@ -43,17 +43,7 @@ static OOBasicMaterial *sDefaultMaterial = nil;
 
 - (instancetype)initWithName:(NSString *)name
 {
-	self = [super init];
-	if (EXPECT_NOT(self == nil))  return nil;
-	
-	materialName = [name copy];
-	
-	[self setDiffuseRed:1.0f green:1.0f blue:1.0f alpha:1.0f];
-	[self setAmbientRed:1.0f green:1.0f blue:1.0f alpha:1.0f];
-	specular[3] = 1.0;
-	emission[3] = 1.0;
-	
-	return self;
+	return [self initWithName:name configuration:nil];
 }
 
 
@@ -62,9 +52,15 @@ static OOBasicMaterial *sDefaultMaterial = nil;
 	id					colorDesc = nil;
 	int					specularExponent;
 	
-	self = [self initWithName:name];
+	self = [super init];
 	if (EXPECT_NOT(self == nil))  return nil;
+	materialName = [name copy];
 	
+	[self setDiffuseRed:1.0f green:1.0f blue:1.0f alpha:1.0f];
+	[self setAmbientRed:1.0f green:1.0f blue:1.0f alpha:1.0f];
+	specular[3] = 1.0;
+	emission[3] = 1.0;
+
 	if (configuration == nil)  configuration = @{};
 	
 	colorDesc = [configuration oo_diffuseColor];

@@ -45,6 +45,7 @@ MA 02110-1301, USA.
 	BOOL						_hasBeenRun;	// Needed for one-shot timers.
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithNextTime:(OOTimeAbsolute)nextTime
 			   interval:(OOTimeDelta)interval NS_DESIGNATED_INITIALIZER;
 

@@ -38,6 +38,7 @@ SOFTWARE.
 	uint32_t			_texOptions;
 }
 
+- (instancetype)initWithPath:(NSString *)path options:(uint32_t)options UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithPixMap:(OOPixMap)pixMap textureOptions:(uint32_t)options freeWhenDone:(BOOL)freeWhenDone NS_DESIGNATED_INITIALIZER;
 
 @end

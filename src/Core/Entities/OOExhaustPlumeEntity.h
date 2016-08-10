@@ -53,7 +53,8 @@ enum
 	uint8_t			_nextFrame;
 }
 
-+ (id) exhaustForShip:(ShipEntity *)ship withDefinition:(NSArray *)definition andScale:(float)scale;
++ (instancetype) exhaustForShip:(ShipEntity *)ship withDefinition:(NSArray *)definition andScale:(float)scale;
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initForShip:(ShipEntity *)ship withDefinition:(NSArray *)definition andScale:(float)scale NS_DESIGNATED_INITIALIZER;
 
 - (void) resetPlume;
@@ -65,7 +66,9 @@ enum
 + (void) setUpTexture;
 + (OOTexture *) plumeTexture;
 + (void) resetGraphicsState;
-
+#if __has_feature(objc_class_property)
+@property (class, readonly, retain, atomic) OOTexture *plumeTexture;
+#endif
 @end
 
 

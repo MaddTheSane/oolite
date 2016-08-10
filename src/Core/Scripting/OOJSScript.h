@@ -43,10 +43,15 @@ static NSString * const kLocalManifestProperty = @"oolite_manifest_identifier";
 
 + (instancetype) scriptWithPath:(NSString *)path properties:(NSDictionary *)properties;
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithPath:(NSString *)path properties:(NSDictionary *)properties NS_DESIGNATED_INITIALIZER;
 
 + (OOJSScript *) currentlyRunningScript;
-+ (NSArray *) scriptStack;
++ (NSArray<OOJSScript*> *) scriptStack;
+#if __has_feature(objc_class_property)
+@property (readonly, retain, class, atomic) OOJSScript *currentlyRunningScript;
+@property (readonly, copy, class, atomic) NSArray<OOJSScript*> *scriptStack;
+#endif
 
 /*	External manipulation of acrtive script stack. Used, for instance, by
 	timers. Failing to balance these will crash!

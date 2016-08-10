@@ -39,6 +39,7 @@ SOFTWARE.
 	GLfloat						*_data;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithPoints:(NSArray *)points
 				scale:(GLfloat)scale
 				color:(OOColor *)color

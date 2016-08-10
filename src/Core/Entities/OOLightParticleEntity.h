@@ -37,6 +37,7 @@ MA 02110-1301, USA.
 	float					_diameter;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithDiameter:(float)diameter NS_DESIGNATED_INITIALIZER;
 
 @property  float diameter;
@@ -53,7 +54,9 @@ MA 02110-1301, USA.
 
 + (void) setUpTexture;
 + (OOTexture *) defaultParticleTexture;
-
+#if __has_feature(objc_class_property)
+@property (class, readonly, retain, atomic) OOTexture *defaultParticleTexture;
+#endif
 
 - (void) drawSubEntityImmediate:(bool)immediate translucent:(bool)translucent;
 

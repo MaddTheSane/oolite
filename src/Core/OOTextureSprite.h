@@ -40,6 +40,7 @@ MA 02110-1301, USA.
 }
 
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithTexture:(OOTexture *)texture;
 - (instancetype) initWithTexture:(OOTexture *)texture size:(NSSize)spriteSize NS_DESIGNATED_INITIALIZER;
 

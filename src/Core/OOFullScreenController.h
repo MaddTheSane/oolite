@@ -58,6 +58,7 @@ MA 02110-1301, USA.
 	MyOpenGLView			*_gameView;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithGameView:(MyOpenGLView *)view NS_DESIGNATED_INITIALIZER;
 
 #if OOLITE_PROPERTY_SYNTAX

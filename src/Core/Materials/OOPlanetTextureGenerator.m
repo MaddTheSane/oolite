@@ -74,6 +74,7 @@ enum
 	RANROTSeed				_seed;
 }
 
+- (instancetype)initWithPath:(NSString *)path options:(uint32_t)options UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithCacheKey:(NSString *)cacheKey seed:(RANROTSeed)seed NS_DESIGNATED_INITIALIZER;
 
 - (void) completeWithData:(void *)data width:(unsigned)width height:(unsigned)height;
@@ -93,6 +94,7 @@ enum
 	OOPlanetTextureGenerator	*_parent;
 }
 
+- (instancetype)initWithPath:(NSString *)path options:(uint32_t)options UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithCacheKey:(NSString *)cacheKey seed:(RANROTSeed)seed andParent:(OOPlanetTextureGenerator *)parent NS_DESIGNATED_INITIALIZER;
 
 - (void) completeWithData:(void *)data width:(unsigned)width height:(unsigned)height;

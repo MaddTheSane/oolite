@@ -87,6 +87,7 @@ extern void GenerateGraphVizForAIStateMachine(NSDictionary *stateMachine, NSStri
 	NSString      *_jsScript;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithStateMachine:(NSDictionary *)stateMachine
 					   name:(NSString *)name
 					  state:(NSString *)state

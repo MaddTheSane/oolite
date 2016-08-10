@@ -63,9 +63,10 @@ SOFTWARE.
 	BOOL				_takesArgument;
 }
 
-+ (id) filterEnumerator:(NSEnumerator *)enumerator withSelector:(SEL)selector;
-+ (id) filterEnumerator:(NSEnumerator *)enumerator withSelector:(SEL)selector andArgument:(id)argument;
++ (instancetype) filterEnumerator:(NSEnumerator *)enumerator withSelector:(SEL)selector;
++ (instancetype) filterEnumerator:(NSEnumerator *)enumerator withSelector:(SEL)selector andArgument:(id)argument;
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithUnderlyingEnumerator:(NSEnumerator *)enumerator
 					   withSelector:(SEL)selector
 					 takingArgument:(BOOL)takesArgument

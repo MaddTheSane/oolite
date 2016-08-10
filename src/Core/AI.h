@@ -55,6 +55,10 @@ MA 02110-1301, USA.
 
 + (AI *) currentlyRunningAI;
 + (NSString *) currentlyRunningAIDescription;
+#if __has_feature(objc_class_property)
+@property (class, readonly, retain, atomic) AI *currentlyRunningAI;
+@property (class, readonly, copy, atomic) NSString *currentlyRunningAIDescription;
+#endif
 
 @property (readonly, copy, atomic) NSString *name;
 @property (readonly, copy, atomic) NSString *associatedJS;
@@ -65,6 +69,7 @@ MA 02110-1301, USA.
 - (void) setStateMachine:(NSString *)smName afterDelay:(NSTimeInterval)delay;
 - (void) setState:(NSString *)stateName afterDelay:(NSTimeInterval)delay;
 
+- (instancetype) init NS_DESIGNATED_INITIALIZER;
 - (instancetype) initWithStateMachine:(NSString *) smName andState:(NSString *) stateName;
 
 @property (strong, atomic) ShipEntity *owner;

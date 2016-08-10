@@ -53,6 +53,7 @@ enum
 	double			_maxSpeed;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 /*	Initialize particle effect with particles flying out randomly.
 	Initiali _particleSize[] is equal to speed.
  */

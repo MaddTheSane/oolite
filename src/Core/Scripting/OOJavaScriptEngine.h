@@ -261,6 +261,7 @@ JSObject *OOJSObjectFromNativeObject(JSContext *context, id object);
 	jsval					_val;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 + (instancetype) valueWithJSValue:(jsval)value inContext:(JSContext *)context;
 + (instancetype) valueWithJSObject:(JSObject *)object inContext:(JSContext *)context;
 

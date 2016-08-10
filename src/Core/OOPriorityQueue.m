@@ -128,6 +128,7 @@ OOINLINE NSComparisonResult PQCompare(id a, id b, SEL comparator)
 	OOPriorityQueue			*_queue;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithPriorityQueue:(OOPriorityQueue *)queue NS_DESIGNATED_INITIALIZER;
 
 @end

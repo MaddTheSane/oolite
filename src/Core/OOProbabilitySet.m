@@ -120,6 +120,7 @@ static NSString * const	kWeightsKey = @"weights";
 	NSUInteger			_index;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithEnumerable:(id<OOProbabilitySetEnumerable>)enumerable NS_DESIGNATED_INITIALIZER;
 
 @end

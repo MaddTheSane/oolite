@@ -39,6 +39,7 @@ MA 02110-1301, USA.
 }
 
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initFromShip:(ShipEntity *)ship NS_DESIGNATED_INITIALIZER;
 
 @end

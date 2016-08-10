@@ -44,6 +44,7 @@ SOFTWARE.
 	GLint					_displayListName;
 }
 
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithColor1:(OOColor *)color1
 			  Color2:(OOColor *)color2
 			  Color3:(OOColor *)color3

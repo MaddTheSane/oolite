@@ -338,6 +338,7 @@ enum
 	BOOL					_doingStartUp;
 }
 
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithGameView:(MyOpenGLView *)gameView NS_DESIGNATED_INITIALIZER;
 
 // SessionID: a value that's incremented when the game is reset.

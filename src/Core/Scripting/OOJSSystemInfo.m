@@ -122,6 +122,7 @@ static JSFunctionSpec sSystemInfoStaticMethods[] =
 	NSString				*_planetKey;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithGalaxy:(OOGalaxyID)galaxy system:(OOSystemID)system NS_DESIGNATED_INITIALIZER;
 
 - (id) valueForKey:(NSString *)key;

@@ -45,6 +45,7 @@ MA 02110-1301, USA.
 	BOOL					_justSwitched;
 }
 
+- (instancetype) initWithDiameter:(float)diameter UNAVAILABLE_ATTRIBUTE;
 + (instancetype) flasherWithDictionary:(NSDictionary *)dictionary;
 - (instancetype) initWithDictionary:(NSDictionary *)dictionary NS_DESIGNATED_INITIALIZER;
 

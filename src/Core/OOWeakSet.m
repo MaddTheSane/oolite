@@ -17,6 +17,7 @@ This code is hereby placed in the public domain.
 	NSEnumerator			*_enumerator;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithEnumerator:(NSEnumerator *)enumerator NS_DESIGNATED_INITIALIZER;
 
 + (instancetype) enumeratorWithCollection:(id)collection;	// Collection must implement -objectEnumerator

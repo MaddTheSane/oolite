@@ -84,6 +84,7 @@ enum
 
 + (void)addQuads:(OOSkyQuadDesc *)quads count:(unsigned)count toArray:(NSMutableArray *)ioArray;
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithQuadsWithTexture:(OOTexture *)texture inArray:(OOSkyQuadDesc *)array count:(unsigned)totalCount NS_DESIGNATED_INITIALIZER;
 
 - (void)render;

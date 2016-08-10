@@ -50,6 +50,7 @@ SOFTWARE.
 }
 
 + (instancetype) poolWithCount:(uint8_t)count minRepeatTime:(OOTimeDelta)minRepeat;
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithCount:(uint8_t)count minRepeatTime:(OOTimeDelta)minRepeat NS_DESIGNATED_INITIALIZER;
 
 - (void) playSoundWithKey:(NSString *)key

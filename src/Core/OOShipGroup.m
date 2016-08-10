@@ -54,6 +54,7 @@ enum
 	BOOL					_considerCleanup, _cleanupNeeded;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithShipGroup:(OOShipGroup *)group NS_DESIGNATED_INITIALIZER;
 
 @property (readonly) NSUInteger index;

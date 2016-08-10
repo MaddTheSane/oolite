@@ -52,6 +52,7 @@ SOFTWARE.
 #endif
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 /*	DataArray is either an array of pairs of numbers, or an array of such
 	arrays (representing one or more contours).
 	OutlineWidth is the width of the tesselated outline, in the same scale as

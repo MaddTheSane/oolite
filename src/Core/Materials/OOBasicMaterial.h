@@ -49,6 +49,7 @@ SOFTWARE.
 	uint8_t					shininess;		// Default: 0.0
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 /*	Initialize with default values (historical Olite defaults, not GL defaults):
 		diffuse		{ 1.0, 1.0, 1.0, 1.0 }
 		specular	{ 0.0, 0.0, 0.0, 1.0 }
@@ -56,7 +57,7 @@ SOFTWARE.
 		emission	{ 0.0, 0.0, 0.0, 1.0 }
 		shininess	0
 */
-- (instancetype)initWithName:(NSString *)name NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithName:(NSString *)name;
 
 /*	Initialize with dictionary. Accepted keys:
 		diffuse		colour description
@@ -68,7 +69,7 @@ SOFTWARE.
 	"Colour description" refers to anything +[OOColor colorWithDescription:]
 	will accept.
 */
-- (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration;
+- (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration NS_DESIGNATED_INITIALIZER;
 
 @property (copy, atomic) OOColor *diffuseColor;
 - (void)setAmbientAndDiffuseColor:(OOColor *)color;

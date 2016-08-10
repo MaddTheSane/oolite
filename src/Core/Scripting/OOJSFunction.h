@@ -37,6 +37,7 @@ MA 02110-1301, USA.
 	NSString					*_name;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithFunction:(JSFunction *)function context:(JSContext *)context NS_DESIGNATED_INITIALIZER;
 - (instancetype) initWithName:(NSString *)name
 			  scope:(JSObject *)scope		// may be NULL, in which case global object is used.

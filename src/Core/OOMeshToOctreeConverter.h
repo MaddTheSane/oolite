@@ -51,6 +51,7 @@ enum
 	}					_data;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithCapacity:(NSUInteger)capacity NS_DESIGNATED_INITIALIZER;
 + (instancetype) converterWithCapacity:(NSUInteger)capacity;
 

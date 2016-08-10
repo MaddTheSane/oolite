@@ -78,6 +78,7 @@ MA 02110-1301, USA.
 	NSString				*_name;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initSunWithColor:(OOColor*)sun_color andDictionary:(NSDictionary*) dict NS_DESIGNATED_INITIALIZER;
 - (BOOL) setSunColor:(OOColor*)sun_color;
 - (BOOL) changeSunProperty:(NSString *)key withDictionary:(NSDictionary*) dict;

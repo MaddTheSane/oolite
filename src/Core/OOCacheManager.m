@@ -113,6 +113,7 @@ static OOCacheManager *sSingleton = nil;
 	NSDictionary			*_cacheContents;
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithCacheContents:(NSDictionary *)cacheContents NS_DESIGNATED_INITIALIZER;
 
 @end

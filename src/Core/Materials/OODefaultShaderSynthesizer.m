@@ -111,6 +111,7 @@ static NSString *FormatFloat(double value);
 #endif
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithMaterialConfiguration:(NSDictionary *)configuration
 						 materialKey:(NSString *)materialKey
 						  entityName:(NSString *)name NS_DESIGNATED_INITIALIZER;

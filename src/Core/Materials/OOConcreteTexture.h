@@ -75,6 +75,7 @@ SOFTWARE.
 #endif
 }
 
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithLoader:(OOTextureLoader *)loader
 				  key:(NSString *)key
 			  options:(uint32_t)options

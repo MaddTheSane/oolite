@@ -62,7 +62,7 @@ typedef struct OOStandaloneAtmosphereGeneratorInfo
 	unsigned						_planetScale;
 }
 
-
+- (instancetype) initWithPath:(NSString *)path options:(uint32_t)options UNAVAILABLE_ATTRIBUTE;
 - (instancetype) initWithPlanetInfo:(NSDictionary *)planetInfo NS_DESIGNATED_INITIALIZER;
 
 + (OOTexture *) planetTextureWithInfo:(NSDictionary *)planetInfo;

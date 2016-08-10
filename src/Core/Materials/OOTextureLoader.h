@@ -88,7 +88,7 @@ SOFTWARE.
 @property (readonly, copy, atomic) NSString *cacheKey;
 
 
-
+- (instancetype) init UNAVAILABLE_ATTRIBUTE;
 /*** Subclass interface; do not use on pain of pain. Unless you're subclassing. ***/
 
 // Subclasses shouldn't do much on init, because of the whole asynchronous thing.
