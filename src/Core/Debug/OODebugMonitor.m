@@ -281,8 +281,8 @@ static OODebugMonitor *sSingleton = nil;
 	
 	if (class == Nil)  class = [NSObject class];
 	
-	result = _configOverrides[key];
-	if (![result isKindOfClass:class] && result != [NSNull null])  result = _configFromOXPs[key];
+	result = [_configOverrides objectForKey:key];
+	if (![result isKindOfClass:class] && result != [NSNull null])  result = [_configFromOXPs objectForKey:key];
 	if (![result isKindOfClass:class] && result != [NSNull null])  result = [[value retain] autorelease];
 	if (result == [NSNull null])  result = nil;
 	
@@ -317,7 +317,7 @@ static OODebugMonitor *sSingleton = nil;
 	else
 	{
 		if (_configOverrides == nil)  _configOverrides = [[NSMutableDictionary alloc] init];
-		_configOverrides[key] = value;
+		[_configOverrides setObject:value forKey:key];
 	}
 	
 	// Send changed value to debugger
@@ -496,7 +496,7 @@ typedef struct
 		NSDictionary *shipInfo = nil;
 		foreach (shipInfo, [entity shipsInTransit])
 		{
-			ShipEntity *ship = shipInfo[@"ship"];
+			ShipEntity *ship = [shipInfo objectForKey:@"ship"];
 			[self dumpEntity:ship withState:state parentVisible:NO];
 		}
 	}
@@ -517,7 +517,7 @@ typedef struct
 	foreach (tex, allTextures)
 	{
 		// We subtract one because allTextures retains the textures.
-		textureRefCounts[[NSValue valueWithNonretainedObject:tex]] = @([tex retainCount] - 1);
+		[textureRefCounts setObject:@([tex retainCount] - 1) forKey:[NSValue valueWithNonretainedObject:tex]];
 	}
 	
 	size_t totalSize = 0;
@@ -661,7 +661,7 @@ typedef struct
 {
 	id							linesForFile = nil;
 	
-	linesForFile = _sourceFiles[filePath];
+	linesForFile = [_sourceFiles objectForKey:filePath];
 	
 	if (linesForFile == nil)
 	{
@@ -669,12 +669,12 @@ typedef struct
 		if (linesForFile == nil)  linesForFile = @[[NSString stringWithFormat:@"<Can't load file %@>", filePath]];
 		
 		if (_sourceFiles == nil)  _sourceFiles = [[NSMutableDictionary alloc] init];
-		_sourceFiles[filePath] = linesForFile;
+		[_sourceFiles setObject:linesForFile forKey:filePath];
 	}
 	
 	if ([linesForFile count] < line || line == 0)  return @"<line out of range!>";
 	
-	return linesForFile[line - 1];
+	return [linesForFile objectAtIndex:line - 1];
 }
 
 
@@ -814,10 +814,10 @@ FIXME: this works with CRLF and LF, but not CR.
 	result = [NSMutableDictionary dictionaryWithCapacity:[dictionary count]];
 	foreachkey (key, dictionary)
 	{
-		value = dictionary[key];
+		value = [dictionary objectForKey:key];
 		value = [self normalizeConfigValue:value forKey:key];
 		
-		if (key != nil && value != nil)  result[key] = value;
+		if (key != nil && value != nil)  [result setObject:value forKey:key];
 	}
 	
 	return result;

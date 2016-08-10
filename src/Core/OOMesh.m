@@ -977,12 +977,12 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 	vertCnt = @(vertexCount);
 	faceCnt = @(faceCount);
 	
-	vertData = _retainedObjects[@"vertices"];
-	faceData = _retainedObjects[@"faces"];
+	vertData = [_retainedObjects objectForKey:@"vertices"];
+	faceData = [_retainedObjects objectForKey:@"faces"];
 	if (includeNormals)
 	{
-		normData = _retainedObjects[@"normals"];
-		tanData = _retainedObjects[@"tangents"];
+		normData = [_retainedObjects objectForKey:@"normals"];
+		tanData = [_retainedObjects objectForKey:@"tangents"];
 	}
 	
 	if (materialCount != 0)
@@ -1184,21 +1184,21 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 			NSMutableArray *lines = [NSMutableArray arrayWithArray:[data componentsSeparatedByString:@"\n"]];
 			for (i = 0; i < [lines count]; i++)
 			{
-				NSString *line = lines[i];
+				NSString *line = [lines objectAtIndex:i];
 				NSArray *parts;
 				//
 				// comments
 				//
 				parts = [line componentsSeparatedByString:@"#"];
-				line = parts[0];
+				line = parts.firstObject;
 				parts = [line componentsSeparatedByString:@"//"];
-				line = parts[0];
+				line = parts.firstObject;
 				//
 				// commas
 				//
 				line = [[line componentsSeparatedByString:@","] componentsJoinedByString:@" "];
 				//
-				lines[i] = line;
+				[lines replaceObjectAtIndex:i withObject:line];
 			}
 			
 			data = [lines componentsJoinedByString:@"\n"];
@@ -1407,7 +1407,7 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 					}
 					else
 					{
-						NSNumber *index = texFileName2Idx[materialKey];
+						NSNumber *index = [texFileName2Idx objectForKey:materialKey];
 						if (index != nil)
 						{
 							_faces[j].materialIndex = [index unsignedIntValue];
@@ -1422,7 +1422,7 @@ shaderBindingTarget:(id<OOWeakReferenceSupport>)target
 							_faces[j].materialIndex = materialCount;
 							materialKeys[materialCount] = [materialKey retain];
 							index = @(materialCount);
-							texFileName2Idx[materialKey] = index;
+							[texFileName2Idx setObject:index forKey:materialKey];
 							++materialCount;
 						}
 					}
@@ -2077,7 +2077,7 @@ static float FaceAreaCorrect(GLuint *vertIndices, Vector *vertices)
 	if (object != nil)
 	{
 		if (_retainedObjects == nil)  _retainedObjects = [[NSMutableDictionary alloc] init];
-		_retainedObjects[key] = object;
+		[_retainedObjects setObject:object forKey:key];
 	}
 }
 

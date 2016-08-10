@@ -95,7 +95,6 @@ static id NSNULL = nil;
 - (void)run
 {
 	NSDictionary				*info = nil;
-	NSAutoreleasePool			*pool = nil;
 	NSString					*name = nil,
 								*context = nil;
 	NSDictionary				*materials = nil,
@@ -104,23 +103,19 @@ static id NSNULL = nil;
 	OOLog(@"verifyOXP.models.unimplemented", @"TODO: implement model verifier.");
 	
 	foreach (info, _modelsToCheck)
-	{
-		pool = [[NSAutoreleasePool alloc] init];
-		
-		name = info[@"name"];
-		context = info[@"context"];
+	@autoreleasepool {
+		name = [info objectForKey:@"name"];
+		context = [info objectForKey:@"context"];
 		if (context == NSNULL)  context = nil;
-		materials = info[@"materials"];
+		materials = [info objectForKey:@"materials"];
 		if (materials == NSNULL)  materials = nil;
-		shaders = info[@"shaders"];
+		shaders = [info objectForKey:@"shaders"];
 		if (shaders == NSNULL)  shaders = nil;
 		
 		[self checkModel:name
 				 context:context
 			   materials:materials
 				 shaders:shaders];
-		
-		[pool release];
 	}
 	[_modelsToCheck release];
 	_modelsToCheck = nil;

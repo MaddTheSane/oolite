@@ -110,7 +110,7 @@ static NSString * const kStageName	= @"Checking demoships.plist";
 	
 	foreach (name, demoshipsPList)
 	{
-		if (shipdataPList[name] == nil)
+		if ([shipdataPList objectForKey:name] == nil)
 		{
 			OOLog(@"verifyOXP.demoshipsPList.unknownShip", @"----- WARNING: demoships.plist entry \"%@\" not found in shipdata.plist.", name);
 		}

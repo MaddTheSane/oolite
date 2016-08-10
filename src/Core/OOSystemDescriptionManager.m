@@ -147,12 +147,12 @@ static NSString *kOOSystemLayerProperty = @"layer";
 
 - (void) setProperties:(NSDictionary *)properties forSystemKey:(NSString *)key
 {
-	OOSystemDescriptionEntry *desc = systemDescriptions[key];
+	OOSystemDescriptionEntry *desc = [systemDescriptions objectForKey:key];
 	if (desc == nil)
 	{
 		// create it
 		desc = [[[OOSystemDescriptionEntry alloc] init] autorelease];
-		systemDescriptions[key] = desc;
+		[systemDescriptions setObject:desc forKey:key];
 	}
 	[self setProperties:properties inDescription:desc];
 	[propertiesInUse addObjectsFromArray:[properties allKeys]];
@@ -177,12 +177,12 @@ static NSString *kOOSystemLayerProperty = @"layer";
 
 - (void) setProperty:(NSString *)property forSystemKey:(NSString *)key andLayer:(OOSystemLayer)layer toValue:(id)value fromManifest:(NSString *)manifest
 {
-	OOSystemDescriptionEntry *desc = systemDescriptions[key];
+	OOSystemDescriptionEntry *desc = [systemDescriptions objectForKey:key];
 	if (desc == nil)
 	{
 		// create it
 		desc = [[[OOSystemDescriptionEntry alloc] init] autorelease];
-		systemDescriptions[key] = desc;
+		[systemDescriptions setObject:desc forKey:key];
 	}
 	[desc setProperty:property forLayer:layer toValue:value];
 	[propertiesInUse addObject:property];
@@ -220,13 +220,13 @@ static NSString *kOOSystemLayerProperty = @"layer";
 		return;
 	}
 //	OOLog(@"saving change",@"%@ %@ %@ %d",manifest,key,property,layer);
-	NSArray *overrideKey = @[manifest,key,property,[[NSNumber numberWithInt:layer] stringValue]];
+	NSArray *overrideKey = @[manifest,key,property,[@(layer) stringValue]];
 	// Obj-C copes with NSArray keys to dictionaries fine, but the
 	// plist format doesn't, so they can't be saved.
 	NSString *overrideKeyStr = [overrideKey componentsJoinedByString:kOOScriptedChangeJoiner];
 	if (value != nil)
 	{
-		scriptedChanges[overrideKeyStr] = value;
+		[scriptedChanges setObject:value forKey:overrideKeyStr];
 	}
 	else
 	{
@@ -252,7 +252,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 				[self setProperty:[key oo_stringAtIndex:2]
 					 forSystemKey:[key oo_stringAtIndex:1]
 						 andLayer:[key oo_intAtIndex:3]
-						  toValue:scripted[keyStr]
+						  toValue:[scripted objectForKey:keyStr]
 					 fromManifest:manifest];
 				// and doing this set stores it into the manager's copy
 				// of scripted changes
@@ -279,7 +279,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 	foreachkey (systemKey,scripted)
 	{
 		NSDictionary *legacyChanges = [scripted oo_dictionaryForKey:systemKey];
-		if (legacyChanges[@"sun_gone_nova"] != nil)
+		if ([legacyChanges objectForKey:@"sun_gone_nova"] != nil)
 		{
 			// then this is a change to import even if we don't know
 			// if the OXP is still installed
@@ -288,7 +288,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 				[self setProperty:propertyKey
 					 forSystemKey:systemKey
 						 andLayer:OO_LAYER_OXP_DYNAMIC
-						  toValue:legacyChanges[propertyKey]
+						  toValue:[legacyChanges objectForKey:propertyKey]
 					 fromManifest:defaultManifest];
 			}
 			/* Fix for older savegames not having a larger sun radius
@@ -387,7 +387,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 		OOLog(@"system.description.error",@"'%d %d' is an invalid system key. This is an internal error. Please report it.",g,s);
 		return nil;
 	}
-	return propertyCache[index][property];
+	return [propertyCache[index] objectForKey:property];
 }
 
 
@@ -400,7 +400,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 	}
 	else
 	{
-		desc = systemDescriptions[key];
+		desc = [systemDescriptions objectForKey:key];
 	}
 	if (desc == nil)
 	{
@@ -418,7 +418,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 	}
 	if (result == nil && universal)
 	{
-		result = universalProperties[property];
+		result = [universalProperties objectForKey:property];
 	}
 	if (result == nil)
 	{
@@ -430,7 +430,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 
 - (id) getProperty:(NSString *)property1 orProperty:(NSString *)property2 forSystemKey:(NSString *)key withUniversal:(BOOL)universal
 {
-	OOSystemDescriptionEntry *desc = systemDescriptions[key];
+	OOSystemDescriptionEntry *desc = [systemDescriptions objectForKey:key];
 	if (desc == nil)
 	{
 		return nil;
@@ -461,11 +461,11 @@ static NSString *kOOSystemLayerProperty = @"layer";
 	{
 		if (result == nil)
 		{
-			result = universalProperties[property1];
+			result = [universalProperties objectForKey:property1];
 		}
 		if (result == nil)
 		{
-			result = universalProperties[property2];
+			result = [universalProperties objectForKey:property2];
 		}
 	}
 	if (result == nil)
@@ -494,7 +494,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 		if (![key isEqualToString:kOOSystemLayerProperty])
 		{
 			[propertiesInUse addObject:key];
-			[desc setProperty:key forLayer:layer toValue:properties[key]];
+			[desc setProperty:key forLayer:layer toValue:[properties objectForKey:key]];
 		}
 	}
 }
@@ -513,7 +513,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 
 		if (val != nil)
 		{
-			dict[property] = val;
+			[dict setObject:val forKey:property];
 		}
 		else if (interstellar)
 		{
@@ -522,7 +522,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 			val = [self getProperty:property forSystemKey:@"interstellar"];
 			if (val != nil)
 			{
-				dict[property] = val;
+				[dict setObject:val forKey:property];
 			}
 		}
 	}
@@ -552,7 +552,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 	}
 	else
 	{
-		propertyCache[i][property] = current;
+		[propertyCache[i] setObject:current forKey:property];
 	}
 }
 
@@ -676,7 +676,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 		// so don't actually set anything
 		if (value != nil)
 		{
-			layers[layer][property] = value;
+			[layers[layer] setObject:value forKey:property];
 		}
 	}
 }
@@ -684,7 +684,7 @@ static NSString *kOOSystemLayerProperty = @"layer";
 
 - (id) getProperty:(NSString *)property forLayer:(OOSystemLayer)layer
 {
-	return layers[layer][property];
+	return [layers[layer] objectForKey:property];
 }
 
 

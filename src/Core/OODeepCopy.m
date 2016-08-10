@@ -258,7 +258,7 @@ id OODeepCopy(id object)
 		foreachkey (key, self)
 		{
 			keys[i] = [key ooDeepCopyWithSharedObjects:objects];
-			values[i] = [self[key] ooDeepCopyWithSharedObjects:objects];
+			values[i] = [[self objectForKey:key] ooDeepCopyWithSharedObjects:objects];
 			i++;
 		}
 		

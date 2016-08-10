@@ -68,7 +68,7 @@ MA 02110-1301, USA.
 	for(i=0; i < [stickList count]; i++)
 	{
 		[gui setArray:@[[NSString stringWithFormat: @"Stick %d", i+1],
-					   stickList[i]]
+					   [stickList objectAtIndex:i]]
 			   forRow:i + GUI_ROW_STICKNAME];
 	}
 
@@ -120,7 +120,7 @@ MA 02110-1301, USA.
 	
 	NSString* key = [gui keyForRow: [gui selectedRow]];
 	if ([key hasPrefix:@"Index:"])
-		selFunctionIdx=[[key componentsSeparatedByString:@":"][1] intValue];
+		selFunctionIdx=[[[key componentsSeparatedByString:@":"] objectAtIndex:1] intValue];
 	else
 		selFunctionIdx=-1;
 
@@ -128,7 +128,7 @@ MA 02110-1301, USA.
 	{
 		if ([key hasPrefix:@"More:"])
 		{
-			int from_function = [[key componentsSeparatedByString:@":"][1] intValue];
+			int from_function = [[[key componentsSeparatedByString:@":"] objectAtIndex:1] intValue];
 			if (from_function < 0)  from_function = 0;
 			
 			[self setGuiToStickMapperScreen:from_function];
@@ -139,8 +139,8 @@ MA 02110-1301, USA.
 			return;
 		}
 		
-		NSDictionary *entry=stickFunctions[selFunctionIdx];
-		int hw=[(NSNumber *)entry[KEY_ALLOWABLE] intValue];
+		NSDictionary *entry=[stickFunctions objectAtIndex:selFunctionIdx];
+		int hw=[(NSNumber *)[entry objectForKey:KEY_ALLOWABLE] intValue];
 		[stickHandler setCallback: @selector(updateFunction:)
 						   object: self 
 						 hardware: hw];
@@ -185,7 +185,7 @@ MA 02110-1301, USA.
 	
 	// What moved?
 	int function;
-	NSDictionary *entry = stickFunctions[selFunctionIdx];
+	NSDictionary *entry = [stickFunctions objectAtIndex:selFunctionIdx];
 	if([hwDict oo_boolForKey:STICK_ISAXIS])
 	{
 		function=[entry oo_intForKey: KEY_AXISFN];
@@ -255,9 +255,9 @@ MA 02110-1301, USA.
 - (void) removeFunction:(int)idx
 {
 	OOJoystickManager	*stickHandler = [OOJoystickManager sharedStickHandler];
-	NSDictionary		*entry = stickFunctions[idx];
-	NSNumber			*butfunc = entry[KEY_BUTTONFN];
-	NSNumber			*axfunc = entry[KEY_AXISFN];
+	NSDictionary		*entry = [stickFunctions objectAtIndex:idx];
+	NSNumber			*butfunc = [entry objectForKey:KEY_BUTTONFN];
+	NSNumber			*axfunc = [entry objectForKey:KEY_AXISFN];
 	selFunctionIdx = idx;
 	
 	// Some things can have either axis or buttons - make sure we clear
@@ -338,7 +338,7 @@ MA 02110-1301, USA.
 		{
 			NSString *allowedThings;
 			NSString *assignment;
-			NSDictionary *entry = stickFunctions[i + skip];
+			NSDictionary *entry = [stickFunctions objectAtIndex:i + skip];
 			NSString *axFuncKey = [entry oo_stringForKey:KEY_AXISFN];
 			NSString *butFuncKey = [entry oo_stringForKey:KEY_BUTTONFN];
 			int allowable = [entry oo_intForKey:KEY_ALLOWABLE];
@@ -347,22 +347,22 @@ MA 02110-1301, USA.
 				case HW_AXIS:
 					allowedThings=@"Axis";
 					assignment=[self describeStickDict:
-								assignedAxes[axFuncKey]];
+								[assignedAxes objectForKey:axFuncKey]];
 					break;
 				case HW_BUTTON:
 					allowedThings=@"Button";
 					assignment=[self describeStickDict:
-								assignedButs[butFuncKey]];
+								[assignedButs objectForKey:butFuncKey]];
 					break;
 				default:
 					allowedThings=@"Axis/Button";
 					
 					// axis has priority
 					assignment=[self describeStickDict:
-								assignedAxes[axFuncKey]];
+								[assignedAxes objectForKey:axFuncKey]];
 					if(!assignment)
 						assignment=[self describeStickDict:
-									assignedButs[butFuncKey]];
+									[assignedButs objectForKey:butFuncKey]];
 			}
 			
 			// Find out what's assigned for this function currently.
@@ -371,7 +371,7 @@ MA 02110-1301, USA.
 				assignment = @"   -   ";
 			}
 			
-			[gui setArray: @[entry[KEY_GUIDESC], assignment, allowedThings]
+			[gui setArray: @[[entry objectForKey:KEY_GUIDESC], assignment, allowedThings]
 				   forRow: i + start_row];
 			//[gui setKey: GUI_KEY_OK forRow: i + start_row];
 			[gui setKey: [NSString stringWithFormat: @"Index:%ld", i + skip] forRow: i + start_row];
@@ -395,12 +395,12 @@ MA 02110-1301, USA.
 	NSString *desc=nil;
 	if(stickDict)
 	{
-		int thingNumber=[(NSNumber *)stickDict[STICK_AXBUT]
+		int thingNumber=[(NSNumber *)[stickDict objectForKey:STICK_AXBUT]
 						 intValue];
-		int stickNumber=[(NSNumber *)stickDict[STICK_NUMBER]
+		int stickNumber=[(NSNumber *)[stickDict objectForKey:STICK_NUMBER]
 						 intValue];
 		// Button or axis?
-		if([(NSNumber *)stickDict[STICK_ISAXIS] boolValue])
+		if([(NSNumber *)[stickDict objectForKey:STICK_ISAXIS] boolValue])
 		{
 			desc=[NSString stringWithFormat: @"Stick %d axis %d",
 				  stickNumber+1, thingNumber+1];
@@ -640,12 +640,12 @@ MA 02110-1301, USA.
 	NSMutableDictionary *guiDict = [NSMutableDictionary dictionary];
 	
 	if ([what length] > 30)  what = [[what substringToIndex:28] stringByAppendingString:@"..."];
-	guiDict[KEY_GUIDESC] = what;
-	guiDict[KEY_ALLOWABLE] = @(allowable);
+	[guiDict setObject:what forKey:KEY_GUIDESC];
+	[guiDict setObject:@(allowable) forKey:KEY_ALLOWABLE];
 	if(axisfn >= 0)
-		guiDict[KEY_AXISFN] = @(axisfn);
+		[guiDict setObject:@(axisfn) forKey:KEY_AXISFN];
 	if(butfn >= 0)
-		guiDict[KEY_BUTTONFN] = @(butfn);
+		[guiDict setObject:@(butfn) forKey:KEY_BUTTONFN];
 	return guiDict;
 }
 

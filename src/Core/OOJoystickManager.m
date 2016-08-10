@@ -211,35 +211,35 @@ static id sSharedStickHandler = nil;
 	NSArray *controlPoints;
 	NSMutableArray *points;
 	NSPoint point;
-	NSUInteger i;
 	
 	profile = [self getProfileForAxis: axis];
 	if (!profile) return;
-	dict[@"Deadzone"] = @([profile deadzone]);
+	[dict setObject: @([profile deadzone]) forKey: @"Deadzone"];
 	if ([profile isKindOfClass: [OOJoystickStandardAxisProfile class]])
 	{
 		standard_profile = (OOJoystickStandardAxisProfile *) profile;
-		dict[@"Type"] = @"Standard";
-		dict[@"Power"] = @([standard_profile power]);
-		dict[@"Parameter"] = @([standard_profile parameter]);
+		[dict setObject: @"Standard" forKey: @"Type"];
+		[dict setObject: @([standard_profile power]) forKey: @"Power"];
+		[dict setObject: @([standard_profile parameter]) forKey: @"Parameter"];
 	}
 	else if ([profile isKindOfClass: [OOJoystickSplineAxisProfile class]])
 	{
 		spline_profile = (OOJoystickSplineAxisProfile *) profile;
-		dict[@"Type"] = @"Spline";
+		[dict setObject: @"Spline" forKey: @"Type"];
 		controlPoints = [NSArray arrayWithArray: [spline_profile controlPoints]];
 		points = [[NSMutableArray alloc] initWithCapacity: [controlPoints count]];
-		for (i = 0; i < [controlPoints count]; i++)
+		NSValue *tmpVal = nil;
+		foreach (tmpVal, controlPoints)
 		{
-			point = [controlPoints[i] pointValue];
-			[points addObject: @[[NSNumber numberWithFloat: point.x],
-				[NSNumber numberWithFloat: point.y]]];
+			point = [tmpVal pointValue];
+			[points addObject: @[@(point.x),
+				@(point.y)]];
 		}
-		dict[@"ControlPoints"] = points;
+		[dict setObject: points forKey: @"ControlPoints"];
 	}
 	else
 	{
-		dict[@"Type"] = @"Standard";
+		[dict setObject: @"Standard" forKey: @"Type"];
 	}
 	if (axis == AXIS_ROLL)
 	{
@@ -282,29 +282,27 @@ static id sSharedStickHandler = nil;
 		return;
 	}
 
-	NSString *type = dict[@"Type"];
+	NSString *type = [dict objectForKey: @"Type"];
 	if ([type isEqualToString: @"Standard"])
 	{
 		standard_profile = [[OOJoystickStandardAxisProfile alloc] init];
-		[standard_profile setDeadzone: [dict[@"Deadzone"] doubleValue]];
-		[standard_profile setPower: [dict[@"Power"] doubleValue]];
-		[standard_profile setParameter: [dict[@"Parameter"] doubleValue]];
+		[standard_profile setDeadzone: [[dict objectForKey: @"Deadzone"] doubleValue]];
+		[standard_profile setPower: [[dict objectForKey: @"Power"] doubleValue]];
+		[standard_profile setParameter: [[dict objectForKey: @"Parameter"] doubleValue]];
 		[self setProfile: [standard_profile autorelease] forAxis: axis];
 	}
 	else if([type isEqualToString: @"Spline"])
 	{
 		spline_profile = [[OOJoystickSplineAxisProfile alloc] init];
-		[spline_profile setDeadzone: [dict[@"Deadzone"] doubleValue]];
-		NSArray *points = dict[@"ControlPoints"], *pointArray;
+		[spline_profile setDeadzone: [[dict objectForKey: @"Deadzone"] doubleValue]];
+		NSArray *points = [dict objectForKey: @"ControlPoints"], *pointArray;
 		NSPoint point;
-		NSUInteger i;
 
-		for (i = 0; i < [points count]; i++)
+		foreach (pointArray, points)
 		{
-			pointArray = points[i];
 			if ([pointArray count] >= 2)
 			{
-				point = NSMakePoint([pointArray[0] floatValue], [pointArray[1] floatValue]);
+				point = NSMakePoint([[pointArray objectAtIndex: 0] floatValue], [[pointArray objectAtIndex: 1] floatValue]);
 				[spline_profile addControl: point];
 			}
 		}
@@ -694,29 +692,26 @@ static id sSharedStickHandler = nil;
 
 - (void) loadStickSettings
 {
-	unsigned i;
 	[self clearMappings];
 	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 	NSDictionary *axisSettings = [defaults objectForKey: AXIS_SETTINGS];
 	NSDictionary *buttonSettings = [defaults objectForKey: BUTTON_SETTINGS];
 	if(axisSettings)
 	{
-		NSArray *keys = [axisSettings allKeys];
-		for (i = 0; i < [keys count]; i++)
+		NSString *key;
+		foreachkey (key, axisSettings)
 		{
-			NSString *key = keys[i];
 			[self setFunction: [key intValue]
-					 withDict: axisSettings[key]];
+					 withDict: [axisSettings objectForKey: key]];
 		}
 	}
 	if(buttonSettings)
 	{
-		NSArray *keys = [buttonSettings allKeys];
-		for (i = 0; i < [keys count]; i++)
+		NSString *key;
+		foreachkey (key, axisSettings)
 		{
-			NSString *key = keys[i];
 			[self setFunction:[key intValue]
-					 withDict:buttonSettings[key]];
+					 withDict:[buttonSettings objectForKey: key]];
 		}
 	}
 	else

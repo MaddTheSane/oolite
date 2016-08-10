@@ -68,7 +68,7 @@ void GenerateGraphVizForAIStateMachine(NSDictionary *stateMachine, NSString *smN
 		}
 		
 		// Ensure there is an ENTER handler for arrows to point at.
-		if (state[@"ENTER"] == nil)
+		if ([state objectForKey:@"ENTER"] == nil)
 		{
 			[graphViz appendFormat:@"\t\t%@ [label=\"ENTER (implicit)\"] // No ENTER handler in file, but it's still the target of any incoming transitions.\n", HandlerToken(stateKey, @"ENTER", handlerKeys, uniqueSet)];
 		}
@@ -116,14 +116,14 @@ static NSString *HandlerToken(NSString *state, NSString *handler, NSMutableDicti
 		result = [NSString stringWithFormat:@"%@_h_%@", state, handler];
 		result = GraphVizTokenString(result, uniqueSet);
 		
-		NSMutableDictionary *stateDict = handlerKeys[state];
+		NSMutableDictionary *stateDict = [handlerKeys objectForKey:state];
 		if (stateDict == nil)
 		{
 			stateDict = [NSMutableDictionary dictionary];
-			handlerKeys[state] = stateDict;
+			[handlerKeys setObject:stateDict forKey:state];
 		}
 		
-		stateDict[handler] = result;
+		[stateDict setObject:result forKey:handler];
 	}
 	
 	return result;
@@ -136,14 +136,14 @@ static void HandleOneCommand(NSMutableString *graphViz, NSString *stateKey, NSSt
 	if (EXPECT_NOT(command == nil))  return;
 	
 	NSArray *components = ScanTokensFromString(command);
-	NSString *method = components[0];
+	NSString *method = components.firstObject;
 	NSString *handlerToken = HandlerToken(stateKey, handlerKey, handlerKeys, uniqueSet);
 	
 	if (!*haveSetOrSwichAI && [method isEqualToString:@"setStateTo:"])
 	{
 		if ([components count] > 1)
 		{
-			NSString *targetState = components[1];
+			NSString *targetState = [components objectAtIndex:1];
 			NSString *targetLabel = HandlerToken(targetState, @"ENTER", handlerKeys, uniqueSet);
 			BOOL constraint = YES;
 			if ([targetState isEqualToString:stateKey])  constraint = NO;
@@ -187,7 +187,7 @@ static void HandleOneCommand(NSMutableString *graphViz, NSString *stateKey, NSSt
 	}
 	else if ([method isEqualToString:@"exitAIWithMessage:"])
 	{
-		NSString *message = ([components count] > 1) ? components[1] : nil;
+		NSString *message = ([components count] > 1) ? [components objectAtIndex:1] : nil;
 		AddExitAINode(graphViz, handlerToken, message, specialNodes);
 	}
 	else if ([method isEqualToString:@"setAITo:"] || [method isEqualToString:@"switchAITo:"])
@@ -234,7 +234,7 @@ static void AddChangeAINode(NSMutableString *graphViz, NSString *handlerToken, N
 	
 	if ([components count] > 1)
 	{
-		NSString *targetAI = components[1];
+		NSString *targetAI = [components objectAtIndex:1];
 		NSString *token = [NSString stringWithFormat:@"%@_%@", methodTag, targetAI];
 		NSString *label = [NSString stringWithFormat:@"%@\n%@", method, targetAI];
 		
@@ -247,7 +247,7 @@ static void AddChangeAINode(NSMutableString *graphViz, NSString *handlerToken, N
 			if ([command hasPrefix:@"setStateTo:"])
 			{
 				NSArray *components = ScanTokensFromString(command);
-				if ([components count] > 1)  targetState = components[1];
+				if ([components count] > 1)  targetState = [components objectAtIndex:1];
 			}
 		}
 		if (targetState != nil)

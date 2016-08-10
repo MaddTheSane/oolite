@@ -166,7 +166,7 @@ static unsigned				sCacheMisses = 0;
 	foreachkey (subst, _substitutions)
 	{
 		[mutable replaceOccurrencesOfString:subst
-								 withString:_substitutions[subst]
+								 withString:[_substitutions objectForKey:subst]
 									options:0
 									  range:NSMakeRange(0, [mutable length])];
 	}

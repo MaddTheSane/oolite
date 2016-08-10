@@ -63,7 +63,7 @@ static NSComparisonResult goodsSorter(id a, id b, void *context);
 - (void) setGood:(OOCommodityType)key withInfo:(NSDictionary *)info
 {
 	NSMutableDictionary *definition = [NSMutableDictionary dictionaryWithDictionary:info];
-	_commodityList[key] = definition;
+	[_commodityList setObject:definition forKey:key];
 	DESTROY(_sortedKeys); // reset
 }
 
@@ -170,7 +170,7 @@ static NSComparisonResult goodsSorter(id a, id b, void *context);
 	{
 		return NO;
 	}
-	definition[kOOCommodityComment] = comment;
+	[definition setObject:comment forKey:kOOCommodityComment];
 	return YES;
 }
 
@@ -182,7 +182,7 @@ static NSComparisonResult goodsSorter(id a, id b, void *context);
 	{
 		return NO;
 	}
-	definition[kOOCommodityShortComment] = comment;
+	[definition setObject:comment forKey:kOOCommodityShortComment];
 	return YES;
 }
 
@@ -425,6 +425,7 @@ static NSComparisonResult goodsSorter(id a, id b, void *context);
 @end
 
 
+#if !defined(__BLOCKS__) || __BLOCKS__ == 0
 static NSComparisonResult goodsSorter(id a, id b, void *context)
 {
 	NSDictionary *commodityList = (NSDictionary *)context;
@@ -444,3 +445,4 @@ static NSComparisonResult goodsSorter(id a, id b, void *context)
         return NSOrderedSame;
 	}
 }
+#endif

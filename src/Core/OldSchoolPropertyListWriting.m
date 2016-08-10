@@ -202,7 +202,7 @@ static void AppendNewLineAndIndent(NSMutableString *ioString, unsigned indentDep
 			AppendNewLineAndIndent(result, inIndentation + 1);
 		}
 		
-		object = self[i];
+		object = [self objectAtIndex:i];
 		if (![object conformsToProtocol:@protocol (OldSchoolPropertyListWriting)])
 		{
 			if (nil != object && NULL != outErrorDescription)
@@ -250,13 +250,13 @@ static void AppendNewLineAndIndent(NSMutableString *ioString, unsigned indentDep
 			AppendNewLineAndIndent(result, inIndentation + 1);
 		}
 		
-		key = allKeys[i];
+		key = [allKeys objectAtIndex:i];
 		if (![key isKindOfClass:[NSString class]])
 		{
 			if (NULL != outErrorDescription) *outErrorDescription = [NSString stringWithFormat:@"non-string key in dictionary"];
 			return nil;
 		}
-		value = self[key];
+		value = [self objectForKey:key];
 		if (![value conformsToProtocol:@protocol(OldSchoolPropertyListWriting)])
 		{
 			if (nil != value && NULL != outErrorDescription)

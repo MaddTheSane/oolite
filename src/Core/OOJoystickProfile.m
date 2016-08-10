@@ -363,7 +363,7 @@ MA 02110-1301, USA.
 - (NSInteger) addControl: (NSPoint) point
 {
 	NSPoint left, right;
-	NSInteger i;
+	NSUInteger i;
 
 	if (point.x <= SPLINE_POINT_MIN_SPACING || point.x >= 1 - SPLINE_POINT_MIN_SPACING )
 	{
@@ -376,7 +376,7 @@ MA 02110-1301, USA.
 	{
 		if (i < [controlPoints count])
 		{
-			right = [controlPoints[i] pointValue];
+			right = [[controlPoints objectAtIndex: i] pointValue];
 		}
 		else
 		{
@@ -388,7 +388,7 @@ MA 02110-1301, USA.
 			{
 				return -1;
 			}
-			controlPoints[i - 1] = [NSValue valueWithPoint: point];
+			[controlPoints replaceObjectAtIndex: i - 1 withObject: [NSValue valueWithPoint: point]];
 			[self makeSegments];
 			return i - 1;
 		}
@@ -418,7 +418,7 @@ MA 02110-1301, USA.
 	}
 	else
 	{
-		point = [controlPoints[index] pointValue];
+		point = [[controlPoints objectAtIndex: index] pointValue];
 	}
 	return point;
 }
@@ -456,7 +456,7 @@ MA 02110-1301, USA.
 	else
 	{
 		gradientleft = 1.0;
-		right = [controlPoints[0] pointValue];
+		right = [[controlPoints objectAtIndex: 0] pointValue];
 		for (i = 0; i < [controlPoints count]; i++)
 		{
 			next = [self pointAtIndex: i + 1];
@@ -533,7 +533,7 @@ MA 02110-1301, USA.
 	}
 	else
 	{
-		left = [controlPoints[(index-1)] pointValue];
+		left = [[controlPoints objectAtIndex: (index-1)] pointValue];
 	}
 	if (index == (NSInteger)[controlPoints count] - 1)
 	{
@@ -542,7 +542,7 @@ MA 02110-1301, USA.
 	}
 	else
 	{
-		right = [controlPoints[(index+1)] pointValue];
+		right = [[controlPoints objectAtIndex: (index+1)] pointValue];
 	}
 	// preserve order of control points - if we attempt to move this control point beyond
 	// either of its neighbours, move it back inside.  Also keep neighbours a distance of at least SPLINE_POINT_MIN_SPACING apart
@@ -562,7 +562,7 @@ MA 02110-1301, USA.
 			point.x = (left.x + right.x)/2;
 		}
 	}
-	controlPoints[index] = [NSValue valueWithPoint: point];
+	[controlPoints replaceObjectAtIndex: index withObject: [NSValue valueWithPoint: point]];
 	[self makeSegments];
 	return;
 }
@@ -584,7 +584,7 @@ MA 02110-1301, USA.
 	}
 	for (i = 0; i < [segments count]; i++)
 	{
-		segment = segments[i];
+		segment = [segments objectAtIndex: i];
 		if ([segment end] > x)
 		{
 			return sign * OOClamp_0_1_d([segment value:x]);
@@ -599,7 +599,7 @@ MA 02110-1301, USA.
 	OOJoystickSplineSegment *segment;
 	for (i = 0; i < [segments count]; i++)
 	{
-		segment = segments[i];
+		segment = [segments objectAtIndex: i];
 		if ([segment end] > x)
 		{
 			return [segment gradient:x];

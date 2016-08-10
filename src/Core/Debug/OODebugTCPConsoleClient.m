@@ -156,8 +156,8 @@ OOINLINE BOOL StatusIsSendable(OOTCPClientConnectionStatus status)
 			
 			
 			// Attempt to connect
-			parameters = @{kOOTCPProtocolVersion: [NSNumber numberWithUnsignedInt:kOOTCPProtocolVersion_1_1_0],
-							kOOTCPOoliteVersion: [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"]};
+			parameters = @{kOOTCPProtocolVersion: @(kOOTCPProtocolVersion_1_1_0),
+							kOOTCPOoliteVersion: [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]};
 			[self sendPacket:kOOTCPPacket_RequestConnection
 			   withParameters:parameters];
 			
@@ -235,13 +235,13 @@ OOINLINE BOOL StatusIsSendable(OOTCPClientConnectionStatus status)
 	NSArray						*range = nil;
 	
 	parameters = [NSMutableDictionary dictionaryWithCapacity:3];
-	parameters[kOOTCPMessage] = output;
-	parameters[kOOTCPColorKey] = colorKey ? colorKey : (NSString *)@"general";
+	[parameters setObject:output forKey:kOOTCPMessage];
+	[parameters setObject:colorKey ? colorKey : (NSString *)@"general" forKey:kOOTCPColorKey];
 	if (emphasisRange.length != 0)
 	{
 		range = @[@(emphasisRange.location),
 						@(emphasisRange.length)];
-		parameters[kOOTCPEmphasisRanges] = range;
+		[parameters setObject:range forKey:kOOTCPEmphasisRanges];
 	}
 	
 	[self sendPacket:kOOTCPPacket_ConsoleOutput
@@ -580,7 +580,7 @@ noteChangedConfigrationValue:(in id)newValue
 	{
 		foreachkey (key, configuration)
 		{
-			value = configuration[key];
+			value = [configuration objectForKey:key];
 			[_monitor setConfigurationValue:value forKey:key];
 		}
 	}
@@ -622,7 +622,7 @@ noteChangedConfigrationValue:(in id)newValue
 {
 	id						message = nil;
 	
-	message = packet[kOOTCPMessage];
+	message = [packet objectForKey:kOOTCPMessage];
 	[self sendPacket:kOOTCPPacket_Pong
 			withValue:message
 		 forParameter:kOOTCPMessage];

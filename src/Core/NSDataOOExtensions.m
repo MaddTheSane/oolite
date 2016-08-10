@@ -45,7 +45,7 @@ SOFTWARE.
 	cl = [components count];
 	for (i = 0 ; i < cl ; i++)
 	{
-		NSString *component = components[i];
+		NSString *component = [components objectAtIndex:i];
 		if ([[[component pathExtension] lowercaseString] isEqualToString:@"oxz"])
 		{
 			break;

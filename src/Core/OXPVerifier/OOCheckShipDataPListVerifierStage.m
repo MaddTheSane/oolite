@@ -242,7 +242,7 @@ static NSString * const kStageName	= @"Checking shipdata.plist";
 {
 	NSString					*rolesString = nil;
 	
-	rolesString = _info[@"roles"];
+	rolesString = [_info objectForKey:@"roles"];
 	_roles = [self rolesFromString:rolesString];
 	_isPlayer = [_roles containsObject:@"player"];
 	_isStation = [_info oo_boolForKey:@"is_carrier" defaultValue:NO] ||
@@ -347,7 +347,7 @@ static NSString * const kStageName	= @"Checking shipdata.plist";
 	result = [NSMutableSet setWithCapacity:count];
 	for (i = 0; i != count; ++i)
 	{
-		role = parts[i];
+		role = [parts objectAtIndex:i];
 		parenRange = [role rangeOfString:@"("];
 		if (parenRange.location != NSNotFound)
 		{

@@ -46,7 +46,7 @@ void OOStandardsInternal(NSString *type, NSString *message);
 
 static BOOL sSetup = NO;
 
-typedef NS_ENUM(unsigned int, OOStandardsEnforcement) {
+typedef NS_ENUM(int, OOStandardsEnforcement) {
 // do nothing (equivalent to release build)
 	STANDARDS_ENFORCEMENT_OFF = 0,
 // warn in log but otherwise do nothing

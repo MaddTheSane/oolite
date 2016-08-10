@@ -168,7 +168,7 @@ void OOPrintLogHeader(void)
 	#if (defined (SNAPSHOT_BUILD) && defined (OOLITE_SNAPSHOT_VERSION))
 		versionString = @"development version " OOLITE_SNAPSHOT_VERSION;
 	#else
-		versionString = [NSString stringWithFormat:@"version %@", [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"]];
+		versionString = [NSString stringWithFormat:@"version %@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]];
 	#endif
 	if (versionString == nil)  versionString = @"<unknown version>";
 	

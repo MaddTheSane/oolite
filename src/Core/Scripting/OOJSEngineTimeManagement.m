@@ -638,15 +638,14 @@ static void UpdateProfileForFrame(OOHighResTimeValue now, OOJSProfileStackFrame 
 							   [self profilerOverhead] * 1000.0];
 	
 	NSArray *profileEntries = [self profileEntries];
-	NSUInteger i, count = [profileEntries count];
+	NSUInteger count = [profileEntries count];
 	if (count != 0)
 	{
 		[result appendString:@"\n                                                        NAME  T  COUNT    TOTAL     SELF  TOTAL%   SELF%  SELFMAX"];
-		for (i = 0; i < count; i++)
+		OOTimeProfileEntry *entry = nil;
+		foreach (entry, profileEntries)
 		{
 		//	[result appendFormat:@"\n    %@", [_profileEntries objectAtIndex:i]];
-			
-			OOTimeProfileEntry *entry = profileEntries[i];
 			
 			double totalPc = [entry totalTimeSum] * 100.0 / totalTime;
 			double selfPc = [entry selfTimeSum] * 100.0 / totalTime;

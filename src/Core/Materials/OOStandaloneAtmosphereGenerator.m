@@ -107,7 +107,7 @@ enum
 	if ((self = [super initWithPath:[NSString stringWithFormat:@"OOStandaloneAtmosphereTexture@%p", self] options:kOOTextureAllowCubeMap]))
 	{
 		OOLog(@"texture.planet.generate",@"Extracting parameters for generator %@",self);
-		[planetInfo[@"noise_map_seed"] getValue:&_info.seed];
+		[[planetInfo objectForKey:@"noise_map_seed"] getValue:&_info.seed];
 		OOLog(@"texture.planet.generate", @"%@", @"Extracting atmosphere parameters");
 		// we are an atmosphere:
 		_info.cloudAlpha = [planetInfo oo_floatForKey:@"cloud_alpha" defaultValue:1.0f];
@@ -417,7 +417,7 @@ static FloatRGBA CloudMix(OOStandaloneAtmosphereGeneratorInfo *info, float q, fl
 
 static FloatRGB FloatRGBFromDictColor(NSDictionary *dictionary, NSString *key)
 {
-	OOColor *color = dictionary[key];
+	OOColor *color = [dictionary objectForKey:key];
 	NSCAssert1([color isKindOfClass:[OOColor class]], @"Expected OOColor, got %@", [color class]);
 	
 	return (FloatRGB){ [color redComponent] * ALBEDO_FACTOR, [color greenComponent] * ALBEDO_FACTOR, [color blueComponent] * ALBEDO_FACTOR };

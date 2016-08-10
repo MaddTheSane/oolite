@@ -121,7 +121,8 @@ static NSString *MacrosToString(NSDictionary *macros);
 		modifiedMacros = macros ? [macros mutableCopy] : [[NSMutableDictionary alloc] init];
 		[modifiedMacros autorelease];
 		
-		modifiedMacros[@"OO_TEXTURE_UNIT_COUNT"] = @(textureUnits);
+		[modifiedMacros setObject:[NSNumber numberWithUnsignedInt:textureUnits]
+						   forKey:@"OO_TEXTURE_UNIT_COUNT"];
 		
 		// used to test for simplified shaders - OO_REDUCED_COMPLEXITY - here
 		macroString = MacrosToString(modifiedMacros);
@@ -305,7 +306,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	if (uniform != nil)
 	{
 		OOLog(@"shader.uniform.set", @"Set up uniform %@", uniform);
-		uniforms[uniformName] = uniform;
+		[uniforms setObject:uniform forKey:uniformName];
 		[uniform release];
 		return YES;
 	}
@@ -355,7 +356,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	if (uniform != nil)
 	{
 		OOLog(@"shader.uniform.set", @"Set up uniform %@", uniform);
-		uniforms[uniformName] = uniform;
+		[uniforms setObject:uniform forKey:uniformName];
 		[uniform release];
 	}
 	else
@@ -378,7 +379,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	if (uniform != nil)
 	{
 		OOLog(@"shader.uniform.set", @"Set up uniform %@", uniform);
-		uniforms[uniformName] = uniform;
+		[uniforms setObject:uniform forKey:uniformName];
 		[uniform release];
 	}
 	else
@@ -401,7 +402,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	if (uniform != nil)
 	{
 		OOLog(@"shader.uniform.set", @"Set up uniform %@", uniform);
-		uniforms[uniformName] = uniform;
+		[uniforms setObject:uniform forKey:uniformName];
 		[uniform release];
 	}
 	else
@@ -421,7 +422,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	{
 		for (unsigned i = 0; i < 4; i++)
 		{
-			vecArray[i] = OOFloatFromObject(value[i], 0.0f);
+			vecArray[i] = OOFloatFromObject([value objectAtIndex:i], 0.0f);
 		}
 	}
 	else
@@ -439,7 +440,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	if (uniform != nil)
 	{
 		OOLog(@"shader.uniform.set", @"Set up uniform %@", uniform);
-		uniforms[uniformName] = uniform;
+		[uniforms setObject:uniform forKey:uniformName];
 		[uniform release];
 	}
 	else
@@ -463,7 +464,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	if (uniform != nil)
 	{
 		OOLog(@"shader.uniform.set", @"Set up uniform %@", uniform);
-		uniforms[uniformName] = uniform;
+		[uniforms setObject:uniform forKey:uniformName];
 		[uniform release];
 	}
 	else
@@ -505,7 +506,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	foreach (name, keys)
 	{
 		gotValue = NO;
-		definition = uniformDefs[name];
+		definition = [uniformDefs objectForKey:name];
 		
 		type = nil;
 		value = nil;
@@ -513,7 +514,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 		
 		if ([definition isKindOfClass:[NSDictionary class]])
 		{
-			value = ((NSDictionary *)definition)[@"value"];
+			value = [(NSDictionary *)definition objectForKey:@"value"];
 			binding = [(NSDictionary *)definition oo_stringForKey:@"binding"];
 			type = [(NSDictionary *)definition oo_stringForKey:@"type"];
 			scale = [(NSDictionary *)definition oo_floatForKey:@"scale" defaultValue:1.0];
@@ -771,7 +772,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	
 	for (i = 0; i < count; i++)
 	{
-		id textureSpec = textureSpecs[i];
+		id textureSpec = [textureSpecs objectAtIndex:i];
 		OOTexture *texture = [OOTexture textureWithConfiguration:textureSpec];
 		if (texture == nil)  texture = [OOTexture nullTexture];
 		[result addObject:texture];
@@ -798,7 +799,7 @@ static NSString *MacrosToString(NSDictionary *macros);
 	unsigned i;
 	for (i = 0; i != texCount; ++i)
 	{
-		textures[i] = textureObjects[i];
+		textures[i] = [textureObjects objectAtIndex:i];
 		[textures[i] retain];
 	}
 }
@@ -817,7 +818,7 @@ static NSString *MacrosToString(NSDictionary *macros)
 	foreachkey (key, macros)
 	{
 		if (![key isKindOfClass:[NSString class]]) continue;
-		value = macros[key];
+		value = [macros objectForKey:key];
 		
 		[result appendFormat:@"#define %@  %@\n", key, value];
 	}

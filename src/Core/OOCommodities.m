@@ -147,7 +147,7 @@ MA 02110-1301, USA.
 		/* The actual capacity of the player ship is a total, not
 		 * per-good, so is managed separately through PlayerEntity */
 		[good oo_setUnsignedInteger:UINT32_MAX forKey:kOOCommodityCapacity];
-		good[kOOCommodityKey] = commodity;
+		[good setObject:commodity forKey:kOOCommodityKey];
 		
 		[market setGood:commodity withInfo:good];
 	}
@@ -167,7 +167,7 @@ MA 02110-1301, USA.
 		[good oo_setUnsignedInteger:0 forKey:kOOCommodityPriceCurrent];
 		[good oo_setUnsignedInteger:0 forKey:kOOCommodityQuantityCurrent];
 		[good oo_setUnsignedInteger:0 forKey:kOOCommodityCapacity];
-		good[kOOCommodityKey] = commodity;
+		[good setObject:commodity forKey:kOOCommodityKey];
 		
 		[market setGood:commodity withInfo:good];
 	}
@@ -185,7 +185,7 @@ MA 02110-1301, USA.
 		[definition oo_setInteger:MAIN_SYSTEM_MARKET_LIMIT forKey:kOOCommodityCapacity];
 	}
 
-	definition[kOOCommodityKey] = key;
+	[definition setObject:key forKey:kOOCommodityKey];
 	if (station != nil && ![station marketMonitored])
 	{
 		// clear legal status indicators if the market is not monitored

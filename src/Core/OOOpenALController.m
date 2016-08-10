@@ -27,6 +27,10 @@ MA 02110-1301, USA.
 #import "OOLogging.h"
 #import "OOALSoundMixer.h"
 
+@interface OOSoundMixer ()
+- (void) shutdown;
+@end
+
 static id sSingleton = nil;
 
 @implementation OOOpenALController

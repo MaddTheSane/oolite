@@ -222,7 +222,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	// step through the cargo pods adding in the quantities	
 	for (i =  cargoCount - 1; i >= 0 ; i--)
 	{
-		ShipEntity *cargoItem = cargo[i];
+		ShipEntity *cargoItem = [cargo objectAtIndex:i];
 		NSString * commodityType = [cargoItem commodityType];
 		if (commodityType == nil || [commodityType isEqualToString:type])
 		{
@@ -255,7 +255,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	// step through the cargo pods removing pods or quantities	
 	for (i =  n_cargo - 1; (i >= 0 && cargoToGo > 0) ; i--)
 	{
-		cargoItem = cargo[i];
+		cargoItem = [cargo objectAtIndex:i];
 		co_type = [cargoItem commodityType];
 		if (co_type == nil || [co_type isEqualToString:type])
 		{
@@ -488,11 +488,6 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 @synthesize cursor_coordinates;
 @synthesize chart_centre_coordinates;
 @synthesize chart_zoom;
-
-- (OOCommodityMarket *) shipCommodityData
-{
-	return shipCommodityData;
-}
 
 
 - (OOScalar) chart_zoom
@@ -784,20 +779,6 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 @synthesize wormhole;
 
 
-- (void) setWormhole:(WormholeEntity*)newWormhole
-{
-	[wormhole release];
-	if (newWormhole != nil)
-	{
-		wormhole = [newWormhole retain];
-	}
-	else
-	{
-		wormhole = nil;
-	}
-}
-
-
 - (NSDictionary *) commanderDataDictionary
 {
 	NSAssert([self isDocked], @"Cannot create commander data dictionary unless docked.");
@@ -805,7 +786,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 
 	NSMutableDictionary *result = [NSMutableDictionary dictionary];
 	
-	result[@"written_by_version"] = [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"];
+	[result setObject:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] forKey:@"written_by_version"];
 
 	NSString	*gal_id = [NSString stringWithFormat:@"%u", galaxy_number];
 	NSString	*sys_id = [NSString stringWithFormat:@"%d", system_id];
@@ -814,27 +795,27 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	//unsigned 	passenger_space = [[OOEquipmentType equipmentTypeWithIdentifier:@"EQ_PASSENGER_BERTH"] requiredCargoSpace];
 	//if (passenger_space == 0) passenger_space = PASSENGER_BERTH_SPACE;
 	
-	result[@"galaxy_id"] = gal_id;
-	result[@"system_id"] = sys_id;
-	result[@"target_id"] = tgt_id;
-	result[@"chart_zoom"]		= @(saved_chart_zoom);
-	result[@"chart_ana_mode"]	= @(ANA_mode);
-	result[@"chart_colour_mode"] = @(longRangeChartMode);
+	[result setObject:gal_id		forKey:@"galaxy_id"];
+	[result setObject:sys_id	forKey:@"system_id"];
+	[result setObject:tgt_id	forKey:@"target_id"];
+	[result setObject:@(saved_chart_zoom) forKey:@"chart_zoom"];
+	[result setObject:@(ANA_mode) forKey:@"chart_ana_mode"];
+	[result setObject:@(longRangeChartMode) forKey:@"chart_colour_mode"];
 
 
 	if (found_system_id >= 0)
 	{
 		NSString *found_id = [NSString stringWithFormat:@"%d", found_system_id];
-		result[@"found_system_id"] = found_id;
+		[result setObject:found_id	forKey:@"found_system_id"];
 	}
 	
 	// Write the name of the current system. Useful for looking up saved game information and for overlapping systems.
-	result[@"current_system_name"] = [UNIVERSE getSystemName:[self currentSystemID]];
+	[result setObject:[UNIVERSE getSystemName:[self currentSystemID]] forKey:@"current_system_name"];
 	
-	result[@"player_name"] = [self commanderName];
-	result[@"player_save_name"] = [self lastsaveName];
-	result[@"ship_unique_name"] = [self shipUniqueName];
-	result[@"ship_class_name"] = [self shipClassName];
+	[result setObject:[self commanderName] forKey:@"player_name"];
+	[result setObject:[self lastsaveName] forKey:@"player_save_name"];
+	[result setObject:[self shipUniqueName] forKey:@"ship_unique_name"];
+	[result setObject:[self shipClassName] forKey:@"ship_class_name"];
 
 	/*
 		BUG: GNUstep truncates integer values to 32 bits when loading XML plists.
@@ -852,21 +833,21 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	
 	if (forward_weapon_type != nil)
 	{
-		result[@"forward_weapon"] = [forward_weapon_type identifier];
+		[result setObject:[forward_weapon_type identifier]	forKey:@"forward_weapon"];
 	}
 	if (aft_weapon_type != nil)
 	{
-		result[@"aft_weapon"] = [aft_weapon_type identifier];
+		[result setObject:[aft_weapon_type identifier]		forKey:@"aft_weapon"];
 	}
 	if (port_weapon_type != nil)
 	{
-		result[@"port_weapon"] = [port_weapon_type identifier];
+		[result setObject:[port_weapon_type identifier]		forKey:@"port_weapon"];
 	}
 	if (starboard_weapon_type != nil)
 	{
-		result[@"starboard_weapon"] = [starboard_weapon_type identifier];
+		[result setObject:[starboard_weapon_type identifier]	forKey:@"starboard_weapon"];
 	}
-	result[@"subentities_status"] = [self serializeShipSubEntities];
+	[result setObject:[self serializeShipSubEntities] forKey:@"subentities_status"];
 	if (hud != nil && [hud nonlinearScanner])
 	{
 		[result oo_setFloat: [hud scannerZoom] forKey:@"ship_scanner_zoom"];
@@ -874,7 +855,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	
 	[result oo_setInteger:max_cargo + PASSENGER_BERTH_SPACE * max_passengers	forKey:@"max_cargo"];
 	
-	result[@"shipCommodityData"] = [shipCommodityData savePlayerAmounts];
+	[result setObject:[shipCommodityData savePlayerAmounts]		forKey:@"shipCommodityData"];
 	
 	
 	NSMutableArray *missileRoles = [NSMutableArray arrayWithCapacity:max_missiles];
@@ -890,7 +871,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 			[missileRoles addObject:@"NONE"];
 		}
 	}
-	result[@"missile_roles"] = missileRoles;
+	[result setObject:missileRoles forKey:@"missile_roles"];
 	
 	[result oo_setInteger:missiles forKey:@"missiles"];
 	
@@ -904,12 +885,12 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	// mission variables
 	if (mission_variables != nil)
 	{
-		result[@"mission_variables"] = [NSDictionary dictionaryWithDictionary:mission_variables];
+		[result setObject:[NSDictionary dictionaryWithDictionary:mission_variables] forKey:@"mission_variables"];
 	}
 
 	// communications log
 	NSArray *log = [self commLog];
-	if (log != nil)  result[@"comm_log"] = log;
+	if (log != nil)  [result setObject:log forKey:@"comm_log"];
 	
 	[result oo_setUnsignedInteger:entity_personality forKey:@"entity_personality"];
 	
@@ -923,24 +904,24 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	}
 	if ([equipment count] != 0)
 	{
-		result[@"extra_equipment"] = equipment;
+		[result setObject:equipment forKey:@"extra_equipment"];
 	}
-	if (primedEquipment < [eqScripts count]) result[@"primed_equipment"] = [[eqScripts oo_arrayAtIndex:primedEquipment] oo_stringAtIndex:0];
+	if (primedEquipment < [eqScripts count]) [result setObject:[[eqScripts oo_arrayAtIndex:primedEquipment] oo_stringAtIndex:0] forKey:@"primed_equipment"];
 	
-	result[@"primed_equipment_a"] = [self fastEquipmentA];
-	result[@"primed_equipment_b"] = [self fastEquipmentB];
+	[result setObject:[self fastEquipmentA] forKey:@"primed_equipment_a"];
+	[result setObject:[self fastEquipmentB] forKey:@"primed_equipment_b"];
 
 	// roles
-	result[@"role_weights"] = roleWeights;
+	[result setObject:roleWeights forKey:@"role_weights"];
 
 	// role information
-	result[@"role_weight_flags"] = roleWeightFlags;
+	[result setObject:roleWeightFlags forKey:@"role_weight_flags"];
 
 	// role information
-	result[@"role_system_memory"] = roleSystemList;
+	[result setObject:roleSystemList forKey:@"role_system_memory"];
 
 	// reputation
-	result[@"reputation"] = reputation;
+	[result setObject:reputation forKey:@"reputation"];
 	
 	// initialise parcel reputations in dictionary if not set
 	int pGood = [reputation oo_intForKey:PARCEL_GOOD_KEY];
@@ -955,55 +936,55 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 
 	// passengers
 	[result oo_setInteger:max_passengers forKey:@"max_passengers"];
-	result[@"passengers"] = passengers;
-	result[@"passenger_record"] = passenger_record;
+	[result setObject:passengers forKey:@"passengers"];
+	[result setObject:passenger_record forKey:@"passenger_record"];
 
 	// parcels
-	result[@"parcels"] = parcels;
-	result[@"parcel_record"] = parcel_record;
+	[result setObject:parcels forKey:@"parcels"];
+	[result setObject:parcel_record forKey:@"parcel_record"];
 	
 	//specialCargo
-	if (specialCargo)  result[@"special_cargo"] = specialCargo;
+	if (specialCargo)  [result setObject:specialCargo forKey:@"special_cargo"];
 	
 	// contracts
-	result[@"contracts"] = contracts;
-	result[@"contract_record"] = contract_record;
+	[result setObject:contracts forKey:@"contracts"];
+	[result setObject:contract_record forKey:@"contract_record"];
 
-	result[@"mission_destinations"] = missionDestinations;
+	[result setObject:missionDestinations forKey:@"mission_destinations"];
 
 	//shipyard
-	result[@"shipyard_record"] = shipyard_record;
+	[result setObject:shipyard_record forKey:@"shipyard_record"];
 
 	//ship's clock
-	result[@"ship_clock"] = @(ship_clock);
+	[result setObject:[NSNumber numberWithDouble:ship_clock] forKey:@"ship_clock"];
 
 	//speech
-	result[@"speech_on"] = @(isSpeechOn);
+	[result setObject:[NSNumber numberWithInt:isSpeechOn] forKey:@"speech_on"];
 #if OOLITE_ESPEAK
 	[result setObject:[UNIVERSE voiceName:voice_no] forKey:@"speech_voice"];
 	[result setObject:[NSNumber numberWithBool:voice_gender_m] forKey:@"speech_gender"];
 #endif
 	
 	// docking clearance
-	result[@"docking_clearance_protocol"] = @([UNIVERSE dockingClearanceProtocolActive]);
+	[result setObject:[NSNumber numberWithBool:[UNIVERSE dockingClearanceProtocolActive]] forKey:@"docking_clearance_protocol"];
 
 	//base ship description
-	result[@"ship_desc"] = [self shipDataKey];
-	result[@"ship_name"] = [[self shipInfoDictionary] oo_stringForKey:KEY_NAME];
+	[result setObject:[self shipDataKey] forKey:@"ship_desc"];
+	[result setObject:[[self shipInfoDictionary] oo_stringForKey:KEY_NAME] forKey:@"ship_name"];
 
 	//custom view no.
 	[result oo_setUnsignedInteger:_customViewIndex forKey:@"custom_view_index"];
 
 	//local market for main station
-	if ([[UNIVERSE station] localMarket])  result[@"localMarket"] = [[[UNIVERSE station] localMarket] saveStationAmounts];
+	if ([[UNIVERSE station] localMarket])  [result setObject:[[[UNIVERSE station] localMarket] saveStationAmounts] forKey:@"localMarket"];
 
 	// Scenario restriction on OXZs
-	result[@"scenario_restriction"] = [UNIVERSE useAddOns];
+	[result setObject:[UNIVERSE useAddOns] forKey:@"scenario_restriction"];
 
-	result[@"scripted_planetinfo_overrides"] = [[UNIVERSE systemManager] exportScriptedChanges];
+	[result setObject:[[UNIVERSE systemManager] exportScriptedChanges] forKey:@"scripted_planetinfo_overrides"];
 
 	// trumble information
-	result[@"trumbles"] = [self trumbleValue];
+	[result setObject:[self trumbleValue] forKey:@"trumbles"];
 
 	// wormhole information
 	NSMutableArray *wormholeDicts = [NSMutableArray arrayWithCapacity:[scannedWormholes count]];
@@ -1012,19 +993,19 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	{
 		[wormholeDicts addObject:[wh getDict]];
 	}
-	result[@"wormholes"] = wormholeDicts;
+	[result setObject:wormholeDicts forKey:@"wormholes"];
 
 	// docked station
 	StationEntity *dockedStation = [self dockedStation];
-	result[@"docked_station_role"] = [dockedStation primaryRole];
+	[result setObject:[dockedStation primaryRole] forKey:@"docked_station_role"];
 	HPVector dpos = [dockedStation position];
-	result[@"docked_station_position"] = ArrayFromHPVector(dpos);
-	result[@"station_markets"] = [UNIVERSE getStationMarkets];
+	[result setObject:ArrayFromHPVector(dpos) forKey:@"docked_station_position"];
+	[result setObject:[UNIVERSE getStationMarkets] forKey:@"station_markets"];
 
 	// scenario information
 	if (scenarioKey != nil)
 	{
-		result[@"scenario"] = scenarioKey;
+		[result setObject:scenarioKey forKey:@"scenario"];
 	}
 
 	// create checksum
@@ -1181,7 +1162,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		target_chart_focus = chart_focus_coordinates;
 
 		// calculate system ID, target ID
-		if (dict[@"current_system_name"])
+		if ([dict objectForKey:@"current_system_name"])
 		{
 			system_id = [UNIVERSE findSystemFromName:[dict oo_stringForKey:@"current_system_name"]];
 		}
@@ -1193,7 +1174,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		}
 		// and current_system_name and target_system_name
 		// were introduced at different times, too
-		if (dict[@"target_system_name"])
+		if ([dict objectForKey:@"target_system_name"])
 		{
 			target_system_id = [UNIVERSE findSystemFromName:[dict oo_stringForKey:@"target_system_name"]];
 		}
@@ -1304,12 +1285,12 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	{
 		contractInfo = [[[contracts oo_dictionaryAtIndex:i] mutableCopy] autorelease];
 		// if the trade good ID is an int
-		if ([contractInfo[CARGO_KEY_TYPE] isKindOfClass:[NSNumber class]])
+		if ([[contractInfo objectForKey:CARGO_KEY_TYPE] isKindOfClass:[NSNumber class]])
 		{
 			// look it up, and replace with a string
 			NSUInteger legacy_type = [contractInfo oo_unsignedIntegerForKey:CARGO_KEY_TYPE];
-			contractInfo[CARGO_KEY_TYPE] = [OOCommodities legacyCommodityType:legacy_type];
-			contracts[i] = [[contractInfo copy] autorelease];
+			[contractInfo setObject:[OOCommodities legacyCommodityType:legacy_type] forKey:CARGO_KEY_TYPE];
+			[contracts replaceObjectAtIndex:i withObject:[[contractInfo copy] autorelease]];
 		}
 		else
 		{
@@ -1429,7 +1410,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		}
 	}
 	
-	credits = OODeciCreditsFromObject(dict[@"credits"]);
+	credits = OODeciCreditsFromObject([dict objectForKey:@"credits"]);
 	
 	fuel = [dict oo_unsignedIntForKey:@"fuel" defaultValue:fuel];
 	galaxy_number = [dict oo_intForKey:@"galaxy_number"];
@@ -1535,7 +1516,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	NSUInteger commCount = [savedCommLog count];
 	for (NSUInteger i = 0; i < commCount; i++)
 	{
-		[UNIVERSE addCommsMessage:savedCommLog[i] forCount:0 andShowComms:NO logOnly:YES];
+		[UNIVERSE addCommsMessage:[savedCommLog objectAtIndex:i] forCount:0 andShowComms:NO logOnly:YES];
 	}
 
 	/*	entity_personality for scripts and shaders. If undefined, we fall back
@@ -1625,7 +1606,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	
 	// wormholes
 	NSArray * whArray;
-	whArray = dict[@"wormholes"];
+	whArray = [dict objectForKey:@"wormholes"];
 	NSDictionary * whCurrDict;
 	[scannedWormholes release];
 	scannedWormholes = [[NSMutableArray alloc] initWithCapacity:[whArray count]];
@@ -1653,7 +1634,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	
 	// trumble information
 	[self setUpTrumbles];
-	[self setTrumbleValueFrom:dict[@"trumbles"]];	// if it doesn't exist we'll check user-defaults
+	[self setTrumbleValueFrom:[dict objectForKey:@"trumbles"]];	// if it doesn't exist we'll check user-defaults
 
 	return YES;
 }
@@ -2153,7 +2134,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	[self setPrimaryRole:@"player"];
 	
 	[self removeAllEquipment];
-	[self addEquipmentFromCollection:shipDict[@"extra_equipment"]];
+	[self addEquipmentFromCollection:[shipDict objectForKey:@"extra_equipment"]];
 
 	[self resetHud];
 	[hud setHidden:NO];
@@ -3779,7 +3760,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	[ship setDemoStartTime: [UNIVERSE getTime]];
 	if([ship pendingEscortCount] > 0) [ship setPendingEscortCount:0];
 	[ship setAITo: @"nullAI.plist"];
-	id subEntStatus = shipData[@"subentities_status"];
+	id subEntStatus = [shipData objectForKey:@"subentities_status"];
 	// show missing subentities if there's a subentities_status key
 	if (subEntStatus != nil) [ship deserializeShipSubEntitiesFrom:(NSString *)subEntStatus];
 	[UNIVERSE addEntity: ship];
@@ -4228,7 +4209,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		{
 			if ([savedMFDs count] > i)
 			{
-				[multiFunctionDisplaySettings addObject:savedMFDs[i]];
+				[multiFunctionDisplaySettings addObject:[savedMFDs objectAtIndex:i]];
 			}
 			else
 			{
@@ -4255,13 +4236,13 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 
 - (OOColor *) dialCustomColor:(NSString *)dialKey
 {
-	return [OOColor colorWithDescription:customDialSettings[dialKey]];
+	return [OOColor colorWithDescription:[customDialSettings objectForKey:dialKey]];
 }
 
 
 - (void) setDialCustom:(id)value forKey:(NSString *)dialKey
 {
-	customDialSettings[dialKey] = value;
+	[customDialSettings setObject:value forKey:dialKey];
 }
 
 
@@ -4681,7 +4662,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	}
 	else
 	{
-		roleWeights[slot] = role;
+		[roleWeights replaceObjectAtIndex:slot withObject:role];
 	}
 }
 
@@ -4691,14 +4672,14 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	NSUInteger slot = Ranrot() % [roleWeights count];
 	if (!includingLongRange)
 	{
-		NSString *role = roleWeights[slot];
+		NSString *role = [roleWeights objectAtIndex:slot];
 		// long range roles cleared at 1/2 normal rate
 		if ([role hasSuffix:@"+"] && randf() > 0.5)
 		{
 			return;
 		}
 	}
-	roleWeights[slot] = @"player-unknown";
+	[roleWeights replaceObjectAtIndex:slot withObject:@"player-unknown"];
 }
 
 
@@ -4709,7 +4690,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	{
 		if (randf() < chance)
 		{
-			roleWeights[i] = @"player-unknown";
+			[roleWeights replaceObjectAtIndex:i withObject:@"player-unknown"];
 		}
 	}
 }
@@ -4872,6 +4853,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	}
 	return @"";
 }
+
 
 @synthesize compassMode;
 
@@ -5074,7 +5056,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 {
 	if (text != nil)
 	{
-		multiFunctionDisplayText[key] = text;
+		[multiFunctionDisplayText setObject:text forKey:key];
 	}
 	else if (key != nil)
 	{
@@ -5083,7 +5065,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		NSUInteger index;
 		while ((index = [multiFunctionDisplaySettings indexOfObject:key]) != NSNotFound)
 		{
-			multiFunctionDisplaySettings[index] = [NSNull null];
+			[multiFunctionDisplaySettings replaceObjectAtIndex:index withObject:[NSNull null]];
 		}
 	}
 }
@@ -5105,11 +5087,11 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	{
 		if (key == nil)
 		{
-			multiFunctionDisplaySettings[index] = [NSNull null];
+			[multiFunctionDisplaySettings replaceObjectAtIndex:index withObject:[NSNull null]];
 		}
 		else
 		{
-			multiFunctionDisplaySettings[index] = key;
+			[multiFunctionDisplaySettings replaceObjectAtIndex:index withObject:key];
 		}
 		return YES;
 	}
@@ -5128,10 +5110,10 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		[self setMultiFunctionDisplay:index toKey:nil];
 		return;
 	}
-	id current = multiFunctionDisplaySettings[index];
+	id current = [multiFunctionDisplaySettings objectAtIndex:index];
 	if (current == [NSNull null])
 	{
-		[self setMultiFunctionDisplay:index toKey:keys[0]];
+		[self setMultiFunctionDisplay:index toKey:[keys objectAtIndex:0]];
 	}
 	else
 	{
@@ -5142,7 +5124,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		}
 		else 
 		{
-			[self setMultiFunctionDisplay:index toKey:keys[(cIndex+1)]];
+			[self setMultiFunctionDisplay:index toKey:[keys objectAtIndex:(cIndex+1)]];
 		}
 	}
 }
@@ -6206,7 +6188,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	NSInteger i, n_cargo = [cargo count];
 	if (n_cargo == 0)  return;
 	
-	ShipEntity *pod = (ShipEntity *)[cargo[0] retain];
+	ShipEntity *pod = (ShipEntity *)[[cargo objectAtIndex:0] retain];
 	OOCommodityType current_contents = [pod commodityType];
 	OOCommodityType contents;
 	NSInteger rotates = 0;
@@ -6216,7 +6198,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		[cargo removeObjectAtIndex:0];	// take it from the eject position
 		[cargo addObject:pod];	// move it to the last position
 		[pod release];
-		pod = (ShipEntity*)[cargo[0] retain];
+		pod = (ShipEntity*)[[cargo objectAtIndex:0] retain];
 		contents = [pod commodityType];
 		rotates++;
 	} while ([contents isEqualToString:current_contents]&&(rotates < n_cargo));
@@ -6229,7 +6211,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	// this means the cargo gets to be sorted as it is rotated through
 	for (i = 1; i < (n_cargo - rotates); i++)
 	{
-		pod = cargo[i];
+		pod = [cargo objectAtIndex:i];
 		if ([[pod commodityType] isEqualToString:current_contents])
 		{
 			[pod retain];
@@ -6381,7 +6363,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	// cargo damage
 	if (damage_to < [cargo count])
 	{
-		ShipEntity* pod = (ShipEntity*)cargo[damage_to];
+		ShipEntity* pod = (ShipEntity*)[cargo objectAtIndex:damage_to];
 		NSString* cargo_desc = [UNIVERSE displayNameForCommodity:[pod commodityType]];
 		if (!cargo_desc)
 			return NO;
@@ -7024,8 +7006,8 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		{
 			// set the expected arrival time to now, so they storm off the ship at the first port
 			NSMutableDictionary* passenger_info = [NSMutableDictionary dictionaryWithDictionary:[passengers oo_dictionaryAtIndex:i]];
-			passenger_info[CONTRACT_KEY_ARRIVAL_TIME] = @(ship_clock);
-			passengers[i] = passenger_info;
+			[passenger_info setObject:@(ship_clock) forKey:CONTRACT_KEY_ARRIVAL_TIME];
+			[passengers replaceObjectAtIndex:i withObject:passenger_info];
 		}
 	}
 
@@ -7170,7 +7152,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	NSUInteger legality = [self legalStatusOfCargoList];
 	OOCargoQuantity maxSpace = [self maxAvailableCargoSpace];
 	OOCargoQuantity availSpace = [self availableCargoSpace];
-	if (roleWeightFlags[@"bought-legal"])
+	if ([roleWeightFlags objectForKey:@"bought-legal"])
 	{
 		if (maxSpace != availSpace)
 		{
@@ -7184,7 +7166,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 			}
 		}
 	}
-	if (roleWeightFlags[@"bought-illegal"])
+	if ([roleWeightFlags objectForKey:@"bought-illegal"])
 	{
 		if (maxSpace != availSpace && legality > 0)
 		{
@@ -7648,7 +7630,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	// index == [eqScripts count] means we don't want to activate any equipment.
 	if(index < [eqScripts count])
 	{
-		OOJSScript *eqScript = [eqScripts oo_arrayAtIndex:index][1];
+		OOJSScript *eqScript = [[eqScripts oo_arrayAtIndex:index] objectAtIndex:1];
 		JSContext *context = OOJSAcquireContext();
 		NSAssert1(mode <= OOPRIMEDEQUIP_MODE, @"Primable equipment mode %i out of range", (int)mode);
 		
@@ -7665,6 +7647,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	}
 
 }
+
 
 @synthesize fastEquipmentA = _fastEquipmentA;
 @synthesize fastEquipmentB = _fastEquipmentB;
@@ -7751,7 +7734,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	}
 	for (i = 0; i < [cargo count]; i++)
 	{
-		ShipEntity *container = cargo[i];
+		ShipEntity *container = [cargo objectAtIndex:i];
 		j = [goods indexOfObject:[container commodityType]];
 		quantityInHold[j] += [container commodityAmount];
 		++containersInHold[j];
@@ -7764,11 +7747,11 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 			NSMutableDictionary	*commodity = [NSMutableDictionary dictionaryWithCapacity:4];
 			NSString *symName = [goods oo_stringAtIndex:i];
 			// commodity, quantity - keep consistency between .manifest and .contracts
-			commodity[@"commodity"]		= symName;
-			commodity[@"quantity"]		= @(quantityInHold[i]);
-			commodity[@"containers"]	= @(containersInHold[i]);
-			commodity[@"displayName"]	= [shipCommodityData nameForGood:symName];
-			commodity[@"unit"]			= DisplayStringForMassUnitForCommodity(symName);
+			[commodity setObject:symName forKey:@"commodity"];
+			[commodity setObject:@(quantityInHold[i]) forKey:@"quantity"];
+			[commodity setObject:@(containersInHold[i]) forKey:@"containers"];
+			[commodity setObject:[shipCommodityData nameForGood:symName] forKey:@"displayName"]; 
+			[commodity setObject:DisplayStringForMassUnitForCommodity(symName) forKey:@"unit"]; 
 			[list addObject:commodity];
 		}
 	}
@@ -7805,30 +7788,30 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 		if (forCargo)
 		{
 			// commodity, quantity - keep consistency between .manifest and .contracts
-			contract[@"commodity"]		= [dict oo_stringForKey:CARGO_KEY_TYPE];
-			contract[@"quantity"]		= @([dict oo_intForKey:CARGO_KEY_AMOUNT]);
-			contract[@"description"]	= [dict oo_stringForKey:CARGO_KEY_DESCRIPTION];
+			[contract setObject:[dict oo_stringForKey:CARGO_KEY_TYPE] forKey:@"commodity"];
+			[contract setObject:@([dict oo_intForKey:CARGO_KEY_AMOUNT]) forKey:@"quantity"];
+			[contract setObject:[dict oo_stringForKey:CARGO_KEY_DESCRIPTION] forKey:@"description"];
 		}
 		else
 		{
-			contract[PASSENGER_KEY_NAME] = [dict oo_stringForKey:PASSENGER_KEY_NAME];
-			contract[CONTRACT_KEY_RISK] = @([dict oo_unsignedIntForKey:CONTRACT_KEY_RISK]); 
+			[contract setObject:[dict oo_stringForKey:PASSENGER_KEY_NAME] forKey:PASSENGER_KEY_NAME];
+			[contract setObject:@([dict oo_unsignedIntForKey:CONTRACT_KEY_RISK]) forKey:CONTRACT_KEY_RISK];
 		}
 		
 		OOSystemID 	planet = [dict oo_intForKey:CONTRACT_KEY_DESTINATION];
 		NSString 	*planetName = [UNIVERSE getSystemName:planet];
-		contract[CONTRACT_KEY_DESTINATION] = @(planet);
-		contract[@"destinationName"] = planetName;
+		[contract setObject:@(planet) forKey:CONTRACT_KEY_DESTINATION];
+		[contract setObject:planetName forKey:@"destinationName"];
 		planet = [dict oo_intForKey:CONTRACT_KEY_START];
 		planetName = [UNIVERSE getSystemName: planet];
-		contract[CONTRACT_KEY_START] = @(planet);
-		contract[@"startName"] = planetName;
+		[contract setObject:@(planet) forKey:CONTRACT_KEY_START];
+		[contract setObject:planetName forKey:@"startName"];
 		
 		int 		dest_eta = [dict oo_doubleForKey:CONTRACT_KEY_ARRIVAL_TIME] - ship_clock;
-		contract[@"eta"] = @(dest_eta);
-		contract[@"etaDescription"] = [UNIVERSE shortTimeDescription:dest_eta];
-		contract[CONTRACT_KEY_PREMIUM] = @([dict oo_intForKey:CONTRACT_KEY_PREMIUM]); 
-		contract[CONTRACT_KEY_FEE] = @([dict oo_intForKey:CONTRACT_KEY_FEE]); 
+		[contract setObject:@(dest_eta) forKey:@"eta"];
+		[contract setObject:[UNIVERSE shortTimeDescription:dest_eta] forKey:@"etaDescription"];
+		[contract setObject:@([dict oo_intForKey:CONTRACT_KEY_PREMIUM]) forKey:CONTRACT_KEY_PREMIUM];
+		[contract setObject:@([dict oo_intForKey:CONTRACT_KEY_FEE]) forKey:CONTRACT_KEY_FEE];
 		[result addObject:contract];
 	}
 
@@ -8066,7 +8049,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 - (void) prepareMarkedDestination:(NSMutableDictionary *)markers :(NSDictionary *)marker
 {
 	NSNumber *key = @([marker oo_intForKey:@"system"]);
-	NSMutableArray *list = markers[key];
+	NSMutableArray *list = [markers objectForKey:key];
 	if (list == nil)
 	{
 		list = [NSMutableArray arrayWithObject:marker];
@@ -8075,7 +8058,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	{
 		[list addObject:marker];
 	}
-	markers[key] = list;
+	[markers setObject:list forKey:key];
 }
 
 
@@ -8110,7 +8093,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 
 	foreachkey (key, missionDestinations)
 	{
-		marker = missionDestinations[key];
+		marker = [missionDestinations objectForKey:key];
 		[self prepareMarkedDestination:destinations:marker];
 	}
 	
@@ -9056,8 +9039,8 @@ static NSString *last_outfitting_key=nil;
 			
 			for (i = skip; i < (NSInteger)count && (row - start_row < (OOGUIRow)n_rows); i++)
 			{
-				NSString *interfaceKey = interfaceKeys[i];
-				OOJSInterfaceDefinition *definition = interfaces[interfaceKey];
+				NSString *interfaceKey = [interfaceKeys objectAtIndex:i];
+				OOJSInterfaceDefinition *definition = [interfaces objectForKey:interfaceKey];
 
 				[gui setColor:[gui colorFromSetting:kGuiInterfaceEntryColor defaultValue:nil] forRow:row];
 				[gui setKey:interfaceKey forRow:row];
@@ -9138,7 +9121,7 @@ static NSString *last_outfitting_key=nil;
 	if (interfaceKey && ![interfaceKey hasPrefix:@"More:"])
 	{
 		NSDictionary *interfaces = [[self dockedStation] localInterfaces];
-		OOJSInterfaceDefinition *definition = interfaces[interfaceKey];
+		OOJSInterfaceDefinition *definition = [interfaces objectForKey:interfaceKey];
 		if (definition)
 		{
 			[gui addLongText:[definition summary] startingAtRow:GUI_ROW_INTERFACES_DETAIL align:GUI_ALIGN_LEFT];
@@ -9169,7 +9152,7 @@ static NSString *last_outfitting_key=nil;
 	}
 
 	NSDictionary *interfaces = [[self dockedStation] localInterfaces];
-	OOJSInterfaceDefinition *definition = interfaces[key];
+	OOJSInterfaceDefinition *definition = [interfaces objectForKey:key];
 	if (definition)
 	{
 		[[UNIVERSE gameView] clearKeys];
@@ -9314,7 +9297,7 @@ static NSString *last_outfitting_key=nil;
 		unsigned i;
 		for (i = 0; i < [arguments count]; i++)
 		{
-			if (([arguments[i] isEqual:@"-message"])&&(i < [arguments count] - 1))
+			if (([[arguments objectAtIndex:i] isEqual:@"-message"])&&(i < [arguments count] - 1))
 			{
 				OOGUIRow ms_start = msgLine;
 				NSString* message = [arguments oo_stringAtIndex:i + 1];
@@ -9324,10 +9307,10 @@ static NSString *last_outfitting_key=nil;
 					[gui setColor:[OOColor magentaColor] forRow:i];
 				}
 			}
-			if ([arguments[i] isEqual:@"-showversion"])
+			if ([[arguments objectAtIndex:i] isEqual:@"-showversion"])
 			{
 				OOGUIRow ms_start = msgLine;
-				NSString *version = [NSString stringWithFormat:@"Version %@", [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"]];
+				NSString *version = [NSString stringWithFormat:@"Version %@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]];
 				OOGUIRow i = msgLine = [gui addLongText:version startingAtRow:ms_start align:GUI_ALIGN_CENTER];
 				for (i-- ; i >= ms_start; i--)
 				{
@@ -9397,7 +9380,7 @@ static NSString *last_outfitting_key=nil;
 
 	[gui setSelectableRange:NSMakeRange(0,0)];
 	[gui setNoSelectedRow];
-	
+
 	NSArray *keys = @[@"key_roll_left",@"key_pitch_forward",@"key_yaw_left",
 		 @"key_roll_right",@"key_pitch_back",@"key_yaw_right",
 		 @"key_increase_speed",@"key_decrease_speed",@"key_inject_fuel",
@@ -10031,13 +10014,11 @@ static NSString *last_outfitting_key=nil;
 	
 	if  ([self status] != STATUS_DOCKED)
 	{
-		NSInteger		i;
 		OOCommodityType co_type;
 		ShipEntity		*cargoItem = nil;
 		
-		for (i = [cargo count] - 1; i >= 0 ; i--)
+		foreach(cargoItem, cargo.reverseObjectEnumerator)
 		{
-			cargoItem = cargo[i];
 			co_type = [cargoItem commodityType];
 			if ([co_type isEqualToString:type])
 			{
@@ -10399,7 +10380,7 @@ static NSString *last_outfitting_key=nil;
 	}
 	for (NSUInteger i = 0; i < [cargo count]; i++)
 	{
-		ShipEntity *container = cargo[i];
+		ShipEntity *container = [cargo objectAtIndex:i];
 		NSUInteger goodsIndex = [goods indexOfObject:[container commodityType]];
 		// can happen with filters
 		if (goodsIndex != NSNotFound)
@@ -10593,9 +10574,10 @@ static NSString *last_outfitting_key=nil;
 	{
 		quantityInHold[i] = [shipCommodityData quantityForGood:[goods oo_stringAtIndex:i]];
 	}
-	for (i = 0; i < [cargo count]; i++)
+	ShipEntity *container;
+	foreach(container, cargo)
 	{
-		ShipEntity *container = cargo[i];
+		ShipEntity *container = [cargo objectAtIndex:i];
 		j = [goods indexOfObject:[container commodityType]];
 		quantityInHold[j] += [container commodityAmount];
 	}
@@ -10767,11 +10749,11 @@ static NSString *last_outfitting_key=nil;
 	[self doScriptEvent:OOJSID("playerBoughtCargo") withArguments:@[index, @(purchase), @(pricePerUnit)]];
 	if ([localMarket exportLegalityForGood:index] > 0)
 	{
-		roleWeightFlags[@"bought-illegal"] = @1;
+		[roleWeightFlags setObject:@1 forKey:@"bought-illegal"];
 	}
 	else
 	{
-		roleWeightFlags[@"bought-legal"] = @1;
+		[roleWeightFlags setObject:@1 forKey:@"bought-legal"];
 	}
 	
 	return YES;
@@ -11152,6 +11134,7 @@ static NSString *last_outfitting_key=nil;
 	if (ship_trade_in_factor > 100)  ship_trade_in_factor = 100;
 }
 
+
 @synthesize tradeInFactor = ship_trade_in_factor;
 
 
@@ -11520,14 +11503,14 @@ static NSString *last_outfitting_key=nil;
 			// find and use a blank space in memory
 			if (i != NSNotFound)
 			{
-				target_memory[i] = targetRef;
+				[target_memory replaceObjectAtIndex:i withObject:targetRef];
 				target_memory_index = i;
 			}
 			else
 			{
 				// use the next memory space
 				target_memory_index = (target_memory_index + 1) % PLAYER_TARGET_MEMORY_SIZE;
-				target_memory[target_memory_index] = targetRef;
+				[target_memory replaceObjectAtIndex:target_memory_index withObject:targetRef];
 			}
 		}
 	}
@@ -11563,7 +11546,7 @@ static NSString *last_outfitting_key=nil;
 	{
 		if (i < memoryCount)
 		{
-			target_memory[i] = [NSNull null];
+			[target_memory replaceObjectAtIndex:i withObject:[NSNull null]];
 		}
 		else
 		{
@@ -11622,7 +11605,7 @@ static NSString *last_outfitting_key=nil;
 			}
 			else
 			{
-				target_memory[target_memory_index] = [NSNull null];
+				[target_memory replaceObjectAtIndex:target_memory_index withObject:[NSNull null]];
 			}
 		}
 	}
@@ -11983,7 +11966,7 @@ static NSString *last_outfitting_key=nil;
 		return nil;
 	}
 	OOScript *cscript = nil;
-	if ((cscript = commodityScripts[scriptName]))
+	if ((cscript = [commodityScripts objectForKey:scriptName]))
 	{
 		return cscript;
 	}
@@ -11991,7 +11974,7 @@ static NSString *last_outfitting_key=nil;
 	if (cscript != nil)
 	{
 		// storing it in here retains it
-		commodityScripts[scriptName] = cscript;
+		[commodityScripts setObject:cscript forKey:scriptName];
 	}
 	else
 	{
@@ -12309,13 +12292,13 @@ else _dockTarget = NO_TARGET;
 
 	foreachkey (key, destinations)
 	{
-		value = destinations[key];
+		value = [destinations objectForKey:key];
 		if (value != nil)
 		{
 			if ([value isKindOfClass:[NSDictionary class]])
 			{
 				value = [value mutableCopy];
-				missionDestinations[key] = value;
+				[missionDestinations setObject:value forKey:key];
 				[value release];
 			}
 		}
@@ -12349,7 +12332,7 @@ else _dockTarget = NO_TARGET;
 		return;
 	}
 	
-	missionDestinations[[self markerKey:validated]] = validated;
+	[missionDestinations setObject:validated forKey:[self markerKey:validated]];
 }
 
 
@@ -12361,7 +12344,7 @@ else _dockTarget = NO_TARGET;
 		return NO;
 	}
 	BOOL result = NO;
-	if (missionDestinations[[self markerKey:validated]] != nil) {
+	if ([missionDestinations objectForKey:[self markerKey:validated]] != nil) {
 		result = YES;
 	}
 	[missionDestinations removeObjectForKey:[self markerKey:validated]];

@@ -167,8 +167,8 @@ enum
 		_info.seaColor = FloatRGBFromDictColor(planetInfo, @"sea_color");
 		_info.paleLandColor = FloatRGBFromDictColor(planetInfo, @"polar_land_color");
 		_info.polarSeaColor = FloatRGBFromDictColor(planetInfo, @"polar_sea_color");
-		[planetInfo[@"noise_map_seed"] getValue:&_info.seed];
-		if (planetInfo[@"cloud_alpha"])
+		[[planetInfo objectForKey:@"noise_map_seed"] getValue:&_info.seed];
+		if ([planetInfo objectForKey:@"cloud_alpha"])
 		{
 			OOLog(@"texture.planet.generate", @"%@", @"Extracting atmosphere parameters");
 			// we have an atmosphere:
@@ -755,7 +755,7 @@ static FloatRGBA PlanetMix(OOPlanetTextureGeneratorInfo *info, float q, float ne
 
 static FloatRGB FloatRGBFromDictColor(NSDictionary *dictionary, NSString *key)
 {
-	OOColor *color = dictionary[key];
+	OOColor *color = [dictionary objectForKey:key];
 	NSCAssert1([color isKindOfClass:[OOColor class]], @"Expected OOColor, got %@", [color class]);
 	
 	return (FloatRGB){ [color redComponent] * ALBEDO_FACTOR, [color greenComponent] * ALBEDO_FACTOR, [color blueComponent] * ALBEDO_FACTOR };

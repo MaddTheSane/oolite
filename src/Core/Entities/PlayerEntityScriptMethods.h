@@ -68,10 +68,10 @@ MA 02110-1301, USA.
 - (NSString *) keyBindingDescription:(NSString *)binding;
 - (NSString *) keyCodeDescription:(OOKeyCode)code;
 
-- (NSString *) commanderKillsAsString;
-- (NSString *) commanderBountyAsString;
-- (NSString *) creditsFormattedForSubstitution;
-- (NSString *) creditsFormattedForLegacySubstitution;
+//- (NSString *) commanderKillsAsString;
+//- (NSString *) commanderBountyAsString;
+//- (NSString *) creditsFormattedForSubstitution;
+//- (NSString *) creditsFormattedForLegacySubstitution;
 
 @end
 

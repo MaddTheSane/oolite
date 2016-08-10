@@ -550,7 +550,7 @@ static BOOL stickProfileArrow_pressed;
 			{
 				OOGL(glColor4f(0.0,1.0,0.0,alpha));
 			}
-			point = [control_points[i] pointValue];
+			point = [[control_points objectAtIndex: i] pointValue];
 			GLDrawFilledOval(at.x+10+point.x*(size.width - 20),at.y+10+point.y*(size.height-20),at.z,NSMakeSize(4,4),20);
 		}
 	}

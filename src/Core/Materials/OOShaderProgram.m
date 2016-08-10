@@ -81,7 +81,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject);
 	
 	// Use cache to avoid creating duplicate shader programs -- saves on GPU resources and potentially state changes.
 	// FIXME: probably needs to respond to graphics resets.
-	result = [sShaderCache[cacheKey] pointerValue];
+	result = [[sShaderCache objectForKey:cacheKey] pointerValue];
 	
 	if (result == nil)
 	{
@@ -99,7 +99,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject);
 		{
 			// ...and add it to the cache.
 			if (sShaderCache == nil)  sShaderCache = [[NSMutableDictionary alloc] init];
-			sShaderCache[cacheKey] = [NSValue valueWithPointer:result];	// Use NSValue so dictionary doesn't retain program
+			[sShaderCache setObject:[NSValue valueWithPointer:result] forKey:cacheKey];	// Use NSValue so dictionary doesn't retain program
 		}
 	}
 	
@@ -122,7 +122,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject);
 	// Use cache to avoid creating duplicate shader programs -- saves on GPU resources and potentially state changes.
 	// FIXME: probably needs to respond to graphics resets.
 	cacheKey = [NSString stringWithFormat:@"vertex:%@\nfragment:%@\n----\n%@", vertexShaderName, fragmentShaderName, prefixString ?: (NSString *)@""];
-	result = [sShaderCache[cacheKey] pointerValue];
+	result = [[sShaderCache objectForKey:cacheKey] pointerValue];
 	
 	if (result == nil)
 	{
@@ -142,7 +142,7 @@ static NSString *GetGLSLInfoLog(GLhandleARB shaderObject);
 			// ...and add it to the cache.
 			[result autorelease];
 			if (sShaderCache == nil)  sShaderCache = [[NSMutableDictionary alloc] init];
-			sShaderCache[cacheKey] = [NSValue valueWithPointer:result];	// Use NSValue so dictionary doesn't retain program
+			[sShaderCache setObject:[NSValue valueWithNonretainedObject:result] forKey:cacheKey];	// Use NSValue so dictionary doesn't retain program
 		}
 	}
 	

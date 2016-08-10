@@ -852,7 +852,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 	{
 		for (i = 0; i < count; ++i)
 		{
-			[self setWeight:[weights oo_floatAtIndex:i] forObject:objects[i]];
+			[self setWeight:[weights oo_floatAtIndex:i] forObject:[objects objectAtIndex:i]];
 		}
 	}
 	
@@ -901,11 +901,11 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 	for (i = 0; i < count; ++i)
 	{
 		sum += [_weights oo_floatAtIndex:i];
-		if (sum >= target)  return _objects[i];
+		if (sum >= target)  return [_objects objectAtIndex:i];
 	}
 	
 	OOLog(@"probabilitySet.broken", @"%s fell off end, returning first object. Nominal sum = %f, target = %f, actual sum = %f, count = %lu. %@", __PRETTY_FUNCTION__, sumOfWeights, target, sum, count,@"This is an internal error, please report it.");
-	return _objects[0];
+	return _objects.firstObject;
 }
 
 
@@ -974,7 +974,7 @@ static OOEmptyProbabilitySet *sOOEmptyProbabilitySetSingleton = nil;
 	else
 	{
 		_sumOfWeights = -1.0f;	// Simply subtracting the relevant weight doesn't work if the weight is large, due to floating-point precision issues.
-		_weights[index] = @(weight);
+		[_weights replaceObjectAtIndex:index withObject:@(weight)];
 	}
 }
 

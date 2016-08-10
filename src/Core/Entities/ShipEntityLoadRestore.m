@@ -81,22 +81,22 @@ static OOShipGroup *GroupForGroupID(NSUInteger groupID, NSMutableDictionary *con
 	NSMutableDictionary *result = [NSMutableDictionary dictionary];
 	if (context == nil)  context = [NSMutableDictionary dictionary];
 	
-	result[KEY_SHIP_KEY] = _shipKey;
+	[result setObject:_shipKey forKey:KEY_SHIP_KEY];
 	
 	NSMutableDictionary *updatedShipInfo = [NSMutableDictionary dictionaryWithDictionary:shipinfoDictionary];
 	
-	updatedShipInfo[KEY_ROLES] = [[self roleSet] roleString];
+	[updatedShipInfo setObject:[[self roleSet] roleString] forKey:KEY_ROLES];
 	[updatedShipInfo oo_setUnsignedInteger:fuel forKey:KEY_FUEL];
 	[updatedShipInfo oo_setUnsignedLongLong:bounty forKey:KEY_BOUNTY];
-	updatedShipInfo[KEY_FORWARD_WEAPON] = OOStringFromWeaponType(forward_weapon_type);
-	updatedShipInfo[KEY_AFT_WEAPON] = OOStringFromWeaponType(aft_weapon_type);
-	updatedShipInfo[KEY_SCAN_CLASS] = OOStringFromScanClass(scanClass);
+	[updatedShipInfo setObject:OOStringFromWeaponType(forward_weapon_type) forKey:KEY_FORWARD_WEAPON];
+	[updatedShipInfo setObject:OOStringFromWeaponType(aft_weapon_type) forKey:KEY_AFT_WEAPON];
+	[updatedShipInfo setObject:OOStringFromScanClass(scanClass) forKey:KEY_SCAN_CLASS];
 	
 	NSArray *deletes = nil;
 	[self simplifyShipdata:updatedShipInfo andGetDeletes:&deletes];
 	
-	result[KEY_SHIPDATA_OVERRIDES] = updatedShipInfo;
-	if (deletes != nil)  result[KEY_SHIPDATA_DELETES] = deletes;
+	[result setObject:updatedShipInfo forKey:KEY_SHIPDATA_OVERRIDES];
+	if (deletes != nil)  [result setObject:deletes forKey:KEY_SHIPDATA_DELETES];
 	
 	if (!HPvector_equal([self position], kZeroHPVector))
 	{
@@ -109,11 +109,11 @@ static OOShipGroup *GroupForGroupID(NSUInteger groupID, NSMutableDictionary *con
 	
 	if (energy != maxEnergy)  [result oo_setFloat:energy / maxEnergy forKey:KEY_ENERGY_LEVEL];
 	
-	result[KEY_PRIMARY_ROLE] = [self primaryRole];
+	[result setObject:[self primaryRole] forKey:KEY_PRIMARY_ROLE];
 	
 	// Add equipment.
 	NSArray *equipment = [[self equipmentEnumerator] allObjects];
-	if ([equipment count] != 0)  result[KEY_EQUIPMENT] = equipment;
+	if ([equipment count] != 0)  [result setObject:equipment forKey:KEY_EQUIPMENT];
 	
 	// Add missiles.
 	if (missiles > 0)
@@ -125,7 +125,7 @@ static OOShipGroup *GroupForGroupID(NSUInteger groupID, NSMutableDictionary *con
 			NSString *missileType = [missile_list[i] identifier];
 			if (missileType != nil)  [missileArray addObject:missileType];
 		}
-		result[KEY_MISSILES] = missileArray;
+		[result setObject:missileArray forKey:KEY_MISSILES];
 	}
 	
 	// Add groups.
@@ -136,7 +136,7 @@ static OOShipGroup *GroupForGroupID(NSUInteger groupID, NSMutableDictionary *con
 		NSString *groupName = [_group name];
 		if (groupName != nil)
 		{
-			result[KEY_GROUP_NAME] = groupName;
+			[result setObject:groupName forKey:KEY_GROUP_NAME];
 		}
 	}
 	if (_escortGroup != nil)
@@ -158,12 +158,12 @@ static OOShipGroup *GroupForGroupID(NSUInteger groupID, NSMutableDictionary *con
 	if ([[[self getAI] name] isEqualToString:@"nullAI.plist"])
 	{
 		// might be a JS version
-		result[KEY_AI] = [[self getAI] associatedJS];
+		[result setObject:[[self getAI] associatedJS] forKey:KEY_AI];
 		// if there isn't, loading nullAI.js will load nullAI.plist anyway
 	}
 	else
 	{
-		result[KEY_AI] = [[self getAI] name];
+		[result setObject:[[self getAI] name] forKey:KEY_AI];
 	}
 	
 	return result;
@@ -277,7 +277,7 @@ static OOShipGroup *GroupForGroupID(NSUInteger groupID, NSMutableDictionary *con
 	NSString *key = nil;
 	foreachkey (key, referenceData)
 	{
-		if (data[key] == nil)
+		if ([data objectForKey:key] == nil)
 		{
 			[foundDeletes addObject:key];
 		}
@@ -317,15 +317,15 @@ static void StripIgnoredKeys(NSMutableDictionary *dict)
 
 static NSUInteger GroupIDForGroup(OOShipGroup *group, NSMutableDictionary *context)
 {
-	NSMutableDictionary *groupIDs = context[@"groupIDs"];
+	NSMutableDictionary *groupIDs = [context objectForKey:@"groupIDs"];
 	if (groupIDs == nil)
 	{
 		groupIDs = [NSMutableDictionary dictionary];
-		context[@"groupIDs"] = groupIDs;
+		[context setObject:groupIDs forKey:@"groupIDs"];
 	}
 	
 	NSValue *key = [NSValue valueWithNonretainedObject:group];
-	NSNumber *groupIDObj = groupIDs[key];
+	NSNumber *groupIDObj = [groupIDs objectForKey:key];
 	unsigned groupID;
 	if (groupIDObj == nil)
 	{
@@ -333,7 +333,7 @@ static NSUInteger GroupIDForGroup(OOShipGroup *group, NSMutableDictionary *conte
 		groupID = [context oo_unsignedIntForKey:@"nextGroupID"];
 		groupIDObj = @(groupID);
 		[context oo_setUnsignedInteger:groupID + 1 forKey:@"nextGroupID"];
-		groupIDs[key] = groupIDObj;
+		[groupIDs setObject:groupIDObj forKey:key];
 		
 		/*	Also keep references to the groups. This isn't necessary at the
 			time of writing, but would be if we e.g. switched to pickling
@@ -341,11 +341,11 @@ static NSUInteger GroupIDForGroup(OOShipGroup *group, NSMutableDictionary *conte
 			persistent context). We can't simply use the groups instead of
 			NSValues as keys, becuase dictionary keys must be copyable.
 		*/
-		NSMutableSet *groups = context[@"groups"];
+		NSMutableSet *groups = [context objectForKey:@"groups"];
 		if (groups == nil)
 		{
 			groups = [NSMutableSet set];
-			context[@"groups"] = groups;
+			[context setObject:groups forKey:@"groups"];
 		}
 		[groups addObject:group];
 	}
@@ -363,18 +363,18 @@ static OOShipGroup *GroupForGroupID(NSUInteger groupID, NSMutableDictionary *con
 {
 	NSNumber *key = @(groupID);
 	
-	NSMutableDictionary *groups = context[@"groupsByID"];
+	NSMutableDictionary *groups = [context objectForKey:@"groupsByID"];
 	if (groups == nil)
 	{
 		groups = [NSMutableDictionary dictionary];
-		context[@"groupsByID"] = groups;
+		[context setObject:groups forKey:@"groupsByID"];
 	}
 	
-	OOShipGroup *group = groups[key];
+	OOShipGroup *group = [groups objectForKey:key];
 	if (group == nil)
 	{
 		group = [[[OOShipGroup alloc] init] autorelease];
-		groups[key] = group;
+		[groups setObject:group forKey:key];
 	}
 	
 	return group;

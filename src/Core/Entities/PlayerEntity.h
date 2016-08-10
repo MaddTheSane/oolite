@@ -768,7 +768,7 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 @property (setter=setGalaxyCoordinates:) NSPoint galaxy_coordinates;
 @property (readonly) NSPoint cursor_coordinates;
 @property (readonly) NSPoint chart_centre_coordinates;
-@property (readonly) OOScalar chart_zoom;
+@property (readonly, atomic) OOScalar chart_zoom;
 @property (readonly, atomic) NSPoint adjusted_chart_centre;
 @property (readonly) OORouteType ANAMode;
 

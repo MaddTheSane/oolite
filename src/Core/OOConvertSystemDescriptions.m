@@ -175,17 +175,17 @@ NSArray *OOConvertSystemDescriptionsToArrayFormat(NSDictionary *descriptionsInDi
 	
 	foreachkey (key, descriptionsInDictionaryFormat)
 	{
-		entry = ConvertKeysToIndices(descriptionsInDictionaryFormat[key], keysToIndices, usedIndices, &slotCache);
+		entry = ConvertKeysToIndices([descriptionsInDictionaryFormat objectForKey:key], keysToIndices, usedIndices, &slotCache);
 		index = KeyToIndex(key, keysToIndices, usedIndices, &slotCache);
 		
-		result[index] = entry;
+		[result setObject:entry forKey:index];
 	}
 	
 	count = HighestIndex(result);
 	realResult = [NSMutableArray arrayWithCapacity:count];
 	for (i = 0; i < count; i++)
 	{
-		entry = result[@(i)];
+		entry = [result objectForKey:@(i)];
 		if (entry == nil)  entry = @[];
 		[realResult addObject:entry];
 	}
@@ -213,7 +213,7 @@ NSDictionary *OOConvertSystemDescriptionsToDictionaryFormat(NSArray *description
 		key = IndexToKey(i, indicesToKeys, YES);
 		++i;
 		
-		result[key] = entry;
+		[result setObject:entry forKey:key];
 	}
 	
 	[pool release];
@@ -273,7 +273,7 @@ static NSMutableDictionary *InitKeyToIndexDict(NSDictionary *dict, NSMutableSet 
 	{
 		// Convert keys of dict to array indices
 		number = @([key intValue]);
-		result[dict[key]] = number;
+		[result setObject:number forKey:[dict objectForKey:key]];
 		[used addObject:number];
 	}
 	
@@ -284,7 +284,7 @@ static NSMutableDictionary *InitKeyToIndexDict(NSDictionary *dict, NSMutableSet 
 
 static NSString *IndexToKey(NSUInteger index, NSDictionary *indicesToKeys, BOOL useFallback)
 {
-	NSString *result = indicesToKeys[[NSString stringWithFormat:@"%lu", index]];
+	NSString *result = [indicesToKeys objectForKey:[NSString stringWithFormat:@"%lu", index]];
 	if (result == nil && useFallback)  result = [NSString stringWithFormat:@"block_%lu", index];
 	
 	return result;
@@ -313,7 +313,7 @@ static NSNumber *KeyToIndex(NSString *key, NSMutableDictionary *ioKeysToIndices,
 	
 	assert(ioSlotCache != NULL);
 	
-	result = ioKeysToIndices[key];
+	result = [ioKeysToIndices objectForKey:key];
 	if (result == nil)
 	{
 		// Search for free index
@@ -323,7 +323,7 @@ static NSNumber *KeyToIndex(NSString *key, NSMutableDictionary *ioKeysToIndices,
 		}
 		while ([ioUsedIndicies containsObject:result]);
 		
-		ioKeysToIndices[key] = result;
+		[ioKeysToIndices setObject:result forKey:key];
 		[ioUsedIndicies addObject:result];
 		OOLog(@"sysdesc.compile.unknownKey", @"Assigning key \"%@\" to index %@.", key, result);
 	}

@@ -144,7 +144,7 @@ static JSBool OoliteGetProperty(JSContext *context, JSObject *this, jsid propID,
 
 static NSString *VersionString(void)
 {
-	return [[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"];
+	return [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
 }
 
 

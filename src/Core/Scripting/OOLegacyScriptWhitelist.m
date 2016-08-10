@@ -167,7 +167,7 @@ static NSArray *OOSanitizeLegacyScriptConditionsInternal(NSArray *conditions, Sa
 BOOL OOLegacyConditionsAreSanitized(NSArray *conditions)
 {
 	if ([conditions count] == 0)  return YES;	// Empty array is safe.
-	return [conditions[0] isKindOfClass:[NSArray class]];
+	return [conditions.firstObject isKindOfClass:[NSArray class]];
 }
 
 
@@ -376,7 +376,7 @@ static NSArray *SanitizeActionStatement(NSString *statement, SanStackElement *st
 	tokenCount = [tokens count];
 	if (tokenCount == 0)  return nil;
 	
-	rawSelectorString = tokens[0];
+	rawSelectorString = tokens.firstObject;
 	selectorString = SanitizeActionMethod(rawSelectorString, allowAIMethods);
 	if (selectorString == nil)
 	{
@@ -394,7 +394,7 @@ static NSArray *SanitizeActionStatement(NSString *statement, SanStackElement *st
 		// Expects an argument
 		if (tokenCount == 2)
 		{
-			argument = tokens[1];
+			argument = [tokens objectAtIndex:1];
 		}
 		else
 		{

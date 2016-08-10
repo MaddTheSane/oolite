@@ -448,7 +448,7 @@ VERIFY_PROTO(DelegatedType);
 		DebugDumpIndent();
 		
 		resolvedSpecifier = [self resolveSchemaType:subSchema atPath:keyPath error:&error];
-		if (resolvedSpecifier != nil)  type = StringToSchemaType(resolvedSpecifier[@"type"], &error);
+		if (resolvedSpecifier != nil)  type = StringToSchemaType([resolvedSpecifier objectForKey:@"type"], &error);
 		
 		#define VERIFY_CASE(T) case kType##T: error = Verify_##T(self, subProperty, resolvedSpecifier, rootPList, name, keyPath, tentative, outStop); break;
 		
@@ -523,14 +523,14 @@ VERIFY_PROTO(DelegatedType);
 	for (;;)
 	{
 		if ([specifier isKindOfClass:[NSString class]])  specifier = @{@"type": specifier};
-		typeVal = ((NSDictionary *)specifier)[@"type"];
+		typeVal = [(NSDictionary *)specifier objectForKey:@"type"];
 		
 		if ([typeVal isKindOfClass:[NSString class]])
 		{
 			if ([typeVal hasPrefix:@"$"])
 			{
 				// Macro reference; look it up in $definitions
-				specifier = _definitions[typeVal];
+				specifier = [_definitions objectForKey:typeVal];
 				if (specifier == nil)
 				{
 					*outError = ErrorWithProperty(kPListErrorSchemaUndefiniedMacroReference, &keyPath, kUndefinedMacroErrorKey, typeVal, @"Bad schema: reference to undefined macro \"%@\".", StringForErrorReport(typeVal));
@@ -589,7 +589,7 @@ static SchemaType StringToSchemaType(NSString *string, NSError **outError)
 				@"delegatedType": @(kTypeDelegatedType)} retain];
 	}
 	
-	result = [typeMap[string] unsignedIntValue];
+	result = [[typeMap objectForKey:string] unsignedIntValue];
 	if (result == kTypeUnknown && outError != NULL)
 	{
 		if ([string hasPrefix:@"$"])
@@ -791,11 +791,11 @@ static NSString *ArrayForErrorReport(NSArray *array)
 	
 	pool = [[NSAutoreleasePool alloc] init];
 	
-	result = [NSString stringWithFormat:@"(%@", array[0]];
+	result = [NSString stringWithFormat:@"(%@", [array objectAtIndex:0]];
 	
 	for (i = 1; i != count; ++i)
 	{
-		string = [result stringByAppendingFormat:@", %@", array[i]];
+		string = [result stringByAppendingFormat:@", %@", [array objectAtIndex:i]];
 		if (kMaximumLengthForStringInErrorMessage < [string length])
 		{
 			result = [result stringByAppendingString:@", ..."];
@@ -861,11 +861,11 @@ static NSError *Verify_String(OOPListSchemaVerifier *verifier, id value, NSDicti
 	DebugDump(@"* string: \"%@\"", StringForErrorReport(value));
 	
 	// Apply filters
-	filteredString = ApplyStringFilter(value, params[@"filter"], keyPath, &error);
+	filteredString = ApplyStringFilter(value, [params objectForKey:@"filter"], keyPath, &error);
 	if (filteredString == nil)  return error;
 	
 	// Apply substring requirements
-	testValue = params[@"requiredPrefix"];
+	testValue = [params objectForKey:@"requiredPrefix"];
 	if (testValue != nil)
 	{
 		if (!ApplyStringTest(filteredString, testValue, @selector(hasPrefix:), @"prefix", keyPath, &error))
@@ -875,7 +875,7 @@ static NSError *Verify_String(OOPListSchemaVerifier *verifier, id value, NSDicti
 		}
 	}
 	
-	testValue = params[@"requiredSuffix"];
+	testValue = [params objectForKey:@"requiredSuffix"];
 	if (testValue != nil)
 	{
 		if (!ApplyStringTest(filteredString, testValue, @selector(hasSuffix:), @"suffix", keyPath, &error))
@@ -885,7 +885,7 @@ static NSError *Verify_String(OOPListSchemaVerifier *verifier, id value, NSDicti
 		}
 	}
 	
-	testValue = params[@"requiredSubString"];
+	testValue = [params objectForKey:@"requiredSubString"];
 	if (testValue != nil)
 	{
 		if (!ApplyStringTest(filteredString, testValue, @selector(ooPListVerifierHasSubString:), @"substring", keyPath, &error))
@@ -941,12 +941,12 @@ static NSError *Verify_Array(OOPListSchemaVerifier *verifier, id value, NSDictio
 	}
 	
 	// Test member objects.
-	valueType = params[@"valueType"];
+	valueType = [params objectForKey:@"valueType"];
 	if (valueType != nil)
 	{
 		for (i = 0; i != count; ++i)
 		{
-			subProperty = value[i];
+			subProperty = [value objectAtIndex:i];
 			
 			if (![verifier verifyPList:rootPList
 								 named:name
@@ -1004,7 +1004,7 @@ static NSError *Verify_Dictionary(OOPListSchemaVerifier *verifier, id value, NSD
 	
 	// Get schema.
 	schema = [params oo_dictionaryForKey:@"schema"];
-	valueType = params[@"valueType"];
+	valueType = [params objectForKey:@"valueType"];
 	allowOthers = [params oo_boolForKey:@"allowOthers" defaultValue:YES];
 	requiredKeyList = [params oo_arrayForKey:@"requiredKeys"];
 	
@@ -1021,8 +1021,8 @@ static NSError *Verify_Dictionary(OOPListSchemaVerifier *verifier, id value, NSD
 	// Test member objects.
 	for (keyEnum = [value keyEnumerator]; (key = [keyEnum nextObject]) && !stop; )
 	{
-		subProperty = ((NSDictionary *)value)[key];
-		typeSpec = schema[key];
+		subProperty = [(NSDictionary *)value objectForKey:key];
+		typeSpec = [schema objectForKey:key];
 		if (typeSpec == nil)  typeSpec = valueType;
 		
 		DebugDump(@"- \"%@\"", key);
@@ -1042,7 +1042,7 @@ static NSError *Verify_Dictionary(OOPListSchemaVerifier *verifier, id value, NSD
 				OK = NO;
 			}
 		}
-		else if (!allowOthers && ![requiredKeys containsObject:key] && schema[key] == nil)
+		else if (!allowOthers && ![requiredKeys containsObject:key] && [schema objectForKey:key] == nil)
 		{
 			// Report error now rather than returning it, since there may be several unknown keys.
 			if (!tentative)
@@ -1250,7 +1250,7 @@ static NSError *Verify_OneOf(OOPListSchemaVerifier *verifier, id value, NSDictio
 			OK = YES;
 			break;
 		}
-		errors[option] = error;
+		[errors setObject:error forKey:option];
 	}
 	
 	if (!OK)
@@ -1284,7 +1284,7 @@ static NSError *Verify_Enumeration(OOPListSchemaVerifier *verifier, id value, NS
 		return Error(kPListErrorSchemaNoEnumerationValues, &keyPath, @"Bad schema: no options specified for oneOf type.");
 	}
 	
-	filteredString = ApplyStringFilter(value, params[@"filter"], keyPath, &error);
+	filteredString = ApplyStringFilter(value, [params objectForKey:@"filter"], keyPath, &error);
 	if (filteredString == nil)  return error;
 	
 	if ([values containsObject:filteredString])  return nil;
@@ -1341,9 +1341,9 @@ static NSError *Verify_DelegatedType(OOPListSchemaVerifier *verifier, id value, 
 	BOOL					stop = NO;
 	NSError					*error = nil;
 	
-	DebugDump(@"* delegated type: %@", params[@"key"]);
+	DebugDump(@"* delegated type: %@", [params objectForKey:@"key"]);
 	
-	baseType = params[@"baseType"];
+	baseType = [params objectForKey:@"baseType"];
 	if (baseType != nil)
 	{
 		if (![verifier verifyPList:rootPList
@@ -1360,7 +1360,7 @@ static NSError *Verify_DelegatedType(OOPListSchemaVerifier *verifier, id value, 
 		}
 	}
 	
-	key = params[@"key"];
+	key = [params objectForKey:@"key"];
 	*outStop = ![verifier delegateVerifierWithPropertyList:rootPList
 													 named:name
 											  testProperty:value
@@ -1403,13 +1403,13 @@ static NSError *Verify_DelegatedType(OOPListSchemaVerifier *verifier, id value, 
 
 - (Class)expectedClass
 {
-	return [self userInfo][kExpectedClassErrorKey];
+	return [[self userInfo] objectForKey:kExpectedClassErrorKey];
 }
 
 
 - (NSString *)expectedClassName
 {
-	NSString *result = [self userInfo][kExpectedClassNameErrorKey];
+	NSString *result = [[self userInfo] objectForKey:kExpectedClassNameErrorKey];
 	if (result == nil)  result = [[self expectedClass] description];
 	return result;
 }
@@ -1469,10 +1469,10 @@ static NSError *ErrorWithDictionaryAndArguments(OOPListSchemaVerifierErrorCode e
 	message = [[NSString alloc] initWithFormat:format arguments:arguments];
 	
 	userInfo = [NSMutableDictionary dictionaryWithDictionary:dict];
-	userInfo[NSLocalizedFailureReasonErrorKey] = message;
+	[userInfo setObject:message forKey:NSLocalizedFailureReasonErrorKey];
 	if (keyPath != NULL)
 	{
-		userInfo[kPListKeyPathErrorKey] = KeyPathToArray(*keyPath);
+		[userInfo setObject:KeyPathToArray(*keyPath) forKey:kPListKeyPathErrorKey];
 	}
 	
 	[message release];

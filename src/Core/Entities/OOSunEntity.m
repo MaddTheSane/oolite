@@ -671,7 +671,7 @@ MA 02110-1301, USA.
 
 - (BOOL) changeSunProperty:(NSString *)key withDictionary:(NSDictionary*) dict
 {
-	id	object = dict[key];
+	id	object = [dict objectForKey:key];
 	static GLfloat oldRadius = 0.0;
 	if ([key isEqualToString:@"sun_radius"])
 	{
