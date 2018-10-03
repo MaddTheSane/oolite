@@ -1638,7 +1638,7 @@ static NSComparisonResult CompareEntitiesByDistance(id a, id b, void *relativeTo
 	Entity				*ea = a,
 	*eb = b,
 	*r = (id)relativeTo;
-	float				d1, d2;
+	double				d1, d2;
 	
 	d1 = HPdistance2(ea->position, r->position);
 	d2 = HPdistance2(eb->position, r->position);

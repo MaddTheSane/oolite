@@ -42,7 +42,7 @@ MA 02110-1301, USA.
 {
 @private
 	OOJoystickManager *stickHandler;
-	NSUInteger current_axis;
+	int current_axis;
 	OOJoystickAxisProfile *profiles[3][2];
 	GuiDisplayGen *gui;
 	NSRect graphRect;
