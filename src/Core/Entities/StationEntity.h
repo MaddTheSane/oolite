@@ -136,7 +136,7 @@ typedef NS_ENUM(unsigned int, OOStationAlertLevel)
 
 @property (readonly, strong, atomic) OOCommodityMarket *initialiseLocalMarket;
 
-@property  OOTechLevelID equivalentTechLevel;
+@property (nonatomic) OOTechLevelID equivalentTechLevel;
 
 @property (readonly, strong, atomic) NSEnumerator *dockSubEntityEnumerator;
 @property (readonly) Vector virtualPortDimensions;
