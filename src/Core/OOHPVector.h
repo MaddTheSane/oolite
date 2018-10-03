@@ -33,6 +33,14 @@ MA 02110-1301, USA.
 
 #ifndef OOMATHS_EXTERNAL_VECTOR_TYPES
 
+#ifdef USE_SIMD_SIMD_H
+#include <simd/simd.h>
+
+typedef simd_double3 HPVector;
+typedef simd_double2 HPVector2D;
+
+#else
+
 typedef struct HPVector
 {
 	OOHPScalar x;
@@ -47,6 +55,7 @@ typedef struct HPVector2D
 	OOHPScalar y;
 } HPVector2D;
 
+#endif
 #endif
 
 
@@ -79,6 +88,125 @@ HPVector OORandomPositionInShell(HPVector centre, OOHPScalar inner, OOHPScalar o
 	 'plane' and the normal vector 'normal' */
 HPVector OOProjectHPVectorToPlane(HPVector point, HPVector plane, HPVector normal);
 #endif
+
+
+#ifdef USE_SIMD_SIMD_H
+OOINLINE void HPscale_vector(HPVector *outHPVector, OOHPScalar factor) ALWAYS_INLINE_FUNC NONNULL_FUNC;
+OOINLINE void HPscale_vector(HPVector *vec, OOHPScalar factor)
+{
+	/*
+	 Clang static analyzer: reports an unintialized value here when called
+	 from -[HeadUpDisplay rescaleByFactor:]. This is blatantly wrong, as
+	 the array the vector comes from is fully initialized in the range being
+	 looped over.
+	 -- Ahruman 2012-09-14
+	 */
+	*vec *= factor;
+}
+
+#define HPvector_multiply_scalar(v, s) ((v) * (s))
+#define HPvector_add(a, b) ((a) + (b))
+#define HPvector_subtract(a, b) ((a) - (b))
+#define HPvector_between(a, b) ((b) - (a))
+
+/* HPVector linear interpolation */
+OOINLINE HPVector OOHPVectorInterpolate(HPVector a, HPVector b, OOHPScalar where) INLINE_CONST_FUNC;
+OOINLINE HPVector OOHPVectorTowards(HPVector a, HPVector b, OOHPScalar where) INLINE_CONST_FUNC;
+
+/* Comparison of vectors */
+OOINLINE bool HPvector_equal(HPVector a, HPVector b) INLINE_CONST_FUNC;
+
+OOINLINE HPVector OOHPVectorInterpolate(HPVector a, HPVector b, OOHPScalar where)
+{
+	return make_HPvector(OOLerpd(a.x, b.x, where),
+						 OOLerpd(a.y, b.y, where),
+						 OOLerpd(a.z, b.z, where));
+}
+
+OOINLINE bool HPvector_equal(HPVector a, HPVector b)
+{
+	return a.x == b.x && a.y == b.y && a.z == b.z;
+}
+
+OOINLINE HPVector OOHPVectorTowards(HPVector a, HPVector b, OOHPScalar where)
+{
+	return a + b * where;
+}
+
+/* Square of magnitude of vector */
+#define HPmagnitude2(vec) simd_length_squared(vec)
+
+/* Magnitude of vector */
+#define HPmagnitude(vec) simd_length(vec)
+
+/* Normalize vector */
+#define HPvector_normal(vec) simd_normalize(vec)
+
+/* Normalize vector, returning fallback if zero vector. */
+OOINLINE HPVector HPvector_normal_or_fallback(HPVector vec, HPVector fallback) INLINE_CONST_FUNC;
+OOINLINE HPVector HPvector_normal_or_xbasis(HPVector vec) INLINE_CONST_FUNC;
+OOINLINE HPVector HPvector_normal_or_ybasis(HPVector vec) INLINE_CONST_FUNC;
+OOINLINE HPVector HPvector_normal_or_zbasis(HPVector vec) INLINE_CONST_FUNC;
+
+/* Square of distance between vectors */
+#define HPdistance2(v1, v2) simd_distance_squared(v1, v1)
+
+/* Distance between vectors */
+#define HPdistance(v1, v2) simd_distance(v1, v1)
+
+/* Dot product */
+#define HPdot_product(a, b) simd_dot(a, b)
+
+/* NORMALIZED cross product */
+#define HPcross_product(a, b) simd_normalize(simd_cross(a, b))
+
+/* General cross product */
+#define HPtrue_cross_product(a, b) simd_cross(a, b)
+
+/* Triple product */
+OOINLINE OOHPScalar HPtriple_product(HPVector first, HPVector second, HPVector third) INLINE_CONST_FUNC;
+
+/* Given three points on a surface, returns the normal to the surface. */
+OOINLINE HPVector HPnormal_to_surface(HPVector v1, HPVector v2, HPVector v3) CONST_FUNC;
+
+OOINLINE HPVector HPvector_normal_or_fallback(HPVector vec, HPVector fallback)
+{
+	OOHPScalar mag2 = HPmagnitude2(vec);
+	if (EXPECT_NOT(mag2 == 0.0))  return fallback;
+	return vec * (1.0 / sqrt(mag2));
+}
+
+OOINLINE HPVector HPvector_normal_or_xbasis(HPVector vec)
+{
+	return HPvector_normal_or_fallback(vec, kBasisXHPVector);
+}
+
+OOINLINE HPVector HPvector_normal_or_ybasis(HPVector vec)
+{
+	return HPvector_normal_or_fallback(vec, kBasisYHPVector);
+}
+
+OOINLINE HPVector HPvector_normal_or_zbasis(HPVector vec)
+{
+	return HPvector_normal_or_fallback(vec, kBasisZHPVector);
+}
+
+OOINLINE OOHPScalar HPtriple_product(HPVector first, HPVector second, HPVector third)
+{
+	return simd_dot(first, simd_cross(second, third));
+}
+
+OOINLINE HPVector HPnormal_to_surface(HPVector v1, HPVector v2, HPVector v3)
+{
+	HPVector d0 = v2 - v1;
+	HPVector d1 = v3 - v2;
+	return simd_normalize(simd_cross(d0, d1));
+}
+
+#define HPvector_flip(x) (-(x))
+
+
+#else
 
 
 /* Multiply vector by scalar (in place) */
@@ -136,6 +264,8 @@ OOINLINE OOHPScalar HPtriple_product(HPVector first, HPVector second, HPVector t
 /* Given three points on a surface, returns the normal to the surface. */
 OOINLINE HPVector HPnormal_to_surface(HPVector v1, HPVector v2, HPVector v3) CONST_FUNC;
 
+#endif
+
 #if __OBJC__
 NSString *HPVectorDescription(HPVector vector);	// @"(x, y, z)"
 NSArray *ArrayFromHPVector(HPVector vector);
@@ -184,6 +314,9 @@ OOINLINE Vector HPVectorToVector(HPVector v) {
 	result.z = (OOScalar)v.z;
 	return result;
 }
+
+#ifndef USE_SIMD_SIMD_H
+
 
 OOINLINE void HPscale_vector(HPVector *vec, OOHPScalar factor)
 {
@@ -356,5 +489,6 @@ OOINLINE HPVector HPnormal_to_surface(HPVector v1, HPVector v2, HPVector v3)
 	return HPcross_product(d0, d1);
 }
 
+#endif
 
 #endif	/* INCLUDED_OOMATHS_h */
