@@ -53,6 +53,7 @@ extern size_t gTotalEntityMemory;
 
 #define CLOSE_COLLISION_CHECK_MAX_RANGE2 1000000000.0
 
+
 #define ENTRY(label, value) label = value,
 
 #ifdef __APPLE__
@@ -280,7 +281,7 @@ enum OOScanClass
 - (void) dumpSelfState;	// Subclasses should override this, not -dumpState, and call throught to super first.
 
 // Subclass repsonsibilities
-@property (readonly, atomic) double findCollisionRadius;
+- (double) findCollisionRadius;
 - (void) drawImmediate:(bool)immediate translucent:(bool)translucent;
 @property (atomic, readonly, getter=isVisible) BOOL visible;
 @property (atomic, readonly, getter=isInSpace) BOOL inSpace;
