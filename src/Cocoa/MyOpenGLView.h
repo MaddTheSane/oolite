@@ -41,6 +41,7 @@ MA 02110-1301, USA.
 #define NUM_KEYS			320
 #define MOUSE_DOUBLE_CLICK_INTERVAL	0.40
 #define OOMOUSEWHEEL_EVENTS_DELAY_INTERVAL	0.05
+#define OOMOUSEWHEEL_DELTA	1.0
 
 @class Entity, GameController;
 
@@ -129,11 +130,13 @@ extern int debug;
 	BOOL				m_glContextInitialized;
 	
 	NSTimeInterval		timeIntervalAtLastClick;
+	NSTimeInterval		timeIntervalAtLastMouseWheel;
 	BOOL				doubleClick;
 	
 	NSMutableString		*typedString;
 	
 	NSPoint				virtualJoystickPosition;
+	float				_mouseWheelDelta;
 	
 	NSSize				viewSize;
 	NSSize				backingViewSize;
@@ -172,6 +175,7 @@ extern int debug;
 
 - (void) drawRect:(NSRect)rect;
 - (void) updateScreen;
+- (void) pollControls;
 
 - (void) stringToClipboard:(NSString *)stringToCopy;
 
@@ -179,6 +183,7 @@ extern int debug;
 
 - (void)mouseDown:(NSEvent *)theEvent;
 - (void)mouseUp:(NSEvent *)theEvent;
+- (void)resetMouse;
 
 - (void) setVirtualJoystick:(double) vmx :(double) vmy;
 @property NSPoint virtualJoystickPosition;
@@ -196,6 +201,8 @@ extern int debug;
 - (BOOL) isCapsLockOn;
 @property (readonly, atomic) int numKeys;
 @property (readonly, atomic) MouseWheelStatus mouseWheelState;
+- (float) mouseWheelDelta;
+- (void) setMouseWheelDelta: (float) newWheelDelta;
 
 // Command-key combinations need special handling.
 @property (readonly, getter=isCommandQDown) BOOL commandQDown;

@@ -95,14 +95,6 @@ typedef NS_ENUM(unsigned int, OOSpeechSettings)
 };
 
 
-typedef NS_ENUM(unsigned int, OOLongRangeChartMode)
-{
-	OOLRC_MODE_NORMAL = 0,
-	OOLRC_MODE_ECONOMY = 1,
-	OOLRC_MODE_GOVERNMENT = 2,
-	OOLRC_MODE_TECHLEVEL = 3
-};
-
 // When fully zoomed in, chart shows area of galaxy that's 64x64 galaxy units.
 #define CHART_WIDTH_AT_MAX_ZOOM		64.0
 #define CHART_HEIGHT_AT_MAX_ZOOM	64.0
@@ -486,12 +478,14 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 	NSPoint					cursor_coordinates;
 	NSPoint					chart_focus_coordinates;
 	NSPoint					chart_centre_coordinates;
+	NSPoint					custom_chart_centre_coordinates;
 	// where we want the chart centre to be - used for smooth transitions
 	NSPoint					target_chart_centre;
 	NSPoint					target_chart_focus;
 	// Chart zoom is 1.0 when fully zoomed in and increases as we zoom out.  The reason I've done it that way round
 	// is because we might want to implement bigger galaxies one day, and thus may need to zoom out indefinitely.
 	OOScalar				chart_zoom;
+	OOScalar				custom_chart_zoom;
 	OOScalar				target_chart_zoom;
 	OOScalar				saved_chart_zoom;
 	OORouteType				ANA_mode;
@@ -699,7 +693,9 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 							weapons_online: 1,
 							
 							launchingMissile: 1,
-							replacingMissile: 1;
+							replacingMissile: 1,
+							
+							massLockable: 1;
 #if OOLITE_ESPEAK
 	unsigned int			voice_no;
 	BOOL					voice_gender_m;
@@ -760,15 +756,20 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (void) unloadCargoPodsForType:(OOCommodityType)type amount:(OOCargoQuantity) quantity;
 - (void) loadCargoPodsForType:(OOCommodityType)type fromManifest:(OOCommodityMarket *) manifest;
 - (void) loadCargoPodsForType:(OOCommodityType)type amount:(OOCargoQuantity) quantity;
+- (OOCommodityMarket *) shipCommodityData;
 
 @property (readonly) OOCreditsQuantity deciCredits;
 
 @property int random_factor;
 @property (readonly) OOGalaxyID galaxyNumber;
 @property (setter=setGalaxyCoordinates:) NSPoint galaxy_coordinates;
+- (void) setCustomChartCentre:(NSPoint)coords;
 @property (readonly) NSPoint cursor_coordinates;
 @property (readonly) NSPoint chart_centre_coordinates;
+- (NSPoint) custom_chart_centre_coordinates;
 @property (readonly, atomic) OOScalar chart_zoom;
+- (OOScalar) custom_chart_zoom;
+- (void) setCustomChartZoom:(OOScalar)zoom;
 @property (readonly, atomic) NSPoint adjusted_chart_centre;
 @property (readonly) OORouteType ANAMode;
 
@@ -791,6 +792,8 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (void) doBookkeeping:(double) delta_t;
 - (BOOL) isValidTarget:(Entity*)target;
 
+- (void) setMassLockable:(BOOL)newValue;
+- (BOOL) massLockable;
 @property (readonly, atomic) BOOL massLocked;
 @property (readonly, atomic) BOOL atHyperspeed;
 
@@ -800,7 +803,9 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 @property (strong, atomic) StationEntity *dockedStation;
 // Dumb setter; callers are responsible for sanity.
 
-
+- (void) performDockingRequest:(StationEntity *)stationForDocking;
+- (void) requestDockingClearance:(StationEntity *)stationForDocking;
+- (void) cancelDockingRequest:(StationEntity *)stationForDocking;
 - (BOOL) engageAutopilotToStation:(StationEntity *)stationForDocking;
 - (void) disengageAutopilot;
 
@@ -963,8 +968,10 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (void) docked;
 
 - (void) setGuiToStatusScreen;
-@property (readonly, copy, atomic) NSArray *equipmentList;	// Each entry is an array with a string followed by a boolean indicating availability (NO = damaged).
+@property (readonly, copy, atomic) NSArray *equipmentList;	// Each entry is an array with a string followed by a boolean indicating availability (NO = damaged), then a color (or nil for default color).
+- (BOOL) setPrimedEquipment:(NSString *)eqKey showMessage:(BOOL)showMsg;
 - (NSString *) primedEquipmentName:(NSInteger)offset;
+- (NSString *) currentPrimedEquipment;
 @property (readonly, atomic) NSUInteger primedEquipmentCount;
 - (void) activatePrimableEquipment:(NSUInteger)index withMode:(OOPrimedEquipmentMode)mode;
 @property (copy) NSString *fastEquipmentA;
@@ -975,6 +982,7 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 @property (readonly, atomic) unsigned int legalStatusOfCargoList;
 
 - (void) setGuiToSystemDataScreen;
+- (void) setGuiToSystemDataScreenRefreshBackground: (BOOL) refreshBackground;
 @property (readonly, copy, atomic) NSDictionary *markedDestinations;
 - (void) setGuiToLongRangeChartScreen;
 - (void) setGuiToShortRangeChartScreen;
@@ -1012,6 +1020,7 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (void) setGuiToOXZManager;
 
 - (void) noteGUIWillChangeTo:(OOGUIScreenID)toScreen;
+- (void) noteGUIDidChangeFrom:(OOGUIScreenID)fromScreen to:(OOGUIScreenID)toScreen refresh: (BOOL) refresh;
 - (void) noteGUIDidChangeFrom:(OOGUIScreenID)fromScreen to:(OOGUIScreenID)toScreen;
 - (void) noteViewDidChangeFrom:(OOViewID)fromView toView:(OOViewID)toView;
 

@@ -379,7 +379,7 @@ VERIFY_PROTO(DelegatedType);
 	{
 		if (!_badDelegateWarning)
 		{
-			OOLog(@"plistVerifier.badDelegate", @"Property list schema verifier: delegate does not handle delegated types.");
+			OOLog(@"plistVerifier.badDelegate", @"%@", @"Property list schema verifier: delegate does not handle delegated types.");
 			_badDelegateWarning = YES;
 		}
 		result = YES;
@@ -924,7 +924,7 @@ static NSError *Verify_Array(OOPListSchemaVerifier *verifier, id value, NSDictio
 	
 	REQUIRE_TYPE(NSArray, @"array");
 	
-	DebugDump(@"* array");
+	DebugDump(@"%@", @"* array");
 	
 	// Apply count bounds.
 	count = [value count];
@@ -987,7 +987,7 @@ static NSError *Verify_Dictionary(OOPListSchemaVerifier *verifier, id value, NSD
 	
 	REQUIRE_TYPE(NSDictionary, @"dictionary");
 	
-	DebugDump(@"* dictionary");
+	DebugDump(@"%@", @"* dictionary");
 	
 	// Apply count bounds.
 	count = [value count];
@@ -1224,7 +1224,7 @@ static NSError *Verify_OneOf(OOPListSchemaVerifier *verifier, id value, NSDictio
 	NSError					*error;
 	NSMutableDictionary		*errors = nil;
 	
-	DebugDump(@"* oneOf");
+	DebugDump(@"%@", @"* oneOf");
 	
 	options = [params oo_arrayForKey:@"options"];
 	if (options == nil)
@@ -1246,7 +1246,7 @@ static NSError *Verify_OneOf(OOPListSchemaVerifier *verifier, id value, NSDictio
 							error:&error
 							 stop:&stop])
 		{
-			DebugDump(@"> Match.");
+			DebugDump(@"%@", @"> Match.");
 			OK = YES;
 			break;
 		}
@@ -1255,7 +1255,7 @@ static NSError *Verify_OneOf(OOPListSchemaVerifier *verifier, id value, NSDictio
 	
 	if (!OK)
 	{
-		DebugDump(@"! No match.");
+		DebugDump(@"%@", @"! No match.");
 		return ErrorWithProperty(kPListErrorOneOfNoMatch, &keyPath, kErrorsByOptionErrorKey, [errors autorelease], @"No matching type rule could be found.");
 	}
 	
@@ -1271,7 +1271,7 @@ static NSError *Verify_Enumeration(OOPListSchemaVerifier *verifier, id value, NS
 	NSString				*filteredString = nil;
 	NSError					*error = nil;
 	
-	DebugDump(@"* enumeration");
+	DebugDump(@"%@", @"* enumeration");
 	
 	REQUIRE_TYPE(NSString, @"string");
 	

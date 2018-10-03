@@ -333,13 +333,13 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	NSString *file = [scenario oo_stringForKey:@"file" defaultValue:nil];
 	if (file == nil) 
 	{
-		OOLog(@"scenario.init.error",@"No file entry found for scenario");
+		OOLog(@"scenario.init.error", @"%@", @"No file entry found for scenario");
 		return NO;
 	}
 	NSString *path = [ResourceManager pathForFileNamed:file inFolder:@"Scenarios"];
 	if (path == nil)
 	{
-		OOLog(@"scenario.init.error",@"Game file not found for scenario %@",file);
+		OOLog(@"scenario.init.error", @"Game file not found for scenario %@",file);
 		return NO;
 	}
 	BOOL result = [self loadPlayerFromFile:path asNew:YES];
@@ -389,7 +389,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	}
 	
 	// handle page <-- and page --> keys
-	if ([gameView isDown:gvArrowKeyLeft] && [[gui keyForRow:BACKROW] isEqual: GUI_KEY_OK])
+	if (([gameView isDown:gvArrowKeyLeft] || [gameView isDown:gvPageUpKey]) && [[gui keyForRow:BACKROW] isEqual: GUI_KEY_OK])
 	{
 		currentPage--;
 		[self playMenuPagePrevious];
@@ -397,7 +397,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 		[gameView supressKeysUntilKeyUp];
 	}
 	//
-	if ([gameView isDown:gvArrowKeyRight] && [[gui keyForRow:MOREROW] isEqual: GUI_KEY_OK])
+	if (([gameView isDown:gvArrowKeyRight] || [gameView isDown:gvPageDownKey]) && [[gui keyForRow:MOREROW] isEqual: GUI_KEY_OK])
 	{
 		currentPage++;
 		[self playMenuPageNext];
@@ -495,7 +495,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	[gui setColor:[OOColor cyanColor] forRow:INPUTROW];
 	
 	// handle page <-- and page --> keys, and on-screen buttons
-	if (((([gameView isDown:gvMouseDoubleClick] || [gameView isDown: 13]) && [gui selectedRow] == BACKROW) || [gameView isDown:gvArrowKeyLeft])
+	if (((([gameView isDown:gvMouseDoubleClick] || [gameView isDown: 13]) && [gui selectedRow] == BACKROW) || ([gameView isDown:gvArrowKeyLeft] || [gameView isDown:gvPageUpKey]))
 					&& [[gui keyForRow:BACKROW] isEqual: GUI_KEY_OK])
 	{
 		currentPage--;
@@ -503,7 +503,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 		[gameView supressKeysUntilKeyUp];
 	}
 	//
-	if (((([gameView isDown:gvMouseDoubleClick] || [gameView isDown: 13]) && [gui selectedRow] == MOREROW) || [gameView isDown:gvArrowKeyRight])
+	if (((([gameView isDown:gvMouseDoubleClick] || [gameView isDown: 13]) && [gui selectedRow] == MOREROW) || ([gameView isDown:gvArrowKeyRight] || [gameView isDown:gvPageDownKey]))
 					&& [[gui keyForRow:MOREROW] isEqual: GUI_KEY_OK])
 	{
 		currentPage++;
@@ -616,7 +616,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	
 	if (loadedOK)
 	{
-		OOLog(@"load.progress",@"Reading file");
+		OOLog(@"load.progress", @"%@", @"Reading file");
 		fileDic = OODictionaryFromFile(fileToOpen);
 		if (fileDic == nil)
 		{
@@ -627,7 +627,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 
 	if (loadedOK)
 	{
-		OOLog(@"load.progress",@"Restricting scenario");
+		OOLog(@"load.progress", @"%@", @"Restricting scenario");
 		NSString *scenarioRestrict = [fileDic oo_stringForKey:@"scenario_restriction" defaultValue:nil];
 		if (scenarioRestrict == nil)
 		{
@@ -653,7 +653,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 
 	if (loadedOK)
 	{
-		OOLog(@"load.progress",@"Creating player ship");
+		OOLog(@"load.progress", @"%@", @"Creating player ship");
 		// Check that player ship exists
 		NSString		*shipKey = nil;
 		NSDictionary	*shipDict = nil;
@@ -671,7 +671,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	
 	if (loadedOK)
 	{
-		OOLog(@"load.progress",@"Initialising player entity");
+		OOLog(@"load.progress", @"%@", @"Initialising player entity");
 		if (![self setUpAndConfirmOK:YES saveGame:YES])
 		{
 			fail_reason = DESC(@"loadfailed-could-not-reset-javascript");
@@ -681,7 +681,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	
 	if (loadedOK)
 	{
-		OOLog(@"load.progress",@"Loading commander data");
+		OOLog(@"load.progress", @"%@", @"Loading commander data");
 		if (![self setCommanderDataFromDictionary:fileDic])
 		{
 			// this could still be a reset js issue, if switching from strict / unrestricted
@@ -693,7 +693,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	
 	if (loadedOK)
 	{
-		OOLog(@"load.progress",@"Recording save path");
+		OOLog(@"load.progress", @"%@", @"Recording save path");
 		if (!asNew)
 		{
 			[save_path autorelease];
@@ -714,7 +714,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 		return NO;
 	}
 	
-	OOLog(@"load.progress",@"Creating system");
+	OOLog(@"load.progress", @"%@", @"Creating system");
 	[UNIVERSE setTimeAccelerationFactor:TIME_ACCELERATION_FACTOR_DEFAULT];
 	[UNIVERSE setSystemTo:system_id];
 	[UNIVERSE removeAllEntitiesExceptPlayer];
@@ -722,7 +722,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	[UNIVERSE setUpSpace];
 	[UNIVERSE setAutoSaveNow:NO];
 	
-	OOLog(@"load.progress",@"Resetting player flight variables");
+	OOLog(@"load.progress", @"%@", @"Resetting player flight variables");
 	[self setDockedAtMainStation];
 	StationEntity *dockedStation = [self dockedStation];
 	
@@ -744,7 +744,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	
 	[self setEntityPersonalityInt:PersonalityForCommanderDict(fileDic)];
 	
-	OOLog(@"load.progress",@"Loading system market");
+	OOLog(@"load.progress", @"%@", @"Loading system market");
 	// dockedStation is always the main station at this point;
 	// "localMarket" save key always refers to the main station (system) market
 	NSArray *market = [fileDic oo_arrayForKey:@"localMarket"];
@@ -759,7 +759,7 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 
 	[self calculateCurrentCargo];
 	
-	OOLog(@"load.progress",@"Setting scenario key");
+	OOLog(@"load.progress", @"%@", @"Setting scenario key");
 	// set scenario key if the scenario allows saving and has one
 	NSString *scenario = [fileDic oo_stringForKey:@"scenario_key" defaultValue:nil];
 	DESTROY(scenarioKey);
@@ -768,11 +768,11 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 		scenarioKey = [scenario retain];
 	}
 
-	OOLog(@"load.progress",@"Starting JS engine");
+	OOLog(@"load.progress", @"%@", @"Starting JS engine");
 	// Remember the savegame target, run js startUp.
 	[self completeSetUpAndSetTarget:NO];
 	// run initial system population
-	OOLog(@"load.progress",@"Populating initial system");
+	OOLog(@"load.progress", @"%@", @"Populating initial system");
 	[UNIVERSE populateNormalSpace];
 
 	// might as well start off with a collected JS environment
@@ -792,14 +792,14 @@ static uint16_t PersonalityForCommanderDict(NSDictionary *dict);
 	// and initialise markets for the secondary stations
 	[UNIVERSE loadStationMarkets:[fileDic oo_arrayForKey:@"station_markets"]];
 
-	OOLog(@"load.progress",@"Completing JS startup");
+	OOLog(@"load.progress", @"%@", @"Completing JS startup");
 	[self startUpComplete];
 
 	[[UNIVERSE gameView] supressKeysUntilKeyUp];
 	gui_screen = GUI_SCREEN_LOAD; // force evaluation of new gui screen on startup
 	[self setGuiToStatusScreen];
 	if (loadedOK) [self doWorldEventUntilMissionScreen:OOJSID("missionScreenOpportunity")];  // trigger missionScreenOpportunity immediately after loading
-	OOLog(@"load.progress",@"Loading complete");
+	OOLog(@"load.progress", @"%@", @"Loading complete");
 	return loadedOK;
 }
 
@@ -1276,7 +1276,7 @@ NSComparisonResult sortCommanders(id cdr1, id cdr2, void *context)
 	int			galNumber;
 	NSString		*timeStamp  = nil;
 	NSString 		*locationName = [cdr oo_stringForKey:@"current_system_name"];
-	
+
 	// If there is no key containing the name of the current system in
 	// the savefile, calculating what it should have been is going to
 	// be tricky now that system generation isn't seed based - but
@@ -1288,6 +1288,16 @@ NSComparisonResult sortCommanders(id cdr1, id cdr2, void *context)
 	}
 	
 	galNumber = [cdr oo_intForKey:@"galaxy_number"] + 1;	// Galaxy numbering starts at 0.
+
+	NSString *locationGov = @"";
+	NSString *locationEco = @"";
+	NSString *locationTL = [cdr objectForKey:@"current_system_techlevel"] ? [NSString stringWithFormat:@"%u", [cdr oo_unsignedIntForKey:@"current_system_techlevel"] + 1] : nil;
+	if (locationTL)
+	{
+		locationGov = [NSString stringWithFormat:@"%c", [cdr oo_unsignedCharForKey:@"current_system_government"]];
+		locationEco = [NSString stringWithFormat:@" %c", (7 - [cdr oo_unsignedCharForKey:@"current_system_economy"]) + 16];
+	}
+	else  locationTL = @"";
 	
 	timeStamp = ClockToString([cdr oo_doubleForKey:@"ship_clock" defaultValue:PLAYER_SHIP_CLOCK_START], NO);
 	
@@ -1295,7 +1305,7 @@ NSComparisonResult sortCommanders(id cdr1, id cdr2, void *context)
 	
 	NSString		*cdrDesc = nil;
 	
-	cdrDesc = [NSString stringWithFormat:DESC(@"loadsavescreen-commander-@-rated-@-has-@-legal-status-@-ship-@-location-@-g-@-timestamp-@"),
+	cdrDesc = [NSString stringWithFormat:DESC(@"loadsavescreen-commander-@-rated-@-has-@-legal-status-@-ship-@-location-@-g-@-eco-@-gov-@-tl-@-timestamp-@"),
 		[cdr oo_stringForKey:@"player_name"],
 		rating,
 		OOCredits(money),
@@ -1303,7 +1313,12 @@ NSComparisonResult sortCommanders(id cdr1, id cdr2, void *context)
 		shipName,
 		locationName,
 		galNumber,
+		locationEco,
+		locationGov,
+		locationTL,
 		timeStamp];
+	
+	//-------------------------------------------------------------------------------------------------------------------------
 	
 	[gui addLongText:cdrDesc startingAtRow:CDRDESCROW align:GUI_ALIGN_LEFT];
 	

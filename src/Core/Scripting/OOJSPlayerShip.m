@@ -58,6 +58,8 @@ static JSBool PlayerShipRemoveAllCargo(JSContext *context, uintN argc, jsval *vp
 static JSBool PlayerShipUseSpecialCargo(JSContext *context, uintN argc, jsval *vp);
 static JSBool PlayerShipEngageAutopilotToStation(JSContext *context, uintN argc, jsval *vp);
 static JSBool PlayerShipDisengageAutopilot(JSContext *context, uintN argc, jsval *vp);
+static JSBool PlayerShipRequestDockingClearance(JSContext *context, uintN argc, jsval *vp);
+static JSBool PlayerShipCancelDockingRequest(JSContext *context, uintN argc, jsval *vp);
 static JSBool PlayerShipAwardEquipmentToCurrentPylon(JSContext *context, uintN argc, jsval *vp);
 static JSBool PlayerShipAddPassenger(JSContext *context, uintN argc, jsval *vp);
 static JSBool PlayerShipRemovePassenger(JSContext *context, uintN argc, jsval *vp);
@@ -66,6 +68,7 @@ static JSBool PlayerShipRemoveParcel(JSContext *context, uintN argc, jsval *vp);
 static JSBool PlayerShipAwardContract(JSContext *context, uintN argc, jsval *vp);
 static JSBool PlayerShipRemoveContract(JSContext *context, uintN argc, jsval *vp);
 static JSBool PlayerShipSetCustomView(JSContext *context, uintN argc, jsval *vp);
+static JSBool PlayerShipSetPrimedEquipment(JSContext *context, uintN argc, jsval *vp);
 static JSBool PlayerShipResetCustomView(JSContext *context, uintN argc, jsval *vp);
 static JSBool PlayerShipResetScannerZoom(JSContext *context, uintN argc, jsval *vp);
 static JSBool PlayerShipTakeInternalDamage(JSContext *context, uintN argc, jsval *vp);
@@ -102,8 +105,10 @@ enum
 	// Property IDs
 	kPlayerShip_aftShield,						// aft shield charge level, nonnegative float, read/write
 	kPlayerShip_aftShieldRechargeRate,			// aft shield recharge rate, positive float, read-only
-	kPlayerShip_compassMode,					// compass mode, string, read-only
-	kPlayerShip_compassTarget,					// object targeted by the compass, entity, read-only
+	kPlayerShip_chartHightlightMode,            // what type of information is being shown on the chart
+	kPlayerShip_compassMode,					// compass mode, string, read/write
+	kPlayerShip_compassTarget,					// object targeted by the compass, entity, read/write
+	kPlayerShip_compassType,					// basic / advanced, string, read/write
 	kPlayerShip_currentWeapon,					// shortcut property to _aftWeapon, etc. overrides kShip generic version
 	kPlayerShip_crosshairs,						// custom plist file defining crosshairs
 	kPlayerShip_cursorCoordinates,				// cursor coordinates (unscaled), Vector3D, read only
@@ -124,24 +129,33 @@ enum
 	kPlayerShip_hudAllowsBigGui,				// hud big gui, string, read only 
 	kPlayerShip_hudHidden,						// hud visibility, boolean, read/write
 	kPlayerShip_injectorsEngaged,				// injectors in use, boolean, read-only
+	kPlayerShip_massLockable,					// mass-lockability of player ship, read/write
 	kPlayerShip_maxAftShield,					// maximum aft shield charge level, positive float, read-only
 	kPlayerShip_maxForwardShield,				// maximum forward shield charge level, positive float, read-only
+	kPlayerShip_messageGuiTextColor,			// message gui standard text color, array, read/write
+	kPlayerShip_messageGuiTextCommsColor,		// message gui incoming comms text color, array, read/write
 	kPlayerShip_multiFunctionDisplays,			// mfd count, positive int, read-only
 	kPlayerShip_multiFunctionDisplayList,		// active mfd list, array, read-only
 	kPlayerShip_missilesOnline,      // bool (false for ident mode, true for missile mode)
 	kPlayerShip_pitch,							// pitch (overrules Ship)
 	kPlayerShip_price,							// idealised trade-in value decicredits, positive int, read-only
+	kPlayerShip_primedEquipment,                // currently primed equipment, string, read/write
 	kPlayerShip_renovationCost,					// int read-only current renovation cost
+	kPlayerShip_reticleColorTarget,				// Reticle color for normal targets, array, read/write
+	kPlayerShip_reticleColorTargetSensitive,	// Reticle color for targets picked up when sensitive mode is on, array, read/write
+	kPlayerShip_reticleColorWormhole,			// REticle color for wormholes, array, read/write
 	kPlayerShip_renovationMultiplier,			// float read-only multiplier for renovation costs
 	kPlayerShip_reticleTargetSensitive,			// target box changes color when primary target in crosshairs, boolean, read/write
 	kPlayerShip_roll,							// roll (overrules Ship)
 	kPlayerShip_routeMode,						// ANA mode
+	kPlayerShip_scannerMinimalistic	,			// essentially scanner without gridlines	
 	kPlayerShip_scannerNonLinear,				// non linear scanner setting, boolean, read/write
 	kPlayerShip_scannerUltraZoom,				// scanner zoom in powers of 2, boolean, read/write
 	kPlayerShip_scoopOverride,					// Scooping
 	kPlayerShip_serviceLevel,					// servicing level, positive int 75-100, read-only
 	kPlayerShip_specialCargo,					// special cargo, string, read-only
 	kPlayerShip_targetSystem,					// target system id, int, read-write
+	kPlayerShip_nextSystem,						// next hop system id, read-only
 	kPlayerShip_infoSystem,						// info (F7 screen) system id, int, read-write
 	kPlayerShip_torusEngaged,					// torus in use, boolean, read-only
 	kPlayerShip_viewDirection,					// view direction identifier, string, read-only
@@ -159,8 +173,10 @@ static JSPropertySpec sPlayerShipProperties[] =
 	// JS name							ID											flags
 	{ "aftShield",						kPlayerShip_aftShield,						OOJS_PROP_READWRITE_CB },
 	{ "aftShieldRechargeRate",			kPlayerShip_aftShieldRechargeRate,			OOJS_PROP_READWRITE_CB },
-	{ "compassMode",					kPlayerShip_compassMode,					OOJS_PROP_READONLY_CB },
-	{ "compassTarget",					kPlayerShip_compassTarget,					OOJS_PROP_READONLY_CB },
+	{ "chartHighlightMode",             kPlayerShip_chartHightlightMode,            OOJS_PROP_READWRITE_CB },
+	{ "compassMode",					kPlayerShip_compassMode,					OOJS_PROP_READWRITE_CB },
+	{ "compassTarget",					kPlayerShip_compassTarget,					OOJS_PROP_READWRITE_CB },
+	{ "compassType",					kPlayerShip_compassType,					OOJS_PROP_READWRITE_CB },
 	{ "currentWeapon",					kPlayerShip_currentWeapon,					OOJS_PROP_READWRITE_CB },
 	{ "crosshairs",						kPlayerShip_crosshairs,						OOJS_PROP_READWRITE_CB },
 	{ "cursorCoordinates",				kPlayerShip_cursorCoordinates,				OOJS_PROP_READONLY_CB },
@@ -181,34 +197,43 @@ static JSPropertySpec sPlayerShipProperties[] =
 	{ "hudAllowsBigGui",				kPlayerShip_hudAllowsBigGui,				OOJS_PROP_READONLY_CB },
 	{ "hudHidden",						kPlayerShip_hudHidden,						OOJS_PROP_READWRITE_CB },
 	{ "injectorsEngaged",				kPlayerShip_injectorsEngaged,				OOJS_PROP_READONLY_CB },
+	{ "massLockable",					kPlayerShip_massLockable,					OOJS_PROP_READWRITE_CB },
 	// manifest defined in OOJSManifest.m
 	{ "maxAftShield",					kPlayerShip_maxAftShield,					OOJS_PROP_READWRITE_CB },
 	{ "maxForwardShield",				kPlayerShip_maxForwardShield,				OOJS_PROP_READWRITE_CB },
-	{ "missilesOnline",      kPlayerShip_missilesOnline,      OOJS_PROP_READONLY_CB },
-	{ "multiFunctionDisplays",     		kPlayerShip_multiFunctionDisplays,      OOJS_PROP_READONLY_CB },
-	{ "multiFunctionDisplayList",  		kPlayerShip_multiFunctionDisplayList,      OOJS_PROP_READONLY_CB },
+	{ "messageGuiTextColor",			kPlayerShip_messageGuiTextColor,			OOJS_PROP_READWRITE_CB },
+	{ "messageGuiTextCommsColor",		kPlayerShip_messageGuiTextCommsColor,		OOJS_PROP_READWRITE_CB },
+	{ "missilesOnline",					kPlayerShip_missilesOnline,					OOJS_PROP_READONLY_CB },
+	{ "multiFunctionDisplays",			kPlayerShip_multiFunctionDisplays,			OOJS_PROP_READONLY_CB },
+	{ "multiFunctionDisplayList",  		kPlayerShip_multiFunctionDisplayList,		OOJS_PROP_READONLY_CB },
 	{ "price",							kPlayerShip_price,							OOJS_PROP_READONLY_CB },
-	{ "pitch",							kPlayerShip_pitch,							OOJS_PROP_READONLY_CB },
+	{ "pitch",							kPlayerShip_pitch,							OOJS_PROP_READWRITE_CB },
+	{ "primedEquipment",				kPlayerShip_primedEquipment,				OOJS_PROP_READWRITE_CB },
 	{ "renovationCost",					kPlayerShip_renovationCost,					OOJS_PROP_READONLY_CB },
+	{ "reticleColorTarget",				kPlayerShip_reticleColorTarget,				OOJS_PROP_READWRITE_CB },
+	{ "reticleColorTargetSensitive",	kPlayerShip_reticleColorTargetSensitive,	OOJS_PROP_READWRITE_CB },
+	{ "reticleColorWormhole",			kPlayerShip_reticleColorWormhole,			OOJS_PROP_READWRITE_CB },
 	{ "renovationMultiplier",			kPlayerShip_renovationMultiplier,			OOJS_PROP_READONLY_CB },
 	{ "reticleTargetSensitive",			kPlayerShip_reticleTargetSensitive,			OOJS_PROP_READWRITE_CB },
-	{ "roll",							kPlayerShip_roll,							OOJS_PROP_READONLY_CB },
+	{ "roll",							kPlayerShip_roll,							OOJS_PROP_READWRITE_CB },
 	{ "routeMode",						kPlayerShip_routeMode,						OOJS_PROP_READONLY_CB },
+	{ "scannerMinimalistic",				kPlayerShip_scannerMinimalistic,			OOJS_PROP_READWRITE_CB },
 	{ "scannerNonLinear",				kPlayerShip_scannerNonLinear,				OOJS_PROP_READWRITE_CB },
 	{ "scannerUltraZoom",				kPlayerShip_scannerUltraZoom,				OOJS_PROP_READWRITE_CB },
 	{ "scoopOverride",					kPlayerShip_scoopOverride,					OOJS_PROP_READWRITE_CB },
 	{ "serviceLevel",					kPlayerShip_serviceLevel,					OOJS_PROP_READWRITE_CB },
 	{ "specialCargo",					kPlayerShip_specialCargo,					OOJS_PROP_READONLY_CB },
 	{ "targetSystem",					kPlayerShip_targetSystem,					OOJS_PROP_READWRITE_CB },
+	{ "nextSystem",                     kPlayerShip_nextSystem,                     OOJS_PROP_READONLY_CB },
 	{ "infoSystem",						kPlayerShip_infoSystem,						OOJS_PROP_READWRITE_CB },
 	{ "torusEngaged",					kPlayerShip_torusEngaged,					OOJS_PROP_READONLY_CB },
 	{ "viewDirection",					kPlayerShip_viewDirection,					OOJS_PROP_READONLY_CB },
-	{ "viewPositionAft",					kPlayerShip_viewPositionAft,					OOJS_PROP_READONLY_CB },
-	{ "viewPositionForward",					kPlayerShip_viewPositionForward,					OOJS_PROP_READONLY_CB },
-	{ "viewPositionPort",					kPlayerShip_viewPositionPort,					OOJS_PROP_READONLY_CB },
-	{ "viewPositionStarboard",					kPlayerShip_viewPositionStarboard,					OOJS_PROP_READONLY_CB },
+	{ "viewPositionAft",				kPlayerShip_viewPositionAft,				OOJS_PROP_READONLY_CB },
+	{ "viewPositionForward",			kPlayerShip_viewPositionForward,			OOJS_PROP_READONLY_CB },
+	{ "viewPositionPort",				kPlayerShip_viewPositionPort,				OOJS_PROP_READONLY_CB },
+	{ "viewPositionStarboard",			kPlayerShip_viewPositionStarboard,			OOJS_PROP_READONLY_CB },
 	{ "weaponsOnline",					kPlayerShip_weaponsOnline,					OOJS_PROP_READONLY_CB },
-	{ "yaw",							kPlayerShip_yaw,							OOJS_PROP_READONLY_CB },
+	{ "yaw",							kPlayerShip_yaw,							OOJS_PROP_READWRITE_CB },
 	{ 0 }			
 };
 
@@ -221,6 +246,7 @@ static JSFunctionSpec sPlayerShipMethods[] =
 	{ "awardContract",					PlayerShipAwardContract,					0 },
 	{ "awardEquipmentToCurrentPylon",	PlayerShipAwardEquipmentToCurrentPylon,		1 },
 	{ "beginHyperspaceCountdown",       PlayerShipBeginHyperspaceCountdown,         0 },
+	{ "cancelDockingRequest",			PlayerShipCancelDockingRequest,             1 },
 	{ "cancelHyperspaceCountdown",      PlayerShipCancelHyperspaceCountdown,        0 },
 	{ "disengageAutopilot",				PlayerShipDisengageAutopilot,				0 },
 	{ "engageAutopilotToStation",		PlayerShipEngageAutopilotToStation,			1 },
@@ -230,12 +256,14 @@ static JSFunctionSpec sPlayerShipMethods[] =
 	{ "removeContract",					PlayerShipRemoveContract,					2 },
 	{ "removeParcel",                   PlayerShipRemoveParcel,                     1 },
 	{ "removePassenger",				PlayerShipRemovePassenger,					1 },
+	{ "requestDockingClearance",        PlayerShipRequestDockingClearance,          1 },
 	{ "resetCustomView",				PlayerShipResetCustomView,					0 },
 	{ "resetScannerZoom",				PlayerShipResetScannerZoom,					0 },
 	{ "setCustomView",					PlayerShipSetCustomView,					2 },
 	{ "setCustomHUDDial",				PlayerShipSetCustomHUDDial,					2 },
 	{ "setMultiFunctionDisplay",		PlayerShipSetMultiFunctionDisplay,			1 },
 	{ "setMultiFunctionText",			PlayerShipSetMultiFunctionText,				1 },
+	{ "setPrimedEquipment",				PlayerShipSetPrimedEquipment,               1 },
 	{ "showHUDSelector",				PlayerShipShowHUDSelector,					1 },
 	{ "takeInternalDamage",				PlayerShipTakeInternalDamage,				0 },
 	{ "useSpecialCargo",				PlayerShipUseSpecialCargo,					1 },
@@ -345,6 +373,18 @@ static JSBool PlayerShipGetProperty(JSContext *context, JSObject *this, jsid pro
 			result = [player specialCargo];
 			break;
 			
+		case kPlayerShip_reticleColorTarget:
+			result = [[[player hud] reticleColorForIndex:OO_RETICLE_COLOR_TARGET] normalizedArray];
+			break;
+			
+		case kPlayerShip_reticleColorTargetSensitive:
+			result = [[[player hud] reticleColorForIndex:OO_RETICLE_COLOR_TARGET_SENSITIVE] normalizedArray];
+			break;
+			
+		case kPlayerShip_reticleColorWormhole:
+			result = [[[player hud] reticleColorForIndex:OO_RETICLE_COLOR_WORMHOLE] normalizedArray];
+			break;
+			
 		case kPlayerShip_reticleTargetSensitive:
 			*value = OOJSValueFromBOOL([[player hud] reticleTargetSensitive]);
 			return YES;
@@ -367,7 +407,10 @@ static JSBool PlayerShipGetProperty(JSContext *context, JSObject *this, jsid pro
 			result = [player fastEquipmentB];
 			break;
 
-			
+		case kPlayerShip_primedEquipment:
+			result = [player currentPrimedEquipment];
+			break;
+
 		case kPlayerShip_forwardShield:
 			return JS_NewNumberValue(context, [player forwardShieldLevel], value);
 			
@@ -399,6 +442,10 @@ static JSBool PlayerShipGetProperty(JSContext *context, JSObject *this, jsid pro
 			*value = OOJSValueFromBOOL(![player dialIdentEngaged]);
 			return YES;
 
+		case kPlayerShip_chartHightlightMode:
+			result = OOStringFromLongRangeChartMode([player longRangeChartMode]);
+			break;
+
 		case kPlayerShip_galaxyCoordinates:
 			return NSPointToVectorJSValue(context, [player galaxy_coordinates], value);
 			
@@ -415,6 +462,10 @@ static JSBool PlayerShipGetProperty(JSContext *context, JSObject *this, jsid pro
 			*value = INT_TO_JSVAL([player targetSystemID]);
 			return YES;
 
+		case kPlayerShip_nextSystem:
+			*value = INT_TO_JSVAL([player nextHopTargetSystemID]);
+			return YES;
+			
 		case kPlayerShip_infoSystem:
 			*value = INT_TO_JSVAL([player infoSystemID]);
 			return YES;
@@ -436,6 +487,10 @@ static JSBool PlayerShipGetProperty(JSContext *context, JSObject *this, jsid pro
 			}
 			break;
 		}
+		
+		case kPlayerShip_scannerMinimalistic:
+			*value = OOJSValueFromBOOL([[player hud] minimalisticScanner]);
+			return YES;
 			
 		case kPlayerShip_scannerNonLinear:
 			*value = OOJSValueFromBOOL([[player hud] nonlinearScanner]);
@@ -452,6 +507,10 @@ static JSBool PlayerShipGetProperty(JSContext *context, JSObject *this, jsid pro
 		case kPlayerShip_injectorsEngaged:
 			*value = OOJSValueFromBOOL([player injectorsEngaged]);
 			return YES;
+			
+		case kPlayerShip_massLockable:
+			*value = OOJSValueFromBOOL([player massLockable]);
+			return YES;
 
 		case kPlayerShip_torusEngaged:
 			*value = OOJSValueFromBOOL([player hyperspeedEngaged]);
@@ -459,6 +518,11 @@ static JSBool PlayerShipGetProperty(JSContext *context, JSObject *this, jsid pro
 			
 		case kPlayerShip_compassTarget:
 			result = [player compassTarget];
+			break;
+			
+		case kPlayerShip_compassType:
+			result = [OOStringFromCompassMode([player compassMode]) isEqualToString:@"COMPASS_MODE_BASIC"] ?
+														@"OO_COMPASSTYPE_BASIC" : @"OO_COMPASSTYPE_ADVANCED";
 			break;
 			
 		case kPlayerShip_compassMode:
@@ -528,8 +592,15 @@ static JSBool PlayerShipGetProperty(JSContext *context, JSObject *this, jsid pro
 
 		case kPlayerShip_yaw:
 			return JS_NewNumberValue(context, -[player flightYaw], value);
-
-
+			
+		case kPlayerShip_messageGuiTextColor:
+			result = [[[UNIVERSE messageGUI] textColor] normalizedArray];
+			break;
+			
+		case kPlayerShip_messageGuiTextCommsColor:
+			result = [[[UNIVERSE messageGUI] textCommsColor] normalizedArray];
+			break;
+			
 		default:
 			OOJSReportBadPropertySelector(context, this, propID, sPlayerShipProperties);
 	}
@@ -556,13 +627,23 @@ static JSBool PlayerShipSetProperty(JSContext *context, JSObject *this, jsid pro
 	NSString					*sValue = nil;
 	OOGalacticHyperspaceBehaviour ghBehaviour;
 	Vector						vValue;
-	
+	OOColor						*colorForScript = nil;
+	Entity						*eValue = nil;
+
 	switch (JSID_TO_INT(propID))
 	{
 		case kPlayerShip_fuelLeakRate:
 			if (JS_ValueToNumber(context, *value, &fValue))
 			{
 				[player setFuelLeakRate:fValue];
+				return YES;
+			}
+			break;
+			
+		case kPlayerShip_massLockable:
+			if (JS_ValueToBoolean(context, *value, &bValue))
+			{
+				[player setMassLockable:bValue];
 				return YES;
 			}
 			break;
@@ -574,7 +655,90 @@ static JSBool PlayerShipSetProperty(JSContext *context, JSObject *this, jsid pro
 				return YES;
 			}
 			break;
+		
+		case kPlayerShip_chartHightlightMode:
+			sValue = OOStringFromJSValue(context, *value);
+			if (sValue != nil) 
+			{
+				OOLongRangeChartMode chartMode = OOLongRangeChartModeFromString(sValue);
+				if (chartMode > OOLRC_MODE_UNKNOWN)
+				{
+					[player setLongRangeChartMode:chartMode];
+					[player doScriptEvent:OOJSID("chartHighlightModeChanged") withArgument:OOStringFromLongRangeChartMode([player longRangeChartMode])];
+					return YES;
+				}
+				else
+				{
+					OOJSReportError(context, @"Unknown chart hightlight mode specified - must be either OOLRC_MODE_SUNCOLOR, OOLRC_MODE_ECONOMY, OOLRC_MODE_GOVERNMENT or OOLRC_MODE_TECHLEVEL.");
+				}
+			}
+			return NO;	// not reachable if successfully set
+			break;
+
+		case kPlayerShip_compassMode:
+			sValue = OOStringFromJSValue(context, *value);
+			if(sValue != nil)
+			{
+				OOCompassMode mode = OOCompassModeFromJSValue(context, *value);
+				[player setCompassMode:mode];
+				[player validateCompassTarget];
+				return YES;
+			}
+			break;
 			
+		case kPlayerShip_compassType:
+			sValue = OOStringFromJSValue(context, *value);
+			if (sValue != nil)
+			{
+				if ([sValue isEqualToString:@"OO_COMPASSTYPE_BASIC"])
+				{
+					[player setCompassMode:COMPASS_MODE_BASIC];
+				}
+				else  if([sValue isEqualToString:@"OO_COMPASSTYPE_ADVANCED"])
+				{
+					if (![player hasEquipmentItemProviding:@"EQ_ADVANCED_COMPASS"])
+					{
+						OOJSReportWarning(context, @"Advanced Compass type requested and set but player ship does not carry the EQ_ADVANCED_COMPASS equipment or has it damaged.");
+					}
+					[player setCompassMode:COMPASS_MODE_PLANET];
+				}
+				else
+				{
+					OOJSReportError(context, @"Unknown compass type specified - must be either OO_COMPASSTYPE_BASIC or OO_COMPASSTYPE_ADVANCED.");
+					return NO;
+				}
+				return YES;
+			}
+			break;
+		
+		case kPlayerShip_compassTarget:
+			// can't change compass target in basic mode
+			if (![player hasEquipmentItemProviding:@"EQ_ADVANCED_COMPASS"]) 
+			{
+				OOJSReportError(context, @"Compass target cannot be set with a basic compass.");
+				return NO;
+			}
+			// make sure we have a valid entity
+			if (!JSVAL_IS_NULL(*value) && JSValueToEntity(context, *value, &eValue)) 
+			{
+				Entity *current = [player compassTarget];
+				[player setNextCompassMode];
+				[player validateCompassTarget];
+				// cycle the targets until we either get back to the start (entity not found) or we find the one we're looking for
+				while ([player compassTarget] != current && [player compassTarget] != eValue)
+				{
+					[player setNextCompassMode];
+					[player validateCompassTarget];
+				}
+				return [player compassTarget] != current;
+			}
+			else 
+			{
+				OOJSReportError(context, @"Invalid compass target entity provided.");
+				return NO;
+			}
+			break;
+
 		case kPlayerShip_galacticHyperspaceBehaviour:
 			ghBehaviour = OOGalacticHyperspaceBehaviourFromJSValue(context, *value);
 			if (ghBehaviour != GALACTIC_HYPERSPACE_BEHAVIOUR_UNKNOWN)
@@ -620,6 +784,47 @@ static JSBool PlayerShipSetProperty(JSContext *context, JSObject *this, jsid pro
 			}
 			break;
 
+		case kPlayerShip_primedEquipment:
+			sValue = OOStringFromJSValue(context, *value);
+			if (sValue != nil)
+			{
+				return [player setPrimedEquipment:sValue showMessage:NO];
+			}
+			break;
+
+		case kPlayerShip_pitch:
+			if (JS_ValueToNumber(context, *value, &fValue))
+			{
+				if (!isnan(fValue)) // guard against undefined
+				{
+					[player decrease_flight_pitch:[player flightPitch] + fValue];
+				}
+				return YES;
+			}
+			break;
+			
+		case kPlayerShip_roll:
+			if (JS_ValueToNumber(context, *value, &fValue))
+			{
+				if (!isnan(fValue)) // guard against undefined
+				{
+					[player decrease_flight_roll:[player flightRoll] + fValue];
+				}
+				return YES;
+			}
+			break;
+			
+		case kPlayerShip_yaw:
+			if (JS_ValueToNumber(context, *value, &fValue))
+			{
+				if (!isnan(fValue)) // guard against undefined
+				{
+					[player decrease_flight_yaw:[player flightYaw] + fValue];
+				}
+				return YES;
+			}
+			break;
+			
 		case kPlayerShip_forwardShield:
 			if (JS_ValueToNumber(context, *value, &fValue))
 			{
@@ -664,6 +869,14 @@ static JSBool PlayerShipSetProperty(JSContext *context, JSObject *this, jsid pro
 			if (JS_ValueToNumber(context, *value, &fValue))
 			{
 				[player setAftShieldRechargeRate:fValue];
+				return YES;
+			}
+			break;
+			
+		case kPlayerShip_scannerMinimalistic:
+			if (JS_ValueToBoolean(context, *value, &bValue))
+			{
+				[[player hud] setMinimalisticScanner:bValue];
 				return YES;
 			}
 			break;
@@ -804,6 +1017,49 @@ static JSBool PlayerShipSetProperty(JSContext *context, JSObject *this, jsid pro
 					return NO;
 				}
 			}
+			break;
+			
+		case kPlayerShip_messageGuiTextColor:
+			colorForScript = [OOColor colorWithDescription:OOJSNativeObjectFromJSValue(context, *value)];
+			if (colorForScript != nil || JSVAL_IS_NULL(*value))
+			{
+				[[UNIVERSE messageGUI] setTextColor:colorForScript];
+				return YES;
+			}
+			break;
+			
+		case kPlayerShip_messageGuiTextCommsColor:
+			colorForScript = [OOColor colorWithDescription:OOJSNativeObjectFromJSValue(context, *value)];
+			if (colorForScript != nil || JSVAL_IS_NULL(*value))
+			{
+				[[UNIVERSE messageGUI] setTextCommsColor:colorForScript];
+				return YES;
+			}
+			break;
+			
+		case kPlayerShip_reticleColorTarget:
+			colorForScript = [OOColor colorWithDescription:OOJSNativeObjectFromJSValue(context, *value)];
+			if (colorForScript != nil || JSVAL_IS_NULL(*value))
+			{
+				return [[player hud] setReticleColorForIndex:OO_RETICLE_COLOR_TARGET toColor:colorForScript];
+			}
+			break;
+			
+		case kPlayerShip_reticleColorTargetSensitive:
+			colorForScript = [OOColor colorWithDescription:OOJSNativeObjectFromJSValue(context, *value)];
+			if (colorForScript != nil || JSVAL_IS_NULL(*value))
+			{
+				return [[player hud] setReticleColorForIndex:OO_RETICLE_COLOR_TARGET_SENSITIVE toColor:colorForScript];
+			}
+			break;
+			
+		case kPlayerShip_reticleColorWormhole:
+			colorForScript = [OOColor colorWithDescription:OOJSNativeObjectFromJSValue(context, *value)];
+			if (colorForScript != nil || JSVAL_IS_NULL(*value))
+			{
+				return [[player hud] setReticleColorForIndex:OO_RETICLE_COLOR_WORMHOLE toColor:colorForScript];
+			}
+			break;
 
 		default:
 			OOJSReportBadPropertySelector(context, this, propID, sPlayerShipProperties);
@@ -917,6 +1173,49 @@ static JSBool PlayerShipDisengageAutopilot(JSContext *context, uintN argc, jsval
 	OOJS_NATIVE_EXIT
 }
 
+static JSBool PlayerShipRequestDockingClearance(JSContext *context, uintN argc, jsval *vp)
+{
+	OOJS_NATIVE_ENTER(context)
+	
+	if (EXPECT_NOT(OOIsPlayerStale()))  OOJS_RETURN_VOID;
+
+	PlayerEntity			*player = OOPlayerForScripting();
+	StationEntity			*stationForDocking = nil;
+	
+	if (argc > 0)  stationForDocking = OOJSNativeObjectOfClassFromJSValue(context, OOJS_ARGV[0], [StationEntity class]);
+	if (stationForDocking == nil)
+	{
+		OOJSReportBadArguments(context, @"PlayerShip", @"requestDockingClearance", MIN(argc, 1U), OOJS_ARGV, nil, @"station");
+		return NO;
+	}
+
+	[player requestDockingClearance:stationForDocking];
+	OOJS_RETURN_VOID;
+	
+	OOJS_NATIVE_EXIT
+}
+
+static JSBool PlayerShipCancelDockingRequest(JSContext *context, uintN argc, jsval *vp)
+{
+	OOJS_NATIVE_ENTER(context)
+	
+	if (EXPECT_NOT(OOIsPlayerStale()))  OOJS_RETURN_VOID;
+
+	PlayerEntity			*player = OOPlayerForScripting();
+	StationEntity			*stationForDocking = nil;
+	
+	if (argc > 0)  stationForDocking = OOJSNativeObjectOfClassFromJSValue(context, OOJS_ARGV[0], [StationEntity class]);
+	if (stationForDocking == nil)
+	{
+		OOJSReportBadArguments(context, @"PlayerShip", @"cancelDockingRequest", MIN(argc, 1U), OOJS_ARGV, nil, @"station");
+		return NO;
+	}
+
+	[player cancelDockingRequest:stationForDocking];
+	OOJS_RETURN_VOID;
+	
+	OOJS_NATIVE_EXIT
+}
 
 // awardEquipmentToCurrentPylon(externalTank: equipmentInfoExpression) : Boolean
 static JSBool PlayerShipAwardEquipmentToCurrentPylon(JSContext *context, uintN argc, jsval *vp)
@@ -1386,6 +1685,35 @@ static JSBool PlayerShipSetMultiFunctionText(JSContext *context, uintN argc, jsv
 	}
 
 	OOJS_RETURN_VOID;
+
+	OOJS_NATIVE_EXIT
+}
+
+// setPrimedEquipment(key, [noMessage])
+static JSBool PlayerShipSetPrimedEquipment(JSContext *context, uintN argc, jsval *vp)
+{
+	OOJS_NATIVE_ENTER(context)
+
+	NSString				*key = nil;
+	PlayerEntity			*player = OOPlayerForScripting();
+	JSBool					showMsg = YES;
+
+	if (argc > 0)  
+	{
+		key = OOStringFromJSValue(context, OOJS_ARGV[0]);
+	}
+	if (key == nil)
+	{
+		OOJSReportBadArguments(context, @"PlayerShip", @"setPrimedEquipment", MIN(argc, 1U), OOJS_ARGV, nil, @"string (key)");
+		return NO;
+	}
+	if (argc > 1 && EXPECT_NOT(!JS_ValueToBoolean(context, OOJS_ARGV[1], &showMsg)))
+ 	{
+ 		OOJSReportBadArguments(context, @"PlayerShip", @"setPrimedEquipment", MIN(argc, 2U), OOJS_ARGV, nil, @"boolean");
+ 		return NO;
+ 	}
+
+	OOJS_RETURN_BOOL([player setPrimedEquipment:key showMessage:showMsg]);
 
 	OOJS_NATIVE_EXIT
 }

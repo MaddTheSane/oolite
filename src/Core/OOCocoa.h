@@ -25,7 +25,18 @@ MA 02110-1301, USA.
 
 */
 
+/*
+ Expressions like #define FOO (1 && !defined(NDEBUG)) are formally invalid,
+ causing a warning in Clang. This lets us write #define FOO (1 && OOLITE_DEBUG)
+ instead.
+ */
 #ifdef NDEBUG
+#define OOLITE_DEBUG 0
+#else
+#define OOLITE_DEBUG 1
+#endif
+
+#if !OOLITE_DEBUG
 #define NS_BLOCK_ASSERTIONS 1
 #endif
 
@@ -73,6 +84,10 @@ MA 02110-1301, USA.
 	#if defined MAC_OS_X_VERSION_10_8 && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_8
 		#define OOLITE_MAC_OS_X_10_8	1
 	#endif
+
+	#ifndef MAC_OS_X_VERSION_10_12
+		typedef NSUInteger NSWindowStyleMask;
+	#endif
 #endif
 
 
@@ -85,7 +100,14 @@ MA 02110-1301, USA.
 #endif
 
 
-#if defined(__GNUC__) && !defined(__clang__)
+#ifdef __clang__
+#define OOLITE_HAVE_CLANG			1
+#else
+#define OOLITE_HAVE_CLANG			0
+#endif
+
+
+#if defined(__GNUC__) && !OOLITE_HAVE_CLANG
 // GCC version; for instance, 40300 for 4.3.0. Deliberately undefined in Clang (which defines fake __GNUC__ macros for compatibility).
 #define OOLITE_GCC_VERSION			(__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
@@ -246,7 +268,7 @@ enum {
 #endif
 
 
-#define OOLITE_PROPERTY_SYNTAX	(OOLITE_MAC_OS_X || defined(__clang__))
+#define OOLITE_PROPERTY_SYNTAX	(OOLITE_MAC_OS_X || OOLITE_HAVE_CLANG)
 
 
 #import "OOLogging.h"
@@ -368,7 +390,7 @@ enum {
 	can only be one and there's no way to switch back to @required.
 */
 #ifndef OOLITE_HAVE_PROTOCOL_OPTIONAL
-#define OOLITE_HAVE_PROTOCOL_OPTIONAL	(OOLITE_MAC_OS_X || defined(__clang__) || OOLITE_GCC_VERSION >= 40700)
+#define OOLITE_HAVE_PROTOCOL_OPTIONAL  (OOLITE_MAC_OS_X || OOLITE_HAVE_CLANG || OOLITE_GCC_VERSION >= 40700)
 #endif
 
 #if OOLITE_HAVE_PROTOCOL_OPTIONAL

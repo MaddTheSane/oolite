@@ -233,6 +233,8 @@ typedef NS_ENUM(unsigned int, OOStationAlertLevel)
 
 @property (atomic) BOOL hasBreakPattern;
 
+- (BOOL) fitsInDock:(ShipEntity *)ship;
+- (BOOL) fitsInDock:(ShipEntity *)ship andLogNoFit:(BOOL)logNoFit;
 
 @end
 

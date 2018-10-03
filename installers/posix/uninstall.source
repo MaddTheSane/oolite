@@ -1,7 +1,7 @@
 
 
 # 
-# Original by Konstantinos Sykas <ksykas@gmail.com> (26-Mar-2011)
+# Original by Konstantinos Sykas <getafix@oolite.org> (26-Mar-2011)
 #
 #        Type: shell script
 # Description: The Oolite uninstall script. During installation the "setup" script 
@@ -73,6 +73,23 @@ else
     exit ${ERROR_CODE_UNINSTALL_FAILED}
   fi
 fi
+
+# Check if this is not the active Oolite systemwide installation
+if [ ${USER_IS_ROOT} ] 
+then
+  OOLITE_SHORTCUT=${STARTUP_SCRIPTS_PATH}/oolite${TRUNK} 
+  if [ -e ${OOLITE_SHORTCUT} ]
+  then
+    INSTALL_ROOT_SYSTEMWIDE_ACTIVE=`cat ${OOLITE_SHORTCUT} | head -2 | tail -1`
+    INSTALL_ROOT_SYSTEMWIDE_ACTIVE=${INSTALL_ROOT_SYSTEMWIDE_ACTIVE%%/Oolite*}
+    if [ "${INSTALL_ROOT_SYSTEMWIDE}" != "${INSTALL_ROOT_SYSTEMWIDE_ACTIVE}" ] 
+    then
+      echo
+      echo "Error: The Oolite${TRUNK} startup scripts indicate another systemwide installation is active. Automatic uninstall will now exit to avoid impairing the active installation." 
+      exit ${ERROR_CODE_UNINSTALL_FAILED} 
+    fi 
+  fi 
+fi 
 
 
 # Remove Oolite

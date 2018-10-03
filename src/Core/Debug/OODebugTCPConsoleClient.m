@@ -389,7 +389,7 @@ noteChangedConfigrationValue:(in id)newValue
 	*/
 	if (![self sendBytes:&header count:sizeof header])
 	{
-		OOLog(@"debugTCP.send.warning", @"Error sending packet header, retrying.");
+		OOLog(@"debugTCP.send.warning", @"%@", @"Error sending packet header, retrying.");
 		// wait 8 milliseconds, resend the header
 		[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:.008]];
 		if (![self sendBytes:&header count:sizeof header])
@@ -406,7 +406,7 @@ noteChangedConfigrationValue:(in id)newValue
 	
 	if(sentOK && ![self sendBytes:bytes count:count])
 	{
-		OOLog(@"debugTCP.send.warning", @"Error sending packet body, retrying.");
+		OOLog(@"debugTCP.send.warning", @"%@", @"Error sending packet body, retrying.");
 		// wait 8 milliseconds, try again.
 		[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:.008]];
 		if(![self sendBytes:bytes count:count])
@@ -661,7 +661,7 @@ noteChangedConfigrationValue:(in id)newValue
 	}
 	else
 	{
-		OOLog(@"debugTCP.disconnect", @"Debug console not connected.");	
+		OOLog(@"debugTCP.disconnect", @"%@", @"Debug console not connected.");	
 	}
 	
 #if 0

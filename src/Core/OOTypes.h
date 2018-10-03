@@ -46,6 +46,13 @@ typedef NS_ENUM(unsigned int, OOViewID)
 	kOOViewIDDefault = VIEW_NONE
 };
 
+typedef enum
+{
+	#include "OOLongRangeChartMode.tbl"
+
+	kOOLongRangeChartModeDefault = OOLRC_MODE_UNKNOWN
+} OOLongRangeChartMode;
+
 #undef ENTRY
 
 

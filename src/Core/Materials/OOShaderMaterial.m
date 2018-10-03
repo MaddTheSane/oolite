@@ -256,6 +256,24 @@ static NSString *MacrosToString(NSDictionary *macros);
 		[self addTexturesFromArray:textureArray unitCount:textureUnits];
 	}
 	
+	if (OK)
+	{
+		// write gloss and gamma correction preference to the uniforms dictionary
+		
+		if (![uniforms objectForKey:@"uGloss"])
+		{
+			float gloss = OOClamp_0_1_f([configuration oo_floatForKey:@"gloss"  defaultValue:0.5f]);
+			[self setUniform:@"uGloss" floatValue:gloss];
+		}
+		
+		if (![uniforms objectForKey:@"uGammaCorrect"])
+		{
+			BOOL gammaCorrect = [configuration oo_boolForKey:@"gamma_correct" 
+								defaultValue:![[NSUserDefaults standardUserDefaults] boolForKey:@"no-gamma-correct"]];
+			[self setUniform:@"uGammaCorrect" floatValue:(float)gammaCorrect];
+		}
+	}
+	
 	if (!OK)
 	{
 		[self release];

@@ -58,6 +58,7 @@ SOFTWARE.
 							_fastAffinityA: 1,
 							_fastAffinityB: 1,
 							_canCarryMultiple: 1;
+	OOColor					*_displayColor;
 	NSUInteger				_installTime;
 	NSUInteger				_repairTime;
 	GLfloat     			_damageProbability;
@@ -110,6 +111,8 @@ SOFTWARE.
 @property (atomic, readonly) GLfloat damageProbability;
 @property (atomic, readonly) BOOL canBeDamaged;
 @property (atomic, getter=isVisible, readonly) BOOL visible;				// Visible in UI?
+- (OOColor *) displayColor;
+- (void) setDisplayColor:(OOColor *)newColor;
 
 @property (atomic, getter=isAvailableToPlayer, readonly) BOOL availableToPlayer;
 @property (atomic, getter=isAvailableToNPCs, readonly) BOOL availableToNPCs;

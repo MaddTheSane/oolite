@@ -87,8 +87,6 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 	}
 #endif
 	
-	matrixManager = [[OOOpenGLMatrixManager alloc] init];
-
 	// Pixel Format Attributes for the View-based (non-FullScreen) NSOpenGLContext
 	NSOpenGLPixelFormatAttribute attrs[] =
 	{
@@ -137,6 +135,7 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 			[self setWantsBestResolutionOpenGLSurface:YES];
 		}
 		
+		matrixManager = [[OOOpenGLMatrixManager alloc] init];
 		_pixelFormatAttributes = [[NSData alloc] initWithBytes:attrs length:sizeof attrs];
 		virtualJoystickPosition = NSMakePoint(0.0,0.0);
 		
@@ -236,6 +235,11 @@ static void UnapplyCursorState(OOMouseInteractionMode mode);
 	}
 }
 
+- (void) pollControls
+{
+	if ([NSDate timeIntervalSinceReferenceDate] > timeIntervalAtLastMouseWheel + OOMOUSEWHEEL_EVENTS_DELAY_INTERVAL)
+		_mouseWheelDelta = 0.0f;
+}
 
 - (void) drawRect:(NSRect)rect
 {
@@ -482,7 +486,9 @@ FAIL:
 
 - (void) stringToClipboard:(NSString *)stringToCopy
 {
-	// TODO: implement string clipboard copy for Mac
+	NSPasteboard *clipBoard = [NSPasteboard generalPasteboard];
+	[clipBoard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString] owner:nil];
+	[clipBoard setString:stringToCopy forType:NSPasteboardTypeString];
 }
 
 
@@ -705,6 +711,14 @@ FAIL:
 }
 
 
+- (void)resetMouse
+{
+	CGPoint centerPoint = CGPointMake(viewSize.width / 2.0, viewSize.height / 2.0);
+	CGWarpMouseCursorPosition(centerPoint);
+	[self setVirtualJoystick:0.0 :0.0];
+}
+
+
 - (void)mouseMoved:(NSEvent *)theEvent
 {
 	double mx = [theEvent locationInWindow].x - viewSize.width/2.0;
@@ -730,6 +744,29 @@ FAIL:
 	[self mouseMoved:theEvent];
 }
 
+- (void)scrollWheel:(NSEvent *)theEvent
+{
+	float dy = [theEvent scrollingDeltaY];
+	
+	if (dy == 0)
+		return;
+	
+	if (dy > 0)
+	{
+		if (_mouseWheelDelta >= 0)
+			_mouseWheelDelta += dy;
+		else
+			_mouseWheelDelta = 0;
+	}
+	else
+	{
+		if (_mouseWheelDelta <= 0)
+			_mouseWheelDelta += dy;
+		else
+			_mouseWheelDelta = 0;
+	}
+	timeIntervalAtLastMouseWheel = [NSDate timeIntervalSinceReferenceDate];
+}
 
 - (void) otherMouseDragged:(NSEvent *)theEvent
 {
@@ -969,8 +1006,24 @@ FAIL:
 
 - (MouseWheelStatus) mouseWheelState
 {
-	// FIXME: Mousewheel in-game implementaiton for Macs needed
-	return gvMouseWheelNeutral;
+	if (_mouseWheelDelta > 0.0f)
+		return gvMouseWheelUp;
+	else if (_mouseWheelDelta < 0.0f)
+		return gvMouseWheelDown;
+	else
+		return gvMouseWheelNeutral;
+}
+
+
+- (float) mouseWheelDelta
+{
+	return _mouseWheelDelta / OOMOUSEWHEEL_DELTA;
+}
+
+
+- (void) setMouseWheelDelta: (float) newWheelDelta
+{
+	_mouseWheelDelta = newWheelDelta * OOMOUSEWHEEL_DELTA;
 }
 
 

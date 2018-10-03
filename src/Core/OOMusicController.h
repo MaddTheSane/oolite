@@ -26,6 +26,7 @@ MA 02110-1301, USA.
 */
 
 #import "OOCocoa.h"
+#import "OOSoundSource.h"
 
 @class OOMusic;
 
@@ -59,6 +60,7 @@ typedef NS_ENUM(unsigned int, OOMusicMode)
 + (OOMusicController *) sharedController;
 
 - (void) playMusicNamed:(NSString *)name loop:(BOOL)loop;
+- (void) playMusicNamed:(NSString *)name loop:(BOOL)loop gain:(float)gain;
 
 - (void) playThemeMusic;
 - (void) playDockingMusic;
@@ -75,6 +77,8 @@ typedef NS_ENUM(unsigned int, OOMusicMode)
 - (void) stopMissionMusic;
 
 - (void) toggleDockingMusic;	// Start docking music if none playing, stop docking music if currently playing docking music.
+
+- (OOSoundSource *) soundSource;
 
 @property (readonly, copy, atomic) NSString *playingMusic;
 @property (getter=isPlaying, readonly, atomic) BOOL playing;

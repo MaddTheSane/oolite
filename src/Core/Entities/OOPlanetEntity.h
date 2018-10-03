@@ -41,6 +41,7 @@ MA 02110-1301, USA.
 @private
 	OOPlanetDrawable		*_planetDrawable;
 	OOPlanetDrawable		*_atmosphereDrawable;
+	OOPlanetDrawable		*_atmosphereShaderDrawable;
 	
 	BOOL					_miniature;
 	OOColor					*_airColor;
@@ -82,6 +83,7 @@ MA 02110-1301, USA.
 
 @property (atomic, readonly, strong) OOMaterial *material;
 @property (atomic, readonly, strong) OOMaterial *atmosphereMaterial;
+- (OOMaterial *) atmosphereShaderMaterial;
 
 @property (atomic, getter=isFinishedLoading, readonly) BOOL finishedLoading;
 

@@ -24,12 +24,13 @@
 	MA 02110-1301, USA.
 */
 
+#import "OOCocoa.h"
 #import "OOStellarBody.h"
 
 #if NEW_PLANETS
 
 
-#define DEBUG_DUMP			(	0	&& !defined(NDEBUG))
+#define DEBUG_DUMP			(	0	&& OOLITE_DEBUG)
 #define DEBUG_DUMP_RAW		(	1	&& DEBUG_DUMP)
 
 #define ALBEDO_FACTOR		0.7f	// Overall darkening of everything, allowing better contrast for snow and specular highlights.
@@ -79,13 +80,6 @@ static FloatRGBA CloudMix(OOStandaloneAtmosphereGeneratorInfo *info, float q, fl
 
 enum
 {
-#if PERLIN_3D && !TEXGEN_TEST_RIG
-	kPlanetAspectRatio			= 2,
-#else
-	kPlanetAspectRatio			= 1,		// Ideally, aspect ratio would be 2:1 - keeping it as 1:1 for now - Kaks 20091211
-#endif
-	kPlanetScaleOffset			= 8 - kPlanetAspectRatio,
-	
 	kPlanetScale256x256			= 1,
 	kPlanetScale512x512,
 	kPlanetScale1024x1024,
@@ -115,8 +109,10 @@ enum
 		_info.cloudColor = FloatRGBFromDictColor(planetInfo, @"cloud_color");
 		_info.paleCloudColor = FloatRGBFromDictColor(planetInfo, @"polar_cloud_color");
 		
+		OOGraphicsDetail detailLevel = [UNIVERSE detailLevel];
+		
 #ifndef TEXGEN_TEST_RIG
-		if ([UNIVERSE detailLevel] < DETAIL_LEVEL_SHADERS)
+		if (detailLevel < DETAIL_LEVEL_SHADERS)
 		{
 			_planetScale = kPlanetScaleReducedDetail;
 		}
@@ -127,6 +123,9 @@ enum
 #else
 		_planetScale = kPlanetScale4096x4096;
 #endif
+		_info.perlin3d = [planetInfo oo_boolForKey:@"perlin_3d" defaultValue:detailLevel > DETAIL_LEVEL_SHADERS];
+		_info.planetAspectRatio = _info.perlin3d ? 2 : 1;
+		_info.planetScaleOffset	= 8 - _info.planetAspectRatio;
 	}
 	
 	return self;
@@ -229,8 +228,8 @@ enum
 	uint8_t		*aBuffer = NULL, *apx = NULL;
 	float		*randomBuffer = NULL;
 	
-	_height = _info.height = 1 << (_planetScale + kPlanetScaleOffset);
-	_width = _info.width = _height * kPlanetAspectRatio;
+	_height = _info.height = 1 << (_planetScale + _info.planetScaleOffset);
+	_width = _info.width = _height * _info.planetAspectRatio;
 	
 #define FAIL_IF(cond)  do { if (EXPECT_NOT(cond))  goto END; } while (0)
 #define FAIL_IF_NULL(x)  FAIL_IF((x) == NULL)
@@ -446,6 +445,7 @@ OOINLINE int32_t fast_floor(double val)
 
 
 static BOOL GenerateFBMNoise(OOStandaloneAtmosphereGeneratorInfo *info);
+static BOOL GenerateFBMNoise3D(OOStandaloneAtmosphereGeneratorInfo *info);
 
 
 static BOOL FillFBMBuffer(OOStandaloneAtmosphereGeneratorInfo *info)
@@ -456,7 +456,14 @@ static BOOL FillFBMBuffer(OOStandaloneAtmosphereGeneratorInfo *info)
 	info->fbmBuffer = calloc(info->width * info->height, sizeof (float));
 	if (info->fbmBuffer != NULL)
 	{
-		GenerateFBMNoise(info);
+		if (!info->perlin3d)
+		{
+			GenerateFBMNoise(info);
+		}
+		else
+		{
+			GenerateFBMNoise3D(info);
+		}
 	
 		return YES;
 	}
@@ -464,7 +471,7 @@ static BOOL FillFBMBuffer(OOStandaloneAtmosphereGeneratorInfo *info)
 }
 
 
-#if PERLIN_3D
+
 
 enum
 {
@@ -644,7 +651,7 @@ static BOOL MakePermutationTable(OOStandaloneAtmosphereGeneratorInfo *info)
 }
 
 
-static BOOL GenerateFBMNoise(OOStandaloneAtmosphereGeneratorInfo *info)
+static BOOL GenerateFBMNoise3D(OOStandaloneAtmosphereGeneratorInfo *info)
 {
 	BOOL OK = NO;
 	
@@ -707,7 +714,6 @@ END:
 	return OK;
 }
 
-#else
 // Old 2D value noise.
 
 static void FillRandomBuffer(float *randomBuffer, RANROTSeed seed)
@@ -788,7 +794,7 @@ static BOOL GenerateFBMNoise(OOStandaloneAtmosphereGeneratorInfo *info)
 	
 	// Generate basic fBM noise.
 	unsigned height = info->height;
-	unsigned octaveMask = 8 * kPlanetAspectRatio;
+	unsigned octaveMask = 8 * info->planetAspectRatio;
 	float octave = octaveMask;
 	octaveMask -= 1;
 	float scale = 0.5f;
@@ -805,7 +811,6 @@ static BOOL GenerateFBMNoise(OOStandaloneAtmosphereGeneratorInfo *info)
 	return YES;
 }
 
-#endif
 
 
 static float QFactor(float *accbuffer, int x, int y, unsigned width, float polar_y_value, float bias, float polar_y)

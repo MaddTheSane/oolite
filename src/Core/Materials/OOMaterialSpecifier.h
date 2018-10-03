@@ -57,6 +57,10 @@ SOFTWARE.
 @property (readonly) float oo_parallaxScale;
 @property (readonly) float oo_parallaxBias;
 
+- (BOOL) oo_gammaCorrect;
+
+- (float) oo_gloss;
+
 @property (readonly) int oo_specularExponent;
 
 @end
@@ -87,6 +91,10 @@ extern NSString * const kOOMaterialEmissionAndIlluminationMapName;
 
 extern NSString * const kOOMaterialParallaxScaleName;
 extern NSString * const kOOMaterialParallaxBiasName;
+
+extern NSString * const kOOMaterialGammaCorrName;
+
+extern NSString * const kOOMaterialGlossName;
 
 extern NSString * const kOOMaterialSpecularExponentName;
 extern NSString * const kOOMaterialSpecularExponentLegacyName;

@@ -290,13 +290,14 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	{
 		OOLog(@"ship.setup.injectorSpeed",@"injector_speed_factor cannot be higher than minimum torus speed factor (%f) for %@.",MIN_HYPERSPEED_FACTOR,self);
 		afterburner_speed_factor = MIN_HYPERSPEED_FACTOR;
+	}
 #else
 	else if (afterburner_speed_factor > HYPERSPEED_FACTOR)
 	{
 		OOLog(@"ship.setup.injectorSpeed",@"injector_speed_factor cannot be higher than torus speed factor (%f) for %@.",HYPERSPEED_FACTOR,self);
 		afterburner_speed_factor = HYPERSPEED_FACTOR;
-#endif
 	}
+#endif
 
 	maxEnergy = [shipDict oo_floatForKey:@"max_energy" defaultValue:200.0f];
 	energy_recharge_rate = [shipDict oo_floatForKey:@"energy_recharge_rate" defaultValue:1.0f];
@@ -321,7 +322,20 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	cloakAutomatic = [shipDict oo_boolForKey:@"cloak_automatic" defaultValue:YES];
 
 	missiles = [shipDict oo_intForKey:@"missiles" defaultValue:0];
-	max_missiles = [shipDict oo_integerForKey:@"max_missiles" defaultValue:missiles];
+	/* TODO: The following initializes the missile list to be blank, which prevents a crash caused by hasOneEquipmentItem trying to access a missile list
+	         previously initialized but then released.  See issue #204.  We need to investigate further the cause of the missile list being released.
+ 			- kanthoney 10/03/2017
+		Update 20170818: The issue seems to have been resolved properly using the fix below and the problem was apparently an access of the
+		missile_list array elements before their initialization and while we were checking whether equipment can be added or not. There is
+		probably not much more that can be done here, unless someone would like to have a go at refactoring the entire ship initialization
+		code. In any case, the crash is no more and the applied solution is both simple and logical - Nikos
+	*/
+	unsigned i;
+	for (i = 0; i < missiles; i++)
+	{
+		missile_list[i] = nil;
+	}
+	max_missiles = [shipDict oo_intForKey:@"max_missiles" defaultValue:missiles];
 	if (max_missiles > SHIPENTITY_MAX_MISSILES) max_missiles = SHIPENTITY_MAX_MISSILES;
 	if (missiles > max_missiles) missiles = max_missiles;
 	missile_load_time = fmax(0.0, [shipDict oo_doubleForKey:@"missile_load_time" defaultValue:0.0]); // no negative load times
@@ -469,7 +483,10 @@ static ShipEntity *doOctreesCollide(ShipEntity *prime, ShipEntity *other);
 	
 	// rotating subentities
 	subentityRotationalVelocity = kIdentityQuaternion;
-	ScanQuaternionFromString([shipDict objectForKey:@"rotational_velocity"], &subentityRotationalVelocity);
+	if ([shipDict objectForKey:@"rotational_velocity"])
+	{
+		subentityRotationalVelocity = [shipDict oo_quaternionForKey:@"rotational_velocity"];
+	}
 
 	// set weapon offsets
 	NSString *weaponMountMode = [shipDict oo_stringForKey:@"weapon_mount_mode" defaultValue:@"single"];
@@ -2617,19 +2634,16 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		}
 	}
 	
-	// subentity rotation
-	if (isSubEnt)
+	// rotational velocity
+	if (!quaternion_equal(subentityRotationalVelocity, kIdentityQuaternion) &&
+		!quaternion_equal(subentityRotationalVelocity, kZeroQuaternion))
 	{
-		if (!quaternion_equal(subentityRotationalVelocity, kIdentityQuaternion) &&
-			!quaternion_equal(subentityRotationalVelocity, kZeroQuaternion))
-		{
-			Quaternion qf = subentityRotationalVelocity;
-			qf.w *= (1.0 - delta_t);
-			qf.x *= delta_t;
-			qf.y *= delta_t;
-			qf.z *= delta_t;
-			[self setOrientation:quaternion_multiply(qf, orientation)];
-		}
+		Quaternion qf = subentityRotationalVelocity;
+		qf.w *= (1.0 - delta_t);
+		qf.x *= delta_t;
+		qf.y *= delta_t;
+		qf.z *= delta_t;
+		[self setOrientation:quaternion_multiply(qf, orientation)];
 	}
 	
 	//	reset totalBoundingBox
@@ -2933,7 +2947,7 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 		if ([itemKey isEqualToString:@"thargon"]) itemKey = @"EQ_THARGON";
 		for (i = 0; i < missiles; i++)
 		{
-			if ([[missile_list[i] identifier] isEqualTo:itemKey])  return YES;
+			if (missile_list[i] != nil && [[missile_list[i] identifier] isEqualTo:itemKey])  return YES;
 		}
 	}
 	
@@ -3939,6 +3953,12 @@ ShipEntity* doOctreesCollide(ShipEntity* prime, ShipEntity* other)
 @synthesize afterburnerFactor = afterburner_speed_factor;
 @synthesize afterburnerRate = afterburner_rate;
 @synthesize maxThrust = max_thrust;
+
+
+- (void) setMaxThrust:(GLfloat)new
+{
+	max_thrust = new;
+}
 
 
 - (float) thrust
@@ -8252,54 +8272,60 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 
 - (void) increase_flight_roll:(double) delta
 {
-	if (flightRoll < max_flight_roll)
-		flightRoll += delta;
+	flightRoll += delta;
 	if (flightRoll > max_flight_roll)
 		flightRoll = max_flight_roll;
+	else if (flightRoll < -max_flight_roll)
+		flightRoll = -max_flight_roll;
 }
 
 
 - (void) decrease_flight_roll:(double) delta
 {
-	if (flightRoll > -max_flight_roll)
-		flightRoll -= delta;
-	if (flightRoll < -max_flight_roll)
+	flightRoll -= delta;
+	if (flightRoll > max_flight_roll)
+		flightRoll = max_flight_roll;
+	else if (flightRoll < -max_flight_roll)
 		flightRoll = -max_flight_roll;
 }
 
 
 - (void) increase_flight_pitch:(double) delta
 {
-	if (flightPitch < max_flight_pitch)
-		flightPitch += delta;
+	flightPitch += delta;
 	if (flightPitch > max_flight_pitch)
 		flightPitch = max_flight_pitch;
+	else if (flightPitch < -max_flight_pitch)
+		flightPitch = -max_flight_pitch;
 }
 
 
 - (void) decrease_flight_pitch:(double) delta
 {
-	if (flightPitch > -max_flight_pitch)
-		flightPitch -= delta;
-	if (flightPitch < -max_flight_pitch)
+	flightPitch -= delta;
+	if (flightPitch > max_flight_pitch)
+		flightPitch = max_flight_pitch;
+	else if (flightPitch < -max_flight_pitch)
 		flightPitch = -max_flight_pitch;
 }
 
 
 - (void) increase_flight_yaw:(double) delta
 {
-	if (flightYaw < max_flight_yaw)
-		flightYaw += delta;
+	flightYaw += delta;
 	if (flightYaw > max_flight_yaw)
 		flightYaw = max_flight_yaw;
+	else if (flightYaw < -max_flight_yaw)
+		flightYaw = -max_flight_yaw;
 }
 
 
 - (void) decrease_flight_yaw:(double) delta
 {
-	if (flightYaw > -max_flight_yaw)
-		flightYaw -= delta;
-	if (flightYaw < -max_flight_yaw)
+	flightYaw -= delta;
+	if (flightYaw > max_flight_yaw)
+		flightYaw = max_flight_yaw;
+	else if (flightYaw < -max_flight_yaw)
 		flightYaw = -max_flight_yaw;
 }
 
@@ -8731,7 +8757,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 	{
 		if ([self isThargoid] && [roleSet hasRole:@"thargoid-mothership"])  [self broadcastThargoidDestroyed];
 		
-		if (!suppressExplosion)
+		if (!suppressExplosion && ([self isVisible] || HPdistance2([self position], [PLAYER position]) < SCANNER_MAX_RANGE2))
 		{
 			if (!isWreckage && mass > 500000.0f && randf() < 0.25f) // big!
 			{
@@ -8973,7 +8999,7 @@ NSComparisonResult ComparePlanetsBySurfaceDistance(id i1, id i2, void* context)
 			if (isPlayer)
 			{
 	#ifndef NDEBUG
-				OOLog(@"becomeExplosion.suspectedGhost.confirm", @"Ship spotted with isPlayer set when not actually the player.");
+				OOLog(@"becomeExplosion.suspectedGhost.confirm", @"%@", @"Ship spotted with isPlayer set when not actually the player.");
 	#endif
 				isPlayer = NO;
 			}
@@ -9916,25 +9942,23 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 		jink.x = (ranrot_rand() % 256) - 128.0;
 		jink.y = (ranrot_rand() % 256) - 128.0;
 		jink.z = z;
-		if (accuracy >= COMBAT_AI_IS_SMART)
+		
+		// make sure we don't accidentally have near-zero jink
+		if (jink.x < 0.0) 
 		{
-			// make sure we don't accidentally have near-zero jink
-			if (jink.x < 0.0) 
-			{
-				jink.x -= 128.0;
-			}
-			else
-			{
-				jink.x += 128.0;
-			}
-			if (jink.y < 0) 
-			{
-				jink.y -= 128.0;
-			}
-			else
-			{
-				jink.y += 128.0;
-			}
+			jink.x -= 128.0;
+		}
+		else
+		{
+			jink.x += 128.0;
+		}
+		if (jink.y < 0) 
+		{
+			jink.y -= 128.0;
+		}
+		else
+		{
+			jink.y += 128.0;
 		}
 	}
 }
@@ -12383,6 +12407,12 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 
 - (void) scoopUp:(ShipEntity *)other
 {
+	[self scoopUpProcess:other processEvents:YES processMessages:YES];
+}
+
+
+- (void) scoopUpProcess:(ShipEntity *)other processEvents:(BOOL) procEvents processMessages:(BOOL) procMessages
+{
 	if (other == nil)  return;
 	
 	OOCommodityType	co_type = nil;
@@ -12407,7 +12437,10 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 				//scripting
 				PlayerEntity *player = PLAYER;
 				[player setScriptTarget:self];
-				[other doScriptEvent:OOJSID("shipWasScooped") withArgument:self];
+				if (procEvents)
+				{
+					[other doScriptEvent:OOJSID("shipWasScooped") withArgument:self];
+				}
 				
 				if ([other commodityType] != nil)
 				{
@@ -12417,7 +12450,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 				}
 				else
 				{
-					if (isPlayer && [other showScoopMessage])
+					if (isPlayer && [other showScoopMessage] && procMessages)
 					{
 						[UNIVERSE clearPreviousMessage];
 						NSString *shipName = [other displayName];
@@ -12457,9 +12490,9 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 		
 		if (isPlayer)
 		{
-			if ([other crew])
+			if ([other crew])			
 			{
-				if ([other showScoopMessage])
+				if ([other showScoopMessage] && procMessages)
 				{
 					[UNIVERSE clearPreviousMessage];
 					unsigned i;
@@ -12481,11 +12514,14 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 						}
 					}
 				}
-				[(PlayerEntity *)self playEscapePodScooped];
+				if (procEvents) 
+				{
+					[(PlayerEntity *)self playEscapePodScooped];
+				}
 			}
 			else
 			{
-				if ([other showScoopMessage])
+				if ([other showScoopMessage] && procMessages)
 				{
 					[UNIVERSE clearPreviousMessage];
 					[UNIVERSE addMessage:[UNIVERSE describeCommodity:co_type amount:co_amount] forCount:4.5];
@@ -12498,7 +12534,10 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 		[shipAI message:@"CARGO_SCOOPED"];
 		if (max_cargo && [cargo count] >= [self maxAvailableCargoSpace])  [shipAI message:@"HOLD_FULL"];
 	}
-	[self doScriptEvent:OOJSID("shipScoopedOther") withArgument:other]; // always fire, even without commodity.
+	if (procEvents)
+	{
+		[self doScriptEvent:OOJSID("shipScoopedOther") withArgument:other]; // always fire, even without commodity.
+	}
 
 	// if shipScoopedOther does something strange to the object, we must
 	// then remove it from the hold, or it will be over-retained
@@ -13967,7 +14006,7 @@ static BOOL AuthorityPredicate(Entity *entity, void *parameter)
 	
 	if (shipAI != nil && OOLogWillDisplayMessagesInClass(@"dumpState.shipEntity.ai"))
 	{
-		OOLog(@"dumpState.shipEntity.ai", @"AI:");
+		OOLog(@"dumpState.shipEntity.ai", @"%@", @"AI:");
 		OOLogPushIndent();
 		OOLogIndent();
 		@try

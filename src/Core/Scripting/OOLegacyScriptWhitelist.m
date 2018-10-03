@@ -23,6 +23,7 @@ MA 02110-1301, USA.
 
 */
 
+#import "OOCocoa.h"
 #import "OOLegacyScriptWhitelist.h"
 #import "OOStringParsing.h"
 #import	"ResourceManager.h"
@@ -32,7 +33,7 @@ MA 02110-1301, USA.
 #import "OODeepCopy.h"
 
 
-#define INCLUDE_RAW_STRING !defined(NDEBUG)	// If nonzero, raw condition strings are included; if zero, a placeholder is used.
+#define INCLUDE_RAW_STRING OOLITE_DEBUG	// If nonzero, raw condition strings are included; if zero, a placeholder is used.
 
 
 typedef struct SanStackElement SanStackElement;
@@ -192,7 +193,7 @@ static NSArray *SanitizeCondition(NSString *condition, SanStackElement *stack)
 	if (tokenCount < 1)
 	{
 		OOLog(@"script.debug.syntax.scriptCondition.noneSpecified", @"***** SCRIPT ERROR: in %@, empty script condition.", StringFromStack(stack));
-		return NO;
+		return nil;
 	}
 	
 	// Parse left-hand side.
@@ -201,7 +202,7 @@ static NSArray *SanitizeCondition(NSString *condition, SanStackElement *stack)
 	if (opType >= OP_INVALID)
 	{
 		OOLog(@"script.unpermittedMethod", @"***** SCRIPT ERROR: in %@ (\"%@\"), method \"%@\" not allowed.", StringFromStack(stack), condition, selectorString);
-		return NO;
+		return nil;
 	}
 	
 	// Parse operator.
@@ -218,7 +219,7 @@ static NSArray *SanitizeCondition(NSString *condition, SanStackElement *stack)
 		else
 		{
 			OOLog(@"script.debug.syntax.badComparison", @"***** SCRIPT ERROR: in %@ (\"%@\"), unknown comparison operator \"%@\", will return NO.", StringFromStack(stack), condition, comparatorString);
-			return NO;
+			return nil;
 		}
 	}
 	else
@@ -229,14 +230,14 @@ static NSArray *SanitizeCondition(NSString *condition, SanStackElement *stack)
 			has the same effect.
 		 */
 		OOLog(@"script.debug.syntax.noOperator", @"----- WARNING: SCRIPT in %@ -- No operator in expression \"%@\", will always evaluate as false.", StringFromStack(stack), condition);
-		return NO;
+		return nil;
 	}
 	
 	// Check for invalid opType/comparator combinations.
 	if (opType == OP_NUMBER && comparatorValue == COMPARISON_UNDEFINED)
 	{
 		OOLog(@"script.debug.syntax.invalidOperator", @"***** SCRIPT ERROR: in %@ (\"%@\"), comparison operator \"%@\" is not valid for %@.", StringFromStack(stack), condition, @"undefined", @"numbers");
-		return NO;
+		return nil;
 	}
 	else if (opType == OP_BOOL)
 	{
@@ -249,7 +250,7 @@ static NSArray *SanitizeCondition(NSString *condition, SanStackElement *stack)
 			
 			default:
 				OOLog(@"script.debug.syntax.invalidOperator", @"***** SCRIPT ERROR: in %@ (\"%@\"), comparison operator \"%@\" is not valid for %@.", StringFromStack(stack), condition, OOComparisonTypeToString(comparatorValue), @"booleans");
-				return NO;
+				return nil;
 				
 		}
 	}

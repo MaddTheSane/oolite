@@ -176,7 +176,7 @@ MA 02110-1301, USA.
 		// if V-sync is disabled at the command line, override the defaults file
 		if ([arg isEqual:@"-novsync"] || [arg isEqual:@"--novsync"])  vSyncPreference = NO;
 	}
-
+	
 	matrixManager = [[OOOpenGLMatrixManager alloc] init];
 
 	// TODO: This code up to and including stickHandler really ought
@@ -195,6 +195,7 @@ MA 02110-1301, USA.
 	// end TODO
 
 	[OOSound setUp];
+	if (![OOSound isSoundOK])  OOLog(@"sound.init", @"%@", @"Sound system disabled.");
 
 	// Generate the window caption, containing the version number and the date the executable was compiled.
 	static char windowCaption[128];
@@ -219,6 +220,8 @@ MA 02110-1301, USA.
 	{
 		OOLogWARN(@"display.initGL.monitorInfoWarning", @"Could not get current monitor information.");
 	}
+	
+	atDesktopResolution = YES;
 #endif
 
 	grabMouseStatus = NO;
@@ -240,17 +243,10 @@ MA 02110-1301, USA.
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	
-	// V-sync settings
+	// V-sync settings - we set here, but can only verify after SDL_SetVideoMode has been called.
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, vSyncPreference);	// V-sync on by default.
 	OOLog(@"display.initGL", @"V-Sync %@requested.", vSyncPreference ? @"" : @"not ");
-	// Verify V-sync successfully set - report it if not
-	if (vSyncPreference && SDL_GL_GetAttribute(SDL_GL_SWAP_CONTROL, &vSyncValue) == -1)
-	{
-		OOLogWARN(@"display.initGL", @"Could not enable V-Sync. Please check that your graphics driver supports the %@_swap_control extension.",
-					OOLITE_WINDOWS ? @"WGL_EXT" : @"[GLX_SGI/GLX_MESA]");
-	}
-
-
+	
 	/* Multisampling significantly improves graphics quality with
 	 * basically no extra programming effort on our part, especially
 	 * for curved surfaces like the planet, but is also expensive - in
@@ -316,6 +312,13 @@ MA 02110-1301, USA.
 			}
 		}
 	}
+	
+	// Verify V-sync successfully set - report it if not
+	if (vSyncPreference && SDL_GL_GetAttribute(SDL_GL_SWAP_CONTROL, &vSyncValue) == -1)
+	{
+		OOLogWARN(@"display.initGL", @"Could not enable V-Sync. Please check that your graphics driver supports the %@_swap_control extension.",
+					OOLITE_WINDOWS ? @"WGL_EXT" : @"[GLX_SGI/GLX_MESA]");
+	}
 
 	bounds.size.width = surface->w;
 	bounds.size.height = surface->h;
@@ -331,7 +334,7 @@ MA 02110-1301, USA.
 
 	timeIntervalAtLastClick = timeSinceLastMouseWheel = [NSDate timeIntervalSinceReferenceDate];
 	
-	_mouseWheelState = gvMouseWheelNeutral;
+	_mouseWheelDelta = 0.0f;
 
 	m_glContextInitialized = NO;
 
@@ -931,6 +934,12 @@ MA 02110-1301, USA.
 }
 
 
+- (BOOL) atDesktopResolution
+{
+	return atDesktopResolution;
+}
+
+
 #else	// Linus stub methods
 
 // for Linux we assume we are always on the primary monitor for now
@@ -1052,6 +1061,8 @@ MA 02110-1301, USA.
 				OOLogERR(@"displayMode.change.error", @"Could not switch to requested display mode.");
 				return;
 			}
+			atDesktopResolution = settings.dmPelsWidth == [[[screenSizes objectAtIndex:0] objectForKey: kOODisplayWidth] intValue]
+								&& settings.dmPelsHeight == [[[screenSizes objectAtIndex:0] objectForKey: kOODisplayHeight] intValue];
 		}
 		
 		MoveWindow(SDL_Window, monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top, (int)viewSize.width, (int)viewSize.height, TRUE);
@@ -1063,10 +1074,14 @@ MA 02110-1301, USA.
 	
 	else if ( wasFullScreen )
 	{
-		// stop saveWindowSize from reacting to caption & frame
-		saveSize=NO;
-		
-		if (changingResolution)  ChangeDisplaySettingsEx(NULL, NULL, NULL, 0, NULL);
+		if (changingResolution)
+		{
+			// restore original desktop resolution
+			if (ChangeDisplaySettingsEx(NULL, NULL, NULL, 0, NULL) == DISP_CHANGE_SUCCESSFUL)
+			{
+				atDesktopResolution = YES;
+			}
+		}
 		
 		/*NOTE: If we ever decide to change the default behaviour of launching
 		always on primary monitor to launching on the monitor the program was 
@@ -1094,6 +1109,9 @@ MA 02110-1301, USA.
 		lastWindowPlacementMaximized = NO;
 		ShowWindow(SDL_Window,SW_SHOW);
 	}
+	
+	// stop saveWindowSize from reacting to caption & frame if necessary
+	saveSize = !wasFullScreen;
 
 	GetClientRect(SDL_Window, &wDC);
 
@@ -1559,7 +1577,24 @@ MA 02110-1301, USA.
 
 - (int) mouseWheelState
 {
-	return _mouseWheelState;
+	if (_mouseWheelDelta > 0.0f)
+		return gvMouseWheelUp;
+	else if (_mouseWheelDelta < 0.0f)
+		return gvMouseWheelDown;
+	else
+		return gvMouseWheelNeutral;
+}
+
+
+- (float) mouseWheelDelta
+{
+	return _mouseWheelDelta / OOMOUSEWHEEL_DELTA;
+}
+
+
+- (void) setMouseWheelDelta: (float) newWheelDelta
+{
+	_mouseWheelDelta = newWheelDelta * OOMOUSEWHEEL_DELTA;
 }
 
 
@@ -1621,6 +1656,12 @@ MA 02110-1301, USA.
 
 			case SDL_MOUSEBUTTONDOWN:
 				mbtn_event = (SDL_MouseButtonEvent*)&event;
+#if OOLITE_LINUX
+				short inDelta = 0;
+#else
+				// specially built SDL.dll is required for this
+				short inDelta = mbtn_event->wheelDelta;
+#endif
 				switch(mbtn_event->button)
 				{
 					case SDL_BUTTON_LEFT:
@@ -1637,11 +1678,30 @@ MA 02110-1301, USA.
 						[self resetMouse]; // Will set mouseWarped to YES
 						break;
 					// mousewheel stuff
+#if OOLITE_LINUX
 					case SDL_BUTTON_WHEELUP:
-						_mouseWheelState = gvMouseWheelUp;
-						break;
+						inDelta = OOMOUSEWHEEL_DELTA;
+						// allow fallthrough
 					case SDL_BUTTON_WHEELDOWN:
-						_mouseWheelState = gvMouseWheelDown;
+						if (inDelta == 0)  inDelta = -OOMOUSEWHEEL_DELTA;
+#else
+					case SDL_BUTTON_WHEELUP:
+					case SDL_BUTTON_WHEELDOWN:
+#endif
+						if (inDelta > 0)
+						{
+							if (_mouseWheelDelta >= 0.0f)
+								_mouseWheelDelta += inDelta;
+							else
+								_mouseWheelDelta = 0.0f;
+						}
+						else if (inDelta < 0)
+						{
+							if (_mouseWheelDelta <= 0.0f)
+								_mouseWheelDelta += inDelta;
+							else
+								_mouseWheelDelta = 0.0f;
+						}
 						break;
 				}
 				break;
@@ -2278,7 +2338,7 @@ keys[a] = NO; keys[b] = NO; \
 	// if needed
 	if (timeNow >= timeSinceLastMouseWheel + OOMOUSEWHEEL_EVENTS_DELAY_INTERVAL)
 	{
-		_mouseWheelState = gvMouseWheelNeutral;
+		_mouseWheelDelta = 0.0f;
 	}
 }
 
@@ -2328,6 +2388,7 @@ keys[a] = NO; keys[b] = NO; \
 	}
 }
 
+
 // Full screen mode enumerator.
 - (void) populateFullScreenModelist
 {
@@ -2373,13 +2434,17 @@ keys[a] = NO; keys[b] = NO; \
 					forKey: kOODisplayHeight];
 			[mode setValue: [NSNumber numberWithInt: 0]
 					forKey: kOODisplayRefreshRate];
-			[screenSizes addObject: mode];
-			OOLog(@"display.mode.list", @"Added res %d x %d", modes[i]->w, modes[i]->h);
-			lastw=modes[i]->w;
-			lasth=modes[i]->h;
+			if (![screenSizes containsObject:mode])
+			{
+				[screenSizes addObject: mode];
+				OOLog(@"display.mode.list", @"Added res %d x %d", modes[i]->w, modes[i]->h);
+				lastw=modes[i]->w;
+				lasth=modes[i]->h;
+			}
 		}
 	}
 }
+
 
 // Save and restore window sizes to/from defaults.
 - (void) saveWindowSize: (NSSize) windowSize

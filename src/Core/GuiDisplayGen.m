@@ -328,12 +328,32 @@ static BOOL _refreshStarChart = NO;
 }
 
 
+- (OOColor *) textColor
+{
+	return textColor;
+}
+
+
 // default text colour for rows
 - (void) setTextColor:(OOColor*) color
 {
 	[textColor release];
 	if (color == nil)  color = [[OOColor yellowColor] retain];
 	textColor = [color retain];
+}
+
+
+- (OOColor *) textCommsColor
+{
+	return textCommsColor;
+}
+
+
+- (void) setTextCommsColor:(OOColor*) color
+{
+	[textCommsColor release];
+	if (color == nil)  color = [[OOColor yellowColor] retain];
+	textCommsColor = [color retain];
 }
 
 
@@ -363,6 +383,23 @@ static BOOL _refreshStarChart = NO;
 	[col getRed:&r green:&g blue:&b alpha:&a];
 
 	OOGL(glColor4f(r, g, b, a*alpha));
+}
+
+
+- (void) setGuiColorSettingFromKey:(NSString *)key color:(OOColor *)col
+{
+	NSMutableDictionary *guiCopy = [guiUserSettings mutableCopy];
+	if (col == nil)
+	{
+		[guiCopy removeObjectForKey:key];
+	} 
+	else
+	{
+		[guiCopy setObject:col forKey:key];
+	}
+	[guiUserSettings release];
+	guiUserSettings = [guiCopy copy];
+	[guiCopy release];
 }
 
 
@@ -977,7 +1014,22 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 
 		switch (spec) 
 		{
+		case GUI_BACKGROUND_SPECIAL_CUSTOM:
+		case GUI_BACKGROUND_SPECIAL_CUSTOM_ANA_SHORTEST:
+		case GUI_BACKGROUND_SPECIAL_CUSTOM_ANA_QUICKEST:
+			bgDescriptor = [UNIVERSE screenTextureDescriptorForKey:@"custom_chart_mission"];
+			if (bgDescriptor == nil) 
+			{
+				bgDescriptor = [UNIVERSE screenTextureDescriptorForKey:@"short_range_chart_mission"];
+				if (bgDescriptor == nil) 
+				{
+					bgDescriptor = [UNIVERSE screenTextureDescriptorForKey:@"short_range_chart"];
+				}
+			}
+			break;
 		case GUI_BACKGROUND_SPECIAL_SHORT:
+		case GUI_BACKGROUND_SPECIAL_SHORT_ANA_SHORTEST:
+		case GUI_BACKGROUND_SPECIAL_SHORT_ANA_QUICKEST:
 			bgDescriptor = [UNIVERSE screenTextureDescriptorForKey:@"short_range_chart_mission"];
 			if (bgDescriptor == nil) 
 			{
@@ -1231,10 +1283,11 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 			// Damaged items show up orange.
 			[self setGLColorFromSetting:@"status_equipment_damaged_color" defaultValue:[OOColor orangeColor] alpha:1.0];
 		} 
-		else
+		else /// add color selection here
 		{
+			OOColor				*dispCol = [info oo_objectAtIndex:2];
 			// Normal items in default colour
-			[self setGLColorFromSetting:@"status_equipment_ok_color" defaultValue:nil alpha:1.0];
+			[self setGLColorFromSetting:@"status_equipment_ok_color" defaultValue:dispCol alpha:1.0];
 		}
 		
 		if (i - start < itemsPerColumn)
@@ -1283,7 +1336,13 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		
 		if (self == [UNIVERSE gui])
 		{
-			if ([player guiScreen] == GUI_SCREEN_SHORT_RANGE_CHART || [player guiScreen] == GUI_SCREEN_LONG_RANGE_CHART || backgroundSpecial == GUI_BACKGROUND_SPECIAL_SHORT)
+			if ([player guiScreen] == GUI_SCREEN_SHORT_RANGE_CHART || [player guiScreen] == GUI_SCREEN_LONG_RANGE_CHART || 
+				backgroundSpecial == GUI_BACKGROUND_SPECIAL_SHORT ||
+				backgroundSpecial == GUI_BACKGROUND_SPECIAL_SHORT_ANA_QUICKEST ||
+				backgroundSpecial == GUI_BACKGROUND_SPECIAL_SHORT_ANA_SHORTEST ||
+				backgroundSpecial == GUI_BACKGROUND_SPECIAL_CUSTOM ||
+				backgroundSpecial == GUI_BACKGROUND_SPECIAL_CUSTOM_ANA_QUICKEST ||
+				backgroundSpecial == GUI_BACKGROUND_SPECIAL_CUSTOM_ANA_SHORTEST)
 			{
 				[self drawStarChart:x - 0.5f * size_in_pixels.width :y - 0.5f * size_in_pixels.height :z :alpha :NO];
 			}
@@ -1363,18 +1422,55 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 	OOTimeDelta	delta_t = [UNIVERSE getTimeDelta];
 	NSSize		characterSize = pixel_text_size;
 	NSSize		titleCharacterSize = pixel_title_size;
+	float		backgroundAlpha = self == [UNIVERSE messageGUI] && ![UNIVERSE permanentMessageLog] ? 0.0f : alpha;
+	float		row_alpha[n_rows];
+	
+	// calculate fade out time and alpha for each row. Do it before
+	// applying a potential background because we need the maximum alpha
+	// of all rows to be the alpha applied to the background color
+	for (i = 0; i < n_rows; i++)
+	{
+		row_alpha[i] = alpha;
+		
+		if(![UNIVERSE autoMessageLogBg] && [PLAYER guiScreen] == GUI_SCREEN_MAIN)  backgroundAlpha = alpha;
+		
+		if (rowFadeTime[i] > 0.0f && ![UNIVERSE permanentMessageLog])
+		{
+			rowFadeTime[i] -= (float)delta_t;
+			if (rowFadeTime[i] <= 0.0f)
+			{
+				[rowText replaceObjectAtIndex:i withObject:@""];
+				rowFadeTime[i] = 0.0f;
+				continue;
+			}
+			if ((rowFadeTime[i] > 0.0f)&&(rowFadeTime[i] < 1.0))
+			{
+				row_alpha[i] *= rowFadeTime[i];
+				if (backgroundAlpha < row_alpha[i])  backgroundAlpha = row_alpha[i];
+			}
+			else
+			{
+				backgroundAlpha = alpha;
+			}
+		}
+	}
 	
 	// do backdrop
-	//
+	// don't draw it if docked, unless message_gui is permanent
+	// don't draw it on the intro screens
 	if (backgroundColor)
 	{
-		OOGL(glColor4f([backgroundColor redComponent], [backgroundColor greenComponent], [backgroundColor blueComponent], alpha * [backgroundColor alphaComponent]));
-		OOGLBEGIN(GL_QUADS);
-			glVertex3f(x + 0.0f,					y + 0.0f,					z);
-			glVertex3f(x + size_in_pixels.width,	y + 0.0f,					z);
-			glVertex3f(x + size_in_pixels.width,	y + size_in_pixels.height,	z);
-			glVertex3f(x + 0.0f,					y + size_in_pixels.height,	z);
-		OOGLEND();
+		int playerStatus = [PLAYER status];
+		if (playerStatus != STATUS_START_GAME && playerStatus != STATUS_DEAD)
+		{
+			OOGL(glColor4f([backgroundColor redComponent], [backgroundColor greenComponent], [backgroundColor blueComponent], backgroundAlpha * [backgroundColor alphaComponent]));
+			OOGLBEGIN(GL_QUADS);
+				glVertex3f(x + 0.0f,					y + 0.0f,					z);
+				glVertex3f(x + size_in_pixels.width,	y + 0.0f,					z);
+				glVertex3f(x + size_in_pixels.width,	y + size_in_pixels.height,	z);
+				glVertex3f(x + 0.0f,					y + size_in_pixels.height,	z);
+			OOGLEND();
+		}
 	}
 	
 	// show the 'foreground', aka overlay!
@@ -1417,20 +1513,8 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 	OOStartDrawingStrings();
 	for (i = 0; i < n_rows; i++)
 	{
-		OOColor* row_color = [rowColor objectAtIndex:i];
-		GLfloat row_alpha = alpha;
-		if (rowFadeTime[i] > 0.0f)
-		{
-			rowFadeTime[i] -= (float)delta_t;
-			if (rowFadeTime[i] <= 0.0f)
-			{
-				[rowText replaceObjectAtIndex:i withObject:@""];
-				rowFadeTime[i] = 0.0f;
-			}
-			if ((rowFadeTime[i] > 0.0f)&&(rowFadeTime[i] < 1.0))
-				row_alpha *= rowFadeTime[i];
-		}
-		glColor4f([row_color redComponent], [row_color greenComponent], [row_color blueComponent], row_alpha);
+		OOColor* row_color = (OOColor *)[rowColor objectAtIndex:i];
+		glColor4f([row_color redComponent], [row_color greenComponent], [row_color blueComponent], row_alpha[i]);
 		
 		if ([[rowText objectAtIndex:i] isKindOfClass:[NSString class]])
 		{
@@ -1476,7 +1560,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 					tr.size.width = 0.5f * characterSize.width;
 					GLfloat g_alpha = 0.5f * (1.0f + (float)sin(6 * [UNIVERSE getTime]));
 					OOStopDrawingStrings();
-					[self setGLColorFromSetting:kGuiTextInputCursorColor defaultValue:[OOColor redColor] alpha:row_alpha*g_alpha];
+					[self setGLColorFromSetting:kGuiTextInputCursorColor defaultValue:[OOColor redColor] alpha:row_alpha[i]*g_alpha];
 					OOGLBEGIN(GL_QUADS);
 						glVertex3f(tr.origin.x,					tr.origin.y,					z);
 						glVertex3f(tr.origin.x + tr.size.width,	tr.origin.y,					z);
@@ -1649,6 +1733,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 	
 	int			i;
 	double		d, distance = 0.0, time = 0.0;
+	int		jumps = 0;
 	NSPoint		star;
 	OOScalar	pixelRatio;
 	NSRect		clipRect;
@@ -1693,7 +1778,6 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 				(textRow-1) * MAIN_GUI_ROW_HEIGHT * pixelRatio);
 
 	OOSystemID target = [PLAYER targetSystemID];
-	NSString *targetName = [UNIVERSE getSystemName:target];
 	double dx, dy;
 	
 	// get a list of systems marked as contract destinations
@@ -1749,16 +1833,21 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		saved_galaxy_id = [player galaxyNumber];
 	}
 	
-	OOSystemID savedPlanetNumber = 0;
-	OOSystemID savedDestNumber = 0;
+	static OOSystemID savedPlanetNumber = 0;
+	static OOSystemID savedDestNumber = 0;
+	static OORouteType savedArrayMode = OPTIMIZED_BY_NONE;
 	static NSDictionary *routeInfo = nil;
 
 	/* May override current mode for mission screens */
-	if (backgroundSpecial == GUI_BACKGROUND_SPECIAL_LONG_ANA_SHORTEST)
+	if (backgroundSpecial == GUI_BACKGROUND_SPECIAL_LONG_ANA_SHORTEST || 
+		backgroundSpecial == GUI_BACKGROUND_SPECIAL_SHORT_ANA_SHORTEST || 
+		backgroundSpecial == GUI_BACKGROUND_SPECIAL_CUSTOM_ANA_SHORTEST)
 	{
 		advancedNavArrayMode = OPTIMIZED_BY_JUMPS;
 	}
-	else if (backgroundSpecial == GUI_BACKGROUND_SPECIAL_LONG_ANA_QUICKEST)
+	else if (backgroundSpecial == GUI_BACKGROUND_SPECIAL_LONG_ANA_QUICKEST ||
+		backgroundSpecial == GUI_BACKGROUND_SPECIAL_SHORT_ANA_QUICKEST ||
+		backgroundSpecial == GUI_BACKGROUND_SPECIAL_CUSTOM_ANA_QUICKEST)
 	{
 		advancedNavArrayMode = OPTIMIZED_BY_TIME;
 	}
@@ -1767,12 +1856,13 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 	{
 		OOSystemID planetNumber = [PLAYER systemID];
 		OOSystemID destNumber = [PLAYER targetSystemID];
-		if (routeInfo == nil || planetNumber != savedPlanetNumber || destNumber != savedDestNumber)
+		if (routeInfo == nil || planetNumber != savedPlanetNumber || destNumber != savedDestNumber || advancedNavArrayMode != savedArrayMode)
 		{
 			[routeInfo release];
 			routeInfo = [[UNIVERSE routeFromSystem:planetNumber toSystem:destNumber optimizedBy:advancedNavArrayMode] retain];
 			savedPlanetNumber = planetNumber;
 			savedDestNumber = destNumber;
+			savedArrayMode = advancedNavArrayMode;
 		}
 		target = destNumber;
 		
@@ -1788,6 +1878,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		{
 			distance = [routeInfo oo_doubleForKey:@"distance"];
 			time = [routeInfo oo_doubleForKey:@"time"];
+			jumps = [routeInfo oo_intForKey:@"jumps"];
 
 			if (distance == 0.0 && planetNumber != destNumber)
 			{
@@ -1801,11 +1892,9 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 	{
 		[self drawAdvancedNavArrayAtX:x+hoffset y:y+voffset z:z alpha:alpha usingRoute:nil optimizedBy:OPTIMIZED_BY_NONE zoom: zoom];
 	}
-	NSPoint targetCoordinates = (NSPoint){0,0};
 	if (!routeExists)
 	{
-		target = [UNIVERSE findSystemNumberAtCoords:cursor_coordinates withGalaxy:galaxy_id includingHidden:NO];
-		targetCoordinates = [systemManager getCoordinatesForSystem:target inGalaxy:galaxy_id];
+		NSPoint targetCoordinates = [systemManager getCoordinatesForSystem:target inGalaxy:galaxy_id];
 
 		distance = distanceBetweenPlanetPositions(targetCoordinates.x,targetCoordinates.y,galaxy_coordinates.x,galaxy_coordinates.y);
 		if (distance == 0.0)
@@ -1938,7 +2027,8 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 				}			
 				OOGL(glColor4f(r, g, b, alpha));
 				break;
-			case OOLRC_MODE_NORMAL:
+			case OOLRC_MODE_UNKNOWN:
+			case OOLRC_MODE_SUNCOLOR:
 				if (EXPECT(noNova))
 				{
 					r = g = b = 1.0;
@@ -2084,6 +2174,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 			{
 				if (concealment[i] >= OO_SYSTEMCONCEALMENT_NODATA)
 				{
+					[self setGLColorFromSetting:kGuiChartLabelColor defaultValue:[OOColor yellowColor] alpha:alpha];
 					OODrawHilightedString(@"???", x + star.x + 2.0, y + star.y, z, chSize);
 				}
 				else
@@ -2125,6 +2216,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 			{
 				if (concealment[targetIdx] >= OO_SYSTEMCONCEALMENT_NODATA)
 				{
+					[self setGLColorFromSetting:kGuiChartLabelColor defaultValue:[OOColor yellowColor] alpha:alpha];
 					OODrawHilightedString(@"???", x + star.x + 2.0, y + star.y, z, chSize);
 				}
 				else
@@ -2141,7 +2233,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 	tab_stops[2] = 288;
 	[self overrideTabs:tab_stops from:kGuiChartTraveltimeTabs length:3];
 	[self setTabStops:tab_stops];
-	targetName = [[UNIVERSE getSystemName:target] retain];
+	NSString *targetName = [[UNIVERSE getSystemName:target] retain];
 
 	// distance-f & est-travel-time-f are identical between short & long range charts in standard Oolite, however can be alterered separately via OXPs
 	NSString *travelDistLine = @"";
@@ -2155,7 +2247,25 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		travelTimeLine = OOExpandKey(@"long-range-chart-est-travel-time", time);
 	}
 	
-	[self setArray:@[targetName, travelDistLine,travelTimeLine] forRow:textRow];
+	if(concealment[target] < OO_SYSTEMCONCEALMENT_NONAME)
+	{
+		[self setArray:[NSArray arrayWithObjects:targetName, travelDistLine,travelTimeLine,nil] forRow:textRow];
+	}
+	else
+	{
+		[self setArray:[NSArray arrayWithObjects:@"", travelDistLine,travelTimeLine,nil] forRow:textRow];
+	}
+	if ([PLAYER guiScreen] == GUI_SCREEN_SHORT_RANGE_CHART)
+	{
+		if (jumps > 0)
+		{
+			[self setArray:[NSArray arrayWithObjects: @"", OOExpandKey(@"short-range-chart-jumps", jumps), nil] forRow: textRow + 1];
+		}
+		else
+		{
+			[self setArray:[NSArray array] forRow: textRow + 1];
+		}
+	}
 	[targetName release];
 
 	// draw planet info circle
@@ -2458,7 +2568,7 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 			OOGLEND();
 			
 			// Label the route, if not already labelled
-			if (zoom > CHART_ZOOM_SHOW_LABELS)
+			if (zoom > CHART_ZOOM_SHOW_LABELS && concealment[loc] < OO_SYSTEMCONCEALMENT_NONAME)
 			{
 				OODrawString([UNIVERSE systemNameIndex:loc], x + star.x + 2.0, y + star.y, z, NSMakeSize(8,8));
 			}
@@ -2467,7 +2577,10 @@ static OOTextureSprite *NewTextureSpriteWithDescriptor(NSDictionary *descriptor)
 		if (zoom > CHART_ZOOM_SHOW_LABELS)
 		{
 			loc = [[routeInfo objectForKey:@"route"] oo_intAtIndex:i];
-			OODrawString([UNIVERSE systemNameIndex:loc], x + star2.x + 2.0, y + star2.y, z, NSMakeSize(10,10));
+			if(concealment[loc] < OO_SYSTEMCONCEALMENT_NONAME)
+			{
+				OODrawString([UNIVERSE systemNameIndex:loc], x + star2.x + 2.0, y + star2.y, z, NSMakeSize(10,10));
+			}
 		}
 	}
 }

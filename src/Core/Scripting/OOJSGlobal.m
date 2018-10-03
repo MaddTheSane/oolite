@@ -69,7 +69,12 @@ static JSBool GlobalRandomName(JSContext *context, uintN argc, jsval *vp);
 static JSBool GlobalRandomInhabitantsDescription(JSContext *context, uintN argc, jsval *vp);
 static JSBool GlobalSetScreenBackground(JSContext *context, uintN argc, jsval *vp);
 static JSBool GlobalSetScreenOverlay(JSContext *context, uintN argc, jsval *vp);
+static JSBool GlobalGetScreenBackgroundForKey(JSContext *context, uintN argc, jsval *vp);
+static JSBool GlobalSetScreenBackgroundForKey(JSContext *context, uintN argc, jsval *vp);
 static JSBool GlobalAutoAIForRole(JSContext *context, uintN argc, jsval *vp);
+static JSBool GlobalPauseGame(JSContext *context, uintN argc, jsval *vp);
+static JSBool GlobalGetGuiColorSettingForKey(JSContext *context, uintN argc, jsval *vp);
+static JSBool GlobalSetGuiColorSettingForKey(JSContext *context, uintN argc, jsval *vp);
 
 #ifndef NDEBUG
 static JSBool GlobalTakeSnapShot(JSContext *context, uintN argc, jsval *vp);
@@ -132,10 +137,15 @@ static JSFunctionSpec sGlobalMethods[] =
 	{ "randomName",						GlobalRandomName,					0 },
 	{ "randomInhabitantsDescription",	GlobalRandomInhabitantsDescription,	1 },
 	{ "setScreenBackground",			GlobalSetScreenBackground,			1 },
+	{ "getScreenBackgroundForKey",      GlobalGetScreenBackgroundForKey,    1 },
+	{ "setScreenBackgroundForKey",      GlobalSetScreenBackgroundForKey,    2 },
 	{ "setScreenOverlay",				GlobalSetScreenOverlay,				1 },
+	{ "getGuiColorSettingForKey",       GlobalGetGuiColorSettingForKey,     1 },
+	{ "setGuiColorSettingForKey",       GlobalSetGuiColorSettingForKey,     2 },
 #ifndef NDEBUG
 	{ "takeSnapShot",					GlobalTakeSnapShot,					1 },
 #endif
+	{ "pauseGame",						GlobalPauseGame,					0 },
 	{ 0 }
 };
 
@@ -424,6 +434,61 @@ static JSBool GlobalSetScreenBackground(JSContext *context, uintN argc, jsval *v
 }
 
 
+static JSBool GlobalGetScreenBackgroundForKey(JSContext *context, uintN argc, jsval *vp) 
+{
+	OOJS_NATIVE_ENTER(context)
+	
+	if (EXPECT_NOT(argc == 0))
+	{
+		OOJSReportBadArguments(context, nil, @"getScreenBackgroundDefault", 0, OOJS_ARGV, nil, @"missing arguments");
+		return NO;
+	}
+	NSString		*key = OOStringFromJSValue(context, OOJS_ARGV[0]);
+	if (EXPECT_NOT(key == nil || [key isEqualToString:@""]))
+	{
+		OOJSReportBadArguments(context, nil, @"getScreenBackgroundDefault", 0, OOJS_ARGV, nil, @"key");
+		return NO;
+	}
+	NSDictionary *descriptor = [UNIVERSE screenTextureDescriptorForKey:key];
+
+	OOJS_RETURN_OBJECT(descriptor);
+	
+	OOJS_NATIVE_EXIT
+} 
+
+// setScreenBackgroundDefault (key : NSString, descriptor : guiTextureDescriptor) : boolean
+static JSBool GlobalSetScreenBackgroundForKey(JSContext *context, uintN argc, jsval *vp) 
+{
+	OOJS_NATIVE_ENTER(context)
+	
+	BOOL			result = NO;
+	
+	if (EXPECT_NOT(argc < 2))
+	{
+		OOJSReportBadArguments(context, nil, @"setScreenBackgroundDefault", 0, OOJS_ARGV, nil, @"missing arguments");
+		return NO;
+	}
+
+	NSString		*key = OOStringFromJSValue(context, OOJS_ARGV[0]);
+	jsval			value = OOJS_ARGV[1];
+	if (EXPECT_NOT(key == nil || [key isEqualToString:@""]))
+	{
+		OOJSReportBadArguments(context, nil, @"setScreenBackgroundDefault", 0, OOJS_ARGV, nil, @"key");
+		return NO;
+	}
+
+	GuiDisplayGen	*gui = [UNIVERSE gui];
+	NSDictionary	*descriptor = [gui textureDescriptorFromJSValue:value inContext:context callerDescription:@"setScreenBackgroundDefault()"];
+	
+	[UNIVERSE setScreenTextureDescriptorForKey:key descriptor:descriptor];
+	result = YES;
+	
+	OOJS_RETURN_BOOL(result);
+	
+	OOJS_NATIVE_EXIT
+}
+
+
 // setScreenOverlay(descriptor : guiTextureDescriptor) : Boolean
 static JSBool GlobalSetScreenOverlay(JSContext *context, uintN argc, jsval *vp)
 {
@@ -449,6 +514,83 @@ static JSBool GlobalSetScreenOverlay(JSContext *context, uintN argc, jsval *vp)
 		
 		result = [gui setForegroundTextureDescriptor:descriptor];
 	}
+	
+	OOJS_RETURN_BOOL(result);
+	
+	OOJS_NATIVE_EXIT
+}
+
+
+static JSBool GlobalGetGuiColorSettingForKey(JSContext *context, uintN argc, jsval *vp)
+{
+	OOJS_NATIVE_ENTER(context)
+	
+	if (EXPECT_NOT(argc == 0))
+	{
+		OOJSReportBadArguments(context, nil, @"getGuiColorForKey", 0, OOJS_ARGV, nil, @"missing arguments");
+		return NO;
+	}
+	NSString		*key = OOStringFromJSValue(context, OOJS_ARGV[0]);
+	if (EXPECT_NOT(key == nil || [key isEqualToString:@""]))
+	{
+		OOJSReportBadArguments(context, nil, @"getGuiColorForKey", 0, OOJS_ARGV, nil, @"key");
+		return NO;
+	}
+	if ([key rangeOfString:@"color"].location == NSNotFound)
+	{
+		OOJSReportBadArguments(context, nil, @"getGuiColorForKey", 0, OOJS_ARGV, nil, @"valid color key setting");
+		return NO;
+	}
+
+	GuiDisplayGen	*gui = [UNIVERSE gui];
+	OOColor *col = [gui colorFromSetting:key defaultValue:nil];
+
+	OOJS_RETURN_OBJECT([col normalizedArray]);
+	
+	OOJS_NATIVE_EXIT
+}
+
+
+// setGuiColorForKey(descriptor : OOColor) : boolean
+static JSBool GlobalSetGuiColorSettingForKey(JSContext *context, uintN argc, jsval *vp)
+{
+	OOJS_NATIVE_ENTER(context)
+	
+	BOOL			result = NO;
+	OOColor			*col = nil;
+	
+	if (EXPECT_NOT(argc != 2))
+	{
+		OOJSReportBadArguments(context, nil, @"setGuiColorForKey", 0, OOJS_ARGV, nil, @"missing arguments");
+		return NO;
+	}
+
+	NSString		*key = OOStringFromJSValue(context, OOJS_ARGV[0]);
+	jsval			value = OOJS_ARGV[1];
+	if (EXPECT_NOT(key == nil || [key isEqualToString:@""]))
+	{
+		OOJSReportBadArguments(context, nil, @"setGuiColorForKey", 0, OOJS_ARGV, nil, @"key");
+		return NO;
+	}
+	if ([key rangeOfString:@"color"].location == NSNotFound)
+	{
+		OOJSReportBadArguments(context, nil, @"setGuiColorForKey", 0, OOJS_ARGV, nil, @"valid color key setting");
+		return NO;
+	}
+
+	if (!JSVAL_IS_NULL(value))
+	{
+		col = [OOColor colorWithDescription:OOJSNativeObjectFromJSValue(context, value)];
+		if (col == nil)
+		{
+			OOJSReportBadArguments(context, nil, @"setGuiColorForKey", 1, OOJS_ARGV, nil, @"color descriptor");
+			return NO;
+		}
+	}
+
+	GuiDisplayGen	*gui = [UNIVERSE gui];
+	[gui setGuiColorSettingFromKey:key color:col];
+	result = YES;
 	
 	OOJS_RETURN_BOOL(result);
 	
@@ -520,6 +662,33 @@ static JSBool GlobalAutoAIForRole(JSContext *context, uintN argc, jsval *vp)
 	NSString *autoAI = [autoAIMap oo_stringForKey:string];
 
 	OOJS_RETURN_OBJECT(autoAI);
+	
+	OOJS_NATIVE_EXIT
+}
+
+// pauseGame() : Boolean
+static JSBool GlobalPauseGame(JSContext *context, uintN argc, jsval *vp)
+{
+	OOJS_NATIVE_ENTER(context)
+	
+	BOOL			result = NO;
+	PlayerEntity	*player = PLAYER;
+	
+	if (player)
+	{
+		OOGUIScreenID guiScreen = [player guiScreen];
+		
+		if 	(guiScreen != GUI_SCREEN_LONG_RANGE_CHART &&
+			 guiScreen != GUI_SCREEN_MISSION &&
+			 guiScreen != GUI_SCREEN_REPORT &&
+			 guiScreen != GUI_SCREEN_SAVE)
+		{
+			[UNIVERSE pauseGame];
+			result = YES;
+		}
+	}
+	
+	OOJS_RETURN_BOOL(result);
 	
 	OOJS_NATIVE_EXIT
 }

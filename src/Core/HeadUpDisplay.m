@@ -22,6 +22,7 @@ MA 02110-1301, USA.
 
 */
 
+#import "OOCocoa.h"
 #import "HeadUpDisplay.h"
 #import "GameController.h"
 #import "ResourceManager.h"
@@ -53,7 +54,7 @@ MA 02110-1301, USA.
 #define ONE_SIXTYFOURTH				0.015625
 #define DEFAULT_OVERALL_ALPHA		0.75
 #define GLYPH_SCALE_FACTOR			0.13		// 0.13 is an inherited magic number
-#define IDENTIFY_SCANNER_LOLLIPOPS	(	0	&& !defined(NDEBUG))
+#define IDENTIFY_SCANNER_LOLLIPOPS	(	0	&& OOLITE_DEBUG)
 
 
 #define NOT_DEFINED					INFINITY
@@ -95,10 +96,12 @@ static void hudDrawMarkerAt(GLfloat x, GLfloat y, GLfloat z, NSSize siz, GLfloat
 static void hudDrawBarAt(GLfloat x, GLfloat y, GLfloat z, NSSize siz, GLfloat amount);
 static void hudDrawSurroundAt(GLfloat x, GLfloat y, GLfloat z, NSSize siz);
 static void hudDrawStatusIconAt(int x, int y, int z, NSSize siz);
-static void hudDrawReticleOnTarget(Entity* target, PlayerEntity* player1, GLfloat z1, GLfloat alpha, BOOL reticleTargetSensitive, NSMutableDictionary *propertiesReticleTargetSensitive, BOOL colourFromScannerColour, BOOL showText, NSDictionary *info);
+static void hudDrawReticleOnTarget(Entity* target, PlayerEntity* player1, GLfloat z1,
+				GLfloat alpha, BOOL reticleTargetSensitive, NSMutableDictionary *propertiesReticleTargetSensitive,
+				BOOL colourFromScannerColour, BOOL showText, NSDictionary *info, NSMutableArray *reticleColors);
 static void hudDrawWaypoint(OOWaypointEntity *waypoint, PlayerEntity *player1, GLfloat z1, GLfloat alpha, BOOL selected, GLfloat scale);
 static void hudRotateViewpointForVirtualDepth(PlayerEntity * player1, Vector p1);
-static void drawScannerGrid(GLfloat x, GLfloat y, GLfloat z, NSSize siz, int v_dir, GLfloat thickness, GLfloat zoom, BOOL nonlinear);
+static void drawScannerGrid(GLfloat x, GLfloat y, GLfloat z, NSSize siz, int v_dir, GLfloat thickness, GLfloat zoom, BOOL nonlinear, BOOL minimalistic);
 static GLfloat nonlinearScannerFunc(GLfloat distance, GLfloat zoom, GLfloat scale);
 static void GLDrawNonlinearCascadeWeapon( GLfloat x, GLfloat y, GLfloat z, NSSize siz, Vector centre, GLfloat radius, GLfloat zoom, GLfloat alpha );
 
@@ -242,6 +245,8 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 	legendArray = [[NSMutableArray alloc] initWithCapacity:16]; // alloc retains
 	mfdArray = [[NSMutableArray alloc] initWithCapacity:8]; // alloc retains
 	
+	_reticleColors = nil;
+	
 	// populate arrays
 	NSArray *dials = [hudinfo oo_arrayForKey:DIALS_KEY];
 	for (i = 0; i < [dials count]; i++)
@@ -249,7 +254,20 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 		NSDictionary	*dial_info = [dials oo_dictionaryAtIndex:i];
 		if (!areTrumblesToBeDrawn && [[dial_info oo_stringForKey:SELECTOR_KEY] isEqualToString:@"drawTrumbles:"])  areTrumblesToBeDrawn = YES;
 		if (!isCompassToBeDrawn && [[dial_info oo_stringForKey:SELECTOR_KEY] isEqualToString:@"drawCompass:"])  isCompassToBeDrawn = YES;
+		if ([[dial_info oo_stringForKey:SELECTOR_KEY] isEqualToString:@"drawTargetReticle:"])
+		{
+			_reticleColors = [[NSMutableArray arrayWithObjects:[OOColor colorWithDescription:[dial_info oo_objectForKey:@"target_rgba" defaultValue:@"greenColor"]],
+												[OOColor colorWithDescription:[dial_info oo_objectForKey:@"target_sensitive_rgba" defaultValue:@"redColor"]],
+												[OOColor colorWithDescription:[dial_info oo_objectForKey:@"wormhole_rgba" defaultValue:@"cyanColor"]],
+												nil] retain];
+		}
 		[self addDial:dial_info];
+	}
+	
+	// reticle colors should be set at this point, but just be safe in case they are not
+	if (!_reticleColors)
+	{
+		_reticleColors = [[NSMutableArray arrayWithObjects:[OOColor greenColor], [OOColor redColor], [OOColor cyanColor], nil] retain];
 	}
 	
 	if (!areTrumblesToBeDrawn)	// naughty - a hud with no built-in drawTrumbles: - one must be added!
@@ -314,6 +332,8 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 	_crosshairScale = [hudinfo oo_floatForKey:@"crosshair_scale" defaultValue:32.0f];
 	_crosshairWidth = [hudinfo oo_floatForKey:@"crosshair_width" defaultValue:1.5f];
 	
+	minimalistic_scanner = [hudinfo oo_boolForKey:@"scanner_minimalistic" defaultValue:NO];
+	
 	nonlinear_scanner = [hudinfo oo_boolForKey:@"scanner_non_linear" defaultValue:NO];
 	scanner_ultra_zoom = [hudinfo oo_boolForKey:@"scanner_ultra_zoom" defaultValue:NO];
 	
@@ -331,6 +351,7 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 	DESTROY(propertiesReticleTargetSensitive);
 	DESTROY(_crosshairOverrides);
 	DESTROY(_crosshairColor);
+	DESTROY(_reticleColors);
 	DESTROY(crosshairDefinition);
 	DESTROY(_hiddenSelectors);
 
@@ -425,8 +446,18 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 
 		BOOL permanent = [gui_info oo_boolForKey:@"permanent" defaultValue:NO];
 		[UNIVERSE setPermanentMessageLog:permanent];
-	
-
+		
+		BOOL automaticBg = [gui_info oo_boolForKey:@"background_automatic" defaultValue:YES];
+		[UNIVERSE setAutoMessageLogBg:automaticBg];
+		
+		// set message gui text colors - one for standard messages, one for incoming comms
+		// incoming comms message color must default to green for compatibility with older huds that
+		// don't have this key
+		[gui setTextColor:[OOColor colorWithDescription:[gui_info objectForKey:@"text_color"]]];
+		OOColor *textCommsColor = [OOColor colorWithDescription:[gui_info objectForKey:@"text_comms_color"]];
+		if (!textCommsColor)  textCommsColor = [OOColor greenColor];
+		[gui setTextCommsColor:textCommsColor];
+		
 		if (line1)
 		{
 			[gui printLongText:[lastLines oo_stringAtIndex:0] align:GUI_ALIGN_CENTER
@@ -448,10 +479,13 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 		[gui setDrawPosition: make_vector(0.0, -40.0, 640.0)];
 		[gui resizeTo:NSMakeSize(480, 160) characterHeight:19 title:nil];
 		[gui setCharacterSize:NSMakeSize(16,20)];	// narrow characters
+		[gui setTextColor:[OOColor yellowColor]];
+		[gui setTextCommsColor:[OOColor greenColor]];
 		[UNIVERSE setPermanentMessageLog:NO];
+		[UNIVERSE setAutoMessageLogBg:YES];
 	}
 	
-	[gui setAlpha: 1.0];	// message_gui is always visible.
+	[gui setAlpha: 1.0f];	// message_gui is always visible.
 	
 	// And now set up the comms log
 	
@@ -526,6 +560,27 @@ OOINLINE void GLColorWithOverallAlpha(const GLfloat *color, GLfloat alpha)
 }
 
 @synthesize scannerZoom = scanner_zoom;
+
+
+- (OOColor *) reticleColorForIndex:(NSUInteger)idx
+{
+	if (idx < [_reticleColors count])
+	{
+		return [_reticleColors objectAtIndex:idx];
+	}
+	return nil;
+}
+
+
+- (BOOL) setReticleColorForIndex:(NSUInteger)idx toColor:(OOColor *)newColor
+{
+	if (newColor && idx < [_reticleColors count])
+	{
+		[_reticleColors replaceObjectAtIndex:idx withObject:newColor];
+		return YES;
+	}
+	return NO;
+}
 
 
 @synthesize overallAlpha;
@@ -1139,7 +1194,7 @@ static void prefetchData(NSDictionary *info, struct CachedInfo *data)
 	if (!emptyDial)
 	{
 		OOGL(glColor4fv(scanner_color));
-		drawScannerGrid(x, y, z1, siz, [UNIVERSE viewDirection], lineWidth, zoom, nonlinear_scanner);
+		drawScannerGrid(x, y, z1, siz, [UNIVERSE viewDirection], lineWidth, zoom, nonlinear_scanner, minimalistic_scanner);
 	}
 	
 	if ([self checkPlayerInFlight])
@@ -1358,6 +1413,19 @@ static void prefetchData(NSDictionary *info, struct CachedInfo *data)
 	OOVerifyOpenGLState();
 	
 }
+
+
+- (BOOL) minimalisticScanner
+{
+	return minimalistic_scanner;
+}
+
+
+- (void) setMinimalisticScanner: (BOOL) newValue
+{
+	minimalistic_scanner = !!newValue;
+}
+
 
 + (Vector) nonlinearScannerScale: (Vector) V Zoom:(GLfloat)zoom Scale:(double) scale
 {
@@ -2556,7 +2624,7 @@ static OOPolygonSprite *IconForMissileRole(NSString *role)
 	
 	if ([PLAYER primaryTarget] != nil)
 	{
-		hudDrawReticleOnTarget([PLAYER primaryTarget], PLAYER, z1, alpha, reticleTargetSensitive, propertiesReticleTargetSensitive, NO, YES, info);
+		hudDrawReticleOnTarget([PLAYER primaryTarget], PLAYER, z1, alpha, reticleTargetSensitive, propertiesReticleTargetSensitive, NO, YES, info, _reticleColors);
 		[self drawDirectionCue:info];
 	}
 	// extra feature if extra equipment installed
@@ -2593,7 +2661,7 @@ static OOPolygonSprite *IconForMissileRole(NSString *role)
 				{
 					if ([secondary zeroDistance] <= SCANNER_MAX_RANGE2 && [secondary isInSpace])
 					{
-						hudDrawReticleOnTarget(secondary, PLAYER, z1, alpha, NO, nil, YES, NO, info);	
+						hudDrawReticleOnTarget(secondary, PLAYER, z1, alpha, NO, nil, YES, NO, info, _reticleColors);	
 					}			
 				}
 			}
@@ -2685,7 +2753,6 @@ static OOPolygonSprite *IconForMissileRole(NSString *role)
 	
 	if ([UNIVERSE displayGUI])  return;
 	
-	GLfloat		clear_color[4] = {0.0f, 1.0f, 0.0f, 0.0f};
 	Entity		*target = [PLAYER primaryTarget];
 	if (target == nil)  return;
 	
@@ -2738,14 +2805,24 @@ static OOPolygonSprite *IconForMissileRole(NSString *role)
 		
 		if (alpha > 0.0f)
 		{
+			NSUInteger cueColorIndex = [target isWormhole] ? OO_RETICLE_COLOR_WORMHOLE : OO_RETICLE_COLOR_TARGET;
+			OOColor *directionCueColor = [_reticleColors objectAtIndex:cueColorIndex];
+			GLfloat	clearColorArray[4] =	{[directionCueColor redComponent],
+											[directionCueColor greenComponent],
+											[directionCueColor blueComponent],
+											0.0f};
+			GLfloat directionCueColorArray[4] = {[directionCueColor redComponent],
+												[directionCueColor greenComponent],
+												[directionCueColor blueComponent],
+												[directionCueColor alphaComponent]};
 			drawPos.z = 0.0f;	// flatten vector
 			drawPos = vector_normal(drawPos);
 			OOGLBEGIN(GL_LINE_STRIP);
-				glColor4fv(clear_color);
+				glColor4fv(clearColorArray);
 				glVertex3f(drawPos.x * innerSize - drawPos.y * width, drawPos.y * innerSize + drawPos.x * width, z1);
-				GLColorWithOverallAlpha(green_color, alpha);
+				GLColorWithOverallAlpha(directionCueColorArray, alpha);
 				glVertex3f(drawPos.x * outerSize, drawPos.y * outerSize, z1);
-				glColor4fv(clear_color);
+				glColor4fv(clearColorArray);
 				glVertex3f(drawPos.x * innerSize + drawPos.y * width, drawPos.y * innerSize - drawPos.x * width, z1);
 			OOGLEND();
 		}
@@ -2876,6 +2953,7 @@ static OOPolygonSprite *IconForMissileRole(NSString *role)
 - (void) drawWeaponsOfflineText:(NSDictionary *)info
 {
 	OOViewID					viewID = [UNIVERSE viewDirection];
+	GLfloat						textColor[4] = {0.0f, 1.0f, 0.0f, 1.0f};
 
 	if (viewID == VIEW_CUSTOM ||
 		overallAlpha == 0.0f ||
@@ -2902,7 +2980,10 @@ static OOPolygonSprite *IconForMissileRole(NSString *role)
 		siz.height = useDefined(cached.height, WEAPONSOFFLINETEXT_HEIGHT);
 		alpha *= cached.alpha;
 		
-		GLColorWithOverallAlpha(green_color, alpha);
+		GetRGBAArrayFromInfo(info, textColor);
+		textColor[3] *= overallAlpha;
+		
+		OOGL(glColor4f(textColor[0], textColor[1], textColor[2], textColor[3]));
 		// TODO: some caching required...
 		OODrawString(DESC(@"weapons-systems-offline"), x, y, z1, siz);
 	}
@@ -2916,6 +2997,7 @@ static OOPolygonSprite *IconForMissileRole(NSString *role)
 	int					x, y;
 	NSSize				siz;
 	struct CachedInfo	cached;
+	GLfloat				textColor[4] = {0.0, 1.0, 0.0, 1.0};
 	
 	[(NSValue *)[sCurrentDrawItem objectAtIndex:WIDGET_CACHE] getValue:&cached];
 	
@@ -2930,7 +3012,8 @@ static OOPolygonSprite *IconForMissileRole(NSString *role)
 	
 	// We would normally set a variable alpha value here, but in this case we don't.
 	// We prefer the FPS counter to be always visible - Nikos 20100405
-	OOGL(glColor4f(0.0, 1.0, 0.0, 1.0));
+	GetRGBAArrayFromInfo(info, textColor);
+	OOGL(glColor4f(textColor[0], textColor[1], textColor[2], 1.0f));
 	OODrawString([PLAYER dial_fpsinfo], x, y, z1, siz);
 	
 #ifndef NDEBUG
@@ -3351,7 +3434,9 @@ static void hudDrawStatusIconAt(int x, int y, int z, NSSize siz)
 }
 
 
-static void hudDrawReticleOnTarget(Entity *target, PlayerEntity *player1, GLfloat z1, GLfloat alpha, BOOL reticleTargetSensitive, NSMutableDictionary *propertiesReticleTargetSensitive, BOOL colourFromScannerColour, BOOL showText, NSDictionary *info)
+static void hudDrawReticleOnTarget(Entity *target, PlayerEntity *player1, GLfloat z1, 
+				GLfloat alpha, BOOL reticleTargetSensitive, NSMutableDictionary *propertiesReticleTargetSensitive,
+				BOOL colourFromScannerColour, BOOL showText, NSDictionary *info, NSMutableArray *reticleColors)
 {
 	if (target == nil || player1 == nil)  
 	{
@@ -3403,7 +3488,12 @@ static void hudDrawReticleOnTarget(Entity *target, PlayerEntity *player1, GLfloa
 	// Draw reticle cyan for Wormholes
 	if ([target isWormhole])
 	{
-		GLColorWithOverallAlpha(cyan_color, alpha);
+		OOColor *wormholeReticleColor = [reticleColors objectAtIndex:OO_RETICLE_COLOR_WORMHOLE];
+		GLfloat wormholeReticleColorArray[4] = {[wormholeReticleColor redComponent],
+												[wormholeReticleColor greenComponent],
+												[wormholeReticleColor blueComponent],
+												[wormholeReticleColor alphaComponent]};
+		GLColorWithOverallAlpha(wormholeReticleColorArray, alpha);
 	}
 	else
 	{
@@ -3477,14 +3567,22 @@ static void hudDrawReticleOnTarget(Entity *target, PlayerEntity *player1, GLfloa
 		}
 		else
 		{
+			OOColor *reticleDisplayColor = nil;
 			if (reticleTargetSensitive && isTargeted)
 			{
-				GLColorWithOverallAlpha(red_color, alpha);
+				reticleDisplayColor = [reticleColors objectAtIndex:OO_RETICLE_COLOR_TARGET_SENSITIVE];
+				if (!reticleDisplayColor)  reticleDisplayColor = [OOColor redColor];
 			}
 			else
 			{
-				GLColorWithOverallAlpha(green_color, alpha);
+				reticleDisplayColor = [reticleColors objectAtIndex:OO_RETICLE_COLOR_TARGET];
+				if (!reticleDisplayColor)  reticleDisplayColor = [OOColor greenColor];
 			}
+			GLfloat reticleDisplayColorArray[4] = {	[reticleDisplayColor redComponent],
+													[reticleDisplayColor greenComponent],
+													[reticleDisplayColor blueComponent],
+													[reticleDisplayColor alphaComponent] };
+			GLColorWithOverallAlpha(reticleDisplayColorArray, alpha);
 		}
 	}
 	OOGLBEGIN(GL_LINES);
@@ -4045,7 +4143,7 @@ static GLfloat nonlinearScannerFunc( GLfloat distance, GLfloat zoom, GLfloat sca
 }
 
 
-static void drawScannerGrid(GLfloat x, GLfloat y, GLfloat z, NSSize siz, int v_dir, GLfloat thickness, GLfloat zoom, BOOL nonlinear)
+static void drawScannerGrid(GLfloat x, GLfloat y, GLfloat z, NSSize siz, int v_dir, GLfloat thickness, GLfloat zoom, BOOL nonlinear, BOOL minimalistic)
 {
 	OOSetOpenGLState(OPENGL_STATE_OVERLAY);
 
@@ -4067,79 +4165,82 @@ static void drawScannerGrid(GLfloat x, GLfloat y, GLfloat z, NSSize siz, int v_d
 	OOGL(GLScaledLineWidth(thickness)); // reset (thickness = lineWidth)
 	
 	OOGLBEGIN(GL_LINES);
-		glVertex3f(x, y - hh, z);	glVertex3f(x, y + hh, z);
-		glVertex3f(x - ww, y, z);	glVertex3f(x + ww, y, z);
-
-		if (nonlinear)
+		if (!minimalistic)
 		{
-			if (nonlinearScannerFunc(4000.0, zoom, hh)-nonlinearScannerFunc(3000.0, zoom ,hh) > 2) drawdiv1 = YES;
-			if (nonlinearScannerFunc(10000.0, zoom, hh)-nonlinearScannerFunc(5000.0, zoom, hh) > 2) drawdiv5 = YES;
-			wdiv = ww/(0.001*SCANNER_MAX_RANGE);
-			for (i = 1; 1000.0*i < SCANNER_MAX_RANGE; i++)
+			glVertex3f(x, y - hh, z);	glVertex3f(x, y + hh, z);
+			glVertex3f(x - ww, y, z);	glVertex3f(x + ww, y, z);
+	
+			if (nonlinear)
 			{
-				drawdiv = drawdiv1;
-				w1 = wdiv;
-				if (i % 10 == 0)
+				if (nonlinearScannerFunc(4000.0, zoom, hh)-nonlinearScannerFunc(3000.0, zoom ,hh) > 2) drawdiv1 = YES;
+				if (nonlinearScannerFunc(10000.0, zoom, hh)-nonlinearScannerFunc(5000.0, zoom, hh) > 2) drawdiv5 = YES;
+				wdiv = ww/(0.001*SCANNER_MAX_RANGE);
+				for (i = 1; 1000.0*i < SCANNER_MAX_RANGE; i++)
 				{
-					w1 = wdiv*4;
-					drawdiv = YES;
-					if (nonlinearScannerFunc((i+5)*1000,zoom,hh) - nonlinearScannerFunc(i*1000.0,zoom,hh)>2)
+					drawdiv = drawdiv1;
+					w1 = wdiv;
+					if (i % 10 == 0)
 					{
-						drawdiv5 = YES;
+						w1 = wdiv*4;
+						drawdiv = YES;
+						if (nonlinearScannerFunc((i+5)*1000,zoom,hh) - nonlinearScannerFunc(i*1000.0,zoom,hh)>2)
+						{
+							drawdiv5 = YES;
+						}
+						else
+						{
+							drawdiv5 = NO;
+						}
 					}
-					else
+					else if (i % 5 == 0)
 					{
-						drawdiv5 = NO;
+						w1 = wdiv*2;
+						drawdiv = drawdiv5;
+						if (nonlinearScannerFunc((i+1)*1000,zoom,hh) - nonlinearScannerFunc(i*1000.0,zoom,hh)>2)
+						{
+							drawdiv1 = YES;
+						}
+						else
+						{
+							drawdiv1 = NO;
+						}
+					}
+					if (drawdiv)
+					{
+						h1 = nonlinearScannerFunc(i*1000.0,zoom,hh);
+						glVertex3f(x - w1, y + h1, z);	glVertex3f(x + w1, y + h1, z);
+						glVertex3f(x - w1, y - h1, z);	glVertex3f(x + w1, y - h1, z);
 					}
 				}
-				else if (i % 5 == 0)
-				{
-					w1 = wdiv*2;
-					drawdiv = drawdiv5;
-					if (nonlinearScannerFunc((i+1)*1000,zoom,hh) - nonlinearScannerFunc(i*1000.0,zoom,hh)>2)
-					{
-						drawdiv1 = YES;
-					}
-					else
-					{
-						drawdiv1 = NO;
-					}
-				}
-				if (drawdiv)
-				{
-					h1 = nonlinearScannerFunc(i*1000.0,zoom,hh);
-					glVertex3f(x - w1, y + h1, z);	glVertex3f(x + w1, y + h1, z);
-					glVertex3f(x - w1, y - h1, z);	glVertex3f(x + w1, y - h1, z);
-				}
-			}
-		}
-		else
-		{
-			km_scan = 0.001 * SCANNER_MAX_RANGE / zoom;	// calculate kilometer divisions
-			hdiv = 0.5 * siz.height / km_scan;
-			wdiv = 0.25 * siz.width / km_scan;
-			if (wdiv < 4.0)
-			{
-				wdiv *= 2.0;
-				ii = 5;
 			}
 			else
 			{
-				ii = 1;
-			}
-	
-			for (i = ii; 2.0 * hdiv * i < siz.height; i += ii)
-			{
-				h1 = i * hdiv;
-				w1 = wdiv;
-				if (i % 5 == 0)
-					w1 = w1 * 2.5;
-				if (i % 10 == 0)
-					w1 = w1 * 2.0;
-				if (w1 > 3.5)	// don't draw tiny marks
+				km_scan = 0.001 * SCANNER_MAX_RANGE / zoom;	// calculate kilometer divisions
+				hdiv = 0.5 * siz.height / km_scan;
+				wdiv = 0.25 * siz.width / km_scan;
+				if (wdiv < 4.0)
 				{
-					glVertex3f(x - w1, y + h1, z);	glVertex3f(x + w1, y + h1, z);
-					glVertex3f(x - w1, y - h1, z);	glVertex3f(x + w1, y - h1, z);
+					wdiv *= 2.0;
+					ii = 5;
+				}
+				else
+				{
+					ii = 1;
+				}
+		
+				for (i = ii; 2.0 * hdiv * i < siz.height; i += ii)
+				{
+					h1 = i * hdiv;
+					w1 = wdiv;
+					if (i % 5 == 0)
+						w1 = w1 * 2.5;
+					if (i % 10 == 0)
+						w1 = w1 * 2.0;
+					if (w1 > 3.5)	// don't draw tiny marks
+					{
+						glVertex3f(x - w1, y + h1, z);	glVertex3f(x + w1, y + h1, z);
+						glVertex3f(x - w1, y - h1, z);	glVertex3f(x + w1, y - h1, z);
+					}
 				}
 			}
 		}

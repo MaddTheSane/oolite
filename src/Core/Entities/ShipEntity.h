@@ -660,6 +660,12 @@ typedef NS_ENUM(unsigned int, OOShipDamageType)
 @property (atomic, readonly) float maxThrust;
 - (float) thrust;
 
+- (void) setMaxThrust:(GLfloat)new;
+- (void) setMaxFlightPitch:(GLfloat)new;
+- (void) setMaxFlightSpeed:(GLfloat)new;
+- (void) setMaxFlightRoll:(GLfloat)new;
+- (void) setMaxFlightYaw:(GLfloat)new;
+- (void) setEnergyRechargeRate:(GLfloat)new;
 
 
 - (void) processBehaviour:(OOTimeDelta)delta_t;
@@ -1081,6 +1087,7 @@ Vector positionOffsetForShipInRotationToAlignment(ShipEntity* ship, Quaternion q
 - (void) getTractoredBy:(ShipEntity *)other;
 - (void) scoopIn:(ShipEntity *)other;
 - (void) scoopUp:(ShipEntity *)other;
+- (void) scoopUpProcess:(ShipEntity *)other processEvents:(BOOL) proc_events processMessages:(BOOL) proc_messages;
 
 - (BOOL) abandonShip;
 

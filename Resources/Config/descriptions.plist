@@ -1070,7 +1070,7 @@
 	"unknown-ship-@"				= "Unknown Ship '%@'.";
 
 	// Intro1 screen
-	"game-copyright"				= "by Giles Williams, Jens Ayton and contributors © 2003–2016";
+	"game-copyright"				= "by Giles Williams, Jens Ayton and contributors © 2003–2018";
 	"theme-music-credit"			= "Oolite Theme Music by NoSleep © 2004";
 	"load-previous-commander"		= "Load Previous Commander (Y/N)?";
 	"load-previous-commander-yes"	= "y"; // Defines the key that corresponds to the yes answer to load-previous-commander.
@@ -1302,9 +1302,11 @@
 	"oolite-loadsave-exit"			= "Return to Menu";
 	"oolite-scenario-exit"			= "Return to Menu";
 	"oolite-scenario-standard-name" = "Normal Start";
+	"oolite-scenario-easy-name"		= "Easy Start";
 	"oolite-scenario-strict-name"	= "Strict Mode";
 	"oolite-scenario-tutorial-name" = "Tutorial";
 	"oolite-scenario-standard-description"	= "Start with a Cobra Mk III and 100 credits at Lave station, and try to make a living.";
+	"oolite-scenario-easy-description"	= "Start with a Cobra Mk III and 1000 credits at Tionisla station, and try to make a living.";
 	"oolite-scenario-strict-description"	= "Strict Mode starts like the normal start, but all expansion packs are permanently disabled for this Commander.";
 	"oolite-scenario-tutorial-description"	= "Take a standard Cooperative flight training course, including simulated combat and docking practice.";
 
@@ -1460,6 +1462,7 @@
 	"short-range-chart-title"		= "Short Range Chart";
 	"short-range-chart-distance"	= "[charts-distance]";
 	"short-range-chart-est-travel-time" = "[charts-est-travel-time]";
+	"short-range-chart-jumps"	= "Jumps: [jumps]";
 	
 	// Long Range Chart Screen
 	"long-range-chart-title-d"		= "Galactic Chart %d";
@@ -1535,13 +1538,35 @@
 	"sysdata-tl"					= "Tech Level:";
 	"sysdata-tl-value"				= "[techLevel]";
 	"sysdata-pop"					= "Population:";
-	"sysdata-pop-value"				= "[population|multiply:0.1|precision:1] Billion\n([inhabitants])";
+	"sysdata-pop-value"				= "[population|multiply:0.1|precision:1] Billion";
 	"sysdata-prod"					= "Gross productivity:";
 	"sysdata-prod-value"			= "[productivity] M₢";
 	"sysdata-radius"				= "Average radius:";
 	"sysdata-radius-value"			= "[radius] km";
+	"sysdata-distance"				= "Distance:";
 	"system-description-string"		= "[14] is [22].";
-	
+	"sysdata-route-hours%0"			= "Hour";
+	"sysdata-route-hours%1"			= "Hours";
+	"sysdata-route-jumps%0"			= "Jump";
+	"sysdata-route-jumps%1"			= "Jumps";
+
+	"sysdata-line-1"				= "[sysdata-eco]\t[economy_desc]";
+	"sysdata-line-2"				= "";
+	"sysdata-line-3"				= "[sysdata-govt]\t[government_desc]";
+	"sysdata-line-4"				= "";
+	"sysdata-line-5"				= "[sysdata-tl]\t[sysdata-tl-value]";
+	"sysdata-line-6"				= "";
+	"sysdata-line-7"				= "[sysdata-pop]\t[populationDesc]";
+	"sysdata-line-8"				= "\t([inhabitants])";
+	"sysdata-line-9"				= "";
+	"sysdata-line-10"				= "[sysdata-prod]\t\t[sysdata-prod-value]";
+	"sysdata-line-11"				= "";
+	"sysdata-line-12"				= "[sysdata-radius]\t\t[sysdata-radius-value]";
+	"sysdata-line-13"				= "";
+	"sysdata-line-14"				= "[sysdata-distance]\t[distanceInfo]";
+	"sysdata-line-15"				= "";
+	"sysdata-line-16"				= "";
+
 	// Options / Loadsave screen
 	"options-quick-save"			= " Quick-Save ";
 	"options-save-commander"		= " Save Commander ";
@@ -1767,7 +1792,7 @@
 	"loadsavescreen-commander-name" = "Commander";
 	"loadsavescreen-rating"			= "Rating";
 	"loadsavescreen-no-commanders-found" = "No commanders found";
-	"loadsavescreen-commander-@-rated-@-has-@-legal-status-@-ship-@-location-@-g-@-timestamp-@" = "Commander %@ is rated %@ and has %@ in the bank. Legal status: %@. Ship: %@. Location: %@ (G%d). Timestamp: %@";
+	"loadsavescreen-commander-@-rated-@-has-@-legal-status-@-ship-@-location-@-g-@-eco-@-gov-@-tl-@-timestamp-@" = "Commander %@ is rated %@ and has %@ in the bank. Legal status: %@. Ship: %@. Location: %@ (G%d%@%@%@). Timestamp: %@";
 	"loadsavescreen-hold-@-and-press-return-to-open-folder-@"= "Hold %@ and press return to open folder: %@";
 	"loadsavescreen-hold-@-and-press-return-to-open-parent-folder-@" = "Hold %@ and press return to open parent folder: %@";
 	

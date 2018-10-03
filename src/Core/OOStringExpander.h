@@ -89,6 +89,9 @@ typedef NS_OPTIONS(NSUInteger, OOExpandOptions)
 	  * %R is like %N but, due to a bug, misses some possibilities. Deprecated.
 	  * %JNNN, where NNN is a three-digit integer, is replaced with the name
 	    of system ID NNN in the current galaxy.
+	  * %GNNNNNN, where NNNNNN is a six-digit integer, is replaced with the
+	    name of system ID NNN (first triplet) in the specified galaxy
+	    (second triplet).
 	  * %% is replaced with %.
 	  * %[ is replaced with [.
 	  * %] is replaced with ].

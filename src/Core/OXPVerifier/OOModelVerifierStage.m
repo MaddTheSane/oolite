@@ -100,7 +100,7 @@ static id NSNULL = nil;
 	NSDictionary				*materials = nil,
 								*shaders = nil;
 	
-	OOLog(@"verifyOXP.models.unimplemented", @"TODO: implement model verifier.");
+	OOLog(@"verifyOXP.models.unimplemented", @"%@", @"TODO: implement model verifier.");
 	
 	foreach (info, _modelsToCheck)
 	@autoreleasepool {

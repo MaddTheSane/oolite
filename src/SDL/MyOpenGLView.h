@@ -48,6 +48,7 @@ MA 02110-1301, USA.
 #define NUM_KEYS			320
 #define MOUSE_DOUBLE_CLICK_INTERVAL	0.40
 #define OOMOUSEWHEEL_EVENTS_DELAY_INTERVAL	0.05
+#define OOMOUSEWHEEL_DELTA	120 // Same as Windows WHEEL_DELTA
 
 #define SNAPSHOTS_PNG_FORMAT		1
 
@@ -175,6 +176,7 @@ extern int debug;
 	BOOL				wasFullScreen;
 	BOOL				updateContext;
 	BOOL				saveSize;
+	BOOL				atDesktopResolution;
 	unsigned			keyboardMap;
 	HWND 				SDL_Window;
 	MONITORINFOEX		monitorInfo;
@@ -191,7 +193,7 @@ extern int debug;
    // Mouse mode indicator (for mouse movement model)
    BOOL					mouseInDeltaMode;
    
-   int					_mouseWheelState;
+   float				_mouseWheelDelta;
 }
 
 - (void) initSplashScreen;
@@ -222,6 +224,7 @@ extern int debug;
 #if OOLITE_WINDOWS
 - (BOOL) getCurrentMonitorInfo:(MONITORINFOEX *)mInfo;
 - (MONITORINFOEX) currentMonitorInfo;
+- (BOOL) atDesktopResolution;
 #endif
 
 - (void) grabMouseInsideGameWindow:(BOOL) value;
@@ -277,6 +280,8 @@ extern int debug;
 - (BOOL) isCapsLockOn;
 - (int) numKeys;
 - (int) mouseWheelState;
+- (float) mouseWheelDelta;
+- (void) setMouseWheelDelta: (float) newWheelDelta;
 
 // Command-key combinations need special handling. SDL stubs for these mac functions.
 - (BOOL) isCommandQDown;

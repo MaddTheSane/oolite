@@ -223,6 +223,12 @@ MA 02110-1301, USA.
 #define ACCURACY_PROBABILITY_DECREASE_FACTOR	0.000035f   // for every 1000km decrease by 3.5% the chance of high accuracy
 #define MIN_PROBABILITY_ACCURACY		0.35f   // floor value for probability of high accuracy is 35%
 
+enum
+{
+	OO_RETICLE_COLOR_TARGET	= 0,
+	OO_RETICLE_COLOR_TARGET_SENSITIVE,
+	OO_RETICLE_COLOR_WORMHOLE
+};
 
 
 @class Entity, PlayerEntity, OOTextureSprite;
@@ -274,6 +280,11 @@ MA 02110-1301, USA.
 	NSString			*crosshairDefinition;
 	BOOL				_compassActive;
 	
+	NSMutableArray		*_reticleColors;
+	
+	// essentially scanner without gridlines
+	BOOL			minimalistic_scanner;
+	
 	// Nonlinear scanner
 	BOOL			nonlinear_scanner;
 	BOOL			scanner_ultra_zoom;
@@ -323,10 +334,16 @@ MA 02110-1301, USA.
 
 @property  GLfloat lineWidth;
 
+- (BOOL) minimalisticScanner;
+- (void) setMinimalisticScanner: (BOOL) newValue;
+
 + (Vector) nonlinearScannerScale:(Vector) V Zoom:(GLfloat) zoom Scale:(double) scale;
 @property  BOOL nonlinearScanner;
 
 @property  BOOL scannerUltraZoom;
+
+- (OOColor *) reticleColorForIndex:(NSUInteger)idx;
+- (BOOL) setReticleColorForIndex:(NSUInteger)idx toColor:(OOColor *)newColor;
 
 @end
 
@@ -377,9 +394,9 @@ void OODrawStringAligned(NSString *text, GLfloat x, GLfloat y, GLfloat z, NSSize
  *
  * - CIM
  */
-void OOStartDrawingStrings();
+void OOStartDrawingStrings(void);
 void OODrawStringQuadsAligned(NSString *text, GLfloat x, GLfloat y, GLfloat z, NSSize siz, BOOL rightAlign);
-void OOStopDrawingStrings();
+void OOStopDrawingStrings(void);
 
 
 

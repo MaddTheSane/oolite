@@ -133,6 +133,24 @@ uniform float			uParallaxScale;
 uniform float			uParallaxBias;
 #endif
 
+uniform float			uGloss;
+
+uniform bool			uGammaCorrect;
+
+#ifndef OOSPECULAR_NEW_MODEL
+#define OOSPECULAR_NEW_MODEL		1
+#ifndef OOSPECULAR_NEW_MODEL_GGX
+#define OOSPECULAR_NEW_MODEL_GGX	1
+#endif
+#endif
+
+#ifndef OOSRGB_TO_LINEAR
+#define OOSRGB_TO_LINEAR			2.2
+#endif
+
+#ifndef OOLINEAR_TO_SRGB
+#define OOLINEAR_TO_SRGB			(1.0 / 2.2)
+#endif
 
 vec4 CalcDiffuseLight(in vec3 lightVector, in vec3 normal, in vec4 lightColor)
 {
@@ -162,6 +180,49 @@ vec4 CalcSpecularLight(in vec3 lightVector, in vec3 eyeVector, in float exponent
 	intensity = pow(max(intensity, 0.0), exponent);
 	return lightColor * intensity;
 }
+
+
+// More physically accurate specular lighting models
+// This is based on the GLSL code from FS2 SCP ( https://github.com/scp-fs2open )
+
+vec3 FresnelSchlick(vec3 specColor, vec3 light, vec3 halfVec)
+{
+	return specColor + (vec3(1.0) - specColor) * pow(1.0 - clamp(dot(light, halfVec), 0.0, 1.0), 5.0);
+}
+
+
+vec3 CalcSpecularBlinnPhong(vec3 light, vec3 normal, vec3 halfVec, float specPower, vec3 fresnel)
+{
+	float NdotL = clamp(dot(normal, light), 0.0, 1.0);
+	return fresnel * ((specPower + 2.0) / 8.0 ) * pow(clamp(dot(normal, halfVec), 0.0, 1.0), specPower) * NdotL;
+}
+
+
+vec3 CalcSpecularGGX(vec3 light, vec3 normal, vec3 halfVec, vec3 view, float gloss, vec3 fresnel)
+{
+	float NdotL = clamp(dot(normal, light), 0.0, 1.0);
+	float roughness = clamp(1.0 - gloss, 0.0, 1.0);
+	float alpha = roughness * roughness;
+
+	float NdotH = clamp(dot(normal, halfVec), 0.0, 1.0);
+	float NdotV = clamp(dot(normal, view), 0.0, 1.0);
+
+	float alphaSqr = alpha * alpha;
+	float pi = 3.14159;
+	float denom = NdotH * NdotH * (alphaSqr - 1.0) + 1.0;
+	float distribution = alphaSqr / (pi * denom * denom);
+
+	// fresnel comes in pre-calculated
+
+	float alphaPrime = roughness + 1.0;
+	float k = alphaPrime * alphaPrime / 8.0;
+	float g1vNL = NdotL/ (NdotL * (1.0 - k) + k);
+	float g1vNV = NdotV / (NdotV * (1.0 - k) + k);
+	float visibility = g1vNL * g1vNV;
+
+	return distribution * fresnel * visibility * NdotL / max(4.0 * NdotL * NdotV, 0.001);
+}
+
 
 
 uniform float			uHullHeatLevel;
@@ -236,6 +297,9 @@ void main(void)
 	// Get light vectors
 	vec3 lightVector = normalize(vLight1Vector);
 	
+#if NEED_EYE_VECTOR
+	vec3 halfVector = normalize(lightVector + eyeVector);
+#endif	
 	// Get ambient colour
 	vec4 ambientLight = gl_LightModel.ambient;
 	
@@ -247,6 +311,7 @@ void main(void)
 #endif
 #if OOSTD_EMISSION_MAP
 	vec4 emissionMapColor = texture2D(uEmissionMap, texCoord);
+	if (uGammaCorrect)  emissionMapColor = pow(emissionMapColor, vec4(OOSRGB_TO_LINEAR));
 	emissionColor *= emissionMapColor;
 #endif
 	emissionColor.a = 1.0;
@@ -255,10 +320,12 @@ void main(void)
 	
 	// Get illumination colour
 #if OOSTD_EMISSION_AND_ILLUMINATION_MAP
-	// Use alpha channel of emission map as white illumination
+	// Use alpha channel of emission map as white illumination - no sRGB to linear conversion here
 	vec4 illuminationMapLight = vec4(emissionMapColor.aaa, 1.0);
 #elif OOSTD_ILLUMINATION_MAP
+	// fully colored illumination map - convert to linear colorspace
 	vec4 illuminationMapLight = texture2D(uIlluminationMap, texCoord);
+	if (uGammaCorrect)  illuminationMapLight = pow(illuminationMapLight, vec4(OOSRGB_TO_LINEAR));
 #endif
 #ifdef OOSTD_ILLUMINATION_COLOR
 	// OOSTD_ILLUMINATION_COLOR, if defined, is a vec4() declaration.
@@ -275,30 +342,51 @@ void main(void)
 	// Get specular parameters
 #if OOSTD_SPECULAR_MAP
 	vec4 specularMapColor = texture2D(uSpecularMap, texCoord);
-	float specularExponentLevel = pow(specularMapColor.a, 2.0) + 0.001;
-	specularMapColor.a = 1.0;
-	#define APPLY_MAPPED_EXPONENT exponent = (exponent - 1.0) * specularExponentLevel + 1.0
+	if (uGammaCorrect)  specularMapColor.rgb = pow(specularMapColor.rgb, vec3(OOSRGB_TO_LINEAR));
+	#if !OOSPECULAR_NEW_MODEL_GGX
+		float specularExponentLevel = pow(specularMapColor.a, 2.0) + 0.001;
+		#define APPLY_MAPPED_EXPONENT exponent = (exponent - 1.0) * specularExponentLevel + 1.0
+	#endif
 #else
 	#define APPLY_MAPPED_EXPONENT exponent += 0.001
 #endif
+
+#if OOSTD_SPECULAR
+	vec4 specularColor = gl_FrontMaterial.specular;
+#endif
+#if OOSTD_SPECULAR_MAP
+	specularColor *= vec4(specularMapColor.rgb, 1.0);
+#endif
 	
+	vec3 fresnel = vec3(0.0);
 	// Calculate specular light
 #if OOSTD_SPECULAR
 	vec4 specularLight = vec4(0);
-	float exponent = gl_FrontMaterial.shininess;
-	APPLY_MAPPED_EXPONENT;
-	specularLight += CalcSpecularLight(lightVector, eyeVector, exponent, normal, gl_LightSource[1].specular);
+	#if !OOSPECULAR_NEW_MODEL_GGX
+		float exponent = gl_FrontMaterial.shininess;
+		APPLY_MAPPED_EXPONENT;
+	#endif
+	#if !OOSPECULAR_NEW_MODEL
+		specularLight += CalcSpecularLight(lightVector, eyeVector, exponent, normal, gl_LightSource[1].specular);
+	#else
+		fresnel = FresnelSchlick(specularColor.rgb, lightVector, halfVector);
+		#if OOSPECULAR_NEW_MODEL_GGX
+			float gloss = uGloss;
+			#if OOSTD_SPECULAR_MAP
+				gloss *= specularMapColor.a;
+			#endif
+			specularLight = vec4(CalcSpecularGGX(lightVector, normal, halfVector, eyeVector, gloss, fresnel), 0.0);
+		#else
+			// New Blinn-Phong
+			specularLight = vec4(CalcSpecularBlinnPhong(lightVector, normal, halfVector, exponent, fresnel), 0.0);
+		#endif
+	#endif
 	specularLight.a = 1.0;
 #endif
 	
 	vec4 ambientColor = gl_FrontMaterial.ambient;
 	vec4 diffuseColor = gl_FrontMaterial.diffuse;
-#if OOSTD_SPECULAR
-	vec4 specularColor = gl_FrontMaterial.specular;
-#endif
-#if OOSTD_SPECULAR_MAP
-	specularColor *= specularMapColor;
-#endif
+
 
 #if OOSTD_DIFFUSE_MAP
 #if !OOSTD_DIFFUSE_MAP_IS_CUBE_MAP
@@ -306,15 +394,28 @@ void main(void)
 #else
 	vec4 diffuseMapColor = textureCube(uDiffuseMap, vCubeTexCoords);
 #endif
+	if (uGammaCorrect)  diffuseMapColor = pow(diffuseMapColor, vec4(OOSRGB_TO_LINEAR));
 	diffuseMapColor.a = 1.0;
 	diffuseColor *= diffuseMapColor;
 	ambientColor *= diffuseMapColor;
 #endif
 	
-	totalColor += ambientColor * ambientLight + diffuseColor * diffuseLight;
+	// light energy conservation here
+	#if OOSPECULAR_NEW_MODEL
+		vec4 kD = vec4(vec3(1.0) - fresnel, 1.0);
+	#else
+		vec4 kD = vec4(1.0);
+	#endif
+	totalColor += (ambientColor * ambientLight + diffuseColor * diffuseLight) * kD;
+	
 #if OOSTD_SPECULAR
-	totalColor += specularColor * specularLight;
+	vec3 magSpec = specularColor.rgb;
+	totalColor += mix(specularColor, gl_LightSource[1].specular, 1.0 - clamp(length(magSpec), 0.0, 1.0)) * specularLight;
 #endif
+
+	// gamma correction
+	if (uGammaCorrect)  totalColor = pow(totalColor, vec4(OOLINEAR_TO_SRGB));
+	
 	
 	// Heat glow
 	float hullHeat = max(uHullHeatLevel - 0.5, 0.0) * 2.0;

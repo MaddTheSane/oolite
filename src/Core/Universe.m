@@ -61,6 +61,7 @@ MA 02110-1301, USA.
 
 #import "PlayerEntity.h"
 #import "PlayerEntityContracts.h"
+#import "PlayerEntityControls.h"
 #import "PlayerEntityScriptMethods.h"
 #import "StationEntity.h"
 #import "DockEntity.h"
@@ -141,20 +142,22 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void * context);
 @private
 	OOSystemID _location, _parent;
 	double _cost, _distance, _time;
+	int _jumps;
 }
 
-+ (instancetype) elementWithLocation:(OOSystemID) location parent:(OOSystemID)parent cost:(double) cost distance:(double) distance time:(double) time;
++ (instancetype) elementWithLocation:(OOSystemID) location parent:(OOSystemID)parent cost:(double) cost distance:(double) distance time:(double) time jumps:(int) jumps;
 @property (readonly) OOSystemID parent;
 @property (readonly) OOSystemID location;
 @property (readonly) double cost;
 @property (readonly) double distance;
 @property (readonly) double time;
+- (int) jumps;
 
 @end
 
 @implementation RouteElement
 
-+ (instancetype) elementWithLocation:(OOSystemID) location parent:(OOSystemID) parent cost:(double) cost distance:(double) distance time:(double) time
++ (instancetype) elementWithLocation:(OOSystemID) location parent:(OOSystemID) parent cost:(double) cost distance:(double) distance time:(double) time jumps:(int) jumps
 {
 	RouteElement *r = [[RouteElement alloc] init];
 	
@@ -163,6 +166,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void * context);
 	r->_cost = cost;
 	r->_distance = distance;
 	r->_time = time;
+	r->_jumps = jumps;
 	
 	return [r autorelease];
 }
@@ -172,6 +176,7 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void * context);
 @synthesize cost = _cost;
 @synthesize distance = _distance;
 @synthesize time = _time;
+- (int) jumps { return _jumps; }
 
 @end
 
@@ -240,19 +245,19 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 // Weight of sun in ambient light calculation. 1.0 means only sun's diffuse is used for ambient, 0.0 means only sky colour is used.
 // TODO: considering the size of the sun and the number of background stars might be worthwhile. -- Ahruman 20080322
 #define SUN_AMBIENT_INFLUENCE		0.75
+// How dark the default ambient level of 1.0 will be
+#define SKY_AMBIENT_ADJUSTMENT		0.0625
 
 
 - (instancetype) initWithGameView:(MyOpenGLView *)inGameView
 {
-	OOProfilerStartMarker(@"startup");
-	
 	if (gSharedUniverse != nil)
 	{
 		[self release];
 		[NSException raise:NSInternalInconsistencyException format:@"%s: expected only one Universe to exist at a time.", __PRETTY_FUNCTION__];
 	}
 	
-	OO_DEBUG_PROGRESS(@"Universe initWithGameView:");
+	OO_DEBUG_PROGRESS(@"%@", @"Universe initWithGameView:");
 	
 	self = [super init];
 	if (self == nil)  return nil;
@@ -400,8 +405,6 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	
 	[player startUpComplete];
 	_doingStartUp = NO;
-	
-	OOProfilerEndMarker(@"startup");
 	
 	return self;
 }
@@ -929,7 +932,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	
 	sunGoneNova = [systeminfo oo_boolForKey:@"sun_gone_nova" defaultValue:NO];
 	
-	OO_DEBUG_PUSH_PROGRESS(@"setUpSpace - clearSubRegions, sky, dust");
+	OO_DEBUG_PUSH_PROGRESS(@"%@", @"setUpSpace - clearSubRegions, sky, dust");
 	[universeRegion clearSubregions];
 	
 	// fixed entities (part of the graphics system really) come first...
@@ -1012,7 +1015,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	
 	// actual entities next...
 	
-	OO_DEBUG_PUSH_PROGRESS(@"setUpSpace - planet");
+	OO_DEBUG_PUSH_PROGRESS(@"%@", @"setUpSpace - planet");
 	a_planet=[self setUpPlanet]; // resets RNG when called
 	double planet_radius = [a_planet radius];
 	OO_DEBUG_POP_PROGRESS();
@@ -1020,7 +1023,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	// set the system seed for random number generation
 	seed_for_planet_description(systemSeed);
 	
-	OO_DEBUG_PUSH_PROGRESS(@"setUpSpace - sun");
+	OO_DEBUG_PUSH_PROGRESS(@"%@", @"setUpSpace - sun");
 	/*- space sun -*/
 	double		sun_radius;
 	double		sun_distance;
@@ -1127,7 +1130,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	[self setLighting];
 	OO_DEBUG_POP_PROGRESS();
 	
-	OO_DEBUG_PUSH_PROGRESS(@"setUpSpace - main station");
+	OO_DEBUG_PUSH_PROGRESS(@"%@", @"setUpSpace - main station");
 	/*- space station -*/
 	stationPos = [a_planet position];
 
@@ -1214,7 +1217,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	OO_DEBUG_POP_PROGRESS();
 	
 	
-	OO_DEBUG_PUSH_PROGRESS(@"setUpSpace - populate from wormholes");
+	OO_DEBUG_PUSH_PROGRESS(@"%@", @"setUpSpace - populate from wormholes");
 	[self populateSpaceFromActiveWormholes];
 	OO_DEBUG_POP_PROGRESS();
 
@@ -1231,7 +1234,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	// check for nova
 	if (sunGoneNova)
 	{
-	 	OO_DEBUG_PUSH_PROGRESS(@"setUpSpace - post-nova");
+	 	OO_DEBUG_PUSH_PROGRESS(@"%@", @"setUpSpace - post-nova");
 		
 	 	HPVector v0 = make_HPvector(0,0,34567.89);
 	 	double min_safe_dist2 = 6000000.0 * 6000000.0;
@@ -1251,7 +1254,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 	 	cachedStation = nil;	
 	}
 
-	OO_DEBUG_PUSH_PROGRESS(@"setUpSpace - populate from hyperpoint");
+	OO_DEBUG_PUSH_PROGRESS(@"%@", @"setUpSpace - populate from hyperpoint");
 //	[self populateSpaceFromHyperPoint:witchPos toPlanetPosition: a_planet->position andSunPosition: a_sun->position];
 	[self clearSystemPopulator];
 
@@ -1276,7 +1279,7 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 		OOStandardsDeprecated([NSString stringWithFormat:@"The script_actions system info key is deprecated for %@.",[self getSystemName:systemID]]);
 		if (!OOEnforceStandards()) 
 		{
-			OO_DEBUG_PUSH_PROGRESS(@"setUpSpace - legacy script_actions");
+			OO_DEBUG_PUSH_PROGRESS(@"%@", @"setUpSpace - legacy script_actions");
 			[PLAYER runUnsanitizedScriptActions:script_actions
 							  allowingAIMethods:NO
 								withContextName:@"<system script_actions>"
@@ -1607,9 +1610,9 @@ static GLfloat	docked_light_specular[4]	= { DOCKED_ILLUM_LEVEL, DOCKED_ILLUM_LEV
 		g = g * (1.0 - SUN_AMBIENT_INFLUENCE) + sun_diffuse[1] * SUN_AMBIENT_INFLUENCE;
 		b = b * (1.0 - SUN_AMBIENT_INFLUENCE) + sun_diffuse[2] * SUN_AMBIENT_INFLUENCE;
 		GLfloat ambient_level = [self ambientLightLevel];
-		stars_ambient[0] = ambient_level * 0.0625 * (1.0 + r) * (1.0 + r);
-		stars_ambient[1] = ambient_level * 0.0625 * (1.0 + g) * (1.0 + g);
-		stars_ambient[2] = ambient_level * 0.0625 * (1.0 + b) * (1.0 + b);
+		stars_ambient[0] = ambient_level * SKY_AMBIENT_ADJUSTMENT * (1.0 + r) * (1.0 + r);
+		stars_ambient[1] = ambient_level * SKY_AMBIENT_ADJUSTMENT * (1.0 + g) * (1.0 + g);
+		stars_ambient[2] = ambient_level * SKY_AMBIENT_ADJUSTMENT * (1.0 + b) * (1.0 + b);
 		stars_ambient[3] = 1.0;
 	}
 	
@@ -4423,6 +4426,11 @@ static const OOMatrix	starboard_matrix =
 						{
 							[self setMainLightPosition:[cachedSun cameraRelativePosition]];
 						}
+						else
+						{
+							// in witchspace
+							[self setMainLightPosition:HPVectorToVector(HPvector_flip([PLAYER viewpointPosition]))];
+						}
 						OOGL(glLightfv(GL_LIGHT1, GL_POSITION, main_light_position));					
 					}
 					else
@@ -4801,7 +4809,7 @@ static BOOL MaintainLinkedLists(Universe *uni)
 			OOExtraLog(kOOLogEntityVerificationError, @"Broken x_previous %@ list (%d) ***", uni->x_list_start, n);
 			if (result)
 			{
-				OOExtraLog(kOOLogEntityVerificationRebuild, @"REBUILDING x_previous list from x_next list");
+				OOExtraLog(kOOLogEntityVerificationRebuild, @"%@", @"REBUILDING x_previous list from x_next list");
 				checkEnt = uni->x_list_start;
 				checkEnt->x_previous = nil;
 				while (checkEnt->x_next)
@@ -4834,7 +4842,7 @@ static BOOL MaintainLinkedLists(Universe *uni)
 			OOExtraLog(kOOLogEntityVerificationError, @"Broken y_previous %@ list (%d) ***", uni->y_list_start, n);
 			if (result)
 			{
-				OOExtraLog(kOOLogEntityVerificationRebuild, @"REBUILDING y_previous list from y_next list");
+				OOExtraLog(kOOLogEntityVerificationRebuild, @"%@", @"REBUILDING y_previous list from y_next list");
 				checkEnt = uni->y_list_start;
 				checkEnt->y_previous = nil;
 				while (checkEnt->y_next)
@@ -4867,7 +4875,7 @@ static BOOL MaintainLinkedLists(Universe *uni)
 			OOExtraLog(kOOLogEntityVerificationError, @"Broken z_previous %@ list (%d) ***", uni->z_list_start, n);
 			if (result)
 			{
-				OOExtraLog(kOOLogEntityVerificationRebuild, @"REBUILDING z_previous list from z_next list");
+				OOExtraLog(kOOLogEntityVerificationRebuild, @"%@", @"REBUILDING z_previous list from z_next list");
 				checkEnt = uni->z_list_start;
 				NSCAssert(checkEnt != nil, @"Expected z-list to be non-empty.");	// Previously an implicit assumption. -- Ahruman 2011-01-25
 				checkEnt->z_previous = nil;
@@ -4883,7 +4891,7 @@ static BOOL MaintainLinkedLists(Universe *uni)
 	
 	if (!result)
 	{
-		OOExtraLog(kOOLogEntityVerificationRebuild, @"Rebuilding all linked lists from scratch");
+		OOExtraLog(kOOLogEntityVerificationRebuild, @"%@", @"Rebuilding all linked lists from scratch");
 		NSArray *allEntities = uni->entities;
 		uni->x_list_start = nil;
 		uni->y_list_start = nil;
@@ -5112,7 +5120,7 @@ static BOOL MaintainLinkedLists(Universe *uni)
 	Entity* p0 = entities.firstObject;
 	if (!(p0->isPlayer))
 	{
-		OOLog(kOOLogInconsistentState, @"***** First entity is not the player in Universe.removeAllEntitiesExceptPlayer - exiting.");
+		OOLog(kOOLogInconsistentState, @"%@", @"***** First entity is not the player in Universe.removeAllEntitiesExceptPlayer - exiting.");
 		exit(EXIT_FAILURE);
 	}
 #endif
@@ -6227,6 +6235,23 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 }
 
 
+- (void) setScreenTextureDescriptorForKey:(NSString *)key descriptor:(NSDictionary *)desc
+{
+	NSMutableDictionary *sbCopy = [screenBackgrounds mutableCopy];
+	if (desc == nil)
+	{
+		[sbCopy removeObjectForKey:key];
+	} 
+	else
+	{
+		[sbCopy setObject:desc forKey:key];
+	}
+	[screenBackgrounds release];
+	screenBackgrounds = [sbCopy copy];
+	[sbCopy release];
+}
+
+
 - (void) clearPreviousMessage
 {
 	if (currentMessage)	[currentMessage release];
@@ -6247,7 +6272,7 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 		if (currentMessage)	[currentMessage release];
 		currentMessage = [text retain];
 		messageRepeatTime=universal_time + 6.0;
-		[message_gui printLongText:text align:GUI_ALIGN_CENTER color:[OOColor yellowColor] fadeTime:count key:nil addToArray:nil];
+		[self showGUIMessage:text withScroll:YES andColor:[message_gui textColor] overDuration:count];
 	}
 }
 
@@ -6259,7 +6284,7 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 		if (currentMessage)	[currentMessage release];
 		currentMessage = [text retain];
 		countdown_messageRepeatTime=universal_time + count;
-		[message_gui printLineNoScroll:text align:GUI_ALIGN_CENTER color:[OOColor yellowColor] fadeTime:count key:nil addToArray:nil];
+		[self showGUIMessage:text withScroll:NO andColor:[message_gui textColor] overDuration:count];
 	}
 }
 
@@ -6351,7 +6376,7 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 			[self speakWithSubstitutions:text];
 		}
 		
-		[message_gui printLongText:text align:GUI_ALIGN_CENTER color:[OOColor yellowColor] fadeTime:([self permanentMessageLog]?0.0:count) key:nil addToArray:nil];
+		[self showGUIMessage:text withScroll:YES andColor:[message_gui textColor] overDuration:count];
 		
 		[currentMessage release];
 		currentMessage = [text retain];
@@ -6370,7 +6395,9 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 {
 	if ([PLAYER showDemoShips]) return;
 	
-	if (![currentMessage isEqualToString:text] || universal_time >= messageRepeatTime)
+	NSString *expandedMessage = OOExpand(text);
+	
+	if (![currentMessage isEqualToString:expandedMessage] || universal_time >= messageRepeatTime)
 	{
 		PlayerEntity* player = PLAYER;
 		
@@ -6380,17 +6407,17 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 			{
 				// EMMSTRAN: should say "Incoming message from ..." when prefixed with sender name.
 				NSString *format = OOExpandKey(@"speech-synthesis-incoming-message-@");
-				[self speakWithSubstitutions:[NSString stringWithFormat:format, text]];
+				[self speakWithSubstitutions:[NSString stringWithFormat:format, expandedMessage]];
 			}
 			
-			[message_gui printLongText:text align:GUI_ALIGN_CENTER color:[OOColor greenColor] fadeTime:([self permanentMessageLog]?0.0:count) key:nil addToArray:nil];
+			[self showGUIMessage:expandedMessage withScroll:YES andColor:[message_gui textCommsColor] overDuration:count];
 			
 			[currentMessage release];
-			currentMessage = [text retain];
+			currentMessage = [expandedMessage retain];
 			messageRepeatTime=universal_time + 6.0;
 		}
 		
-		[comm_log_gui printLongText:text align:GUI_ALIGN_LEFT color:nil fadeTime:0.0 key:nil addToArray:[player commLog]];
+		[comm_log_gui printLongText:expandedMessage align:GUI_ALIGN_LEFT color:nil fadeTime:0.0 key:nil addToArray:[player commLog]];
 		
 		if (showComms)  [self showCommsLog:6.0];
 	}
@@ -6401,6 +6428,20 @@ OOINLINE BOOL EntityInRange(HPVector p1, Entity *e2, float range)
 {
 	[comm_log_gui setAlpha:1.0];
 	if (![self permanentCommLog]) [comm_log_gui fadeOutFromTime:[self getTime] overDuration:how_long];
+}
+
+
+- (void) showGUIMessage:(NSString *)text withScroll:(BOOL)scroll andColor:(OOColor *)selectedColor overDuration:(OOTimeDelta)how_long
+{
+	if (scroll)
+	{
+		[message_gui printLongText:text align:GUI_ALIGN_CENTER color:selectedColor fadeTime:how_long key:nil addToArray:nil];
+	}
+	else
+	{
+		[message_gui printLineNoScroll:text align:GUI_ALIGN_CENTER color:selectedColor fadeTime:how_long key:nil addToArray:nil];
+	}
+	[message_gui setAlpha:1.0f];
 }
 
 
@@ -7379,7 +7420,7 @@ static void VerifyDesc(NSString *key, id desc)
 	NSString *key = nil;
 	if (_descriptions == nil)
 	{
-		OOLog(@"descriptions.verify",@"***** FATAL: Tried to verify descriptions, but descriptions was nil - unable to load any descriptions.plist file.");
+		OOLog(@"descriptions.verify", @"%@", @"***** FATAL: Tried to verify descriptions, but descriptions was nil - unable to load any descriptions.plist file.");
 		exit(EXIT_FAILURE);
 	}
 	foreachkey (key, _descriptions)
@@ -7678,7 +7719,13 @@ static void VerifyDesc(NSString *key, id desc)
 
 - (NSString *) getSystemName:(OOSystemID) sys
 {
-	return [systemManager getProperty:@"name" forSystem:sys inGalaxy:galaxyID];
+	return [self getSystemName:sys forGalaxy:galaxyID];
+}
+
+
+- (NSString *) getSystemName:(OOSystemID) sys forGalaxy:(OOGalaxyID) gnum
+{
+	return [systemManager getProperty:@"name" forSystem:sys inGalaxy:gnum];
 }
 
 
@@ -7739,7 +7786,7 @@ static void VerifyDesc(NSString *key, id desc)
 
 - (OOSystemID) findSystemAtCoords:(NSPoint) coords withGalaxy:(OOGalaxyID) g
 {
-	OOLog(@"deprecated.function",@"findSystemAtCoords");
+	OOLog(@"deprecated.function", @"%@", @"findSystemAtCoords");
 	return [self findSystemNumberAtCoords:coords withGalaxy:g includingHidden:YES];
 }
 
@@ -8014,7 +8061,7 @@ static void VerifyDesc(NSString *key, id desc)
 	double maxCost = optimizeBy == OPTIMIZED_BY_TIME ? 256 * (7 * 7) : 256 * (7 * 256 + 7);
 	
 	NSMutableArray *curr = [NSMutableArray arrayWithCapacity:256];
-	[curr addObject:cheapest[start] = [RouteElement elementWithLocation:start parent:-1 cost:0 distance:0 time:0]];
+	[curr addObject:cheapest[start] = [RouteElement elementWithLocation:start parent:-1 cost:0 distance:0 time:0 jumps: 0]];
 	
 	NSMutableArray *next = [NSMutableArray arrayWithCapacity:256];
 	while ([curr count] != 0)
@@ -8041,14 +8088,15 @@ static void VerifyDesc(NSString *key, id desc)
 				double distance = [ce distance] + lastDistance;
 				double time = [ce time] + lastTime;
 				double cost = [ce cost] + (optimizeBy == OPTIMIZED_BY_TIME ? lastTime : 7 * 256 + lastDistance);
+				int jumps = [ce jumps] + 1;
 				
 				if (cost < maxCost && (cheapest[n] == nil || [cheapest[n] cost] > cost)) {
-					RouteElement *e = [RouteElement elementWithLocation:n parent:c cost:cost distance:distance time:time];
+					RouteElement *e = [RouteElement elementWithLocation:n parent:c cost:cost distance:distance time:time jumps:jumps];
 					cheapest[n] = e;
 					[next addObject:e];
 					
 					if (n == goal && cost < maxCost)
-						maxCost = cost;					
+						maxCost = cost;
 				}
 			}
 		}
@@ -8077,9 +8125,12 @@ static void VerifyDesc(NSString *key, id desc)
 	
 	return c_route;
 #else
-	return @{@"route": route,
-			@"distance": @([cheapest[goal] distance]),
-			@"time": @([cheapest[goal] time])};
+	return [NSDictionary dictionaryWithObjectsAndKeys:
+			route, @"route",
+			@([cheapest[goal] distance]), @"distance",
+			@([cheapest[goal] time]), @"time",
+			[NSNumber numberWithInt:[cheapest[goal] jumps]], @"jumps",
+			nil];
 #endif
 }
 
@@ -9448,6 +9499,18 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 @synthesize permanentCommLog = _permanentCommLog;
 
 
+- (BOOL) autoMessageLogBg
+{
+	return _autoMessageLogBg;
+}
+
+
+- (void) setAutoMessageLogBg:(BOOL)value
+{
+	_autoMessageLogBg = !!value;
+}
+
+
 - (void) setAutoCommLog:(BOOL)value
 {
 	_autoCommLog = value;
@@ -9686,6 +9749,9 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 	if(showDemo)
 	{
 		[player setStatus:STATUS_START_GAME];
+		// re-read keyconfig.plist just in case we've loaded a keyboard
+		// configuration expansion
+		[player initControls];
 	}
 	else
 	{
@@ -9723,19 +9789,19 @@ static OOComparisonResult comparePrice(id dict1, id dict2, void *context)
 {
 	PlayerEntity* player = PLAYER;
 	
-	OO_DEBUG_PUSH_PROGRESS(@"Wormhole and character reset");
+	OO_DEBUG_PUSH_PROGRESS(@"%@", @"Wormhole and character reset");
 	if (activeWormholes) [activeWormholes autorelease];
 	activeWormholes = [[NSMutableArray arrayWithCapacity:16] retain];
 	if (characterPool) [characterPool autorelease];
 	characterPool = [[NSMutableArray arrayWithCapacity:256] retain];
 	OO_DEBUG_POP_PROGRESS();
 	
-	OO_DEBUG_PUSH_PROGRESS(@"Galaxy reset");
+	OO_DEBUG_PUSH_PROGRESS(@"%@", @"Galaxy reset");
 	[self setGalaxyTo: [player galaxyNumber] andReinit:YES];
 	systemID = [player systemID];
 	OO_DEBUG_POP_PROGRESS();
 	
-	OO_DEBUG_PUSH_PROGRESS(@"Player init: setUpShipFromDictionary");
+	OO_DEBUG_PUSH_PROGRESS(@"%@", @"Player init: setUpShipFromDictionary");
 	[player setUpShipFromDictionary:[[OOShipRegistry sharedRegistry] shipInfoForKey:[player shipDataKey]]];	// the standard cobra at this point
 	[player baseMass]; // bootstrap the base mass used in all fuel charge calculations.
 	OO_DEBUG_POP_PROGRESS();
@@ -10028,7 +10094,8 @@ static void PreloadOneSound(NSString *soundName)
 	 @"\tpercent_I [label=\"%I\\nInhabitants\" shape=diamond]\n"
 	 "\tpercent_H [label=\"%H\\nSystem name\" shape=diamond]\n"
 	 "\tpercent_RN [label=\"%R/%N\\nRandom name\" shape=diamond]\n"
-	 "\tpercent_J [label=\"%J\\nNumbered system name\" shape=diamond]\n\t\n"];
+	 "\tpercent_J [label=\"%J\\nNumbered system name\" shape=diamond]\n"
+	 "\tpercent_G [label=\"%G\\nNumbered system name in chart number\" shape=diamond]\n\t\n"];
 	
 	// Toss in the Thargoid curses, too
 	[graphViz appendString:@"\tsubgraph cluster_thargoid_curses\n\t{\n\t\tlabel = \"Thargoid curses\"\n"];
@@ -10137,10 +10204,15 @@ static void PreloadOneSound(NSString *soundName)
 		[graphViz appendFormat:@"\t%@ -> percent_RN [color=\"0,0,0.65\"]\n", fromNode];
 	}
 	
-	// TODO: test graphViz output for @"%Jxxx"
+	// TODO: test graphViz output for @"%Jxxx" and @"%Gxxxxxx"
 	if ([string rangeOfString:@"%J"].location != NSNotFound)
 	{
 		[graphViz appendFormat:@"\t%@ -> percent_J [color=\"0,0,0.75\"]\n", fromNode];
+	}
+	
+	if ([string rangeOfString:@"%G"].location != NSNotFound)
+	{
+		[graphViz appendFormat:@"\t%@ -> percent_G [color=\"0,0,0.85\"]\n", fromNode];
 	}
 }
 

@@ -332,6 +332,7 @@ enum
 	BOOL					_pauseMessage;
 	BOOL					_autoCommLog;
 	BOOL					_permanentCommLog;
+	BOOL					_autoMessageLogBg;
 	BOOL					_permanentMessageLog;
 	BOOL					_witchspaceBreakPattern;
 	BOOL					_dockingClearanceProtocolActive;
@@ -576,6 +577,7 @@ enum
 
 - (NSString *) soundNameForCustomSoundKey:(NSString *)key;
 - (NSDictionary *) screenTextureDescriptorForKey:(NSString *)key;
+- (void) setScreenTextureDescriptorForKey:(NSString *) key descriptor:(NSDictionary *)desc;
 
 - (void) clearPreviousMessage;
 - (void) setMessageGuiBackgroundColor:(OOColor *) some_color;
@@ -588,6 +590,7 @@ enum
 - (void) addCommsMessage:(NSString *) text forCount:(OOTimeDelta) count;
 - (void) addCommsMessage:(NSString *) text forCount:(OOTimeDelta) count andShowComms:(BOOL)showComms logOnly:(BOOL)logOnly;
 - (void) showCommsLog:(OOTimeDelta) how_long;
+- (void) showGUIMessage:(NSString *)text withScroll:(BOOL)scroll andColor:(OOColor *)selectedColor overDuration:(OOTimeDelta)how_long;
 
 - (void) update:(OOTimeDelta)delta_t;
 
@@ -630,6 +633,7 @@ enum
 - (id) systemDataForGalaxy:(OOGalaxyID) gnum planet:(OOSystemID) pnum key:(NSString *)key;
 - (NSArray *) systemDataKeysForGalaxy:(OOGalaxyID)gnum planet:(OOSystemID)pnum;
 - (NSString *) getSystemName:(OOSystemID) sys;
+- (NSString *) getSystemName:(OOSystemID) sys forGalaxy:(OOGalaxyID) gnum;
 - (OOGovernmentID) getSystemGovernment:(OOSystemID) sys;
 - (NSString *) getSystemInhabitants:(OOSystemID) sys;
 - (NSString *) getSystemInhabitants:(OOSystemID) sys plural:(BOOL)plural;
@@ -742,6 +746,8 @@ enum
 @property BOOL permanentCommLog;
 - (void) setAutoCommLog:(BOOL)value;
 @property BOOL permanentMessageLog;
+- (BOOL) autoMessageLogBg;
+- (void) setAutoMessageLogBg:(BOOL)value;
 
 @property (atomic) BOOL blockJSPlayerShipProps;
 

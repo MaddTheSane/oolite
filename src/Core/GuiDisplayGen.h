@@ -53,7 +53,12 @@ typedef NS_ENUM(unsigned int, OOGUIAlignment)
 typedef NS_ENUM(unsigned int, OOGUIBackgroundSpecial)
 {
 	GUI_BACKGROUND_SPECIAL_NONE,
+	GUI_BACKGROUND_SPECIAL_CUSTOM,
+	GUI_BACKGROUND_SPECIAL_CUSTOM_ANA_SHORTEST,
+	GUI_BACKGROUND_SPECIAL_CUSTOM_ANA_QUICKEST,
 	GUI_BACKGROUND_SPECIAL_SHORT,
+	GUI_BACKGROUND_SPECIAL_SHORT_ANA_SHORTEST,
+	GUI_BACKGROUND_SPECIAL_SHORT_ANA_QUICKEST,
 	GUI_BACKGROUND_SPECIAL_LONG,
 	GUI_BACKGROUND_SPECIAL_LONG_ANA_SHORTEST,
 	GUI_BACKGROUND_SPECIAL_LONG_ANA_QUICKEST
@@ -177,6 +182,7 @@ typedef OOGUITabStop OOGUITabSettings[GUI_MAX_COLUMNS];
 	
 	OOColor					*backgroundColor;
 	OOColor					*textColor;
+	OOColor					*textCommsColor;
 	
 	OOTextureSprite			*backgroundSprite;
 	OOTextureSprite			*foregroundSprite;
@@ -250,9 +256,13 @@ typedef OOGUITabStop OOGUITabSettings[GUI_MAX_COLUMNS];
 
 - (void) setBackgroundColor:(OOColor*) color;
 
+- (OOColor *) textColor;
 - (void) setTextColor:(OOColor*) color;
+- (OOColor *) textCommsColor;
+- (void) setTextCommsColor:(OOColor*) color;
 - (OOColor *) colorFromSetting:(NSString *)setting defaultValue:(OOColor *)def;
 - (void) setGLColorFromSetting:(NSString *)setting defaultValue:(OOColor *)def alpha:(GLfloat)alpha;
+- (void) setGuiColorSettingFromKey:(NSString *) key color:(OOColor *)col;
 
 - (void) setCharacterSize:(NSSize) character_size;
 
