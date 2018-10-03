@@ -32,6 +32,14 @@ MA 02110-1301, USA.
 
 #ifndef OOMATHS_EXTERNAL_VECTOR_TYPES
 
+#ifdef USE_SIMD_SIMD_H
+#include <simd/simd.h>
+
+typedef simd_float3 Vector;
+typedef simd_float2 Vector2D;
+
+#else
+
 typedef struct Vector
 {
 	OOScalar x;
@@ -73,6 +81,95 @@ Vector OOVectorRandomRadial(OOScalar maxLength);		// Random vector with uniform 
 //Vector OORandomPositionInCylinder(Vector centre1, OOScalar exclusion1, Vector centre2, OOScalar exclusion2, OOScalar radius);
 //Vector OORandomPositionInShell(Vector centre, OOScalar inner, OOScalar outer);
 #endif
+
+#ifdef USE_SIMD_SIMD_H
+OOINLINE void scale_vector(Vector *outVector, OOScalar factor) ALWAYS_INLINE_FUNC NONNULL_FUNC;
+OOINLINE void scale_vector(Vector *outVector, OOScalar factor)
+{
+	(*outVector) *= factor;
+}
+
+#define vector_multiply_scalar(v, s) ((v) * (s))
+#define vector_add(a, b) ((a) + (b))
+#define vector_subtract(a, b) ((a) - (b))
+#define vector_between(a, b) vector_subtract(b, a)
+OOINLINE bool vector_equal(Vector a, Vector b) INLINE_CONST_FUNC;
+OOINLINE bool vector_equal(Vector a, Vector b)
+{
+	return a.x == b.x && a.y == b.y && a.z == b.z;
+}
+#define dot_product(a, b) simd_dot(a, b)
+#define magnitude(a) simd_length(a)
+#define vector_normal(vec) simd_normalize(vec)
+#define cross_product(a, b) simd_normalize(simd_cross(a, b))
+#define true_cross_product(a, b) simd_cross(a, b)
+#define magnitude2(x) simd_length_squared(x)
+#define distance(x, y) simd_distance(x, y)
+#define distance2(x, y) simd_distance_squared(x, y)
+OOINLINE Vector vector_flip(Vector v) INLINE_CONST_FUNC;
+OOINLINE Vector vector_flip(Vector v)
+{
+	return kZeroVector - v;
+}
+
+OOINLINE Vector normal_to_surface(Vector v1, Vector v2, Vector v3) CONST_FUNC;
+OOINLINE Vector normal_to_surface(Vector v1, Vector v2, Vector v3)
+{
+	Vector d0 = v2 - v1;
+	Vector d1 = v3 - v2;
+	return simd_normalize(simd_cross(d0, d1));
+}
+
+OOINLINE OOScalar triple_product(Vector first, Vector second, Vector third) INLINE_CONST_FUNC;
+OOINLINE OOScalar triple_product(Vector first, Vector second, Vector third)
+{
+	return simd_dot(first, simd_cross(second, third));
+}
+
+OOINLINE Vector vector_normal_or_fallback(Vector vec, Vector fallback) INLINE_CONST_FUNC;
+OOINLINE Vector vector_normal_or_xbasis(Vector vec) INLINE_CONST_FUNC;
+OOINLINE Vector vector_normal_or_ybasis(Vector vec) INLINE_CONST_FUNC;
+OOINLINE Vector vector_normal_or_zbasis(Vector vec) INLINE_CONST_FUNC;
+
+OOINLINE Vector vector_normal_or_fallback(Vector vec, Vector fallback)
+{
+	OOScalar mag2 = simd_length_squared(vec);
+	if (EXPECT_NOT(mag2 == 0.0f))  return fallback;
+	return vec * (1.0f / sqrt(mag2));
+}
+
+OOINLINE Vector vector_normal_or_xbasis(Vector vec)
+{
+	return vector_normal_or_fallback(vec, kBasisXVector);
+}
+
+OOINLINE Vector vector_normal_or_ybasis(Vector vec)
+{
+	return vector_normal_or_fallback(vec, kBasisYVector);
+}
+
+OOINLINE Vector vector_normal_or_zbasis(Vector vec)
+{
+	return vector_normal_or_fallback(vec, kBasisZVector);
+}
+
+OOINLINE Vector OOVectorInterpolate(Vector a, Vector b, OOScalar where) INLINE_CONST_FUNC;
+OOINLINE Vector OOVectorTowards(Vector a, Vector b, OOScalar where) INLINE_CONST_FUNC;
+
+OOINLINE Vector OOVectorInterpolate(Vector a, Vector b, OOScalar where)
+{
+	return make_vector(OOLerp(a.x, b.x, where),
+					   OOLerp(a.y, b.y, where),
+					   OOLerp(a.z, b.z, where));
+}
+
+
+OOINLINE Vector OOVectorTowards(Vector a, Vector b, OOScalar where)
+{
+	return a + b * where;
+}
+
+#else
 
 /* Multiply vector by scalar (in place) */
 OOINLINE void scale_vector(Vector *outVector, OOScalar factor) ALWAYS_INLINE_FUNC NONNULL_FUNC;
@@ -129,6 +226,8 @@ OOINLINE OOScalar triple_product(Vector first, Vector second, Vector third) INLI
 /* Given three points on a surface, returns the normal to the surface. */
 OOINLINE Vector normal_to_surface(Vector v1, Vector v2, Vector v3) CONST_FUNC;
 
+#endif
+
 #if __OBJC__
 NSString *VectorDescription(Vector vector);	// @"(x, y, z)"
 
@@ -172,6 +271,7 @@ OOINLINE Vector2D MakeVector2D(OOScalar vx, OOScalar vy)
 	return result;
 }
 
+#ifndef USE_SIMD_SIMD_H
 
 OOINLINE void scale_vector(Vector *vec, OOScalar factor)
 {
@@ -344,5 +444,7 @@ OOINLINE Vector normal_to_surface(Vector v1, Vector v2, Vector v3)
 	return cross_product(d0, d1);
 }
 
+#endif
+#endif
 
 #endif	/* INCLUDED_OOMATHS_h */

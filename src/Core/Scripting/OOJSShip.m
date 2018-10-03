@@ -1179,7 +1179,9 @@ static JSBool ShipGetProperty(JSContext *context, JSObject *this, jsid propID, j
 				{
 					box = [entity totalBoundingBox];
 				}
-				bounding_box_get_dimensions(box,&bbvect.x,&bbvect.y,&bbvect.z);
+				OOScalar bbvectx, bbvecty, bbvectz;
+				bounding_box_get_dimensions(box,&bbvectx,&bbvecty,&bbvectz);
+				bbvect = make_vector(bbvectx, bbvecty, bbvectz);
 				return VectorToJSValue(context, bbvect, value);
 			}
 			
