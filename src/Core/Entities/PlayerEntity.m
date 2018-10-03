@@ -484,9 +484,9 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 @synthesize deciCredits = credits;
 @synthesize random_factor = market_rnd;
 @synthesize galaxyNumber = galaxy_number;
-@synthesize galaxy_coordinates;
-@synthesize cursor_coordinates;
-@synthesize chart_centre_coordinates;
+@synthesize galaxyCoordinates=galaxy_coordinates;
+@synthesize cursorCoordinates=cursor_coordinates;
+@synthesize chartCentreCoordinates=chart_centre_coordinates;
 @synthesize chart_zoom;
 
 
@@ -513,28 +513,9 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 	return chart_zoom;
 }
 
-- (OOScalar) custom_chart_zoom
-{
-	return custom_chart_zoom;
-}
 
-- (void) setCustomChartZoom:(OOScalar)zoom
-{
-	custom_chart_zoom = zoom;
-}
-
-
-- (NSPoint) custom_chart_centre_coordinates
-{
-	return custom_chart_centre_coordinates;
-}
-
-
-- (void) setCustomChartCentre:(NSPoint)coords
-{
-	custom_chart_centre_coordinates.x = coords.x;
-	custom_chart_centre_coordinates.y = coords.y;
-}
+@synthesize customChartZoom=custom_chart_zoom;
+@synthesize customChartCentre=custom_chart_centre_coordinates;
 
 
 - (NSPoint) adjusted_chart_centre
@@ -679,10 +660,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (OOSystemID) infoSystemID
-{
-	return info_system_id;
-}
+@synthesize infoSystemID=info_system_id;
 
 
 - (void) setInfoSystemID: (OOSystemID) sid moveChart: (BOOL) moveChart
@@ -4261,16 +4239,7 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 }
 
 
-- (float) occlusionLevel
-{
-	return occlusion_dial;
-}
-
-
-- (void) setOcclusionLevel:(float)level
-{
-	occlusion_dial = level;
-}
+@synthesize occlusionLevel=occlusion_dial;
 
 
 - (void) setDockedAtMainStation
@@ -4406,18 +4375,6 @@ NSComparisonResult marketSorterByMassUnit(id a, id b, void *market);
 - (BOOL) showDemoShips
 {
 	return showDemoShips;
-}
-
-
-- (void) setMaxForwardShieldLevel:(float)new
-{
-	max_forward_shield = new;
-}
-
-
-- (void) setMaxAftShieldLevel:(float)new
-{
-	max_aft_shield = new;
 }
 
 

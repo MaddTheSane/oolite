@@ -762,22 +762,20 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 
 @property int random_factor;
 @property (readonly) OOGalaxyID galaxyNumber;
-@property (setter=setGalaxyCoordinates:) NSPoint galaxy_coordinates;
-- (void) setCustomChartCentre:(NSPoint)coords;
-@property (readonly) NSPoint cursor_coordinates;
-@property (readonly) NSPoint chart_centre_coordinates;
-- (NSPoint) custom_chart_centre_coordinates;
+@property (getter=galaxy_coordinates) NSPoint galaxyCoordinates;
+@property (getter=custom_chart_centre_coordinates) NSPoint customChartCentre;
+@property (readonly, getter=cursor_coordinates) NSPoint cursorCoordinates;
+@property (readonly, getter=chart_centre_coordinates) NSPoint chartCentreCoordinates;
 @property (readonly, atomic) OOScalar chart_zoom;
-- (OOScalar) custom_chart_zoom;
-- (void) setCustomChartZoom:(OOScalar)zoom;
-@property (readonly, atomic) NSPoint adjusted_chart_centre;
+@property (getter=custom_chart_zoom) OOScalar customChartZoom;
+@property (readonly, atomic, getter=adjusted_chart_centre) NSPoint adjustedChartCentre;
 @property (readonly) OORouteType ANAMode;
 
 
 @property (nonatomic) OOSystemID systemID;
 @property (nonatomic) OOSystemID targetSystemID;
 @property (readonly, atomic) OOSystemID nextHopTargetSystemID;
-- (OOSystemID) infoSystemID;
+@property (nonatomic) OOSystemID infoSystemID;
 - (void) setInfoSystemID: (OOSystemID) sid moveChart:(BOOL) moveChart;
 - (void) nextInfoSystem;
 - (void) previousInfoSystem;
@@ -792,8 +790,7 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 - (void) doBookkeeping:(double) delta_t;
 - (BOOL) isValidTarget:(Entity*)target;
 
-- (void) setMassLockable:(BOOL)newValue;
-- (BOOL) massLockable;
+@property (atomic) BOOL massLockable;
 @property (readonly, atomic) BOOL massLocked;
 @property (readonly, atomic) BOOL atHyperspeed;
 
@@ -841,8 +838,8 @@ typedef NS_ENUM(unsigned int, OOMarketSorterMode)
 @property (nonatomic) float forwardShieldRechargeRate;
 @property (nonatomic) float aftShieldRechargeRate;
 
-- (void) setMaxForwardShieldLevel:(float)new;
-- (void) setMaxAftShieldLevel:(float)new;
+@property (readwrite) float maxForwardShieldLevel;
+@property (readwrite) float maxAftShieldLevel;
 
 // return keyconfig.plist settings for scripting
 @property (readonly, copy) NSDictionary *keyConfig;
