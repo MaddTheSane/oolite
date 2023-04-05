@@ -550,9 +550,7 @@
 		4F1F15631B0FCC17001C1591 /* OOCheckJSSyntaxVerifierStage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F1F15621B0FCC17001C1591 /* OOCheckJSSyntaxVerifierStage.h */; };
 		B33A44F1199E6745000B45AE /* OOOpenGLMatrixManager.h in Headers */ = {isa = PBXBuildFile; fileRef = B33A44EF199E6745000B45AE /* OOOpenGLMatrixManager.h */; };
 		B33A44F2199E6745000B45AE /* OOOpenGLMatrixManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B33A44F0199E6745000B45AE /* OOOpenGLMatrixManager.m */; };
-		B3B46C871A0D053D00D6C39B /* OOSystemDescriptionManager.h in Copy Plug-ins */ = {isa = PBXBuildFile; fileRef = B3B46C851A0D053D00D6C39B /* OOSystemDescriptionManager.h */; };
 		B3B46C881A0D053D00D6C39B /* OOSystemDescriptionManager.h in Headers */ = {isa = PBXBuildFile; fileRef = B3B46C851A0D053D00D6C39B /* OOSystemDescriptionManager.h */; };
-		B3B46C891A0D053D00D6C39B /* OOSystemDescriptionManager.m in Copy Plug-ins */ = {isa = PBXBuildFile; fileRef = B3B46C861A0D053D00D6C39B /* OOSystemDescriptionManager.m */; };
 		B3B46C8A1A0D053D00D6C39B /* OOSystemDescriptionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B3B46C861A0D053D00D6C39B /* OOSystemDescriptionManager.m */; };
 /* End PBXBuildFile section */
 
@@ -706,8 +704,6 @@
 			dstPath = Oolite.app/Contents/PlugIns;
 			dstSubfolderSpec = 16;
 			files = (
-				B3B46C871A0D053D00D6C39B /* OOSystemDescriptionManager.h in Copy Plug-ins */,
-				B3B46C891A0D053D00D6C39B /* OOSystemDescriptionManager.m in Copy Plug-ins */,
 				1ABF219B12D691B300075821 /* Oolite.docktileplugin in Copy Plug-ins */,
 			);
 			name = "Copy Plug-ins";
@@ -1027,8 +1023,6 @@
 		1A26D09D0BCF9CF70073F257 /* Entity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Entity.h; sourceTree = "<group>"; };
 		1A26D09E0BCF9CF70073F257 /* PlayerEntityStickMapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayerEntityStickMapper.m; sourceTree = "<group>"; };
 		1A26D09F0BCF9CF70073F257 /* PlayerEntityStickMapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerEntityStickMapper.h; sourceTree = "<group>"; };
-		1A26D0F10BCF9CF70073F257 /* PlayerEntityKeyMapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayerEntityKeyMapper.m; sourceTree = "<group>"; };
-		1A26D0F20BCF9CF70073F257 /* PlayerEntityKeyMapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerEntityKeyMapper.h; sourceTree = "<group>"; };
 		1A26D0A00BCF9CF70073F257 /* WormholeEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WormholeEntity.m; sourceTree = "<group>"; };
 		1A26D0A10BCF9CF70073F257 /* WormholeEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WormholeEntity.h; sourceTree = "<group>"; };
 		1A26D0A20BCF9CF70073F257 /* StationEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StationEntity.m; sourceTree = "<group>"; };
@@ -1055,6 +1049,8 @@
 		1A26D0E30BCF9D3B0073F257 /* OOTextureLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOTextureLoader.h; sourceTree = "<group>"; };
 		1A26D0E40BCF9D3B0073F257 /* OOPNGTextureLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOPNGTextureLoader.h; sourceTree = "<group>"; };
 		1A26D0E50BCF9D3B0073F257 /* OOTextureLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OOTextureLoader.m; sourceTree = "<group>"; };
+		1A26D0F10BCF9CF70073F257 /* PlayerEntityKeyMapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayerEntityKeyMapper.m; sourceTree = "<group>"; };
+		1A26D0F20BCF9CF70073F257 /* PlayerEntityKeyMapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerEntityKeyMapper.h; sourceTree = "<group>"; };
 		1A27DB380C4E349F00CB4CE8 /* OOOXPVerifierStageInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOOXPVerifierStageInternal.h; sourceTree = "<group>"; };
 		1A27DB390C4E349F00CB4CE8 /* OOOXPVerifierStage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOOXPVerifierStage.h; sourceTree = "<group>"; };
 		1A27DB3A0C4E349F00CB4CE8 /* OOOXPVerifierStage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OOOXPVerifierStage.m; sourceTree = "<group>"; };
@@ -3499,7 +3495,6 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 0730;
 				ORGANIZATIONNAME = "the Oolite team";
 			};
@@ -3690,7 +3685,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "tools/mkmanifest.sh > \"$GAME_RESOURCES_DIR/manifest.plist\"";
+			shellScript = "tools/mkmanifest.sh > \"$GAME_RESOURCES_DIR/manifest.plist\"\n";
 		};
 		1A7E3A06180AC8D400576095 /* Conditionally copy Debug Bundle */ = {
 			isa = PBXShellScriptBuildPhase;

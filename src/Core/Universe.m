@@ -102,6 +102,20 @@ MA 02110-1301, USA.
 #include <espeak/speak_lib.h>
 #endif
 
+#if OOLITE_MAC_OS_X
+#include <OpenGL/OpenGL.h>
+#include <OpenGL/gl3.h>
+#include <OpenGL/gl3ext.h>
+#endif
+
+#ifndef GL_CLAMP_FRAGMENT_COLOR
+#define GL_CLAMP_FRAGMENT_COLOR 0x891B
+#endif
+
+#ifndef GL_CLAMP_VERTEX_COLOR
+#define GL_CLAMP_VERTEX_COLOR 0x891A
+#endif
+
 enum
 {
 	DEMO_FLY_IN			= 101,

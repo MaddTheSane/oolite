@@ -1834,7 +1834,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "python \"$JS_SRC_PATH/imacro_asm.py\" \"$JS_SRC_PATH/imacros.jsasm\" \"$DERIVED_FILE_DIR/imacros.c.out\"\n";
+			shellScript = "xcrun python3 \"$JS_SRC_PATH/imacro_asm.py\" \"$JS_SRC_PATH/imacros.jsasm\" \"$DERIVED_FILE_DIR/imacros.c.out\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
