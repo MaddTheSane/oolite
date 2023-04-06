@@ -41,7 +41,7 @@ SOFTWARE.
 	cl = [components count];
 	for (i = 0 ; i < cl ; i++)
 	{
-		NSString *component = [components objectAtIndex:i];
+		NSString *component = components[i];
 		if ([[[component pathExtension] lowercaseString] isEqualToString:@"oxz"])
 		{
 			break;
@@ -53,7 +53,7 @@ SOFTWARE.
 /* -initWithContentsOfMappedFile fails quietly under OS X if there's no file,
    but GNUstep complains. */
 #if OOLITE_MAC_OS_X
-		return [[[NSData alloc] initWithContentsOfMappedFile:path] autorelease];
+		return [[NSData alloc] initWithContentsOfMappedFile:path];
 #else
 		NSFileManager	*fmgr = [NSFileManager defaultManager];
 		BOOL			dir;
@@ -133,7 +133,7 @@ SOFTWARE.
 	
 	
 
-	NSMutableData *tmp = [NSMutableData dataWithCapacity:file_info.uncompressed_size];
+	NSMutableData *tmp = [[NSMutableData alloc] initWithCapacity:file_info.uncompressed_size];
 	void *buf = (void*)malloc(ZIP_BUFFER_SIZE);
 	do
 	{
@@ -161,7 +161,7 @@ SOFTWARE.
 	}
 	
 	unzClose(uf);
-	return [[tmp retain] autorelease];
+	return tmp;
 
 }
 

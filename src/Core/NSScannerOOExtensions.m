@@ -27,7 +27,7 @@ MA 02110-1301, USA.
 
 @implementation NSScanner (OOExtensions)
 
-- (BOOL) ooliteScanCharactersFromSet:(NSCharacterSet *)set intoString:(NSString **)value
+- (BOOL) ooliteScanCharactersFromSet:(NSCharacterSet *)set intoString:(NSString *__autoreleasing*)value
 {
 	NSUInteger		currentLocation = [self scanLocation];
 	NSRange			matchedRange = NSMakeRange( currentLocation, 0);
@@ -54,7 +54,7 @@ MA 02110-1301, USA.
 }
 
 
-- (BOOL) ooliteScanUpToCharactersFromSet:(NSCharacterSet *)set intoString:(NSString **)value
+- (BOOL) ooliteScanUpToCharactersFromSet:(NSCharacterSet *)set intoString:(NSString *__autoreleasing*)value
 {
 	NSUInteger		currentLocation = [self scanLocation];
 	NSRange			matchedRange = NSMakeRange( currentLocation, 0);

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CSExtensionLabel</key>
+	<string>Oolite_Mission_SpotlightImporter</string>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<key>CSSupportedContentTypes</key>
+			<array>
+				<string>org.aegidian.oolite.oxp.compressed</string>
+				<string>org.aegidian.oolite.oxp</string>
+			</array>
+		</dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.spotlight.import</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>$(PRODUCT_MODULE_NAME).ImportExtension</string>
+	</dict>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.item</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Oolite Expansion Pack</string>
+			<key>UTTypeIconFile</key>
+			<string>oolite-expansion-document</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.aegidian.oolite.expansion</string>
+			<key>UTTypeReferenceURL</key>
+			<string>http://wiki.alioth.net/index.php/OXP_howto</string>
+			<key>UTTypeTagSpecification</key>
+			<dict/>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>org.aegidian.oolite.expansion</string>
+				<string>com.apple.package</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Oolite Expansion Pack</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.aegidian.oolite.oxp</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>oxp</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>org.aegidian.oolite.expansion</string>
+				<string>com.pkware.zip-archive</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Oolite Expansion Pack</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.aegidian.oolite.oxp.compressed</string>
+			<key>UTTypeReferenceURL</key>
+			<string></string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>oxz</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+</dict>
+</plist>

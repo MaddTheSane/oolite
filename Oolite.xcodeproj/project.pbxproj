@@ -244,7 +244,7 @@
 		1A5D588A1825241800C779AE /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A5D58851825241800C779AE /* unzip.c */; };
 		1A5D588B1825241800C779AE /* unzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A5D58861825241800C779AE /* unzip.h */; };
 		1A5D5893182525DE00C779AE /* NSDataOOExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A5D5891182525DE00C779AE /* NSDataOOExtensions.h */; };
-		1A5D5894182525DE00C779AE /* NSDataOOExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5D5892182525DE00C779AE /* NSDataOOExtensions.m */; };
+		1A5D5894182525DE00C779AE /* NSDataOOExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5D5892182525DE00C779AE /* NSDataOOExtensions.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		1A5DB1EA0BBD8F0000D57389 /* OOConstToString.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A5DB1E80BBD8F0000D57389 /* OOConstToString.h */; };
 		1A5DB1EB0BBD8F0000D57389 /* OOConstToString.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5DB1E90BBD8F0000D57389 /* OOConstToString.m */; };
 		1A5DBAA60BC000DC00D57389 /* OOJavaScriptEngine.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A5DBA9A0BC000DC00D57389 /* OOJavaScriptEngine.h */; };
@@ -338,7 +338,7 @@
 		1A8A394E0B96229C007D20B8 /* NSFileManagerOOExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A8A394C0B96229C007D20B8 /* NSFileManagerOOExtensions.m */; };
 		1A8A394F0B96229C007D20B8 /* NSFileManagerOOExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A8A394D0B96229C007D20B8 /* NSFileManagerOOExtensions.h */; };
 		1A8A3A380B962AEF007D20B8 /* NSScannerOOExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A8A3A360B962AEF007D20B8 /* NSScannerOOExtensions.h */; };
-		1A8A3A390B962AEF007D20B8 /* NSScannerOOExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A8A3A370B962AEF007D20B8 /* NSScannerOOExtensions.m */; };
+		1A8A3A390B962AEF007D20B8 /* NSScannerOOExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A8A3A370B962AEF007D20B8 /* NSScannerOOExtensions.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		1A8BB8EA0E8311F900122974 /* OONullTexture.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A8BB8E80E8311F900122974 /* OONullTexture.h */; };
 		1A8BB8EB0E8311F900122974 /* OONullTexture.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A8BB8E90E8311F900122974 /* OONullTexture.m */; };
 		1A8C981D117A380800D8AB7E /* OOCombinedEmissionMapGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A8C97E5117A1A2F00D8AB7E /* OOCombinedEmissionMapGenerator.m */; };
@@ -352,7 +352,7 @@
 		1A9400BE0BAF0ECD005F6CF3 /* OOStringParsing.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A9400BD0BAF0ECD005F6CF3 /* OOStringParsing.m */; };
 		1A9400C00BAF0EDB005F6CF3 /* OOStringParsing.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A9400BF0BAF0EDB005F6CF3 /* OOStringParsing.h */; };
 		1A9403D00BAF36C3005F6CF3 /* OOFunctionAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A9403CF0BAF36C3005F6CF3 /* OOFunctionAttributes.h */; };
-		1A9404260BAF3DED005F6CF3 /* OOCollectionExtractors.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A9404240BAF3DED005F6CF3 /* OOCollectionExtractors.m */; };
+		1A9404260BAF3DED005F6CF3 /* OOCollectionExtractors.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A9404240BAF3DED005F6CF3 /* OOCollectionExtractors.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		1A9404270BAF3DED005F6CF3 /* OOCollectionExtractors.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A9404250BAF3DED005F6CF3 /* OOCollectionExtractors.h */; };
 		1A9404660BAF42BF005F6CF3 /* OOPListParsing.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A9404640BAF42BE005F6CF3 /* OOPListParsing.h */; };
 		1A9404670BAF42BF005F6CF3 /* OOPListParsing.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A9404650BAF42BF005F6CF3 /* OOPListParsing.m */; };
@@ -548,6 +548,30 @@
 		4F1F155F1B0FCB76001C1591 /* OOCheckPListSyntaxVerifierStage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F1F155E1B0FCB76001C1591 /* OOCheckPListSyntaxVerifierStage.h */; };
 		4F1F15611B0FCBFA001C1591 /* OOCheckJSSyntaxVerifierStage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F15601B0FCBFA001C1591 /* OOCheckJSSyntaxVerifierStage.m */; };
 		4F1F15631B0FCC17001C1591 /* OOCheckJSSyntaxVerifierStage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F1F15621B0FCC17001C1591 /* OOCheckJSSyntaxVerifierStage.h */; };
+		55FAC6F029DD5E65009AA010 /* ImportExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55FAC6EF29DD5E65009AA010 /* ImportExtension.swift */; };
+		55FAC6F529DD5E65009AA010 /* Oolite Save Spotlight.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 55FAC6ED29DD5E65009AA010 /* Oolite Save Spotlight.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		55FAC6FB29DD5E8E009AA010 /* NSScannerOOExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A8A3A370B962AEF007D20B8 /* NSScannerOOExtensions.m */; };
+		55FAC6FC29DD5EB1009AA010 /* OOCollectionExtractors.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A9404240BAF3DED005F6CF3 /* OOCollectionExtractors.m */; };
+		55FAC6FD29DD5EBE009AA010 /* NSDataOOExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5D5892182525DE00C779AE /* NSDataOOExtensions.m */; };
+		55FAC6FE29DD5ED6009AA010 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A5D58851825241800C779AE /* unzip.c */; };
+		55FAC6FF29DD5EDD009AA010 /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A5D58821825241800C779AE /* ioapi.c */; };
+		55FAC70029DD5F6E009AA010 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A71E8780BCE8EB100CD5C13 /* libz.dylib */; };
+		55FAC70329DD64FF009AA010 /* LogStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 55FAC70229DD64FF009AA010 /* LogStub.m */; };
+		55FAC70629DD657D009AA010 /* Values.plist in Resources */ = {isa = PBXBuildFile; fileRef = 55FAC70429DD657D009AA010 /* Values.plist */; };
+		55FAC70729DD657D009AA010 /* schema.xml in Resources */ = {isa = PBXBuildFile; fileRef = 55FAC70529DD657D009AA010 /* schema.xml */; };
+		55FAC70A29DD6599009AA010 /* schema.strings in Resources */ = {isa = PBXBuildFile; fileRef = 55FAC70829DD6599009AA010 /* schema.strings */; };
+		55FAC71329DD6DEB009AA010 /* ImportExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55FAC71229DD6DEB009AA010 /* ImportExtension.swift */; };
+		55FAC71829DD6DEC009AA010 /* Oolite Mission Spotlight.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 55FAC71029DD6DEB009AA010 /* Oolite Mission Spotlight.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		55FAC71D29DD6DFF009AA010 /* Values.plist in Resources */ = {isa = PBXBuildFile; fileRef = 55FAC70429DD657D009AA010 /* Values.plist */; };
+		55FAC71E29DD6DFF009AA010 /* schema.xml in Resources */ = {isa = PBXBuildFile; fileRef = 55FAC70529DD657D009AA010 /* schema.xml */; };
+		55FAC71F29DD6E03009AA010 /* schema.strings in Resources */ = {isa = PBXBuildFile; fileRef = 55FAC70829DD6599009AA010 /* schema.strings */; };
+		55FAC72029DD6E84009AA010 /* LogStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 55FAC70229DD64FF009AA010 /* LogStub.m */; };
+		55FAC72129DD6EA9009AA010 /* OOCollectionExtractors.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A9404240BAF3DED005F6CF3 /* OOCollectionExtractors.m */; };
+		55FAC72229DD6EA9009AA010 /* NSDataOOExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5D5892182525DE00C779AE /* NSDataOOExtensions.m */; };
+		55FAC72329DD6EA9009AA010 /* NSScannerOOExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A8A3A370B962AEF007D20B8 /* NSScannerOOExtensions.m */; };
+		55FAC72429DD6EA9009AA010 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A5D58851825241800C779AE /* unzip.c */; };
+		55FAC72529DD6EA9009AA010 /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A5D58821825241800C779AE /* ioapi.c */; };
+		55FAC72629DD6F4A009AA010 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A71E8780BCE8EB100CD5C13 /* libz.dylib */; };
 		B33A44F1199E6745000B45AE /* OOOpenGLMatrixManager.h in Headers */ = {isa = PBXBuildFile; fileRef = B33A44EF199E6745000B45AE /* OOOpenGLMatrixManager.h */; };
 		B33A44F2199E6745000B45AE /* OOOpenGLMatrixManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B33A44F0199E6745000B45AE /* OOOpenGLMatrixManager.m */; };
 		B3B46C881A0D053D00D6C39B /* OOSystemDescriptionManager.h in Headers */ = {isa = PBXBuildFile; fileRef = B3B46C851A0D053D00D6C39B /* OOSystemDescriptionManager.h */; };
@@ -695,6 +719,20 @@
 			remoteGlobalIDString = 1ADE327609757FBE00961AE2;
 			remoteInfo = LibVorbis;
 		};
+		55FAC6F329DD5E65009AA010 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55FAC6EC29DD5E65009AA010;
+			remoteInfo = "Oolite Save Spotlight";
+		};
+		55FAC71629DD6DEC009AA010 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55FAC70F29DD6DEB009AA010;
+			remoteInfo = "Oolite Mission Spotlight";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -729,6 +767,18 @@
 				1AE8837612EF91810075814F /* Sparkle.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55FAC6FA29DD5E65009AA010 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				55FAC71829DD6DEC009AA010 /* Oolite Mission Spotlight.appex in Embed Foundation Extensions */,
+				55FAC6F529DD5E65009AA010 /* Oolite Save Spotlight.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -1679,7 +1729,7 @@
 		25F3E8A50994FE65002F25FD /* oolite-expansion-document.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "oolite-expansion-document.icns"; sourceTree = "<group>"; };
 		25F3E8A60994FE65002F25FD /* oolite-icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "oolite-icon.icns"; sourceTree = "<group>"; };
 		25F3E8B30994FE9B002F25FD /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
-		25F3E8BC09950088002F25FD /* Info-Oolite.plist */ = {isa = PBXFileReference; explicitFileType = text; fileEncoding = 4; name = "Info-Oolite.plist"; path = "../src/Cocoa/Info-Oolite.plist"; sourceTree = "<group>"; };
+		25F3E8BC09950088002F25FD /* Info-Oolite.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Info-Oolite.plist"; path = "../src/Cocoa/Info-Oolite.plist"; sourceTree = "<group>"; };
 		25F46750099695D5009483BF /* OoliteApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OoliteApp.h; sourceTree = "<group>"; };
 		25F46751099695D5009483BF /* OoliteApp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OoliteApp.m; sourceTree = "<group>"; };
 		25F4676309969672009483BF /* MyOpenGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MyOpenGLView.m; sourceTree = "<group>"; };
@@ -1696,6 +1746,19 @@
 		4F1F155E1B0FCB76001C1591 /* OOCheckPListSyntaxVerifierStage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOCheckPListSyntaxVerifierStage.h; sourceTree = "<group>"; };
 		4F1F15601B0FCBFA001C1591 /* OOCheckJSSyntaxVerifierStage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OOCheckJSSyntaxVerifierStage.m; sourceTree = "<group>"; };
 		4F1F15621B0FCC17001C1591 /* OOCheckJSSyntaxVerifierStage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOCheckJSSyntaxVerifierStage.h; sourceTree = "<group>"; };
+		55FAC6ED29DD5E65009AA010 /* Oolite Save Spotlight.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Oolite Save Spotlight.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		55FAC6EF29DD5E65009AA010 /* ImportExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportExtension.swift; sourceTree = "<group>"; };
+		55FAC6F129DD5E65009AA010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		55FAC6F229DD5E65009AA010 /* Oolite_Save_Spotlight.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Oolite_Save_Spotlight.entitlements; sourceTree = "<group>"; };
+		55FAC70129DD6204009AA010 /* spotlight-bridging-header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "spotlight-bridging-header.h"; sourceTree = "<group>"; };
+		55FAC70229DD64FF009AA010 /* LogStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LogStub.m; sourceTree = "<group>"; };
+		55FAC70429DD657D009AA010 /* Values.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = Values.plist; path = "Mac-specific/Oolite-importer/Values.plist"; sourceTree = SOURCE_ROOT; };
+		55FAC70529DD657D009AA010 /* schema.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = schema.xml; path = "Mac-specific/Oolite-importer/schema.xml"; sourceTree = SOURCE_ROOT; };
+		55FAC70929DD6599009AA010 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = English; path = "Mac-specific/Oolite-importer/English.lproj/schema.strings"; sourceTree = SOURCE_ROOT; };
+		55FAC71029DD6DEB009AA010 /* Oolite Mission Spotlight.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Oolite Mission Spotlight.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		55FAC71229DD6DEB009AA010 /* ImportExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportExtension.swift; sourceTree = "<group>"; };
+		55FAC71429DD6DEB009AA010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		55FAC71529DD6DEC009AA010 /* Oolite_Mission_Spotlight.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Oolite_Mission_Spotlight.entitlements; sourceTree = "<group>"; };
 		B33A44EF199E6745000B45AE /* OOOpenGLMatrixManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOOpenGLMatrixManager.h; sourceTree = "<group>"; };
 		B33A44F0199E6745000B45AE /* OOOpenGLMatrixManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OOOpenGLMatrixManager.m; sourceTree = "<group>"; };
 		B3460D4315285BDE002592D0 /* oolite-default-planet.fragment */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; path = "oolite-default-planet.fragment"; sourceTree = "<group>"; };
@@ -1733,6 +1796,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		55FAC6EA29DD5E65009AA010 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55FAC70029DD5F6E009AA010 /* libz.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55FAC70D29DD6DEB009AA010 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55FAC72629DD6F4A009AA010 /* libz.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -1767,6 +1846,8 @@
 			isa = PBXGroup;
 			children = (
 				0865432206B8447D000CA0AB /* Oolite.app */,
+				55FAC6ED29DD5E65009AA010 /* Oolite Save Spotlight.appex */,
+				55FAC71029DD6DEB009AA010 /* Oolite Mission Spotlight.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3170,6 +3251,8 @@
 				1A8A3BE90B963F02007D20B8 /* Source */,
 				1A2314300B9C667F00EF0852 /* Resources */,
 				1A5BF2710916D45B00BF238F /* External bundles */,
+				55FAC6EE29DD5E65009AA010 /* Oolite Save Spotlight */,
+				55FAC71129DD6DEB009AA010 /* Oolite Mission Spotlight */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				1AF4AF4C15B8616F009243BE /* Unit tests */,
@@ -3191,6 +3274,31 @@
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		55FAC6EE29DD5E65009AA010 /* Oolite Save Spotlight */ = {
+			isa = PBXGroup;
+			children = (
+				55FAC70829DD6599009AA010 /* schema.strings */,
+				55FAC70529DD657D009AA010 /* schema.xml */,
+				55FAC70429DD657D009AA010 /* Values.plist */,
+				55FAC6EF29DD5E65009AA010 /* ImportExtension.swift */,
+				55FAC6F129DD5E65009AA010 /* Info.plist */,
+				55FAC6F229DD5E65009AA010 /* Oolite_Save_Spotlight.entitlements */,
+				55FAC70129DD6204009AA010 /* spotlight-bridging-header.h */,
+				55FAC70229DD64FF009AA010 /* LogStub.m */,
+			);
+			path = "Oolite Save Spotlight";
+			sourceTree = "<group>";
+		};
+		55FAC71129DD6DEB009AA010 /* Oolite Mission Spotlight */ = {
+			isa = PBXGroup;
+			children = (
+				55FAC71229DD6DEB009AA010 /* ImportExtension.swift */,
+				55FAC71429DD6DEB009AA010 /* Info.plist */,
+				55FAC71529DD6DEC009AA010 /* Oolite_Mission_Spotlight.entitlements */,
+			);
+			path = "Oolite Mission Spotlight";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -3473,6 +3581,7 @@
 				1A6D58B6182D5F3600BFB44D /* Generate Manifest */,
 				1AA2E7471191E4B400DFBA23 /* Copy Schemata */,
 				1AE8837812EF91880075814F /* Copy Frameworks */,
+				55FAC6FA29DD5E65009AA010 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
@@ -3482,6 +3591,8 @@
 				1AE3455C12CB77CD00FD8C62 /* PBXTargetDependency */,
 				1A3E01A911C574E1000FF226 /* PBXTargetDependency */,
 				1A78B5DC12D74D0600D42EE7 /* PBXTargetDependency */,
+				55FAC6F429DD5E65009AA010 /* PBXTargetDependency */,
+				55FAC71729DD6DEC009AA010 /* PBXTargetDependency */,
 			);
 			name = Oolite;
 			productInstallPath = "$(HOME)/Applications";
@@ -3489,14 +3600,59 @@
 			productReference = 0865432206B8447D000CA0AB /* Oolite.app */;
 			productType = "com.apple.product-type.application";
 		};
+		55FAC6EC29DD5E65009AA010 /* Oolite Save Spotlight */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 55FAC6F629DD5E65009AA010 /* Build configuration list for PBXNativeTarget "Oolite Save Spotlight" */;
+			buildPhases = (
+				55FAC6E929DD5E65009AA010 /* Sources */,
+				55FAC6EA29DD5E65009AA010 /* Frameworks */,
+				55FAC6EB29DD5E65009AA010 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Oolite Save Spotlight";
+			productName = "Oolite Save Spotlight";
+			productReference = 55FAC6ED29DD5E65009AA010 /* Oolite Save Spotlight.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		55FAC70F29DD6DEB009AA010 /* Oolite Mission Spotlight */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 55FAC71929DD6DEC009AA010 /* Build configuration list for PBXNativeTarget "Oolite Mission Spotlight" */;
+			buildPhases = (
+				55FAC70C29DD6DEB009AA010 /* Sources */,
+				55FAC70D29DD6DEB009AA010 /* Frameworks */,
+				55FAC70E29DD6DEB009AA010 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Oolite Mission Spotlight";
+			productName = "Oolite Mission Spotlight";
+			productReference = 55FAC71029DD6DEB009AA010 /* Oolite Mission Spotlight.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1430;
 				LastUpgradeCheck = 0730;
 				ORGANIZATIONNAME = "the Oolite team";
+				TargetAttributes = {
+					55FAC6EC29DD5E65009AA010 = {
+						CreatedOnToolsVersion = 14.3;
+						ProvisioningStyle = Automatic;
+					};
+					55FAC70F29DD6DEB009AA010 = {
+						CreatedOnToolsVersion = 14.3;
+						ProvisioningStyle = Automatic;
+					};
+				};
 			};
 			buildConfigurationList = 08B31CB008FE63D70038D42F /* Build configuration list for PBXProject "Oolite" */;
 			compatibilityVersion = "Xcode 6.3";
@@ -3548,6 +3704,8 @@
 			targets = (
 				1AD267500C83050800B4BFD1 /* Build All */,
 				0865423506B8447D000CA0AB /* Oolite */,
+				55FAC6EC29DD5E65009AA010 /* Oolite Save Spotlight */,
+				55FAC70F29DD6DEB009AA010 /* Oolite Mission Spotlight */,
 			);
 		};
 /* End PBXProject section */
@@ -3653,6 +3811,26 @@
 				1A033FA313268821006F9DB7 /* OoliteReadMe.pdf in Resources */,
 				1A504D9114DC964A003E5363 /* Oolite.xib in Resources */,
 				1A115ED5158CFB4D005842DA /* splash@2x.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55FAC6EB29DD5E65009AA010 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55FAC70729DD657D009AA010 /* schema.xml in Resources */,
+				55FAC70A29DD6599009AA010 /* schema.strings in Resources */,
+				55FAC70629DD657D009AA010 /* Values.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55FAC70E29DD6DEB009AA010 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55FAC71E29DD6DFF009AA010 /* schema.xml in Resources */,
+				55FAC71F29DD6E03009AA010 /* schema.strings in Resources */,
+				55FAC71D29DD6DFF009AA010 /* Values.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3991,6 +4169,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		55FAC6E929DD5E65009AA010 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55FAC6FF29DD5EDD009AA010 /* ioapi.c in Sources */,
+				55FAC6FD29DD5EBE009AA010 /* NSDataOOExtensions.m in Sources */,
+				55FAC6FE29DD5ED6009AA010 /* unzip.c in Sources */,
+				55FAC6F029DD5E65009AA010 /* ImportExtension.swift in Sources */,
+				55FAC70329DD64FF009AA010 /* LogStub.m in Sources */,
+				55FAC6FB29DD5E8E009AA010 /* NSScannerOOExtensions.m in Sources */,
+				55FAC6FC29DD5EB1009AA010 /* OOCollectionExtractors.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55FAC70C29DD6DEB009AA010 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55FAC72429DD6EA9009AA010 /* unzip.c in Sources */,
+				55FAC72229DD6EA9009AA010 /* NSDataOOExtensions.m in Sources */,
+				55FAC72029DD6E84009AA010 /* LogStub.m in Sources */,
+				55FAC71329DD6DEB009AA010 /* ImportExtension.swift in Sources */,
+				55FAC72129DD6EA9009AA010 /* OOCollectionExtractors.m in Sources */,
+				55FAC72329DD6EA9009AA010 /* NSScannerOOExtensions.m in Sources */,
+				55FAC72529DD6EA9009AA010 /* ioapi.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -4034,13 +4240,35 @@
 			name = LibVorbis;
 			targetProxy = 1AE3455B12CB77CD00FD8C62 /* PBXContainerItemProxy */;
 		};
+		55FAC6F429DD5E65009AA010 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 55FAC6EC29DD5E65009AA010 /* Oolite Save Spotlight */;
+			targetProxy = 55FAC6F329DD5E65009AA010 /* PBXContainerItemProxy */;
+		};
+		55FAC71729DD6DEC009AA010 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 55FAC70F29DD6DEB009AA010 /* Oolite Mission Spotlight */;
+			targetProxy = 55FAC71629DD6DEC009AA010 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		55FAC70829DD6599009AA010 /* schema.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				55FAC70929DD6599009AA010 /* English */,
+			);
+			name = schema.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		08B31CAD08FE63D70038D42F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 1ABFEE2110507987005AA752 /* oolite-nonshared.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				COPY_SCHEMATA = 1;
@@ -4088,6 +4316,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 1ABFEE2110507987005AA752 /* oolite-nonshared.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEPS_INCLUDE_PATH = "$(SYMROOT)/$(CONFIGURATION)/include";
@@ -4197,6 +4426,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 1ABFEE2110507987005AA752 /* oolite-nonshared.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				COPY_SCHEMATA = 1;
@@ -4290,6 +4520,429 @@
 			};
 			name = TestRelease;
 		};
+		55FAC6F729DD5E65009AA010 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1A45BCC9104AB46900A89324 /* oolite-targets.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = "Oolite Save Spotlight/Oolite_Save_Spotlight.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Mac-specific/Oolite-importer/OoliteImporterPrefix.h";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"OOLOG_SHORT_CIRCUIT=0",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"OOCOLLECTIONEXTRACTORS_SIMPLE=1",
+					$OOLITE_OPTION_MACROS,
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Oolite Save Spotlight/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Oolite Save Spotlight";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 the Oolite team. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aegidian.oolite.Oolite-Save-Spotlight";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Oolite Save Spotlight/spotlight-bridging-header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/src/Core/Tables/\"";
+			};
+			name = Debug;
+		};
+		55FAC6F829DD5E65009AA010 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1A45BCC9104AB46900A89324 /* oolite-targets.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = "Oolite Save Spotlight/Oolite_Save_Spotlight.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Mac-specific/Oolite-importer/OoliteImporterPrefix.h";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"OOLOG_SHORT_CIRCUIT=0",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"OOCOLLECTIONEXTRACTORS_SIMPLE=1",
+					$OOLITE_OPTION_MACROS,
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Oolite Save Spotlight/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Oolite Save Spotlight";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 the Oolite team. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aegidian.oolite.Oolite-Save-Spotlight";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Oolite Save Spotlight/spotlight-bridging-header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 5.0;
+				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/src/Core/Tables/\"";
+			};
+			name = Deployment;
+		};
+		55FAC6F929DD5E65009AA010 /* TestRelease */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1A45BCC9104AB46900A89324 /* oolite-targets.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = "Oolite Save Spotlight/Oolite_Save_Spotlight.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Mac-specific/Oolite-importer/OoliteImporterPrefix.h";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"OOLOG_SHORT_CIRCUIT=0",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"OOCOLLECTIONEXTRACTORS_SIMPLE=1",
+					$OOLITE_OPTION_MACROS,
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Oolite Save Spotlight/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Oolite Save Spotlight";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 the Oolite team. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aegidian.oolite.Oolite-Save-Spotlight";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Oolite Save Spotlight/spotlight-bridging-header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 5.0;
+				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/src/Core/Tables/\"";
+			};
+			name = TestRelease;
+		};
+		55FAC71A29DD6DEC009AA010 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1A45BCC9104AB46900A89324 /* oolite-targets.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = "Oolite Mission Spotlight/Oolite_Mission_Spotlight.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Mac-specific/Oolite-importer/OoliteImporterPrefix.h";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"OOCOLLECTIONEXTRACTORS_SIMPLE=1",
+					$OOLITE_OPTION_MACROS,
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Oolite Mission Spotlight/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Oolite Mission Spotlight";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 the Oolite team. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aegidian.oolite.Oolite-Mission-Spotlight";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Oolite Save Spotlight/spotlight-bridging-header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		55FAC71B29DD6DEC009AA010 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1A45BCC9104AB46900A89324 /* oolite-targets.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = "Oolite Mission Spotlight/Oolite_Mission_Spotlight.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Mac-specific/Oolite-importer/OoliteImporterPrefix.h";
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"OOCOLLECTIONEXTRACTORS_SIMPLE=1",
+					$OOLITE_OPTION_MACROS,
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Oolite Mission Spotlight/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Oolite Mission Spotlight";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 the Oolite team. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aegidian.oolite.Oolite-Mission-Spotlight";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Oolite Save Spotlight/spotlight-bridging-header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Deployment;
+		};
+		55FAC71C29DD6DEC009AA010 /* TestRelease */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1A45BCC9104AB46900A89324 /* oolite-targets.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = "Oolite Mission Spotlight/Oolite_Mission_Spotlight.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Mac-specific/Oolite-importer/OoliteImporterPrefix.h";
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"OOCOLLECTIONEXTRACTORS_SIMPLE=1",
+					$OOLITE_OPTION_MACROS,
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Oolite Mission Spotlight/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Oolite Mission Spotlight";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 the Oolite team. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aegidian.oolite.Oolite-Mission-Spotlight";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Oolite Save Spotlight/spotlight-bridging-header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 5.0;
+			};
+			name = TestRelease;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -4319,6 +4972,26 @@
 				1AD267690C8305A200B4BFD1 /* Debug */,
 				1AD2676A0C8305A200B4BFD1 /* Deployment */,
 				1AD2676B0C8305A200B4BFD1 /* TestRelease */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Deployment;
+		};
+		55FAC6F629DD5E65009AA010 /* Build configuration list for PBXNativeTarget "Oolite Save Spotlight" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				55FAC6F729DD5E65009AA010 /* Debug */,
+				55FAC6F829DD5E65009AA010 /* Deployment */,
+				55FAC6F929DD5E65009AA010 /* TestRelease */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Deployment;
+		};
+		55FAC71929DD6DEC009AA010 /* Build configuration list for PBXNativeTarget "Oolite Mission Spotlight" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				55FAC71A29DD6DEC009AA010 /* Debug */,
+				55FAC71B29DD6DEC009AA010 /* Deployment */,
+				55FAC71C29DD6DEC009AA010 /* TestRelease */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Deployment;

@@ -1549,7 +1549,7 @@ NSDictionary *OOPropertyListFromQuaternion(Quaternion value)
 static NSSet *SetForObject(id object, NSSet *defaultValue)
 {
 	if ([object isKindOfClass:[NSArray class]])  return [NSSet setWithArray:object];
-	else if ([object isKindOfClass:[NSSet class]])  return [[object copy] autorelease];
+	else if ([object isKindOfClass:[NSSet class]])  return [object copy];
 	
 	return defaultValue;
 }

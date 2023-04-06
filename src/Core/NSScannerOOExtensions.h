@@ -33,8 +33,8 @@ MA 02110-1301, USA.
 
 @interface NSScanner (OOExtensions)
 
-- (BOOL) ooliteScanCharactersFromSet:(NSCharacterSet *)set intoString:(NSString **)value;
-- (BOOL) ooliteScanUpToCharactersFromSet:(NSCharacterSet *)set intoString:(NSString **)value;
+- (BOOL) ooliteScanCharactersFromSet:(NSCharacterSet *)set intoString:(NSString *__autoreleasing*)value;
+- (BOOL) ooliteScanUpToCharactersFromSet:(NSCharacterSet *)set intoString:(NSString *__autoreleasing*)value;
 
 @end
 
